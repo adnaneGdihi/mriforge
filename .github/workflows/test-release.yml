@@ -61,7 +61,7 @@ jobs:
         run: make test-release
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
           file: ./tests_experiments/coverage_release.xml
           flags: release
