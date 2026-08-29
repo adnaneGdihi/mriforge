@@ -1,0 +1,54 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: ["--unsafe"]  # YAML may contain custom tags
+      - id: check-toml
+      - id: check-added-large-files
+        args: ["--maxkb=500"]
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.0
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+      - id: ruff-format
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        files: ^src/mriforge/(core|config|domain)/
+        additional_dependencies: [pydantic>=2.6, types-PyYAML]
+
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        args: ["--ignore-words-list=mse,nd,te,ot,fpr"]
+
+  # Workflow YAML is load-bearing now: pr-required.yml gates every merge.
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.7
+    hooks:
+      - id: actionlint
+
+  - repo: local
+    hooks:
+      - id: test-paired-with-source
+        name: source change requires paired test change
+        entry: python scripts/ci/check_test_paired_with_source.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+      - id: witness-corpus
+        name: witness corpus (no newly-discarded declared keys)
+        entry: python scripts/ci/check_witness_corpus.py experiments/inprogress
+        language: system
+        pass_filenames: false
+        files: ^experiments/inprogress/.*\.yaml$

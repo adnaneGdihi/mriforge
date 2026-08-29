@@ -1,0 +1,18 @@
+* text=auto eol=lf
+*.py text diff=python
+*.md text
+*.yaml text
+*.yml text
+*.ipynb linguist-language=Python
+experiments/** linguist-vendored
+docs/** linguist-documentation
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.h5 binary
+*.pt binary filter=lfs diff=lfs merge=lfs
+*.pth binary filter=lfs diff=lfs merge=lfs
+*.safetensors binary filter=lfs diff=lfs merge=lfs
+*.ckpt binary

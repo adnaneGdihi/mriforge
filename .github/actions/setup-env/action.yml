@@ -1,0 +1,42 @@
+name: Set up mriforge environment
+description: >-
+  Python 3.12 plus a CPU PyTorch install plus the requested pip extra. The single
+  source of truth for the CPU wheel index.
+
+inputs:
+  extras:
+    description: 'The pip extra to install, e.g. "dev" or "mri".'
+    required: false
+    default: dev
+  torchvision:
+    description: >-
+      Install torchvision alongside torch ("true"/"false"). The [mri]-only jobs never
+      import it and skip it to save a couple of minutes.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+        cache: pip
+        cache-dependency-path: pyproject.toml
+
+    - name: Install CPU torch from the PyTorch wheel index
+      shell: bash
+      # torch and torchvision MUST resolve from the same index, in one command. A bare
+      # `pip install torchvision` takes the default-index wheel, which is linked
+      # against a different libtorch and dies at import with
+      # `RuntimeError: operator torchvision::nms does not exist`.
+      run: |
+        if [ "${{ inputs.torchvision }}" = "true" ]; then
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+        else
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+        fi
+
+    - name: Install mriforge
+      shell: bash
+      run: pip install -e ".[${{ inputs.extras }}]"

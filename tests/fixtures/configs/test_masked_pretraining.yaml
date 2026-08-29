@@ -1,0 +1,60 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  save_interval: 10
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+logging:
+  log_dir: ./tests/output/masked_pretraining
+  log_interval: 1
+loss:
+  reconstruction:
+    loss_type: mse
+loss_logging:
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_masked_pretraining
+  tags:
+    type: e2e_test
+metrics:
+  enabled: true
+model:
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: unet
+  out_channels: 1
+  spatial_dims: 2
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adamw
+  use_amp: false
+task: reconstruction
+training:
+  device: cpu
+  epochs: 1
+  strategy_class: src.infrastructure.training.strategies.masked_strategy.MaskedPretrainingStrategy
+  task: reconstruction
+  training_mode: mae_pretraining
+training_mode: mae_pretraining
+objectives:
+  reconstruction:
+    lambda_l1: 1.0
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

@@ -1,0 +1,61 @@
+# FAILING YAML — trips: patch_size_power_of_two (ConfigHealthChecker)
+# Violation: model_kwargs.channel_mult has 4 levels → downsample factor = 2^3 = 8.
+#   data.patch_size = [30, 30, 1] — 30 is NOT divisible by 8.
+#   check_patch_size_power_of_two fires because bad_dims = [30, 30].
+# check_name: patch_size_power_of_two
+# severity: error
+#
+# How the check fires (config_health_checker.py::check_patch_size_power_of_two):
+#   channel_mult = [1, 2, 4, 8]  → len = 4  → downsample = 2^(4-1) = 8
+#   spatial_dims = [30, 30]
+#   bad_dims = [d for d in [30, 30] if d % 8 != 0]  → [30, 30]  → error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — patch_size_power_of_two (patch 30x30, depth 4)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  training_mode: reconstruction
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_patch_size_pow2
+
+data:
+  dataset_type: synthetic
+  coil_processing_mode: rss
+  patch_size: [30, 30, 1]   # <<< VIOLATION: 30 % 8 != 0 (channel_mult depth=4 → factor=8)
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+  model_kwargs:
+    channel_mult: [1, 2, 4, 8]   # <<< 4 levels → 2^3 = 8 divisibility required
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_patch_size_pow2/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

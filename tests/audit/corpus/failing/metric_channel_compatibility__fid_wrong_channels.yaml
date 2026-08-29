@@ -1,0 +1,80 @@
+# FAILING YAML — trips: metric_channel_compatibility (ConfigHealthChecker)
+# Violation: metrics.compute_fid=true but model.out_channels=4. FID only
+# accepts 1 or 3 output channels; 4 is not in the allowed set and the
+# check fires with severity="error".
+# check_name: metric_channel_compatibility
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — metric_channel_compatibility (FID with 4 output channels)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  epochs: 1
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_metric_channel_compatibility
+
+data:
+  coil_processing_mode: svd
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 4
+  num_workers: 0
+  num_virtual_coils: 2
+  normalize_images: true
+  validation_split: 0.1
+  target_channels: 4
+  samples_per_volume: 2
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+  caching:
+    strategy: none
+
+model:
+  model_type: standard_unet
+  in_channels: 4
+  out_channels: 4   # VIOLATION: FID only accepts 1 or 3 output channels, not 4
+  model_kwargs:
+    base_channels: 32
+    channel_multipliers: [1, 2]
+    num_res_blocks: 1
+    dropout: 0.0
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+  weight_decay: 0.0
+  use_amp: false
+  enable_gradient_clipping: false
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_metric_channel_compatibility/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+metrics:
+  compute_fid: true     # VIOLATION: FID requires out_channels in {1, 3}
+  compute_psnr: true
+  compute_ssim: true
+  metric_interval: 5
+
+physics:
+  kspace:
+    enforce_hermitian_symmetry: false
+    enable_kspace_recon: false
+  data_consistency:
+    enabled: false

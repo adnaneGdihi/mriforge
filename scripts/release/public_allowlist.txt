@@ -1,0 +1,767 @@
+# Allowlist for the public MRIForge export. FAIL-CLOSED: a tracked path ships
+# only if a pattern below names it. Every pattern carries the reason it ships.
+#
+# A trailing "/" means "directory prefix"; anything else is an fnmatch glob.
+# A pattern that matches nothing is a DEAD ALLOWANCE and must be deleted --
+# export_public_tree.py --strict exits 2 on one.
+#
+# The roots deliberately absent are listed at the foot of this file, so a
+# missing directory is always a recorded decision, never an oversight.
+
+# ---- the package -----------------------------------------------------------
+src/                       # the framework itself
+
+# ---- tests -----------------------------------------------------------------
+# Ships wholesale, minus the denials below. A gate that can no longer see its
+# corpus must be REMOVED, not left to pass vacuously -- a repo-rooted script run
+# from outside its repo exits 0 all-clean, and that reads as a pass.
+tests/
+conftest.py
+
+# ---- tests: denials ---------------------------------------------------------
+# `!` denials, one file per line. A path ships iff an allowance names it AND no
+# denial does; denials only ever SUBTRACT, so the worst a wrong line here can do
+# is lose a file -- the recoverable direction the allowlist already prefers.
+#
+# Every entry below was derived from an actual `pytest --collect-only` run inside
+# a materialized export (120 collection errors), never from grepping for imports.
+# That distinction is load-bearing: shipping a PARTIAL scripts/ci/ turned
+# `No module named 'scripts'` into eight more specific errors, so a list carried
+# over from the previous export would have been wrong in both directions.
+#
+# One error was deliberately NOT denied: tests/unit/ci/test_workflow_triggers.py
+# needs .github/workflows/, which Workstream F ships. Denying it would delete a
+# real gate from the public repo to make an intermediate tree green.
+#
+# SUPERSEDED 2026-08-29 (3e1c384ae) -- the decision above was right, but its
+# stated consequence is no longer true, and the number below was measured before
+# the fix. The file resolved .github/workflows at MODULE level and asserted the
+# glob was non-empty, so the assert fired during IMPORT. A collection error is
+# not a test failure: pytest raises Interrupted and discards the whole session.
+# `pytest tests/` -- and `make test`, which is `pytest tests/unit/` -- collected
+# NOTHING in the export, and the workaround was an --ignore flag a public user
+# has no way to know they need.
+#
+# It now skips visibly when the directory is ABSENT (a scope decision) and still
+# raises when the directory is PRESENT but empty (a defect). The gate survives in
+# full for the tree that has .github/, which is what the decision above wanted.
+#
+# VERIFIED on a materialized export that was `git init`-ed first (the corpus
+# helper needs a real checkout, so a bare directory reports six extra errors that
+# are artefacts of the measurement, not defects):
+#     2026-08-28, before the fix:  44,270 tests collected, 1 error  (Interrupted)
+#     2026-08-29, after  the fix:  43,289 tests collected, 0 errors, no --ignore
+# The count falls because denials landed in between and three modules now skip at
+# module level rather than collecting; zero errors is the number that changed.
+#
+# WORKSTREAM F PREREQUISITE, verified by simulating the end state (copying
+# .github/ in and deleting the two Claude workflows): the collection error
+# clears, 40 pass, and ONE test then fails --
+#     test_allowlist_has_no_stale_entries: "claude.yml: workflow no longer exists"
+# _ALLOWED_NON_PR_EVENTS in that file still carries a claude.yml entry. F must
+# delete that entry in the SAME commit that drops the workflow. It cannot be
+# fixed earlier: on dev the workflow still exists, and removing its allowlist
+# entry there makes a different test in the same file fail instead.
+#
+# That tension is structural, not a sequencing accident: the entry is REQUIRED in
+# the tree where claude.yml exists and STALE in the tree where it does not, and a
+# static dict cannot be right in both. Two resolutions, both cheap; F picks one.
+#   (a) Elect one owner. test_allowlist_has_no_stale_entries treats an absent
+#       workflow as stale UNLESS this allowlist denies it -- so "which workflows
+#       ship" is answered here and nowhere else, and a workflow deleted without a
+#       denial is still reported. Keeps the gate's full strength in both trees.
+#   (b) Delete the entry as part of F's initial commit and accept that dev's copy
+#       of the file diverges from the published one. Simpler, but it makes the
+#       two trees' tests differ, which is the thing this allowlist exists to avoid.
+# (a) is preferred. Whichever is chosen, plant the violation first: delete a
+# non-Claude workflow WITHOUT a denial and confirm the test still goes red, or the
+# fix has removed the gate rather than adapted it.
+#
+# The --ignore workaround this block used to require is GONE as of 3e1c384ae:
+# the module skips visibly instead of aborting collection, so `pytest tests/`
+# runs in the export unmodified. Do not reintroduce the flag -- it would hide the
+# very regression the skip was added to make visible.
+#
+# Not globbed, on purpose. A glob would be safe by direction, but only a per-file
+# entry can be reported stale by the dead-denial ratchet on the day its subject
+# reappears or is renamed.
+
+# scripts/sim2rank/ -- the metric meta-evaluation subsystem (65 files, 36,803
+# LOC), a research programme rather than framework surface, and CLAUDE.md records
+# it as under heavy active development. Its in-package half DOES ship
+# (mriforge.core.metrics.meta_evaluation), so denying these costs real coverage:
+# 15 of the 63 shipped tests importing that subpackage. 48 survive, so it is a
+# partial loss, not an untested subsystem -- measured, not assumed. Shipping the
+# 36.8k LOC to recover 15 tests is the worse trade.
+!tests/contracts/test_metric_registry.py
+!tests/unit/core/metrics/test_metric_directions.py
+!tests/unit/core/metrics/test_metric_registry_health.py
+!tests/unit/meta_evaluation/test_bradley_terry.py
+!tests/unit/meta_evaluation/test_clinical_rankers.py
+!tests/unit/meta_evaluation/test_gen2_tie_faithfulness.py
+!tests/unit/meta_evaluation/test_information.py
+!tests/unit/meta_evaluation/test_ms3_ranker.py
+!tests/unit/meta_evaluation/test_sobol.py
+!tests/unit/meta_evaluation/test_task_ranker.py
+!tests/unit/test_acss_permutation.py
+!tests/unit/test_sim2rank_anchor_calibration.py
+!tests/unit/test_sim2rank_anchor_set.py
+!tests/unit/test_sim2rank_axes.py
+!tests/unit/test_sim2rank_axis_bank.py
+!tests/unit/test_sim2rank_axis_subset_cli.py
+!tests/unit/test_sim2rank_canonical_counts.py
+!tests/unit/test_sim2rank_cd_diagram.py
+!tests/unit/test_sim2rank_consensus_figures.py
+!tests/unit/test_sim2rank_cpge_complex_context.py
+!tests/unit/test_sim2rank_dataset_kind.py
+!tests/unit/test_sim2rank_degradation_complex.py
+!tests/unit/test_sim2rank_degradation_report.py
+!tests/unit/test_sim2rank_degradation_seeding.py
+!tests/unit/test_sim2rank_degradation_variable_size.py
+!tests/unit/test_sim2rank_distributional_eval.py
+!tests/unit/test_sim2rank_engine_outcomes.py
+!tests/unit/test_sim2rank_engine_zero_metrics.py
+!tests/unit/test_sim2rank_exclude_radiomics_provenance.py
+!tests/unit/test_sim2rank_export_per_axis_tables.py
+!tests/unit/test_sim2rank_figure_tree.py
+!tests/unit/test_sim2rank_fourier_bridge.py
+!tests/unit/test_sim2rank_fp32_numerics.py
+!tests/unit/test_sim2rank_gen2_per_axis.py
+!tests/unit/test_sim2rank_hib_labels.py
+!tests/unit/test_sim2rank_identity_anchor_floor.py
+!tests/unit/test_sim2rank_inter_metric_correlation.py
+!tests/unit/test_sim2rank_interactive_report.py
+!tests/unit/test_sim2rank_log_triage.py
+!tests/unit/test_sim2rank_measured_noise.py
+!tests/unit/test_sim2rank_measurement_noise.py
+!tests/unit/test_sim2rank_meta_eval.py
+!tests/unit/test_sim2rank_method_robustness.py
+!tests/unit/test_sim2rank_metric_health.py
+!tests/unit/test_sim2rank_mosaics.py
+!tests/unit/test_sim2rank_odm_correctness.py
+!tests/unit/test_sim2rank_odm_invariants.py
+!tests/unit/test_sim2rank_per_axis_adr_aggregation.py
+!tests/unit/test_sim2rank_per_axis_spearman.py
+!tests/unit/test_sim2rank_probe_metrics.py
+!tests/unit/test_sim2rank_ranking_invariants.py
+!tests/unit/test_sim2rank_regime_gate.py
+!tests/unit/test_sim2rank_region_source_dispatch.py
+!tests/unit/test_sim2rank_region_sweep.py
+!tests/unit/test_sim2rank_registry_parity.py
+!tests/unit/test_sim2rank_response_clustering.py
+!tests/unit/test_sim2rank_scanner_conditioning.py
+!tests/unit/test_sim2rank_scoring_repairs.py
+!tests/unit/test_sim2rank_severity_calibration.py
+!tests/unit/test_sim2rank_simulator_calibration.py
+!tests/unit/test_sim2rank_synthetic.py
+!tests/unit/test_sim2rank_tidy_export.py
+!tests/unit/test_sim2rank_transfer_badge.py
+!tests/unit/test_sim2rank_unified_degradations.py
+!tests/unit/test_sim2rank_xlsx_workbooks.py
+
+# scripts/data/ -- dataset acquisition and manifest construction (63 files).
+# Bound to on-disk cohort layouts that do not exist for a public user, and the
+# fastMRI half cannot ship at all (DUA).
+!tests/audit/test_inprogress_dataset_wiring_audit.py
+!tests/unit/data/test_build_fastmri_brain_cohort_manifest.py
+!tests/unit/data/test_extract_oracle_bssfp.py
+!tests/unit/data/test_frame_contract.py
+!tests/unit/data/test_gen_external_manifests.py
+!tests/unit/scripts/test_build_cambridge_federated_manifest.py
+!tests/unit/scripts/test_build_cross_site_manifest.py
+!tests/unit/scripts/test_build_fastmri_plus_manifest.py
+!tests/unit/scripts/test_build_mrixfields2026_manifest.py
+!tests/unit/scripts/test_build_nist_mrf_manifest.py
+!tests/unit/scripts/test_build_synthseg_region_cache.py
+!tests/unit/scripts/test_dataset_file_types.py
+!tests/unit/scripts/test_download_external_datasets.py
+!tests/unit/scripts/test_export_h5_to_nifti.py
+!tests/unit/scripts/test_extract_external_datasets.py
+!tests/unit/scripts/test_fetch_fastmri_plus_annotations.py
+!tests/unit/scripts/test_prepare_mrixfields_archive.py
+!tests/unit/scripts/test_probe_dataset_layouts.py
+!tests/unit/scripts/test_resolve_data_locations.py
+!tests/unit/scripts/test_show_mrixfields_dimensions.py
+
+# scripts/ci/ gates that are NOT in the shipped subset -- either corpus-dependent
+# (the corpus is experiments/, which does not ship) or dropped for the reasons the
+# gate table in docs/contributing/public_export.rst records one by one.
+!tests/unit/ci/test_check_experiment_configs_load.py
+!tests/unit/ci/test_check_witness_corpus.py
+!tests/unit/ci/test_coverage_summary.py
+!tests/unit/ci/test_cpu_test_array.py
+!tests/unit/ci/test_docs_navigation_guard.py
+!tests/unit/ci/test_select_impacted_tests.py
+!tests/unit/infrastructure/physics/test_mask_golden_gate.py
+!tests/unit/scripts/test_config_golden_gate.py
+!tests/unit/scripts/test_migrate_model_block_keys.py
+!tests/unit/scripts/test_migrator_flow_mapping_blindness.py
+!tests/unit/scripts/test_verify_config_migration.py
+
+# scripts/preprocessing/ (41 files) -- a standalone pipeline with its own package
+# root, which these tests reach by sys.path.insert rather than by import.
+!tests/unit/data/test_inspect_bart.py
+!tests/unit/data/test_paired_manifest.py
+!tests/unit/data/test_preprocess_ulf_paired.py
+!tests/unit/preprocessing/test_discovery.py
+!tests/unit/preprocessing/test_pipelines.py
+!tests/unit/preprocessing/test_tasks.py
+!tests/unit/preprocessing/test_types.py
+!tests/unit/preprocessing/test_utils.py
+!tests/unit/scripts/test_external_dataset_tooling.py
+
+# One-off scripts under scripts/ that ship nowhere: migrations already applied,
+# experiment-specific probes, cluster log parsers, and maintenance tools whose
+# subject (.claude/skills/) is itself excluded.
+!tests/unit/config/test_coil_processing_migration_parity.py
+!tests/unit/diagnostics/test_coil_estimation_demo.py
+!tests/unit/scripts/test_check_skill_health.py
+
+# Same reason, one level up: this guard reads `git ls-files .agent
+# .claude/skills`, and BOTH roots are denied above. In a real checkout that
+# command exits 0 with no output (a missing pathspec is not an error to
+# ls-files), so the test does not fail -- @pytest.mark.parametrize receives an
+# empty list and the file reports green having graded nothing. Its own
+# docstring names that failure mode for the untracked-scratch case; the export
+# reproduces it for every case at once. A gate that cannot see its corpus is
+# removed, not shipped to pass vacuously.
+!tests/unit/test_rules_docs_use_current_import_prefix.py
+!tests/unit/scripts/test_convert_synthseg_h5_to_pt.py
+!tests/unit/scripts/test_exp11_energy_probe.py
+!tests/unit/scripts/test_exp11_reverse_sampler_ab.py
+!tests/unit/scripts/test_parse_dispatch_logs.py
+!tests/unit/tools/test_cohort_forensics_review.py
+
+# Tests reaching a module by sys.path.insert into a directory that does not ship
+# (tools/refactoring/, scripts/...). The bare module name in the error is that
+# insert, not a package -- checked one by one rather than assumed from the shape.
+!tests/unit/ci/test_pytest_result_collector.py
+!tests/unit/config/test_config_read_tracer.py
+!tests/unit/scripts/test_reproduce_published_numbers.py
+!tests/unit/test_feature_introspection.py
+!tests/unit/tools/test_extract_classes.py
+
+# scripts/benchmarking/ -- degradation-vector benchmarks, research surface.
+!tests/unit/benchmarking/test_degradation_vectors.py
+
+# scripts/training/*.sbatch -- the subject of each of these is denied above, so
+# on a fresh clone they read_text() a file that does not exist. They also carry
+# one site's SLURM identity as DATA (--account=johnsson, ${USER}@cougarnet.uh.edu)
+# rather than as a detector input, which is why neutralising the literal (as
+# tests/unit/infrastructure/execution/test_backends.py got) is not enough here:
+# the test would then assert a placeholder against a script that never ships.
+!tests/unit/scripts/test_dispatch_experiments.py
+!tests/unit/scripts/test_submit_exp11_ema_warmup_ablation.py
+!tests/unit/scripts/test_submit_exp11_fpk_ablation.py
+
+# Corpus-dependent gates. experiments/ does not ship, so tracked_yamls() returns
+# 0 and these lose the thing they exist to check. Measured on a git-init'd export
+# (2026-08-28): 6 failed, 16 passed, 4 skipped. The empty corpus reaches them in
+# three shapes, and only the third is silent --
+#   loud   : an explicit anti-vacuity guard fires. "cohort directory is empty --
+#            the guard would be vacuous"; "parsed to zero entries. If the debt was
+#            genuinely drained, delete this test in the PR that drained it".
+#   visible: @parametrize over an empty list -> pytest SKIPs with
+#            "got empty parameter set" (4 of these).
+#   SILENT : `for config_path in ALL_CONFIGS:` in the test BODY. The loop simply
+#            does not execute and the test passes. test_config_validation.py
+#            reports 7 green tests having validated nothing.
+# Plan Workstream D: a gate that can no longer see its corpus is removed from the
+# public lane, not left in to pass vacuously. Recorded in docs/known_limitations.rst.
+!tests/unit/config/test_dead_legacy_key_spellings.py
+!tests/unit/utils/test_config_load_baseline.py
+!tests/smoke/test_config_validation.py
+!tests/smoke/test_deep_config_integrity.py
+!tests/smoke/test_vf_smoke.py
+!tests/audit/test_experiment_yaml_syntax.py
+
+# ---- runnable examples -----------------------------------------------------
+examples/                  # E4: each of these must audit --probe clean before release
+
+# ---- build / packaging -----------------------------------------------------
+pyproject.toml
+uv.lock
+Makefile                   # D: targets pointing at pruned paths must go
+codecov.yml
+.pre-commit-config.yaml
+
+# Sanitized by Workstream C: the one uncommented real path is now a relative
+# default, section 9's prose no longer describes the retired hardcoded account
+# (#1146), and the SIM2RANK_* block is omitted because its only readers live in
+# scripts/sim2rank/, which does not ship -- advertising a knob whose reader is
+# absent is the inert-knob over-claim this release exists to remove.
+# Verified: 47 advertised variables, 0 with no reader in the exported tree.
+.env.example
+.gitattributes
+.gitignore
+
+# ---- licence, governance, citation ----------------------------------------
+LICENSE                    # Apache-2.0
+NOTICE
+CITATION.cff               # personal identifiers belong HERE, and here only
+MAINTAINERS.md             # ... and here
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+GOVERNANCE.md
+SECURITY.md
+DISCLAIMER.md              # not-for-clinical-use; the CLI warning points at it
+README.md
+CHANGELOG.md               # B: needs a de-link pass -- internal PR numbers dangle,
+                           #    and #N in a public repo autolinks to a stranger's PR
+
+# ---- example arms ----------------------------------------------------------
+experiments/templates/     # the copy-me templates (see #1529 before shipping these)
+#
+# ...but only the one that loads. A template is copied, so a template that does
+# not parse is worse than an absent one: the reader's first act is to inherit the
+# defect. Both denials measured with `mriforge audit` on this branch:
+#
+#   categorical_values_reference.yaml       exit 2 -- "config_version is required
+#                                           ... Must be one of ['1.0']"
+#   comprehensive_config_template_v5.0.yaml exit 2 -- "Config version 5.0 not
+#                                           supported. Accepted values: ['1.0']"
+#
+# The first is rotted and hand-maintained with no generator, superseded by the
+# machine-checked v1.0_reference.yaml; the second is deferred-v5 backlog whose
+# tracking doc does not ship either.
+#
+# The survivor, comprehensive_config_template.yaml, LOADS -- its one remaining
+# audit failure is a health check, not a parse error, and PR #1568 fixes it.
+# Pinned by tests/unit/scripts/test_export_public_tree.py::
+# test_every_experiment_yaml_that_ships_actually_loads, so deleting a denial
+# without fixing the file it denies goes red.
+!experiments/templates/categorical_values_reference.yaml
+!experiments/templates/comprehensive_config_template_v5.0.yaml
+
+# NO exemplar arms ship. Owner decision, 2026-08-29: nothing under
+# experiments/ is published except the v1.0 template above.
+#
+# Three arms (b1_structural_recon_m4raw, ssdu_selfsup_m4raw,
+# experiment_96_sde_diffusion) were allowed here and were withdrawn. They were
+# not withdrawn for being broken -- all three passed `mriforge audit` AND
+# `mriforge audit --probe` on an RTX 4080 from the exported tree on 2026-08-29,
+# exit 0 each. The corpus is simply not part of the published surface.
+#
+# Do not re-add one "as an example". experiments/ is an internal research
+# corpus: an arm names manifests, cluster paths and datasets that a public
+# reader has no way to obtain, so a shipped arm advertises a runnable config
+# that is not runnable -- the exact over-claim this release exists to remove.
+# The template is the supported starting point; it is copied, not run.
+
+# ---- tests whose SUBJECT does not ship -------------------------------------
+# Found by walking every shipped test for a `Path(__file__).parents[N] / ...`
+# construction and asking the exported filesystem whether the result exists.
+# Every file below has 100% of its tests failing in the export -- measured, not
+# predicted: 330 failed + 246 errors across the wider casualty set.
+#
+# Only files where EVERY test fails are denied here. Files that merely contain
+# some corpus-dependent tests keep their surviving unit tests and get a guard
+# instead; denying those would discard working coverage to remove a few cases.
+#
+# Per-file, not globbed, for the same reason as the block above: the dead-denial
+# ratchet can then report the entry stale on the day its subject ships.
+
+# scripts/sim2rank/ drivers -- extends the sim2rank decision already taken
+# above, which denied the library-side tests but missed these eight; they
+# reference the driver scripts rather than the in-package half.
+!tests/unit/test_sim2rank_brain_sbatch.py
+!tests/unit/test_sim2rank_build_report.py
+!tests/unit/test_sim2rank_degradation_snapshots.py
+!tests/unit/test_sim2rank_figure_dedup.py
+!tests/unit/test_sim2rank_figure_legend_layout.py
+!tests/unit/test_sim2rank_figure_manifest.py
+!tests/unit/test_sim2rank_figure_style_gallery.py
+!tests/unit/test_sim2rank_style.py
+
+# scripts/diagnostics/ -- forensic tooling for cluster runs, not framework surface
+!tests/unit/diagnostics/test_coil_map_aliasing.py
+!tests/unit/diagnostics/test_kspace_phase_collapse.py
+!tests/unit/diagnostics/test_render_report_cases.py
+!tests/unit/diagnostics/test_trace_exp11_dataflow.py
+!tests/unit/scripts/test_vf_mechanism_demo.py
+
+# scripts/ci/, scripts/audit/, scripts/migrations/, scratch/ -- internal gates,
+# corpus censuses and one-shot migrations. The migrations in particular operate
+# on experiments/inprogress/, which does not ship at all.
+!tests/unit/audit/test_framework_coverage_audit.py
+!tests/unit/ci/test_a6_batch_key_census.py
+!tests/unit/ci/test_a6_triage_orphan_keys.py
+!tests/unit/scratch/test_compile_diagnostics.py
+!tests/unit/scripts/test_check_produced_by_arm_resolves.py
+!tests/unit/scripts/test_cluster_verify.py
+# Subject scripts/migrations/rename_package_identifier.py. Measured on the
+# export 2026-08-29: 0 passed, 14 errors -- every test collects a
+# FileNotFoundError loading the script by path. It also carries the only
+# /home/adn/ literal left in the tree, as a planted-violation fixture.
+!tests/unit/scripts/test_rename_package_identifier.py
+!tests/unit/scripts/test_migrate_config_version_to_v1.py
+!tests/unit/scripts/test_migrate_metrics_to_compute_list.py
+!tests/unit/scripts/test_report_discarded_config_keys.py
+
+# scripts/data/ -- dataset indexing helpers run on the cluster
+!tests/unit/data/test_inspect_m4raw_quality.py
+!tests/unit/data/test_mrixfields_proxy_manifest.py
+
+# experiments/inprogress/ cohort audits -- these assert invariants OVER the 647
+# arms, which the experiments/ decision removes wholesale. Nothing survives the
+# corpus being absent, so there is no guard to add.
+!tests/unit/config/test_exp11_phase5_ablation_deconfounded.py
+!tests/unit/config/test_inprogress_audit_fixes_2026_06_19.py
+!tests/unit/config/test_inprogress_baseline_resolves.py
+!tests/unit/config/test_kspace_filling_cohort_drained.py
+!tests/unit/config/test_mrixfields_ema_generative_arms_2026_07_04.py
+!tests/unit/config/test_pnp_arm_wired.py
+
+# ---- second census pass: subjects reached through a module-level alias -------
+# The first block above was found by an AST scan that only matched an INLINE
+# `Path(__file__).resolve().parents[N] / "a" / "b"` chain. That scan was blind to
+# the two-statement form
+#     REPO_ROOT = Path(__file__).resolve().parents[3]
+#     SCRIPT    = REPO_ROOT / "scripts" / "ci" / "x.sh"
+# which is how tests/unit/ci/test_refresh_diagnostics_script.py sat in the export
+# failing 12/14 without appearing in the census at all. Re-running alias-aware
+# raised the count from 52 files to 91. Same rule as above: only files where
+# EVERY test fails are denied; partial files keep their coverage and get a guard.
+
+# .github/ + TODO/ -- unlike test_workflow_triggers.py (deliberately kept, since
+# Workstream F's .github/ alone repairs it), this one ALSO needs
+# TODO/production_plan/, which never ships. F cannot repair it.
+!tests/architecture/test_required_lane_composition.py
+# ...and its plant harness with it. A detector and the violations planted against
+# it are one unit: the harness reads the detector's SOURCE off disk
+# (`_DETECTOR = _REPO_ROOT / "tests" / "architecture" /
+# "test_required_lane_composition.py"`, line 37), so shipping the harness without
+# the detector is 15 collected tests and 15 FileNotFoundError failures -- measured
+# in the export, all 15 of the file's tests, which is the 100%-failing bar this
+# allowlist uses for denial rather than a guard. Denying only the detector is the
+# easy half to notice; there is no census that pairs them, because the harness
+# names its subject as a path to another TEST file rather than to src/ or to a
+# corpus root.
+!tests/unit/architecture/test_required_lane_composition_plants.py
+
+# docs/lean/ (Lean 4 proof layer), in the explicitly-dropped docs subset.
+#
+# `!tests/unit/docs/test_framework_paper.py` used to sit here beside these four.
+# `3f4032bd7` ("docs: cull to usage-only") deleted 2,067 doc files including
+# `docs/framework_paper.md` AND that test, so the denial became a dead pattern
+# and `--strict` began exiting 2 on it. A dead denial is deleted, not kept: it
+# reads as a decision that is still holding something back when it is holding
+# back nothing, and the next file to land on that path would ship unremarked.
+!tests/unit/docs/test_sim2rank_betting_layer.py
+!tests/unit/docs/test_sim2rank_conformal_layer.py
+!tests/unit/docs/test_sim2rank_kemeny_layer.py
+!tests/unit/docs/test_sim2rank_transfer_layer.py
+
+# scripts/ci/ gates and their corpus baselines. Workstream D's rule: a gate that
+# can no longer see its corpus leaves the public lane rather than passing vacuously.
+!tests/unit/ci/test_check_acceleration_ladder_realisable.py
+!tests/unit/ci/test_check_getattr_names_a_real_field.py
+!tests/unit/ci/test_rerun_wrapper.py
+!tests/unit/ci/test_smoke_wrapper_hygiene.py
+!tests/unit/scripts/test_check_experiment_configs_load.py
+!tests/unit/scripts/test_check_model_kwargs_are_read.py
+!tests/unit/scripts/test_smoke_wrapper.py
+
+# scripts/sim2rank/ -- third and final group; same decision as the two above.
+!tests/unit/scripts/test_env_knob_advertisement.py
+!tests/unit/test_sim2rank_algorithm_axis_normalization.py
+!tests/unit/test_sim2rank_fp32_default.py
+!tests/unit/test_sim2rank_manifest_integration.py
+!tests/unit/test_sim2rank_mode_guard.py
+!tests/unit/test_sim2rank_per_axis_all_generations.py
+!tests/unit/test_sim2rank_segment_folder.py
+
+# Validation-image / mosaic tooling (scripts/*.py, scripts/ci/audit_validation_images.py).
+# Considered shipping the five scripts instead to recover 98 tests -- rejected on
+# measurement, not taste: all five themselves read experiments/, TODO/ or
+# tests_experiments/, so shipping them relocates this same problem rather than
+# solving it.
+!tests/unit/scripts/test_validation_mosaic_audit.py
+!tests/unit/tools/test_audit_validation_images.py
+!tests/unit/tools/test_generate_validation_mosaic.py
+!tests/unit/tools/test_mosaic_since_filter.py
+!tests/unit/tools/test_mosaic_validation_cli.py
+!tests/unit/tools/test_process_smoke_log.py
+!tests/unit/tools/test_validation_image_dirs.py
+
+# scripts/{eval,evaluation,common,training}/ -- cluster drivers and sbatch wrappers.
+!tests/unit/scripts/test_evaluate_mrixfields_baselines_cli.py
+!tests/unit/scripts/test_run_test_inference.py
+!tests/unit/scripts/test_torch_ld_path.py
+
+# tools/docs/generate_key_reference.py -- the generator for
+# docs/config_key_reference.rst. NOTE for Workstream G: if that generated page
+# ships, it ships without its generator, so it can only be regenerated on dev.
+!tests/unit/config/test_key_reference_is_current.py
+
+# experiments/{inprogress,validated,campaigns,ablation,active,training}/ corpora.
+# test_no_cluster_paths.py is itself a sanitization guard, but it scans the
+# experiments corpus -- with no corpus it has nothing to guard, and it fails
+# loudly rather than passing empty.
+!tests/audit/test_vf_scientific_validity_fixes_2026_06.py
+!tests/unit/config/test_gan_arms_have_discriminator_component.py
+!tests/unit/config/test_validation_image_saving_config.py
+!tests/unit/infrastructure/training/strategies/test_vae_kl_weight_wiring.py
+!tests/unit/orchestration/test_frontier_benchmark_manifest.py
+!tests/unit/pipelines/test_trust_ablation_spec.py
+!tests/unit/test_no_cluster_paths.py
+
+# ---- deny block 3: tests that IMPORT a module the export drops --------------
+# A third census shape. The two before it scanned *path construction*; these
+# reach an unshipped subject through the import system instead:
+#
+#     from scripts.sim2rank.scoring import compute_adr
+#         -> ModuleNotFoundError: No module named 'scripts.sim2rank'
+#
+# Nearly every one is FUNCTION-LOCAL, so a line-anchored grep finds none of them
+# -- the same blindness CLAUDE.md records for check_layering.sh, reached by a
+# different route. The scan is AST-based (ast.walk), which is what makes nesting
+# irrelevant.
+#
+# Denied only where the file is 100% failing, measured in the export tree. The
+# eight partial ones keep their surviving tests and need per-test guards (#1589);
+# test_sim2rank_native_data_wiring.py needs nothing -- its import already sits
+# behind a data-availability skip and reports 2 skipped.
+#
+# Why scripts/sim2rank/ is not shipped instead, which would recover all of these:
+# the in-package half ALREADY ships and stands on its own -- 45 modules under
+# core/metrics/meta_evaluation/ with 89 tests passing in the export -- so this is
+# not the "documented feature that is inert" case. Shipping the drivers means
+# +36,775 LOC of research tooling and re-opening sanitization on five files that
+# carry cluster identity (4 .sbatch + task_networks/nnunet_segmentation.py).
+# Reversible: delete these eight lines and add scripts/sim2rank/ to ship it.
+# (Was seven when this block was written; test_sim2rank_bt_score_vectorization.py
+# arrived on dev at 07ed477e3, after the census, and is the same 100%-failing
+# shape -- its import sits at module level, so all 8 tests die at collection.)
+!tests/unit/data/test_marker_artefacts.py                   # scripts.data.generate_marker_artefacts; 0 passed / 2 failed
+!tests/unit/test_sim2rank_adversarial_review.py             # 0 / 6
+!tests/unit/test_sim2rank_bt_score_vectorization.py          # 0 / 8
+!tests/unit/test_sim2rank_followups.py                      # 0 / 11
+!tests/unit/test_sim2rank_radiomics_filter.py               # 0 / 18
+!tests/unit/test_sim2rank_tier2_rankers.py                  # 0 / 20
+!tests/unit/test_sim2rank_v2_additions.py                   # 0 / 11
+!tests/unit/test_sim2rank_v3_additions.py                   # 0 / 10
+
+# ---- submodule pointers ----------------------------------------------------
+.gitmodules                # external/ baselines are pointers, not vendored code
+external/
+
+# ---- docs: the published documentation site (Workstream G) -----------------
+# Reviewed page by page on 2026-08-29 and measured, not sampled. `docs/` is 271
+# TRACKED files and 2 MB -- the "2,332 files / 195 MB" this block used to cite is
+# the untracked working tree, which is why shipping two pages looked prudent.
+#
+# The tree builds, and `.readthedocs.yaml` sets `fail_on_warning: true`, so every
+# warning below is fatal to the RTD badge rather than cosmetic. A full build of the
+# EXPORTED tree on 2026-08-29 reported 453: 440 duplicate-object descriptions, all
+# of them out of the GENERATED `docs/api/` tree (now denied, below), and 13 broken
+# cross-references in the prose, every one of which is repaired in this change --
+# three `:ref:` labels written BELOW their section title instead of above it so
+# they anchored nothing, five links into pages this allowlist denies, an uncited
+# citation, a `:doc:` to `api/index` (a file that does not exist in either tree),
+# and a shipped page citing the internal `TODO/` directory. An earlier revision of
+# this comment claimed the prose "carries no broken cross-references at all"; that
+# was written before the build was read, and it was wrong on 13 counts.
+#
+# Everything ships except the pages below, each denied for a stated reason.
+docs/
+!docs/index_internal.rst
+#   ^ the comprehensive internal index. It names the internal-only pages denied
+#     below, and a toctree entry to a missing document is a warning -- fatal here.
+#     `docs/index.rst` is the PUBLIC landing page and ships: Read the Docs serves
+#     `index.html` at the site root, so the root doc must be named `index`. An
+#     earlier revision kept the internal page at `index.rst` and had conf.py fall
+#     back to `index_public` when it was absent; that built successfully, reported
+#     "build succeeded", and produced no `index.html` at all -- a green build and
+#     a 404 site root. The internal page carries `:orphan:` so the private build
+#     stays warning-free without a toctree entry.
+!docs/contributing/ci.rst
+#   ^ the PRIVATE repo's CI. 30 `dev` base-branch references for a repo whose base
+#     is `main`, a "Publishing to `main`" section describing the internal
+#     dev->public mirror, triage sections about red tests on `dev`, a corpus-guard
+#     section about a corpus that does not ship, 11 paths absent from the export,
+#     and a first content element that is an `.. image::` of a stale SVG which is
+#     not allowlisted. Not repairable into truth yet, because the public lane does
+#     not exist: Workstream F still has to add the workflows. Documenting a lane
+#     before it is built is this release's own over-claim, pointed at CI. The
+#     public CI page is an F deliverable, written FROM the workflows that ship.
+!docs/contributing/public_export.rst
+#   ^ documents this allowlist and the export procedure. Internal process, and it
+#     names the private tree throughout.
+!docs/contributing/issue_labels.rst
+#   ^ the nature:/cohort: taxonomy, whose cohort half is one label per internal
+#     experiment cohort. Meaningless without the corpus.
+!docs/cluster_verification.rst
+#   ^ one site's SLURM allocation and storage checks. Sanitized of identity like
+#     every other page, but a public reader has no such cluster: it documents a
+#     machine, not the framework. Nothing that ships links to it -- the only
+#     reference was from the denied `docs/index.rst`.
+#
+#     `docs/CLUSTER_DATA_LAYOUT.md` was denied here for the same reason and is
+#     now SHIPPED instead. Four pages that ship -- environment_variables.rst, the
+#     first_reconstruction tutorial, the write_experiment_yaml how-to and the
+#     audit_ladder explanation -- link to it for how MRIFORGE_DATA_ROOT resolves,
+#     which makes it part of the framework's own story rather than one site's.
+#     Denying it broke four cross-references; the content is sanitized already.
+!docs/reference/workflow_backlog.md
+#   ^ an internal backlog of unimplemented workflow regimes.
+!docs/api/
+#   ^ 174 GENERATED sphinx-apidoc stub files. Denied for three reasons, in order
+#     of weight. (1) It is generated, and the public repo gets no regeneration
+#     gate, so it would rot from the day it lands -- the same rule that says a
+#     generated doc is rebuilt, never merged. (2) It is the sole source of all 440
+#     duplicate-object warnings, and with `fail_on_warning: true` that alone keeps
+#     the RTD build red; `:no-index:` on the 173 package-level automodules cleared
+#     203 of 643 but cannot reach the residue, which is uniformly `Class.member`
+#     -- `:no-index:` does not propagate into the members of a class it suppresses.
+#     (3) it is 174 files of the export's manifest to review under "why does this
+#     ship", for content no one reads by choice.
+#     An earlier revision of this comment gave a third ground that was WRONG: it
+#     said `docs/api/index.rst` does not exist. `docs/api/index.md` does, and it
+#     is the tree's working entry point -- the file is Markdown, and checking for
+#     one extension answered a question about a page. The claim is withdrawn
+#     rather than repaired, because it was never load-bearing: grounds (1) and (2)
+#     each independently settle it.
+#     What ships instead is the HAND-WRITTEN reference set, which is the better
+#     half anyway: scripting_api, cli_reference, config_schema_reference,
+#     config_key_reference, model_registry_reference, losses_reference,
+#     metrics_reference, strategies_reference, transform_registry.
+!docs/lean/
+#   ^ 30 files of Lean 4 proof artifacts for the sim2rank reliability theory,
+#     retained in the private tree because tests/unit/docs/test_sim2rank_*_layer.py
+#     read the .lean sources and assert they are free of sorry/admit/axiom. Those
+#     tests do not ship either. conf.py already excludes the tree from the build.
+
+.readthedocs.yaml
+#   ^ moved from docs/.readthedocs.yaml in this change: Read the Docs looks in the
+#     repository ROOT by default, so at the old path it configured nothing and the
+#     `fail_on_warning: true` in it was never applied to anything.
+
+# ---- scripts: CURATED SUBSET, pending Workstream C -------------------------
+# Deliberately NOT "scripts/". 414 files, many carrying cluster paths, SLURM
+# account names and institution identifiers that Workstream C must sanitize first.
+scripts/release/
+#
+# The CI gates, named one by one rather than as "scripts/ci/". Each one below was
+# RUN inside a materialized export and reported a non-vacuous result; the gates
+# left out are dropped because they print OK over a corpus that is not there.
+# Their baselines are the reason the directory cannot ship wholesale:
+# witness_baseline.txt alone names 487 internal experiment arms.
+scripts/ci/check_layering.sh              # PASS, self-reports non-vacuous, 12 baselined
+scripts/ci/layering_baseline.txt
+scripts/ci/check_dataloader_construction_ssot.py   # OK, 5 allow-listed sites found
+scripts/ci/dataloader_binding_names.txt
+scripts/ci/refresh_dataloader_binding_names.py     # regenerates the file above
+scripts/ci/check_health_check_names.py    # OK, 147 methods emitting 158 names
+scripts/ci/health_check_names.txt
+scripts/ci/check_f821_ratchet.py          # non-negotiable 19's ratchet
+scripts/ci/baselines/f821.txt             # 5 of its 26 rows name files that do NOT
+scripts/ci/baselines/f821_unparseable.txt #   ship, so the gate exits 1 in the export.
+#   It CANNOT be re-derived here: dropping those rows un-exempts names that still
+#   exist on dev, which would redden dev's own gate. F regenerates it once in the
+#   new repo (`--write`). The direction is DOWNWARD -- rows removed, never a raised
+#   ceiling -- which is the only direction non-negotiable 20 permits.
+scripts/ci/check_test_paired_with_source.py
+scripts/ci/check_docs_navigation.py       # OK, 57 documents, run inside the export
+scripts/ci/lint_changed_lines.py
+scripts/ci/check_docs_paths_exist.py      # OK inside the export once the 52 COMMAND
+                                          #   findings were fixed; run it AGAINST the
+                                          #   export, never the checkout -- the paths
+                                          #   it catches all exist here and are absent
+                                          #   there, which is the whole point.
+scripts/ci/migrate_config_keys.py         # Ships because it is the reader's tool, not
+                                          #   ours: config_key_reference.rst tells them
+                                          #   to run it on their own arms. Verified on
+                                          #   the one config that ships --
+                                          #   `--dry-run experiments/templates/
+                                          #   comprehensive_config_template.yaml` exits
+                                          #   0 reporting "would migrate 68 key(s); 0
+                                          #   skipped; 0 unparseable; 0 unsupported".
+                                          #   Imports are stdlib + ruamel + two shipped
+                                          #   mriforge.config.schemas modules; no
+                                          #   dropped root is referenced.
+#
+# Makefile targets call these; all four are stdlib-only and corpus-independent.
+scripts/coverage/print_per_layer.py
+scripts/coverage/missing_test_files.py
+scripts/maintenance/prove_reachable.py
+scripts/verify/verify_dependencies.py
+
+# The only shipped way to build the v3 JSON manifests the exemplar arms name in
+# data.index_path. Without it those arms are resolvable but not runnable, and
+# nothing says so -- `audit --probe` is a synthetic forward probe that never
+# constructs the dataset, so an arm passes 150 checks while naming an index file
+# that exists nowhere.
+#
+# ORDERING: this line is only safe once #1552 is on dev. Until then the
+# exported copy still carries a /project/<pi>/<user>/ fallback path list --
+# verified by exporting at dev and reading the emitted file, not assumed.
+scripts/data/regenerate_cluster_manifests.py
+
+# ---------------------------------------------------------------------------
+# .github/ -- Workstream F
+# ---------------------------------------------------------------------------
+# Ships nearly whole. The composite action, the issue/PR templates, CODEOWNERS,
+# dependabot and the labeler are identical in both trees and are ALLOWLISTED
+# rather than overlaid, deliberately: an overlaid copy would be a second owner
+# that drifts from this one with nothing to notice (non-negotiable 17). Only the
+# two files whose CONTENT must differ are overlaid -- see public_overlay/ below.
+#
+# pull_request_target and issue_comment workflows are read from the DEFAULT
+# branch, so these must be present on the new repo's `main` or they stay inert.
+.github/
+
+# The two Claude workflows. `claude.yml` is issue_comment/issues-triggered and
+# `claude-code-review.yml` runs on every PR; both consume
+# secrets.CLAUDE_CODE_OAUTH_TOKEN. A comment-triggered workflow holding a
+# long-lived OAuth token on a PUBLIC repo is an exposure path in a way it is not
+# on a private one, and the secret will not exist in the new repo regardless --
+# so the first push would go red even if the exposure were acceptable.
+# Measured: these are the ONLY two workflows referencing any secret other than
+# the auto-provided GITHUB_TOKEN.
+#
+# tests/unit/ci/test_workflow_triggers.py carries a `claude.yml` key in
+# _ALLOWED_NON_PR_EVENTS. That key MUST be deleted in the same commit as this
+# denial, or test_allowlist_has_no_stale_entries fails in the export -- verified
+# by simulating the end state, where it was the single remaining failure.
+!.github/workflows/claude.yml
+!.github/workflows/claude-code-review.yml
+
+# manual-full-suite.yml drives the experiment corpus and two scripts that do not
+# ship (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh).
+# It is workflow_dispatch-only, so it would never fail on its own -- it would sit
+# in the Actions tab looking like a capability the repo has. That is the
+# advertised-but-inert shape (non-negotiable 16) with a green-looking surface,
+# which is worse than an absent workflow. It carries no _ALLOWED_NON_PR_EVENTS
+# key, so denying it makes nothing stale.
+!.github/workflows/manual-full-suite.yml
+
+
+# ============================================================================
+# NOT SHIPPED -- each a decision, recorded so the export cannot silently regain it
+# ============================================================================
+# CLAUDE.md            defect counts, issue numbers, internal process; a public
+#                      dev guide replaces it
+# TODO/                the 249-row production plan and its 16 audit dossiers
+# tools/               the generator behind TODO/production_plan/ (compile_plan.py,
+#                      annotations.json) -- it has no meaning without that corpus
+# .agent/  .claude/    design axioms and 16 skills carrying internal audit intel
+# experiments/         1,555 files minus templates/ above; also the blast radius
+#                      for the inert-knob surface, which the drop removes wholesale
+#   (4 files under experiments/inference/ carry a double quote in their
+#    FILENAME. They are excluded by the experiments/ decision above, not by
+#    a rule of their own -- there is no directory whose name is quoted. That
+#    misreading came from parsing ls-tree without -z, which quotes the whole
+#    path and so appears to create a top-level root named '"experiments'.)
+# scratch/ runners/    explicitly not production surface
+# data/                dataset payloads
+# paper/               JOSS draft -- a separate deadline
+# docs/audits/ docs/superpowers/ docs/presentation/ docs/lean/ docs/analysis/
+# docs/deep_papers_*   internal analysis; also where the fastMRI-derived figures live
+# audit_file.txt  EXPERIMENTS_YAML_CATALOG.md  RELEASE_NOTES_v6_1.md
+# mata_eval.sbatch  cluster_update.sh  run_eda.sh  clear_cache.sh
+# download_datasets.sh manifest.yaml mutmut_config.py
+# .aiexclude .cgcignore .vscode/
+# .github/             ships after F drops claude.yml + claude-code-review.yml
+#                      (a CLAUDE_CODE_OAUTH_TOKEN secret on a public repo is an
+#                      exposure path, and the secret will not exist there anyway)

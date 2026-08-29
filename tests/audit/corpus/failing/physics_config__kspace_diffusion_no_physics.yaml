@@ -1,0 +1,82 @@
+# FAILING YAML — trips: physics_config (ConfigHealthChecker)
+# Violation: strategy_class contains "diffusion" AND dataset_type='kspace',
+#   physics.data_consistency.enabled is unset (defaults False), and no
+#   undersampling: block is declared -- physics is present (the schema
+#   always constructs one) but INERT.
+# check_name: physics_config
+# severity: info (advisory-first -- see config_health_checker.py docstring:
+#   a repointed error-severity landing would false-positive on documented
+#   no-physics denoising/restoration controls, e.g.
+#   workflow_baselines/b0_structural_denoise_m4raw.yaml)
+#
+# How the check fires (config_health_checker.py::check_physics_config,
+# re-aimed 2026-08-12, #933):
+#   is_recon_or_diff = "diffusion" in strategy_class.lower()   → True
+#   operates_on_kspace = dataset_type == "kspace"               → True
+#   dc_enabled = physics.data_consistency.enabled (default)     → False
+#   accel = config.undersampling                                → None (absent)
+#   physics_inert = not dc_enabled and accel is None             → True
+#   -> passed=False, severity="info" (advisory; does not block --strict)
+#
+# The pre-#933 gate asked `physics is None`, which the schema makes
+# unsatisfiable -- this fixture used to be `known-dead` for exactly that
+# reason. It now genuinely trips the repaired check (passed=False is
+# still meaningful even at info severity -- this driver's health-check
+# contract only requires `any(not r.passed for r in for_check)`, not a
+# particular severity).
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — physics_config (kspace diffusion, no physics block)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  training_mode: diffusion
+  max_iterations: 10
+  device: cuda
+  task: diffusion
+  output_dir: experiments/results/corpus_failing_physics_config
+  diffusion:
+    timesteps: 1000
+    noise_schedule: linear
+    prediction_type: noise
+
+data:
+  dataset_type: kspace        # <<< k-space; needs LIVE physics
+  coil_processing_mode: rss
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 2
+  out_channels: 2
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adamw
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_physics_config/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+# physics: block is intentionally ABSENT (defaults to data_consistency
+# disabled), and undersampling: is also absent -- this is the violation:
+# physics is present-but-inert, not missing.

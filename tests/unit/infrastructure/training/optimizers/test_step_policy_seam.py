@@ -1,0 +1,199 @@
+"""The ``IStepPolicy`` seam: who owns backward, the step, and the bookkeeping.
+
+``backward_and_step`` was the de-facto seam of the training loop -- called
+exactly once, from ``StepExecutor.execute_step``, with nothing else driving an
+optimizer -- but it was never declared. That is fine with one implementation and
+breaks the moment a second thing needs to own the step.
+
+Two do. An engine-owned backend (DeepSpeed) performs its own loss scaling,
+accumulation and ``zero_grad`` inside ``engine.backward``/``engine.step``, so
+running the executor's copies as well gives **1/N^2 loss scaling and one real
+optimizer step per N^2 micro-batches**. SAM needs two forward+backward passes.
+
+The tests below pin the capability negotiation rather than any backend name,
+because the whole point is that ``StepExecutor`` never learns what backend it is
+driving.
+"""
+
+from __future__ import annotations
+
+import pytest
+
+torch = pytest.importorskip("torch")
+nn = pytest.importorskip("torch.nn")
+
+from mriforge.infrastructure.training.optimizers import (  # noqa: E402
+    AMPPolicy,
+    FSDPStepPolicy,
+)
+from mriforge.infrastructure.training.step_executor import StepExecutor  # noqa: E402
+from mriforge.infrastructure.training.strategy_interfaces import (  # noqa: E402
+    IStepPolicy,
+)
+
+
+def _policy(**kw) -> AMPPolicy:
+    return AMPPolicy(max_grad_norm=1.0, enable_gradient_clipping=True, **kw)
+
+
+class _Helper:
+    """Minimal stand-in for MixedPrecisionIntegrationHelper."""
+
+    def __init__(self, scaler=None) -> None:
+        self.scaler = scaler
+
+
+class TestDefaultsPreserveExistingBehaviour:
+    def test_amp_policy_is_a_step_policy(self) -> None:
+        assert isinstance(_policy(), IStepPolicy)
+
+    def test_both_capability_flags_default_false(self) -> None:
+        """A policy that declares neither must behave exactly as before."""
+        policy = _policy()
+        assert policy.owns_gradient_accumulation is False
+        assert policy.owns_zero_grad is False
+
+    def test_executor_keeps_the_configured_accumulation(self) -> None:
+        executor = StepExecutor(_Helper(), _policy(), gradient_accumulation_steps=4)
+        assert executor.gradient_accumulation_steps == 4
+        assert executor.requested_gradient_accumulation_steps == 4
+
+
+class TestCapabilityNegotiation:
+    """``StepExecutor`` asks the policy; it never tests a backend name."""
+
+    class _EngineOwned(AMPPolicy):
+        owns_gradient_accumulation = True
+        owns_zero_grad = True
+
+    def test_executor_stops_dividing_when_the_policy_owns_accumulation(self) -> None:
+        """Both dividing gives 1/N^2 scaling and one step per N^2 micro-batches
+        -- and every single-host test would still pass with that bug present."""
+        executor = StepExecutor(
+            _Helper(),
+            self._EngineOwned(max_grad_norm=1.0),
+            gradient_accumulation_steps=8,
+        )
+        assert executor.gradient_accumulation_steps == 1
+        # The declared value is still recorded: the engine needs it, and
+        # provenance must not claim accumulation of 1.
+        assert executor.requested_gradient_accumulation_steps == 8
+
+    def test_ownership_flags_are_read_from_the_policy(self) -> None:
+        executor = StepExecutor(_Helper(), self._EngineOwned(max_grad_norm=1.0))
+        assert executor._policy_owns_zero_grad is True
+        assert executor._policy_owns_accumulation is True
+
+    def test_a_policy_lacking_the_flags_entirely_still_works(self) -> None:
+        """Duck-typed: a hand-rolled policy object predating the ABC must not
+        crash the executor."""
+
+        class _Bare:
+            pass
+
+        executor = StepExecutor(_Helper(), _Bare(), gradient_accumulation_steps=3)
+        assert executor.gradient_accumulation_steps == 3
+        assert executor._policy_owns_zero_grad is False
+
+
+class TestGuardLoss:
+    """The finite-loss rule moved off the executor onto the policy."""
+
+    def test_non_finite_loss_without_a_scaler_raises(self) -> None:
+        """No scaler => non-finite grads that clip_grad_norm_ does NOT clamp =>
+        optimizer.step() permanently poisons the weights."""
+        with pytest.raises(RuntimeError, match="Non-finite loss"):
+            _policy().guard_loss(
+                torch.tensor(float("nan")), name="g", global_step=7, scaler=None
+            )
+
+    def test_non_finite_loss_with_a_scaler_defers_to_the_scaler(self) -> None:
+        """GradScaler already skips inf/nan steps; raising here would also add a
+        per-step device sync."""
+        _policy().guard_loss(
+            torch.tensor(float("inf")), name="g", global_step=7, scaler=object()
+        )
+
+    def test_a_finite_loss_passes(self) -> None:
+        _policy().guard_loss(torch.tensor(1.5), name="g", global_step=0, scaler=None)
+
+    def test_the_message_names_the_config_and_the_step(self) -> None:
+        with pytest.raises(RuntimeError) as excinfo:
+            _policy().guard_loss(
+                torch.tensor(float("nan")),
+                name="discriminator",
+                global_step=42,
+                scaler=None,
+            )
+        assert "discriminator" in str(excinfo.value)
+        assert "42" in str(excinfo.value)
+
+    def test_a_backend_can_no_op_it(self) -> None:
+        """A backend with its own overflow handling must be able to opt out --
+        a hardcoded raise in the executor would kill runs it is designed to
+        survive."""
+
+        class _OwnOverflow(AMPPolicy):
+            def guard_loss(self, loss, *, name, global_step, scaler):
+                return
+
+        _OwnOverflow(max_grad_norm=1.0).guard_loss(
+            torch.tensor(float("nan")), name="g", global_step=1, scaler=None
+        )
+
+
+class TestGradientClippingIsPolicyOwned:
+    """Sharding-correctness, not cosmetics.
+
+    ``clip_grad_norm_(model.parameters(), n)`` computes the norm over the
+    parameters THIS RANK HOLDS. Under FSDP that is a shard, so each rank scales
+    by a different factor -- silently, and it presents as training instability
+    because every rank still steps successfully.
+    """
+
+    class _FakeFSDP(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.lin = nn.Linear(2, 2)
+            self.clipped_to: float | None = None
+
+        def clip_grad_norm_(self, max_norm):
+            self.clipped_to = max_norm
+
+    def test_default_policy_clips_over_parameters(self) -> None:
+        model = nn.Linear(2, 2)
+        model.weight.grad = torch.full_like(model.weight, 10.0)
+        model.bias.grad = torch.full_like(model.bias, 10.0)
+        _policy().clip_gradients(model, 1.0)
+        total = torch.cat([model.weight.grad.flatten(), model.bias.grad.flatten()])
+        assert total.norm().item() == pytest.approx(1.0, rel=1e-4)
+
+    def test_fsdp_policy_delegates_to_the_modules_own_clip(self) -> None:
+        model = self._FakeFSDP()
+        FSDPStepPolicy(max_grad_norm=1.0, enable_gradient_clipping=True).clip_gradients(
+            model, 0.7
+        )
+        assert model.clipped_to == 0.7
+
+    def test_fsdp_policy_warns_rather_than_silently_degrading(self, caplog) -> None:
+        """An unwrapped model under an FSDP policy is a real inconsistency."""
+        model = nn.Linear(2, 2)
+        model.weight.grad = torch.ones_like(model.weight)
+        model.bias.grad = torch.ones_like(model.bias)
+        with caplog.at_level("WARNING"):
+            FSDPStepPolicy(
+                max_grad_norm=1.0, enable_gradient_clipping=True
+            ).clip_gradients(model, 1.0)
+        assert "not FSDP-wrapped" in caplog.text
+
+    def test_the_gating_lives_in_one_place(self) -> None:
+        """A sharded subclass overrides ONE method; the enable/threshold gating
+        is not duplicated into it."""
+        model = self._FakeFSDP()
+        policy = FSDPStepPolicy(max_grad_norm=2.0, enable_gradient_clipping=False)
+        policy._apply_gradient_clipping(model)
+        assert model.clipped_to is None  # disabled => no clip at all
+
+        policy = FSDPStepPolicy(max_grad_norm=2.0, enable_gradient_clipping=True)
+        policy._apply_gradient_clipping(model)
+        assert model.clipped_to == 2.0

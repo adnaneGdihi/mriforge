@@ -1,0 +1,288 @@
+.PHONY: format test test-all cov-unit cov-full test-coverage test-missing clean train predict eda eda-dry-run help install-topology env-show check-deps check-deps-imports test-precommit test-pr test-nightly test-release diagnostics diagnostics-fast skill-health reachable dev-health
+
+# -----------------------------------------------------------------------------
+# Environment-variable loading.
+# `.env` (gitignored) overrides shell-inherited values; `.env.example` lists
+# every variable the framework reads.
+#
+# `.env` uses bash syntax (`export VAR=$(cmd)`, `$OTHER_VAR` refs) — it must
+# be *sourced by bash*, not `include`d as Make syntax. `include .env` used to
+# parse it directly: Make's own `$(pwd)`/`$VAR` expansion (not bash's) turned
+# `export PATH=$BART_TOOLBOX_PATH:$PATH` into the literal path
+# "ART_TOOLBOX_PATH:ATH" (single-char Make variable refs `$B`/`$P`, both
+# undefined), silently breaking PATH — and therefore every bare-name command
+# (`bash`, `python`, `date`, ...) — for every recipe in this file. Sourcing in
+# a real bash subshell and re-injecting only the resulting KEY=VALUE pairs
+# resolves `$(pwd)` / `$VAR` correctly regardless of what they reference.
+# -----------------------------------------------------------------------------
+ifneq (,$(wildcard ./.env))
+DOTENV_PAIRS := $(shell bash -c 'set -a; source ./.env >/dev/null 2>&1; set +a; \
+	for v in $$(sed -En "s/^[[:space:]]*export[[:space:]]+([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p; t; s/^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=.*/\1/p" .env); do \
+		printf "%s=%s\n" "$$v" "$${!v}"; \
+	done')
+$(foreach pair,$(DOTENV_PAIRS),$(eval $(word 1,$(subst =, ,$(pair))) := $(word 2,$(subst =, ,$(pair)))))
+export $(foreach pair,$(DOTENV_PAIRS),$(word 1,$(subst =, ,$(pair))))
+endif
+
+help:
+	@echo "MRIForge Development Commands"
+	@echo "============================"
+	@echo "make format      - Run code formatting (ruff check --fix + ruff format)"
+	@echo "make test        - Run test suite"
+	@echo "make clean       - Remove pycache and temp files"
+	@echo "make train       - Train with default config (override: CONFIG=path/to.yaml; loads .env if present)"
+	@echo "make env-show    - Print every framework env var + its current value"
+	@echo "make check-deps         - Verify declared deps are installed & version-correct (EXTRAS=mri,viz)"
+	@echo "make check-deps-imports - As above, plus import each (catches installed-but-unimportable)"
+	@echo "make eda-dry-run - Dataset EDA: cards + coverage only (no voxel load)"
+	@echo "make eda         - Dataset EDA: full per-dataset figures from data/manifests + databases/"
+	@echo "make eda-quick   - Dataset EDA with a small sample budget (2/dataset)"
+	@echo "make eda-dataset - Dataset EDA for a subset (DATASETS='id1 id2 ...')"
+	@echo "make diagnostics      - Refresh diagnostics bundles (md summary + fresh forensics png)"
+	@echo "make diagnostics-fast - Refresh diagnostics bundles, logs/audit/metrics only (no forensics)"
+
+# Activate .venv when it exists (local dev) and stay silent when it does not (CI).
+# A hosted runner has no .venv, and an unconditional `. .venv/bin/activate &&` kills
+# the recipe on its first line -- `make test-nightly` never reached pytest.
+VENV := [ -f .venv/bin/activate ] && . .venv/bin/activate || true;
+
+# ruff format is the formatter SSOT: it is what .pre-commit-config.yaml runs and what
+# the pr-required lint gate checks against. black used to be invoked here despite
+# being declared in no extra of pyproject.toml, so the two fought over every file a
+# commit touched.
+format:
+	ruff check --fix src/ tests/ || true
+	ruff format src/ tests/
+
+test:
+	python -m pytest tests/unit/ -v --tb=short
+
+test-all:
+	python -m pytest tests/ -v --tb=short
+
+# cov-unit: fast local loop — only the wave dirs actively expanded by the coverage plan (minutes, not hours)
+cov-unit:
+	@$(VENV) python -m pytest \
+		tests/physics/ tests/metrics/ \
+		tests/unit/physics/ tests/unit/metrics/ tests/unit/losses/ \
+		tests/unit/config/ tests/unit/transforms/ tests/unit/registration/ \
+		--cov=src/mriforge --cov-branch \
+		--cov-report=term-missing:skip-covered \
+		--cov-report=xml:tests_experiments/coverage_local.xml \
+		--cov-fail-under=0 \
+		-q
+
+# cov-full: comprehensive suite (slow, cluster/CI use)
+cov-full:
+	@$(VENV) python -m pytest tests/ --cov=src/mriforge --cov-branch \
+		--cov-report=xml:tests_experiments/coverage_local.xml \
+		-q
+
+test-coverage:
+	python -m pytest --cov=src/mriforge --cov-branch \
+	       --cov-report=html:htmlcov \
+	       --cov-report=term-missing:skip-covered \
+	       --cov-report=xml:coverage.xml \
+	       -m "not slow and not e2e and not gpu and not integration" \
+	       --maxfail=20 -q tests/
+	@echo ""
+	@python scripts/coverage/print_per_layer.py coverage.xml || true
+
+test-missing:
+	@python scripts/coverage/missing_test_files.py --top 30
+
+# ---------------------------------------------------------------------------
+# CI lane targets  (mirrors the 4-lane marker matrix in
+#   docs/superpowers/plans/2026-05-22-unified-test-suite-master-plan.md)
+# ---------------------------------------------------------------------------
+
+# pre-commit lane — <60s, every push.
+# Excludes: gpu, slow, fuzz, benchmark, convergence, differential.
+test-precommit:
+	@$(VENV) python -m pytest \
+		-m "not gpu and not slow and not fuzz and not benchmark and not convergence and not differential" \
+		--cov=src/mriforge --cov-branch \
+		--cov-report=xml:tests_experiments/coverage_precommit.xml \
+		--cov-report=term-missing:skip-covered \
+		-q tests/
+
+# pull-request lane — adds gpu + convergence; excludes fuzz/benchmark.
+# <15 min; requires a CUDA runner for gpu-marked tests.
+# TODO: point runs-on at a CUDA runner when invoking from CI (currently
+#       inherits the caller's runner, which may not have a GPU).
+test-pr:
+	@$(VENV) python -m pytest \
+		-m "not fuzz and not benchmark" \
+		--cov=src/mriforge --cov-branch \
+		--cov-report=xml:tests_experiments/coverage_pr.xml \
+		--cov-report=term-missing:skip-covered \
+		-q tests/
+
+# nightly lane — full suite minus benchmark; fuzz with a FIXED hypothesis seed.
+# <2h; cluster/GPU runner.
+test-nightly:
+	@$(VENV) python -m pytest \
+		-m "not benchmark" \
+		--hypothesis-seed=0 \
+		--cov=src/mriforge --cov-branch \
+		--cov-report=xml:tests_experiments/coverage_nightly.xml \
+		--cov-report=term-missing:skip-covered \
+		-q tests/
+
+# release lane — everything + mutation + benchmark.
+# ≤8h; requires CUDA runner and mutmut/atheris installed.
+test-release:
+	@$(VENV) python -m pytest \
+		--hypothesis-seed=0 \
+		--cov=src/mriforge --cov-branch \
+		--cov-report=xml:tests_experiments/coverage_release.xml \
+		--cov-report=term-missing:skip-covered \
+		-q tests/
+	$(MAKE) test-mutation
+
+clean:
+	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	rm -rf .pytest_cache .ruff_cache .mypy_cache
+
+CONFIG ?= experiments/active/dummy_gan.yaml
+train:
+	python -m mriforge.cli train --config $(CONFIG)
+
+predict:
+	python -m mriforge.cli predict --config $(CONFIG) --model checkpoints/best.pt --input data/test/
+
+benchmark:
+	python -m mriforge.cli benchmark --suite standard
+
+# EDA Framework targets
+eda-dry-run:
+	@echo "Running dataset EDA dry-run (cards + coverage only)..."
+	./run_eda.sh --dry-run
+
+eda:
+	@echo "Running full dataset EDA..."
+	./run_eda.sh
+
+eda-quick:
+	@echo "Running quick dataset EDA (2 samples/dataset)..."
+	./run_eda.sh --samples-per-dataset 2
+
+eda-dataset:
+	@echo "Running dataset EDA for a subset: make eda-dataset DATASETS='fastmri_knee_singlecoil m4raw_multicoil_train_kspace'"
+	./run_eda.sh --datasets $(DATASETS)
+
+eda-clean:
+	@echo "Cleaning EDA results..."
+	rm -rf experiments/results
+
+# Diagnostics bundles: tests_experiments/diagnostics (local dispatch) +
+# <cluster>_diagnostics (downloaded cluster tree, if present). `diagnostics`
+# always re-renders forensics (contact-sheet PNGs) so the md+png are current;
+# `diagnostics-fast` skips the (slower) image pass and only refreshes
+# logs/audit/run_summary/validation_metrics evidence. See
+# docs/validation_image_audit.rst#diagnostics_targetable_tree.
+#
+# Invoked by its own executable path (shebang-resolved by the kernel), NOT
+# `bash <path>` — the .env-loading block above mangles Make's exported PATH
+# for recipe shells (a pre-existing bug: `include .env` parses .env's bash
+# `export VAR=$(pwd)` syntax as Make syntax, where `$(pwd)`/`$VAR` mean
+# something different, corrupting PATH to "ART_TOOLBOX_PATH:ATH"), so a bare
+# `bash` lookup fails inside a recipe even though PATH looks fine outside `make`.
+diagnostics:
+	./scripts/ci/refresh_diagnostics.sh
+
+# --- developer-loop health checks -------------------------------------------
+# Both are cheap, local, and exit non-zero on a finding, so they compose:
+# `make dev-health` is the pre-PR sweep.
+
+# Skill files rot silently: nothing fails when a skill teaches a path that moved.
+# Checks routes, `file.py:NNN` citations, repo paths, retired spellings, and
+# trigger-phrase collisions across every SKILL.md it can see.
+# `--also-user` adds ~/.claude/skills; `--extra-root` is needed from a worktree,
+# where `.claude` being gitignored means only force-added skills are present.
+# From a worktree, add the primary checkout's skills, e.g.
+#   make skill-health SKILL_ROOTS="--extra-root /path/to/mriforge/.claude/skills"
+SKILL_ROOTS ?=
+skill-health:
+	@$(PYTHON) scripts/maintenance/check_skill_health.py --also-user $(SKILL_ROOTS)
+
+# Registered is not reachable. Probes each registry twice in cold subprocesses --
+# documented entry point vs a full module walk -- and reports names that only
+# appear after the walk. Those cannot be resolved from a YAML config.
+# Slower (spawns interpreters); not part of the fast lane.
+# The probes inherit THIS interpreter, so they need one with mriforge installed.
+# From a worktree (no local .venv) pass the primary checkout's:
+#   make reachable PYTHON=/path/to/mriforge/.venv/bin/python
+reachable:
+	@$(PYTHON) scripts/maintenance/prove_reachable.py --audit
+
+# The pre-PR sweep. Both halves take their own passthrough, so from a worktree:
+#   make dev-health PYTHON=/path/to/mriforge/.venv/bin/python \
+#       SKILL_ROOTS="--extra-root /path/to/mriforge/.claude/skills"
+dev-health: skill-health reachable
+
+diagnostics-fast:
+	./scripts/ci/refresh_diagnostics.sh --no-forensics
+
+# Install cubical persistent homology + Wasserstein-2 backends
+# (gudhi, POT) used by the GeoMamba-ULF topology losses.
+# Heavy and platform-specific — kept as an opt-in extra.
+install-topology:
+	pip install -e ".[topology]"
+
+PYTHON ?= $(if $(wildcard .venv/bin/python),.venv/bin/python,python3)
+
+env-show:
+	@PYTHONPATH=src $(PYTHON) scripts/release/print_env.py
+
+# Verify the declared dependency set (pyproject SSOT) is installed & version-correct.
+# `check-deps` = metadata only (fast); `check-deps-imports` also imports each
+# (catches installed-but-unimportable, e.g. torchmetrics under hf-hub>=1.0).
+check-deps:
+	@$(PYTHON) scripts/verify/verify_dependencies.py $(if $(EXTRAS),--extras $(EXTRAS),)
+
+check-deps-imports:
+	@$(PYTHON) scripts/verify/verify_dependencies.py --import-check $(if $(EXTRAS),--extras $(EXTRAS),)
+
+# ---------------------------------------------------------------------------
+# Fuzz / mutation targets
+# ---------------------------------------------------------------------------
+
+# Coverage-guided config_health_checker fuzzer (requires atheris).
+# Seeds from experiments/inprogress/**/*.yaml; crashes saved in fuzz-corpus/.
+# Usage: make fuzz-audit-ladder
+#        make fuzz-audit-ladder FUZZ_RUNS=100000
+FUZZ_RUNS ?= -1
+fuzz-audit-ladder:
+	@echo "=== fuzz-audit-ladder: atheris fuzzer for ConfigHealthChecker ==="
+	@if . .venv/bin/activate && python -c "import atheris" 2>/dev/null; then \
+		. .venv/bin/activate && \
+		python tests/fuzz/audit_ladder_fuzz/atheris_runner.py \
+			-runs=$(FUZZ_RUNS) \
+			-artifact_prefix=fuzz-corpus/audit_ladder_crash_; \
+	else \
+		echo "WARNING: atheris not installed — skipping fuzz-audit-ladder."; \
+		echo "Install with: pip install atheris"; \
+	fi
+
+# Mutation testing for Tier-1 physics + config_health_checker (requires mutmut).
+# Runs mutmut against the four high-value target files and prints a results summary.
+# Usage: make test-mutation
+test-mutation:
+	@echo "=== test-mutation: mutmut for physics + health checker ==="
+	@if . .venv/bin/activate && python -c "import mutmut" 2>/dev/null; then \
+		. .venv/bin/activate && \
+		mutmut run \
+			--paths-to-mutate \
+				src/mriforge/infrastructure/physics/fft_ops.py,\
+				src/mriforge/infrastructure/physics/data_consistency.py,\
+				src/mriforge/infrastructure/physics/coil_sensitivity.py,\
+				src/mriforge/infrastructure/validation/config_health_checker.py \
+			--tests-dir tests/unit/physics/ \
+			--runner "python -m pytest -x -q --tb=no" && \
+		mutmut results; \
+	else \
+		echo "WARNING: mutmut not installed — skipping test-mutation."; \
+		echo "Install with: pip install mutmut"; \
+	fi

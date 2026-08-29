@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use MRIForge in your research, please cite the following."
+title: "MRIForge: A Multi-Paradigm Research Framework for MRI Reconstruction, Super-Resolution, and Generative Modelling"
+type: software
+authors:
+  - given-names: Adnane
+    family-names: Gdihi
+    email: adnane.gdihi@gmail.com
+    orcid: "https://orcid.org/0009-0006-6266-7769"
+version: 0.1.0
+date-released: "2026-08-31"
+license: Apache-2.0
+repository-code: "https://github.com/adnaneGdihi/mriforge"
+url: "https://github.com/adnaneGdihi/mriforge"
+keywords:
+  - magnetic-resonance-imaging
+  - image-reconstruction
+  - generative-models
+  - diffusion-models
+  - physics-informed-neural-networks
+  - quantitative-mri
+  - deep-learning

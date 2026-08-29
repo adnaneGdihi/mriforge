@@ -1,0 +1,68 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  save_interval: 10
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+logging:
+  log_dir: ./tests/output/gan
+  log_interval: 1
+loss:
+  gan:
+    lambda_adv: 1.0
+loss_logging:
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_gan
+  tags:
+    type: e2e_test
+metrics:
+  enabled: true
+model:
+  architecture:
+    discriminator: patchgan
+    generator: unet
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: standard_unet
+  out_channels: 1
+  spatial_dims: 2
+model_type: standard_unet
+objectives:
+  gan:
+    gan_loss_type: vanilla
+    lambda_adv: 1.0
+optimization:
+  beta1: 0.5
+  beta2: 0.999
+  learning_rate: 0.0002
+  optimizer_type: adam
+  use_amp: false
+task: reconstruction
+training:
+  device: cpu
+  epochs: 1
+  max_iterations: 2
+  strategy_class: src.infrastructure.training.strategies.gan.GANTrainingStrategy
+  task: reconstruction
+  training_mode: gan
+training_mode: gan
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

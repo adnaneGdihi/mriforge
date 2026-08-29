@@ -1,0 +1,31 @@
+# FFT allowlist — files that legitimately use torch.fft.* on real-valued feature maps
+# (spectral neural operators: FNO, Hyena, S4D, spectral branches, Toeplitz convolution;
+# no-reference spectral image metrics on real grayscale features).
+# Per CLAUDE.md pitfall #2 these are EXEMPT from the "no raw torch.fft outside fft_ops"
+# rule.  Files in this list operate on real-valued feature maps (rfft2/irfft2, rfft/irfft
+# on spatial or sequence dims, or magnitude spectra for image-quality metrics).
+# All of infrastructure/physics/** is blanket-exempted in the test itself.
+#
+# To add a new file: confirm it touches real-valued feature maps (not MRI k-space
+# complex round-trips), then append the relative path (from src/) here with a
+# one-line comment justifying the category.
+mriforge/models/blocks/fno_block.py
+mriforge/models/blocks/spectral_branch.py
+mriforge/models/blocks/hyena_block.py
+mriforge/models/blocks/s4d_block.py
+mriforge/models/blocks/hermitian_equivariant.py
+mriforge/models/blocks/toeplitz_attention.py
+# No-reference image-quality metric: power spectrum of a real grayscale image.
+# Not a complex k-space round-trip; the fft2c rule does not apply.
+mriforge/core/metrics/no_reference_extended.py
+# No-reference SRF/resolution-bound metric: power spectrum of real magnitude
+# images (fft2+fftshift for spectral analysis only; no k-space round-trip).
+mriforge/core/metrics/srf_bound.py
+# FNO spectral neural operator on real-valued feature maps (rfft2/irfft2).
+mriforge/models/generators/field_conditioned_fno.py
+# Wiener-gain spectral operator on a REAL image (rfft2/irfft2, norm="ortho");
+# in-file comments already mark the exemption.
+mriforge/models/generators/field_wiener_net.py
+# DPS Wiener recoverable-band forward operator on a REAL magnitude image
+# (rfft2/irfft2, norm="ortho"); the in-file docstring marks the exemption.
+mriforge/infrastructure/training/strategies/generative_refiner_strategy.py

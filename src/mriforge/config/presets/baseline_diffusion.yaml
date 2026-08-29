@@ -1,0 +1,69 @@
+config_version: '6.0'
+
+experiment:
+  name: baseline_diffusion_preset
+  description: Standard diffusion baseline for MRI reconstruction
+  tags: [baseline, diffusion]
+
+data:
+  dataset_type: fastmri_knee
+  batch_size: 16
+  num_workers: 4
+  pin_memory: true
+  augment: true
+  center_fraction: 0.08
+  acceleration: 4
+
+model:
+  model_type: diffusion_unet
+  in_channels: 2
+  out_channels: 2
+  features: [64, 128, 256, 512]
+  time_emb_dim: 128
+  num_attention_heads: 4
+
+optimization:
+  epochs: 150
+  optimizer:
+    type: adam
+    learning_rate: 0.0001
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+  warmup_epochs: 10
+
+
+training:
+  training_mode: diffusion
+  device: cuda
+  enable_checkpointing: true
+  checkpoint_interval: 10
+  validate_interval: 5
+
+objectives:
+  diffusion:
+    num_diffusion_steps: 1000
+    beta_schedule: linear
+    lambda_mse: 1.0
+    lambda_kl: 0.0
+    enable_cold_diffusion: false
+
+validation:
+  enabled: true
+  validation_interval: 5
+  metrics: [psnr, ssim, lpips, fid]
+
+checkpoint:
+  save_best: true
+  monitor_metric: validation_ssim
+  mode: max
+  save_frequency: 10
+
+acceleration:
+  use_amp: true
+  num_gpus: 1
+  strategy: none
+  enable_gradient_accumulation: false
+
+workflow:
+  name: mri_structural
+  task: reconstruction

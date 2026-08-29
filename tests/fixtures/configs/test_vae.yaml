@@ -1,0 +1,64 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  save_interval: 10
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+logging:
+  log_dir: ./tests/output/vae
+  log_interval: 1
+loss:
+  latent:
+    latent_loss_type: kl_divergence
+loss_logging:
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_vae
+  tags:
+    type: e2e_test
+metrics:
+  enabled: true
+model:
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: vae
+  out_channels: 1
+  spatial_dims: 2
+  z_dim: 4
+model_type: vae
+objectives:
+  latent:
+    beta_kl: 0.1
+    lambda_kl: 0.1
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adamw
+  use_amp: false
+task: reconstruction
+training:
+  device: cpu
+  epochs: 1
+  max_iterations: 2
+  strategy_class: src.infrastructure.training.strategies.vae.VAETrainingStrategy
+  task: reconstruction
+  training_mode: vae
+training_mode: vae
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

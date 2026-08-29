@@ -1,0 +1,74 @@
+name: Bug report
+description: Report a reproducible problem in MRIForge.
+title: "bug: <one-line summary>"
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug report. Please fill in every field — incomplete
+        reports are harder to triage and may be closed.
+
+  - type: input
+    id: version
+    attributes:
+      label: MRIForge version
+      description: Output of `python -c "import mriforge; print(mriforge.__version__)"`.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.12.4"
+    validations:
+      required: true
+
+  - type: input
+    id: torch
+    attributes:
+      label: PyTorch version (with CUDA tag)
+      description: Output of `python -c "import torch; print(torch.__version__, torch.version.cuda)"`.
+      placeholder: "2.5.1+cu129 / 12.9"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Ubuntu 22.04 / macOS 14 / WSL2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproducer
+    attributes:
+      label: Minimal reproducer
+      description: A self-contained Python snippet or shell command that reproduces the bug.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Full traceback
+      description: Paste the complete traceback if the bug raises an exception.
+      render: shell

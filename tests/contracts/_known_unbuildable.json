@@ -1,0 +1,18 @@
+{
+  "_comment": [
+    "Allowlist of model registry keys that cannot be built by build_minimal_model().",
+    "Seeded EMPTY — run the slow contract test once on the cluster to discover which",
+    "models actually need overrides, then populate this list with their names.",
+    "",
+    "Shrink, never grow: every entry here is technical debt.  When you add an",
+    "override for a model in tests/utils/minimal_builders.py._OVERRIDES, remove",
+    "it from this list so the hard-fail gate protects it going forward.",
+    "",
+    "Gate behaviour:",
+    "  CONTRACT_STRICT=0 (default) — build failures xfail; list unused.",
+    "  CONTRACT_STRICT=1           — models in this list xfail (debt);",
+    "                                models NOT in this list that fail to build",
+    "                                are HARD FAILs (regression gate)."
+  ],
+  "unbuildable": []
+}

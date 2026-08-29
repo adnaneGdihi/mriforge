@@ -1,0 +1,63 @@
+# FAILING YAML — trips: acceleration_present (ConfigHealthChecker)
+# Violation: data.dataset_type='kspace' but no top-level acceleration: block.
+#   The data loader silently defaults to 1× (no undersampling) without it.
+# check_name: acceleration_present
+# severity: error
+#
+# How the check fires (config_health_checker.py::check_acceleration_present):
+#   data.dataset_type == 'kspace'              → True
+#   getattr(config, 'acceleration', None) is None → True  → error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — acceleration_present (kspace dataset, no acceleration block)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  training_mode: reconstruction
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_acceleration_present
+
+data:
+  dataset_type: kspace        # <<< k-space; acceleration: block required
+  coil_processing_mode: rss
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/fastmri/datasets/knee_singlecoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 2
+  out_channels: 2
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_acceleration_present/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+physics:
+  data_consistency:
+    enabled: false
+
+# acceleration: block is intentionally ABSENT — this is the violation

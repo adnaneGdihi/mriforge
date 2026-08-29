@@ -1,0 +1,119 @@
+#!/bin/bash
+#SBATCH --job-name=exp_demo
+#SBATCH --account=test_alloc
+#SBATCH --output=experiments/results/campaigns/demo/exp_demo/slurm_%j.out
+#SBATCH --error=experiments/results/campaigns/demo/exp_demo/slurm_%j.err
+#SBATCH --time=120:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64GB
+#SBATCH --gpus=2
+#SBATCH --mail-type=END,FAIL
+
+# ── Diagnostics ──
+echo "=========================================="
+echo "SLURM Job: ${SLURM_JOB_ID} / exp_demo"
+echo "Node: ${SLURMD_NODENAME}  |  GPU: ${SLURM_GPUS}"
+echo "Start: $(date)"
+echo "=========================================="
+
+# ── Environment ──
+module load torchvision 2>/dev/null || true
+
+if [[ -f "/scratch/myalloc/mriforge/.venv/bin/activate" ]]; then
+    source "/scratch/myalloc/mriforge/.venv/bin/activate"
+fi
+
+export PYTHONPATH=/scratch/myalloc/mriforge:${PYTHONPATH}
+# Bytecode cache: write .pyc to NODE-LOCAL scratch rather than disabling
+# it. With ~1000 mriforge.* modules, disabling the cache forced a full
+# source recompile on EVERY array task — a large, repeated startup tax on
+# shared cluster filesystems. Redirecting the cache to per-node local disk
+# means each node compiles once and reuses the cache on subsequent tasks
+# (and avoids shared-FS __pycache__ write contention). Re-measure with
+# "python -X importtime" cold vs warm on a compute node.
+export PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/${USER}/mriforge_pycache"
+# The clinical-use disclaimer is a UserWarning emitted at ``import mriforge``.
+# It advertises this knob as the way to silence it "in batch jobs", but no
+# submitter ever set it, so every job log opened with the same paragraph
+# (once per process — audit and train are separate processes).
+export MRIFORGE_SUPPRESS_CLINICAL_WARNING=1
+
+cd /scratch/myalloc/mriforge
+
+echo "Python: $(which python) ($(python --version))"
+echo "PyTorch: $(python -c 'import torch; print(torch.__version__)')"
+echo "CUDA: $(python -c 'import torch; print(torch.cuda.get_device_name(0) if torch.cuda.is_available() else \"N/A\")')"
+echo ""
+
+# ── Training ──
+# Note: training.output_dir is overridden to redirect all outputs
+# (checkpoints, metrics CSVs) into the campaign directory tree.
+# v6.2 PR-14: when the per-arm parallel block requests >1 GPU, dispatch
+# through torchrun so FSDP / DDP land on every rank. Single-GPU path is
+# unchanged.
+NUM_GPUS=2
+NUM_NODES=1
+if [[ "${NUM_GPUS}" -gt 1 || "${NUM_NODES}" -gt 1 ]]; then
+    TRAIN_CMD="torchrun --nproc_per_node=${NUM_GPUS} --nnodes=${NUM_NODES} --rdzv_backend=c10d --rdzv_endpoint=${SLURMD_NODENAME:-127.0.0.1}:29500 -m mriforge.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
+else
+    export CUDA_VISIBLE_DEVICES=0
+    TRAIN_CMD="python -m mriforge.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
+fi
+
+echo "Config: experiments/inprogress/x.yaml"
+echo "Output: experiments/results/campaigns/demo/exp_demo"
+echo "Resume: True"
+echo ""
+
+eval ${TRAIN_CMD}
+TRAIN_EXIT_CODE=$?
+
+if [[ ${TRAIN_EXIT_CODE} -eq 0 ]]; then
+    echo ""
+    echo "✅ Training completed: exp_demo"
+
+    # ── Automated Inference ──
+    # Resolve the checkpoint via the REAL writer conventions (best.{pt,safetensors}
+    # alias, then checkpoint_best.*, then newest checkpoint_step_/epoch_*). The old
+    # ``model_iter_*.pt`` glob matched nothing either writer produces, so the
+    # fallback was dead and safetensors runs were never found.
+    CKPT_DIR="experiments/results/campaigns/demo/exp_demo/checkpoints"
+    CHECKPOINT=""
+    for cand in "${CKPT_DIR}/best.pt" "${CKPT_DIR}/best.safetensors" \
+                "${CKPT_DIR}/checkpoint_best.pt" "${CKPT_DIR}/checkpoint_best.safetensors"; do
+        if [[ -f "${cand}" ]]; then CHECKPOINT="${cand}"; break; fi
+    done
+    if [[ -z "${CHECKPOINT}" ]]; then
+        CHECKPOINT=$(ls -t "${CKPT_DIR}"/checkpoint_step_*.pt "${CKPT_DIR}"/checkpoint_step_*.safetensors \
+            "${CKPT_DIR}"/checkpoint_epoch_*.pt "${CKPT_DIR}"/checkpoint_epoch_*.safetensors 2>/dev/null | head -1)
+    fi
+
+    # Use campaign test manifest if available, fall back to experiment-local
+    MANIFEST=""
+    if [[ -f "data/manifests/test.txt" ]]; then
+        MANIFEST="data/manifests/test.txt"
+    elif [[ -f "experiments/results/campaigns/demo/exp_demo/test_split_manifest.txt" ]]; then
+        MANIFEST="experiments/results/campaigns/demo/exp_demo/test_split_manifest.txt"
+    fi
+
+    if [[ -n "${CHECKPOINT}" && -f "${CHECKPOINT}" && -n "${MANIFEST}" ]]; then
+        INFER_OUT="experiments/results/campaigns/demo/exp_demo/inference_test_split"
+        mkdir -p "${INFER_OUT}"
+        python -m mriforge.cli predict \
+            --model "${CHECKPOINT}" \
+            --input "${MANIFEST}" \
+            --output "${INFER_OUT}"
+        echo "Inference results: ${INFER_OUT}"
+    else
+        echo "Skipping auto-inference (checkpoint=${CHECKPOINT:-missing}, manifest=${MANIFEST:-missing})"
+    fi
+else
+    echo ""
+    echo "❌ Training failed: exp_demo (exit ${TRAIN_EXIT_CODE})"
+fi
+
+echo ""
+echo "End: $(date)"
+exit ${TRAIN_EXIT_CODE}

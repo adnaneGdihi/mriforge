@@ -1,0 +1,132 @@
+# =============================================================================
+# BART differential-test image
+# =============================================================================
+# Provisions BART (https://mrirecon.github.io/bart) >= 0.7.00 on a
+# CUDA 12.9 + PyTorch base for the ESPIRiT-vs-BART differential test:
+#   tests/physics/differential/test_espirit_vs_bart.py
+#
+# Build:
+#   docker build \
+#       -t mriforge_bart:latest \
+#       -f tests/docker/Dockerfile.bart \
+#       .
+#
+# Run (interactive, repo mounted):
+#   docker run --rm --gpus all \
+#       -v $PWD:/workspace \
+#       -w /workspace \
+#       mriforge_bart:latest \
+#       pytest tests/physics/differential/test_espirit_vs_bart.py \
+#              -v --tb=short -m "differential and requires_bart"
+#
+# Run (one-shot CI, no repo mount — needs editable install inside container):
+#   docker run --rm --gpus all \
+#       mriforge_bart:latest \
+#       pytest tests/physics/differential/test_espirit_vs_bart.py \
+#              -v --tb=short -m "differential and requires_bart"
+#
+# Environment variables forwarded to the test:
+#   BART_TOOLBOX_PATH   Optional; set if bart binary lives outside /usr/local/bin.
+#                       The test uses `shutil.which("bart")` — PATH is sufficient.
+# =============================================================================
+
+FROM nvidia/cuda:12.9.0-cudnn-runtime-ubuntu22.04
+
+LABEL org.opencontainers.image.title="mriforge BART differential test"
+LABEL org.opencontainers.image.description="BART + PyTorch CUDA 12.9 image for ESPIRiT-vs-BART differential tests"
+LABEL org.opencontainers.image.source="https://github.com/mrirecon/bart"
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+# ---------------------------------------------------------------------------
+# 1. System packages: Python 3.12 + BART build dependencies
+#    BART needs: fftw3 + dev headers, LAPACK/BLAS (liblapacke-dev bundles
+#    cblas), libpng-dev (for PNG output), and standard build tools.
+#    Optional GPU support inside BART itself is NOT enabled here — the
+#    BART GPU path requires CUDA dev headers (not included in the runtime
+#    image) and is not needed for ecalib comparisons.
+# ---------------------------------------------------------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        # Python runtime
+        python3.12 \
+        python3.12-venv \
+        python3.12-dev \
+        python3-pip \
+        # Build tools
+        git \
+        curl \
+        cmake \
+        make \
+        gcc \
+        g++ \
+        # BART FFT backend (FFTW double- and single-precision)
+        libfftw3-dev \
+        libfftw3-double3 \
+        libfftw3-single3 \
+        # BART linear-algebra backend
+        liblapacke-dev \
+        libopenblas-dev \
+        # BART optional image I/O
+        libpng-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# 2. Build BART from source (pinned tag for reproducibility)
+#    ecalib is the primary command used by the differential test.
+#    We build only the core toolbox; GPU + ISMRMRD extensions are skipped.
+# ---------------------------------------------------------------------------
+ARG BART_VERSION=0.9.00
+ARG BART_REPO=https://github.com/mrirecon/bart.git
+
+WORKDIR /opt/bart_build
+
+RUN git clone --depth 1 --branch ${BART_VERSION} ${BART_REPO} bart \
+    || git clone --depth 1 ${BART_REPO} bart
+
+WORKDIR /opt/bart_build/bart
+
+RUN make -j"$(nproc)" PARALLEL=1 \
+    && install -m 755 bart /usr/local/bin/bart \
+    && bart version
+
+# Sanity: ecalib must be a known command
+RUN bart ecalib --help >/dev/null 2>&1 || true
+
+WORKDIR /
+
+# ---------------------------------------------------------------------------
+# 3. Install the mriforge package (editable, with dev extras)
+#    Torch is pulled from the CUDA 12.9 index declared in pyproject.toml.
+#    We COPY only the files needed for the install step so the layer
+#    invalidates only when pyproject.toml changes, not on every src edit.
+# ---------------------------------------------------------------------------
+WORKDIR /workspace
+
+COPY pyproject.toml ./
+# Copy the source tree for the editable install (required by pip -e)
+COPY src/ ./src/
+
+RUN python3.12 -m pip install --upgrade pip \
+    && python3.12 -m pip install \
+        --extra-index-url https://download.pytorch.org/whl/cu129 \
+        -e ".[dev]"
+
+# ---------------------------------------------------------------------------
+# 4. PATH and working directory
+#    The calling `docker run` command mounts the full repo to /workspace so
+#    tests/ and all fixtures are available at runtime without baking them in.
+# ---------------------------------------------------------------------------
+ENV PATH="/usr/local/bin:${PATH}"
+ENV BART_TOOLBOX_PATH="/usr/local/bin"
+
+WORKDIR /workspace
+
+# Default entrypoint: run the differential test suite.
+# Override with any `pytest ...` arguments on `docker run`.
+ENTRYPOINT ["python3.12", "-m", "pytest"]
+CMD ["tests/physics/differential/test_espirit_vs_bart.py", "-v", "--tb=short",
+     "-m", "differential and requires_bart"]

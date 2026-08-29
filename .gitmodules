@@ -1,0 +1,14 @@
+[submodule "external/baselines/cdiffmr"]
+	path = external/baselines/cdiffmr
+	url = https://github.com/ayanglab/CDiffMR.git
+	# A submodule POINTER, not vendored code: this repo records the upstream
+	# commit and redistributes none of its files, so a clone without
+	# ``--recursive`` contains neither baseline. Never edit upstream files
+	# in-tree. Setting ``ignore = dirty`` stops ``git status`` in the parent
+	# repo from flagging transient ``__pycache__/`` and other run-time
+	# artefacts inside the submodule as "modified content".
+	ignore = dirty
+[submodule "external/baselines/fdb"]
+	path = external/baselines/fdb
+	url = https://github.com/icon-lab/FDB.git
+	ignore = dirty

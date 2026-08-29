@@ -1,0 +1,43 @@
+{
+    "__doc__": [
+        "Convergence bounds for per-paradigm smoke runs.",
+        "",
+        "Each entry has the form:",
+        "  '<paradigm>': {",
+        "    'max_steps': <int>,       -- maximum optimisation steps allowed",
+        "    'loss_threshold': <float>,-- final loss must be ≤ this value",
+        "    'metric': '<str>',        -- loss key to read from step output",
+        "    'seeded': true            -- whether seed=42 is enforced",
+        "    'notes': '<str>'          -- optional human notes / calibration date",
+        "  }",
+        "",
+        "When a paradigm has no entry here the convergence test is skipped",
+        "with the message 'convergence bound not calibrated — run calibration",
+        "on cluster'.  After a cluster run, paste the calibrated values below",
+        "and remove the paradigm from the skip list.",
+        "",
+        "Placeholder structure only — ALL entries are currently absent so",
+        "ALL convergence tests will skip until calibrated on cluster."
+    ],
+    "_calibration_note": "No bounds calibrated yet.  Cluster calibration pending.",
+    "_pillar_paradigms": [
+        "reconstruction",
+        "gan",
+        "diffusion",
+        "vae",
+        "physics_driven",
+        "pinn",
+        "cycle_bloch",
+        "mae",
+        "ssl"
+    ],
+    "_format_example": {
+        "reconstruction_EXAMPLE": {
+            "max_steps": 200,
+            "loss_threshold": 0.15,
+            "metric": "loss",
+            "seeded": true,
+            "notes": "Calibrated YYYY-MM-DD on cluster, Shepp-Logan 32x32, MSE"
+        }
+    }
+}

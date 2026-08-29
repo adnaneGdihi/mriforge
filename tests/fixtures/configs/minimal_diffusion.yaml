@@ -1,0 +1,44 @@
+# Minimal Diffusion Config for Testing
+# This config contains only required fields for cold diffusion training.
+# Used by: tests/unit/config/, tests/smoke/
+
+config_version: "5.0"
+
+experiment:
+  name: "test_minimal_diffusion"
+  description: "Minimal config for module testing"
+
+data:
+  batch_size: 2
+
+model:
+  model_type: standard_unet
+  in_channels: 2
+  out_channels: 2
+
+training:
+  training_mode: diffusion
+
+optimization:
+  learning_rate: 0.0001
+
+logging:
+  log_interval: 10
+  level: debug
+
+losses:
+  
+
+checkpoint: {}
+
+physics:
+  data_consistency:
+    enabled: true
+
+max_iterations: 100
+
+workflow:
+  regime: mri_structural
+  task: reconstruction
+run:
+  seed: 42

@@ -1,0 +1,57 @@
+# FAILING YAML — trips: loss_domain_consistency (ConfigHealthChecker)
+# Violation: losses.output_domain='image' but losses.kspace_losses has
+#   an enabled entry — kspace losses in an image-domain output config.
+#   Per check_loss_domain_consistency: image output + kspace_losses is
+#   an ERROR (no auto-bridge in that direction).
+# check_name: loss_domain_consistency
+# severity: error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — loss_domain_consistency (image output + kspace_losses)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_loss_domain
+
+data:
+  coil_processing_mode: rss
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 4
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_loss_domain/logs
+
+losses:
+  output_domain: image   # model outputs image-domain tensors
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses:
+    - name: kspace_l1
+      weight: 0.5
+      enabled: true     # <<< VIOLATION: kspace_losses in image-domain config, no bridge
+  complex_losses: []

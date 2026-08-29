@@ -1,0 +1,153 @@
+"""Unit tests for Pydantic v2 migration.
+
+Tests that verify the configuration schema works correctly with Pydantic v2,
+including field aliases, validators, and backward compatibility.
+"""
+
+# import pytest
+from pydantic import ValidationError
+
+from src.infrastructure.config.schemas import (
+    ModelConfigSchema,
+    OptimizationConfigSchema,
+    TrainingConfigSchema,
+)
+
+
+class TestPydanticV2FieldAliases:
+    """Test field aliases work correctly in Pydantic v2."""
+
+    def test_learning_rate_alias(self):
+        """Test 'lr' alias for 'learning_rate'."""
+        config = OptimizationConfigSchema(lr=0.001)
+        assert config.learning_rate == 0.001
+
+    def test_learning_rate_by_name(self):
+        """Test accessing by canonical field name."""
+        config = OptimizationConfigSchema(learning_rate=0.002)
+        assert config.learning_rate == 0.002
+
+    def test_batch_size_alias(self):
+        """Test 'batchSize' alias for 'batch_size'."""
+        config = TrainingConfigSchema(batchSize=16)
+        assert config.batch_size == 16
+
+    def test_epochs_alias(self):
+        """Test 'num_epochs' alias for 'epochs'."""
+        config = TrainingConfigSchema(num_epochs=100)
+        assert config.epochs == 100
+
+    def test_model_type_alias(self):
+        """Test 'modelType' alias for 'model_type'."""
+        config = ModelConfigSchema(modelType="vit_kan")
+        assert config.model_type == "vit_kan"
+
+
+class TestPydanticV2Validators:
+    """Test field validators work correctly in Pydantic v2."""
+
+    def test_epochs_must_be_positive(self):
+        """Test epochs validation."""
+        with unittest.TestCase.assertRaises(ValidationError) as exc_info:
+            TrainingConfigSchema(epochs=-1)
+        assert "greater than 0" in str(exc_info.value)
+
+    def test_batch_size_must_be_positive(self):
+        """Test batch_size validation."""
+        with unittest.TestCase.assertRaises(ValidationError) as exc_info:
+            TrainingConfigSchema(batch_size=0)
+        assert "greater than 0" in str(exc_info.value)
+
+    def test_learning_rate_must_be_positive(self):
+        """Test learning_rate validation."""
+        with unittest.TestCase.assertRaises(ValidationError) as exc_info:
+            OptimizationConfigSchema(learning_rate=-0.001)
+        assert "greater than 0" in str(exc_info.value)
+
+    def test_beta1_range(self):
+        """Test beta1 must be in [0, 1]."""
+        with unittest.TestCase.assertRaises(ValidationError):
+            TrainingConfigSchema(beta1=1.5)
+
+    def test_beta2_range(self):
+        """Test beta2 must be in [0, 1]."""
+        with unittest.TestCase.assertRaises(ValidationError):
+            TrainingConfigSchema(beta2=-0.1)
+
+
+class TestPydanticV2SchemaCreation:
+    """Test schema can be created from various sources."""
+
+    def test_create_default_schema(self):
+        """Test creating schema with defaults."""
+        config = TrainingConfigSchema()
+        assert config.epochs == 200
+        assert config.batch_size == 4
+        assert config.learning_rate == 1e-5
+
+    def test_create_schema_with_nested_objects(self):
+        """Test creating schema with nested configuration."""
+        config = TrainingConfigSchema(
+            epochs=50,
+            model={"model_type": "unet", "in_channels": 1},
+            data={"batch_size": 8},
+        )
+        assert config.epochs == 50
+        assert config.model.model_type == "unet"
+        assert config.data.batch_size == 8
+
+    def test_create_schema_from_dict(self):
+        """Test creating schema from dictionary."""
+        data = {
+            "epochs": 100,
+            "batch_size": 16,
+            "learning_rate": 0.001,
+            "model": {"model_type": "vit_kan"},
+        }
+        config = TrainingConfigSchema(**data)
+        assert config.epochs == 100
+        assert config.batch_size == 16
+        assert config.learning_rate == 0.001
+
+    def test_populate_by_name_enabled(self):
+        """Test that populate_by_name allows both alias and field name."""
+        # Using alias
+        config1 = TrainingConfigSchema(lr=0.001, batchSize=8)
+        # Using field name
+        config2 = TrainingConfigSchema(learning_rate=0.001, batch_size=8)
+        # Both should work
+        assert config1.learning_rate == config2.learning_rate
+        assert config1.batch_size == config2.batch_size
+
+
+class TestPydanticV2ModelConfig:
+    """Test Pydantic v2 model_config settings."""
+
+    def test_protected_namespaces_set(self):
+        """Test that protected_namespaces is configured."""
+        assert TrainingConfigSchema.model_config.get("protected_namespaces") == ()
+
+    def test_populate_by_name_enabled(self):
+        """Test that populate_by_name is enabled."""
+        assert TrainingConfigSchema.model_config.get("populate_by_name") is True
+
+    def test_model_dump_works(self):
+        """Test that model_dump() method works (Pydantic v2)."""
+        config = TrainingConfigSchema(epochs=50, batch_size=8)
+        data = config.model_dump()
+        assert isinstance(data, dict)
+        assert data["epochs"] == 50
+        assert data["batch_size"] == 8
+
+    def test_model_dump_by_alias(self):
+        """Test that model_dump() can export using aliases."""
+        config = TrainingConfigSchema(learning_rate=0.001)
+        # Note: Need by_alias=True to get the alias in output
+        data = config.model_dump(by_alias=True)
+        assert isinstance(data, dict)
+        # When dumping by alias, 'lr' should be present
+        # (but only if we use the alias to set it, or by_alias=True)
+
+
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

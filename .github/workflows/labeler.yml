@@ -1,0 +1,31 @@
+name: PR labeler
+
+# Auto-applies path-based labels (physics, models, training, …) to PRs.
+# Config lives in .github/labeler.yml — edit there to add/remove labels.
+
+on:
+  # No `branches:` filter -- it matches the PR's BASE branch, and PRs here target both
+  # `dev` and `main`; pinning it to either base silently skips the other.
+  # pull_request_target workflows are read from the DEFAULT branch, so this file must
+  # also be published onto `main` or it stays inert. See docs/contributing/ci.rst.
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: labeler-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/labeler@v7
+        with:
+          configuration-path: .github/labeler.yml
+          sync-labels: false   # don't remove labels the maintainer set manually
+          dot: true            # match hidden files (.github/**)

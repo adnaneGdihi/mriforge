@@ -1,0 +1,232 @@
+import pytest
+from pydantic import ValidationError
+
+from mriforge.config.schemas.base import (
+    ArtifactConfig,
+    BiophysicalFlowObjectiveConfig,
+    DiffusionObjectiveConfig,
+    DomainAdaptationObjectiveConfig,
+    EncoderDecoderDefinitionSchema,
+    ExperimentMetadataSchema,
+    FSDPConfigSchema,
+    GANObjectiveConfig,
+    LatentObjectiveConfig,
+    ModuleDefinitionSchema,
+    MultiContrastContrastiveConfigSchema,
+    ParallelismConfigSchema,
+    PEFTConfigSchema,
+    R1RegularizationConfig,
+    ReconstructionObjectiveConfig,
+    ServicesConfigSchema,
+    SSLConfigSchema,
+    SSLObjectiveConfig,
+    TrainingTaskConfigSchema,
+)
+
+
+class TestBaseSchemas:
+    def test_module_definition_schema(self):
+        schema = ModuleDefinitionSchema(name="test", params={"a": 1})
+        assert schema.name == "test"
+        assert schema.params == {"a": 1}
+        assert schema.freeze is False
+
+    def test_encoder_decoder_definition_schema(self):
+        encoder = ModuleDefinitionSchema(name="enc")
+        decoder = ModuleDefinitionSchema(name="dec")
+        schema = EncoderDecoderDefinitionSchema(encoder=encoder, decoder=decoder)
+        assert schema.encoder.name == "enc"
+        assert schema.decoder.name == "dec"
+
+    def test_experiment_metadata_schema(self):
+        schema = ExperimentMetadataSchema(name="exp", tags=["tag1", "tag2"])
+        assert schema.name == "exp"
+        assert schema.tags == {"tag1": "tag1", "tag2": "tag2"}
+
+    def test_experiment_metadata_scientific_fields(self):
+        """First-class scientific-coherence metadata (2026-06 validation campaign)."""
+        # default to None so pre-existing configs are unaffected
+        bare = ExperimentMetadataSchema(name="exp")
+        assert bare.hypothesis is None
+        assert bare.baseline is None
+        assert bare.primary_metric is None
+        # and are accepted as first-class keys (no longer need to hide in tags)
+        schema = ExperimentMetadataSchema(
+            name="exp",
+            hypothesis="method X beats baseline Y on val_psnr at 4x",
+            baseline="experiment_baseline_unet_4x",
+            primary_metric="val_psnr",
+        )
+        assert schema.hypothesis == "method X beats baseline Y on val_psnr at 4x"
+        assert schema.baseline == "experiment_baseline_unet_4x"
+        assert schema.primary_metric == "val_psnr"
+
+    def test_r1_regularization_config(self):
+        schema = R1RegularizationConfig(weight=5.0)
+        assert schema.weight == 5.0
+        with pytest.raises(ValidationError):
+            R1RegularizationConfig(weight=-1.0)
+
+    def test_gan_objective_config(self):
+        # Lambda fields have been moved to losses.gan (SSOT consolidation)
+        # v6.0: objectives.gan is NO LONGER supported and raises ConfigurationError
+        from mriforge.domain.exceptions import ConfigurationError
+
+        with pytest.raises(ConfigurationError):
+            GANObjectiveConfig()
+
+    def test_reconstruction_objective_config(self):
+        # Lambda fields have been moved to losses.reconstruction (SSOT consolidation)
+        # v6.0: objectives.reconstruction is NO LONGER supported and raises ConfigurationError
+        from mriforge.domain.exceptions import ConfigurationError
+
+        with pytest.raises(ConfigurationError):
+            ReconstructionObjectiveConfig()
+
+    def test_diffusion_objective_config(self):
+        # DiffusionObjectiveConfig no longer accepts timesteps (DEPRECATED)
+        # Timesteps is now SSOT in training.diffusion
+        # Test that objectives.diffusion accepts the fields that remain
+        # NOTE: DiffusionObjectiveConfig does NOT raise ConfigurationError yet in base.py
+        schema = DiffusionObjectiveConfig(cond_drop_prob=0.1)
+        assert schema.cond_drop_prob == 0.1
+        with pytest.raises(ValidationError):
+            DiffusionObjectiveConfig(cond_drop_prob=1.5)
+
+    def test_latent_objective_config(self):
+        # LatentObjectiveConfig.latent_dim is DEPRECATED (SSOT: training.latent_dim)
+        # v6.0: objectives.latent is NO LONGER supported and raises ConfigurationError
+        from mriforge.domain.exceptions import ConfigurationError
+
+        with pytest.raises(ConfigurationError):
+            LatentObjectiveConfig(n_embeddings=512)
+
+    def test_domain_adaptation_objective_config(self):
+        schema = DomainAdaptationObjectiveConfig(num_domains=3)
+        assert schema.num_domains == 3
+        with pytest.raises(ValidationError):
+            DomainAdaptationObjectiveConfig(num_domains=1)
+
+    def test_biophysical_flow_objective_config(self):
+        schema = BiophysicalFlowObjectiveConfig(lambda_dc=2.0)
+        assert schema.lambda_dc == 2.0
+        with pytest.raises(ValidationError):
+            BiophysicalFlowObjectiveConfig(lambda_dc=-1.0)
+
+    def test_ssl_objective_config(self):
+        schema = SSLObjectiveConfig(student_temp=0.2)
+        assert schema.student_temp == 0.2
+        with pytest.raises(ValidationError):
+            SSLObjectiveConfig(student_temp=0.0)
+
+    def test_ssl_config_schema(self):
+        schema = SSLConfigSchema(method="simclr")
+        assert schema.method == "simclr"
+
+    def test_multi_contrast_contrastive_config_defaults(self):
+        cfg = MultiContrastContrastiveConfigSchema()
+        assert cfg.temperature > 0
+        # Default keeps symmetrize off so it does not conflict with the
+        # default-on momentum encoder (the strategy raises on the combo).
+        assert cfg.symmetrize is False
+        assert cfg.use_momentum is True
+        assert 0 <= cfg.momentum <= 1
+        assert cfg.warmup_steps >= 0
+
+    def test_multi_contrast_contrastive_validation(self):
+        with pytest.raises(ValidationError):
+            MultiContrastContrastiveConfigSchema(unknown_field=1)
+        with pytest.raises(ValidationError):
+            MultiContrastContrastiveConfigSchema(temperature=0.0)
+        with pytest.raises(ValidationError):
+            MultiContrastContrastiveConfigSchema(momentum=1.5)
+
+    def test_ssl_config_mounts_multi_contrast_block(self):
+        ssl = SSLConfigSchema(
+            multi_contrast_contrastive={"temperature": 0.07, "symmetrize": False}
+        )
+        assert ssl.multi_contrast_contrastive is not None
+        assert ssl.multi_contrast_contrastive.temperature == 0.07
+        # Defaults to None when omitted.
+        assert SSLConfigSchema().multi_contrast_contrastive is None
+
+    def test_artifact_config(self):
+        # ``persistent_root`` is the sole surviving field — the previous
+        # runtime_root / sync_interval_minutes / sync_on_failure fields
+        # were removed 2026-05-19 (no runtime consumers; see the docstring
+        # on ArtifactConfig).
+        schema = ArtifactConfig(persistent_root="./experiments/results")
+        assert schema.persistent_root == "./experiments/results"
+        # Default is preserved.
+        assert ArtifactConfig().persistent_root == "./experiments"
+        # extra="forbid" rejects the removed fields so re-introducing them
+        # via stale YAMLs fails loudly at load time.
+        with pytest.raises(ValidationError):
+            ArtifactConfig(runtime_root="/tmp/whatever")
+        with pytest.raises(ValidationError):
+            ArtifactConfig(sync_interval_minutes=30)
+        with pytest.raises(ValidationError):
+            ArtifactConfig(sync_on_failure=True)
+
+    def test_services_config_schema(self):
+        schema = ServicesConfigSchema(enable_logging=False)
+        assert schema.enable_logging is False
+
+    def test_training_task_config_schema(self):
+        schema = TrainingTaskConfigSchema(sr_factor=4)
+        assert schema.sr_factor == 4
+        with pytest.raises(ValidationError):
+            TrainingTaskConfigSchema(sr_factor=0)
+
+    def test_parallelism_config_schema(self):
+        schema = ParallelismConfigSchema(num_devices=2)
+        assert schema.num_devices == 2
+        with pytest.raises(ValidationError):
+            ParallelismConfigSchema(num_devices=0)
+
+    def test_fsdp_schema_rejects_unknown_keys(self):
+        """WS-1 round-2: FSDP block flipped extra='ignore' -> 'forbid', so a
+        typo'd sharding knob raises instead of being silently swallowed."""
+        assert FSDPConfigSchema().model_config["extra"] == "forbid"
+        # A known field still validates.
+        assert FSDPConfigSchema(sharding_strategy="no_shard").sharding_strategy == (
+            "no_shard"
+        )
+        with pytest.raises(ValidationError):
+            FSDPConfigSchema(shardng_strategy="full_shard")  # typo
+
+    def test_peft_schema_rejects_unknown_keys(self):
+        assert PEFTConfigSchema().model_config["extra"] == "forbid"
+        assert PEFTConfigSchema(rank=16).rank == 16
+        with pytest.raises(ValidationError):
+            PEFTConfigSchema(ranks=16)  # typo
+
+    def test_fsdp_peft_schemas_are_frozen(self):
+        fsdp = FSDPConfigSchema()
+        peft = PEFTConfigSchema()
+        with pytest.raises(ValidationError):
+            fsdp.enabled = True
+        with pytest.raises(ValidationError):
+            peft.enabled = True
+
+    def test_allow_idle_devices_defaults_to_armed(self):
+        """#1274's refusal must be ON without the arm asking for it.
+
+        The failure it catches is silent -- a --gpus=4 job that launched one rank
+        trained happily on a quarter of its allocation while the log, the health
+        report and provenance all read as healthy. A guard that had to be opted
+        INTO would have been absent on exactly the arm that needed it.
+        """
+        assert ParallelismConfigSchema().allow_idle_devices is False
+        assert ParallelismConfigSchema(allow_idle_devices=True).allow_idle_devices
+
+    def test_allow_idle_devices_is_a_typed_knob_not_an_extra(self):
+        """``extra='forbid'`` means a typo must raise rather than read as False.
+
+        A silently-swallowed ``allow_idle_device`` would look like an opt-out that
+        did not take -- the run would refuse and the operator would have no way to
+        tell a rejected spelling from a working one.
+        """
+        assert ParallelismConfigSchema.model_config["extra"] == "forbid"
+        with pytest.raises(ValidationError):
+            ParallelismConfigSchema(allow_idle_device=True)  # typo

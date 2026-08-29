@@ -1,0 +1,180 @@
+{
+  "_comment": [
+    "Counts in scripts/sim2rank/ docstrings that the #1521 sweep FOUND but did",
+    "NOT adjudicate. Tracked as a body of work (see the issue linked below), not",
+    "blessed as correct. Keyed by [path, qualname, exact matched text] so that",
+    "editing a waived claim un-waives it -- a file-level key would waive the",
+    "whole file forever. NEVER regenerate this file to make the guard green:",
+    "NEVER regenerate this file to make the guard green: remove entries as each claim is verified or rewritten to name its SSOT. Tracked by:"
+  ],
+  "seeded": "2026-08-28",
+  "issue": "https://github.com/adnaneGdihi/gan_mri/issues/1585",
+  "waived": [
+    [
+      "scripts/sim2rank/build_report.py",
+      "<module>",
+      "3 metric"
+    ],
+    [
+      "scripts/sim2rank/build_report.py",
+      "_read_provenance",
+      "13-axis"
+    ],
+    [
+      "scripts/sim2rank/build_report.py",
+      "_read_provenance",
+      "30-axis"
+    ],
+    [
+      "scripts/sim2rank/cd_diagram.py",
+      "<module>",
+      "~80 metrics"
+    ],
+    [
+      "scripts/sim2rank/clustering.py",
+      "<module>",
+      "1 ADR metric"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "<module>",
+      "13 axes"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "DegradationSweep",
+      "13-axis"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "_axis_seed",
+      "13 axes"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "_magnitude",
+      "30 axes"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "identity_floor",
+      "30 axes"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "identity_recovery",
+      "30 axes"
+    ],
+    [
+      "scripts/sim2rank/degradation.py",
+      "sweep_all_axes",
+      "30-axis"
+    ],
+    [
+      "scripts/sim2rank/export_tables.py",
+      "_uninformative_anchor_mae",
+      "139 metrics"
+    ],
+    [
+      "scripts/sim2rank/figure_manifest.py",
+      "<module>",
+      "13 axes"
+    ],
+    [
+      "scripts/sim2rank/figure_manifest.py",
+      "<module>",
+      "86 metrics"
+    ],
+    [
+      "scripts/sim2rank/figure_tree.py",
+      "<module>",
+      "173 metrics"
+    ],
+    [
+      "scripts/sim2rank/interactive_report.py",
+      "render_interactive_report",
+      "13-axis"
+    ],
+    [
+      "scripts/sim2rank/metric_health.py",
+      "is_distributional",
+      "20 axes"
+    ],
+    [
+      "scripts/sim2rank/metrics_list.py",
+      "<module>",
+      "209 metrics"
+    ],
+    [
+      "scripts/sim2rank/per_axis_figures.py",
+      "<module>",
+      "65 metrics"
+    ],
+    [
+      "scripts/sim2rank/per_axis_figures.py",
+      "_z_normalise",
+      "65 metrics"
+    ],
+    [
+      "scripts/sim2rank/per_axis_figures.py",
+      "plot_algorithm_per_axis_heatmap",
+      "13-axis"
+    ],
+    [
+      "scripts/sim2rank/probe_metrics.py",
+      "<module>",
+      "30 axes"
+    ],
+    [
+      "scripts/sim2rank/probe_metrics.py",
+      "<module>",
+      "~140 metrics"
+    ],
+    [
+      "scripts/sim2rank/probe_metrics.py",
+      "probe_distributional",
+      "10 distributional metrics"
+    ],
+    [
+      "scripts/sim2rank/probe_metrics.py",
+      "unswept_specs",
+      "209 metrics"
+    ],
+    [
+      "scripts/sim2rank/severity_calibration.py",
+      "<module>",
+      "13 axes"
+    ],
+    [
+      "scripts/sim2rank/severity_calibration.py",
+      "_shorter_ladder_can_help",
+      "30-axis"
+    ],
+    [
+      "scripts/sim2rank/sim2rank.py",
+      "_log_unmeasured_metrics",
+      "20 axes"
+    ],
+    [
+      "scripts/sim2rank/style.py",
+      "category_palette",
+      "8 categories"
+    ],
+    [
+      "scripts/sim2rank/style.py",
+      "category_palette",
+      "86 metrics"
+    ],
+    [
+      "scripts/sim2rank/xlsx_workbooks.py",
+      "<module>",
+      "173 metrics"
+    ],
+    [
+      "scripts/sim2rank/xlsx_workbooks.py",
+      "write_leaderboard_workbook",
+      "31 metrics"
+    ]
+  ],
+  "found_by": "https://github.com/adnaneGdihi/gan_mri/pull/1584 (#1521)"
+}

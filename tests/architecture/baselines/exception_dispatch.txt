@@ -1,0 +1,17 @@
+# Signature dispatch via `except TypeError` retry (SAQ-001, #1189)
+src/mriforge/core/metrics/nr_prior_geometry.py::_PriorAdapter.score::_denoise  # 1 retries
+src/mriforge/core/metrics/nr_prior_geometry.py::_PriorAdapter.score::_score  # 1 retries
+src/mriforge/infrastructure/inference/mae_inference_strategy.py::MAEInferenceStrategy.run_inference::model  # 1 retries
+src/mriforge/infrastructure/training/optimizers/standard_optimizer_stepper.py::StandardOptimizerStepper._maybe_warn_disabled_clipping::log_warning  # 1 retries
+src/mriforge/infrastructure/training/optimizers/standard_optimizer_stepper.py::StandardOptimizerStepper.zero_grad::zero_grad  # 1 retries
+src/mriforge/infrastructure/training/utils/training_utils.py::SafeGradScaler.step::step  # 1 retries
+src/mriforge/infrastructure/validation/phase3_probes.py::_divergence_free_probe::model  # 1 retries
+src/mriforge/models/analysis/profile_training.py::TrainingProfiler._initialize_papi::library_init  # 1 retries
+src/mriforge/models/diffusion/bloch_manifold_dps_sampler.py::BlochManifoldDPSSampler._call_score::score_network  # 1 retries
+src/mriforge/models/diffusion/ddim_sampler.py::DDIMSampler.sample::model  # 3 retries
+src/mriforge/models/diffusion/mrf_diph/mrf_diph_sampler.py::MRFDiPhSampler.sample::model  # 3 retries
+src/mriforge/models/generators/chi_square_diffusion_generator.py::ChiSquareDiffusionGenerator.forward::denoising_model  # 1 retries
+src/mriforge/models/generators/counterfactual_healthy_generator.py::CounterfactualHealthyGenerator._decode_healthy::base  # 1 retries
+src/mriforge/models/generators/kspace_cold_diffusion_generator.py::KSpaceColdDiffusionGenerator.forward::dc_layer  # 3 retries
+src/mriforge/models/generators/score_based_diffusion_generator.py::ScoreBasedDiffusionGenerator._model_forward::denoising_model  # 1 retries
+src/mriforge/models/specialized/fusion_2d_sr_bundle.py::MultiSlice2DSRGenerator._run_base_generator::forward  # 1 retries

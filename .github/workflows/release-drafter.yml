@@ -1,0 +1,31 @@
+name: Release drafter
+
+# Continuously drafts the next release's notes as PRs merge to main. The
+# draft becomes the body of the GitHub Release that release.yml creates
+# at tag time. Config: .github/release-drafter.yml.
+
+on:
+  # Pull requests only. The `push: branches: [main]` leg was dropped when CI became
+  # PR-triggered by policy (docs/contributing/ci.rst); the draft and the autolabeler
+  # both update from the PR leg. No `branches:` filter here -- it matches the PR's
+  # BASE branch, and PRs here target both `dev` and `main`.
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: write          # to update the draft release
+      pull-requests: write     # for autolabeler
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+          disable-autolabeler: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

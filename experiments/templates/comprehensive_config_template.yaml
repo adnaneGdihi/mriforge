@@ -1,0 +1,454 @@
+config_version: '1.0'
+metadata:
+  name: comprehensive_experiment_template
+  description: Full configuration template with all available keys (config_version '1.0')
+  author: Your Name
+  version: '6.0'
+  created_at: null
+  timestamp: null
+  source_experiment: null
+  generated_from: null
+  roadmap_phase: null
+  tags:
+    type: reconstruction
+    paradigm: physics_informed
+model:
+  model_type: unet
+  # COUPLED to data.coil_processing_mode below -- change one and you must
+  # change the other. The mapping is a table in config_health_checker.py
+  # (`Channel mapping rules`), mirrored from _apply_coil_processing:
+  #   rss + kspace -> 2 (real + imaginary)   <-- what this template declares
+  #   rss_image    -> 1 (RSS magnitude image, any dataset_type)
+  #   magnitude    -> 1 (real magnitude)
+  # health:domain_alignment compares these two declarations and fails the audit
+  # on a mismatch; it does not correct one from the other at runtime.
+  in_channels: 2
+  out_channels: 2
+  spatial_dims: 2
+  z_dim: 256
+  kan_type: BSpline
+  input_type: image
+  target_domain: null
+  output_activation: null
+  weight_init_type: he_normal
+  weight_init_gain: 1.0
+  weight_init_activation: relu
+  apply_weight_init: true
+  model_kwargs:
+    features:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+  generator_component: null
+  discriminator_component: null
+  encoder_component: null
+  decoder_component: null
+  architecture: null
+  trellis_vae: null
+  model_domain: image
+data:
+  # rss + kspace keeps real+imag -> model.in_channels/out_channels = 2 above.
+  coil_processing_mode: rss
+  dataset_type: kspace
+  data_root: ./data
+  index_path: null
+  patch_size:
+  - 320
+  - 320
+  - 1
+  samples_per_volume: 8
+  queue_length: 200
+  trajectory: null
+  batch_size: 4
+  num_workers: 4
+  # The split fraction has exactly one live owner: data.split.validation_fraction.
+  # `data.validation_split` was declared here and is not a DataConfigSchema field,
+  # so extra="ignore" DROPPED it -- and the default it was shadowing is also 0.1,
+  # which is why the template read as correct. Setting it to 0.3 would have
+  # silently trained on 0.1.
+  split:
+    type: auto
+    validation_fraction: 0.1
+  test_split: 0.1
+  target_channels: 1
+  normalize_kspace: false
+  normalize_images: false
+  return_image_domain: false
+  use_async_dataloader: false
+  max_prefetch: 2
+  pin_memory: true
+  transforms: []
+  caching:
+    strategy: none
+    cache_dir: null
+    staging_behavior: full
+    cleanup_trigger: session_end
+  prior_loading:
+    enabled: false
+    source: ''
+    checkpoint_path: ''
+    freeze: true
+  manifest_roles:
+    inputs:
+    - manifest: ''
+      key: input
+    targets:
+    - manifest: ''
+      key: target
+    auxiliary: []
+  augmentation:
+    enabled: false
+    probability: 0.5
+    enable_rotation: false
+    rotation_range:
+    - -15
+    - 15
+    prob_rotate: 0.5
+    enable_flip: false
+    prob_flip: 0.5
+    flip_axes: []
+    enable_elastic_deformation: false
+    elastic_alpha: 34.0
+    elastic_sigma: 4.0
+    enable_noise: false
+    noise_std: 0.01
+    enable_brightness: false
+    brightness_range:
+    - 0.8
+    - 1.2
+    enable_contrast: false
+    contrast_range:
+    - 0.8
+    - 1.2
+    enable_gamma: false
+    gamma_range:
+    - 0.8
+    - 1.2
+    enable_rician_noise: false
+    rician_noise_level: 0.05
+    enable_motion_blur: false
+    motion_blur_intensity: 0.3
+    enable_bias_field: false
+    bias_field_coefficients: 0.5
+    enable_blur: false
+    blur_std:
+    - 0.5
+    - 2.0
+    enable_kspace_undersampling_augmentation: false
+    undersampling_factor_augmentation: 2
+    enable_mixup: false
+    mixup_alpha: 0.2
+    enable_cutmix: false
+    cutmix_alpha: 0.2
+    intensity_range:
+    - 0.0
+    - 1.0
+    transforms: {}
+training:
+  strategy_class: null
+  training_mode: reconstruction
+  epochs: 100
+  max_iterations: -1
+  max_steps_per_epoch: -1
+  max_steps: null
+  task: reconstruction
+  device: cuda
+  # Results have one owner: the experiment name is derived from this path, and
+  # mosaic_validation.py auto-discovery walks experiments/results/.
+  output_dir: experiments/results/comprehensive_experiment_template
+  num_workers: 4
+  enable_mixed_precision: false
+  enable_gradient_checkpointing: false
+  diffusion:
+    timesteps: 1000
+    noise_schedule: cosine
+    sampler: ddpm
+    sampling_steps: 100
+    cond_drop_prob: 0.1
+    guidance_scale: 7.5
+    type: null
+    prediction_type: epsilon
+    degradation: null
+    degradation_dynamics: null
+    enable_diffusion_amp: false
+    enforce_output_range: true
+    lambda_mse: 1.0
+  latent:
+    latent_dim: 256
+    beta_kl: 1.0
+    anneal_kl_beta: false
+    kl_beta_start: 0.0
+    kl_beta_end: 1.0
+    kl_anneal_steps: 10000
+    commitment_weight: 0.25
+    codebook_weight: 1.0
+    n_embeddings: 512
+    embedding_dim: 64
+    use_latent_regularization: true
+    latent_regularization_weight: 0.01
+    latent_loss_type: kl_divergence
+    temperature: 0.1
+optimization:
+  learning_rate: 1.0e-05
+  generator_learning_rate: null
+  discriminator_learning_rate: null
+  optimizer_type: adamw
+  weight_decay: 0.0001
+  beta1: 0.5
+  beta2: 0.999
+  optimizer_kwargs: {}
+  use_amp: false
+  use_gradient_checkpointing: false
+  gradient_accumulation_steps: 1
+  enable_memory_monitoring: false
+  memory_monitoring_interval: 50
+  enable_memory_fragmentation_mitigation: false
+  memory_cleanup_interval: 100
+  optimize_batch_size_for_memory: false
+  memory_safety_margin: 0.8
+  enable_gradient_clipping: false
+  gradient_clip_method: norm
+  gradient_clip_value: 1.0
+  lr_scheduler_strategy: cosine
+  warmup_steps: 0
+  lr_scheduler_kwargs: {}
+  scheduler: null
+  compile_model: false
+  compile_mode: default
+  compile_backend: inductor
+  compile_fullgraph: false
+  compile_dynamic: true
+  num_steps: null
+losses:
+  output_domain: image
+  # The GAN knobs, on the surface that reads them. Disabled: this template is a
+  # reconstruction arm (training_mode: reconstruction, model_type: unet,
+  # discriminator_component: null), so there is no discriminator to train against.
+  # Enabling adversarial here also requires declaring one of the registered GAN
+  # terms -- gan_standard / gan_hinge / gan_lsgan / gan_wgan / gan_ralsgan --
+  # there is no loss registered under the bare name "adversarial".
+  gan:
+    enable_adversarial: false
+    lambda_adv: 1.0
+    enable_gradient_penalty: false
+    lambda_gp: 10.0
+  image_losses:
+  - name: mse
+    weight: 1.0
+    enabled: true
+  - name: kl
+    weight: 0.001
+    enabled: true
+  - name: l1
+    weight: 10.0
+    enabled: true
+  - name: perceptual
+    weight: 10.0
+    enabled: true
+  - name: vq
+    weight: 1.0
+    enabled: true
+    kwargs:
+      # Was a separate `commit` entry. The commitment term lives inside `vq`:
+      # vq_loss = codebook_loss + commitment_cost * commitment_loss
+      commitment_cost: 0.25
+  - name: physics_constraint
+    weight: 1.0
+    enabled: true
+  kspace_losses: []
+  complex_losses: []
+physics:
+  field_strength: 3.0
+  data_consistency:
+    enabled: false
+    weight: 1.0
+    interval: 1
+    method: projection_2d_consistency
+  coil_sensitivity:
+    enable_estimation: false
+    estimation_method: espirit
+    estimation_type: dynamic
+    calibration_region_size: 24
+    num_threads: 4
+    precomputed_path: null
+    precomputed_type: pt
+  kspace:
+    enable_kspace_recon: false
+    enforce_hermitian_symmetry: true
+    zero_pad_reconstruction: false
+  regularization:
+    enable_tv: false
+    tv_weight: 0.01
+    tv_type: isotropic
+    enable_wavelets: false
+    wavelet_weight: 0.01
+    wavelet_family: db4
+    wavelet_levels: 3
+    enable_sparsity: false
+    sparsity_weight: 0.001
+    sparsity_type: l1
+    physics_penalty_weight: 0.0
+    l2_penalty: 0.0
+  iterative_refinement:
+    enabled: false
+    num_steps: 1
+    dc_weight: 1.0
+    residual_learning: false
+  phase_correction:
+    enable_phase_estimation: false
+    estimation_method: voxel_wise
+    phase_smoothing: true
+  b0_correction:
+    enable_b0_correction: false
+    num_shim_orders: 2
+    estimate_from_data: true
+  b0_simulation:
+    enabled: false
+    max_hz: null
+    style: smooth
+    probability: 0.5
+  motion_correction:
+    enable_motion_correction: false
+    motion_type: translational
+    reference_frame: middle
+    method: standard
+  compressed_sensing:
+    enabled: false
+    sampling_pattern: cartesian
+    acceleration_factor: 4.0
+    sparsity_transform: wavelet
+    reconstruction_algorithm: iterative_soft_thresh
+    num_iterations: 10
+    threshold_scaling: 1.0
+    convergence_tolerance: 1.0e-05
+    step_size: 0.1
+    enforce_data_consistency: true
+    use_adaptive_threshold: false
+  pinn:
+    enabled: false
+    pde_type: wave_equation
+    boundary_condition: dirichlet
+    collocation_points: 1000
+    lambda_pde: 0.1
+  bloch_simulation:
+    enabled: false
+    target_tr: 3000.0
+    target_te: 100.0
+validation:
+  enabled: true
+  # `validation.split` is deliberately absent: it is a real schema field with no
+  # reader in src/mriforge (issue #673), so declaring it here would advertise a
+  # knob that does nothing. The live fraction is data.split.validation_fraction
+  # above.
+  validation_dir: null
+  eval_interval: 1000
+  eval_on_epoch: false
+  frequency_steps: 1000
+  frequency_epochs: 1
+  validation_batch_size: null
+  num_samples: null
+  num_validation_batches: null
+  enable_validation_augmentation: false
+  validation_metric: loss
+  output_transform: null
+  use_training_loss: true
+  compute_image_metrics: true
+  enable_visualization: false
+  visualization_interval: 1000
+  num_visualizations: 4
+  visualization_dir: ./visualizations
+checkpoint:
+  enabled: true
+  # `save_dir:` is an accepted alias for this same field -- declare one, not
+  # both, or an edit to one silently leaves the other behind.
+  checkpoint_dir: ./checkpoints
+  save_interval: 1000            # in steps
+  save_on_epoch: true
+  keep_last_n: 5
+  keep_best_n: 3
+  pretrained_path: null
+  load_optimizer_state: true
+  load_scheduler_state: true
+  resume_training: false
+logging:
+  level: warning
+  silent: false
+  log_dir: ./logs
+  log_to_file: true
+  log_to_console: true
+  enable_experiment_tracking: true
+  experiment_name: default_experiment
+  run_name: null
+  tags: {}
+  notes: null
+  tracking_service: tensorboard
+  wandb_project: null
+  wandb_entity: null
+  log_interval: 100
+  save_interval: 100
+  log_gradients: false
+  log_weights: false
+  log_activations: false
+  progress_bar_enabled: true
+  progress_bar_on_warning: true
+  progress_bar_no_progress: false
+  enable_tensorboard: true
+  log_validation_images: true
+  save_validation_images: true
+  log_validation_graphs: true
+  log_difference_images: true
+metrics:
+  # data.dataset_type is 'kspace', so declare the domain the metrics are taken in.
+  # SSIM/PSNR computed on k-space are not meaningful; leaving this unset makes the
+  # arm load with a validator warning rather than a stated choice.
+  domain: image
+  enable_tracking: true
+  compute_psnr: true
+  compute_ssim: true
+  compute_mse: true
+  compute_mae: true
+  compute_hfen: false
+  compute_fid: false
+  compute_lpips: false
+  compute_inception_score: false
+  compute_nmse: false
+  compute_nrmse: false
+  compute_snr: false
+  compute_kspace_error: false
+  metric_interval: 1000
+  eval_on_epoch: false
+  track_best_metric: true
+  best_metric_name: val_loss
+  best_metric_mode: min
+early_stopping:
+  enabled: false
+  patience: 10
+  metric: val_loss
+  mode: min
+  min_delta: 0.0
+  check_interval: 1000
+  restore_best_weights: true
+ema:
+  enabled: false
+  decay: 0.999
+  update_frequency: 1
+  warmup_steps: 0
+loss_logging:
+  csv_path: null
+  frequency: 1
+  output_dir: null
+undersampling:
+  base_acceleration: 4.0
+  center_fraction: 0.08
+  # Must equal training.diffusion.timesteps: the schedule covers t in
+  # [0, schedule_steps) and the diffusion process runs t in [0, timesteps).
+  # A mismatch either saturates the schedule at max or never reaches its tail.
+  schedule_steps: 1000
+artifacts:
+
+  persistent_root: ./experiments
+
+run:
+  seed: 42

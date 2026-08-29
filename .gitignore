@@ -1,0 +1,439 @@
+# Created by https://www.toptal.com/developers/gitignore/api/python,virtualenv,linux
+# Edit at https://www.toptal.com/developers/gitignore?templates=python,virtualenv,linux
+data/manifests
+### Linux ###
+*~
+# temporary files which can be created if a process still has a handle open of a deleted file
+.fuse_hidden*
+
+# KDE directory preferences
+.directory
+
+# Linux trash folder which might appear on any partition or disk
+.Trash-*
+
+# .nfs files are created when an open file is removed but is still being accessed
+.nfs*
+tests_experiments/**
+# Downloaded cluster run-output trees + their generated diagnostics bundles
+# (same status as tests_experiments/: heavy, reproducible, host-local scratch).
+# Globbed by cluster prefix rather than enumerated per cluster: a second
+# cluster's tree was downloaded on 2026-08-22 and sat untracked in the working
+# copy because only the first cluster's prefix had been listed here by name.
+# Both patterns contain a slash, so git anchors them to the repository root --
+# a `src/.../foo_diagnostics/` is unaffected.
+*_tests_experiments/**
+*_diagnostics/**
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+databases/
+# C extensions
+*.so
+.idea/
+.trunk/
+.benchmarks/
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+database/
+.claude
+.installed.cfg
+*.egg
+MANIFEST
+compiled_results/**
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+#   For a library or package, you might want to ignore these files since the code is
+#   intended to run in multiple environments; otherwise, check them in:
+# .python-version
+
+# pipenv
+#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
+#   However, in case of collaboration, if having platform-specific dependencies or dependencies
+#   having no cross-platform support, pipenv may install dependencies that don't work, or not
+#   install all needed dependencies.
+#Pipfile.lock
+
+# poetry
+#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
+#poetry.lock
+
+# pdm
+#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
+#pdm.lock
+#   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
+#   in version control.
+#   https://pdm.fming.dev/#use-with-ide
+.pdm.toml
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.tmp*
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
+#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
+#  and can be added to the global gitignore or merged into this file.  For a more nuclear
+#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#.idea/
+**-**-**/**
+### Python Patch ###
+# Poetry local configuration file - https://python-poetry.org/docs/configuration/#local-configuration
+poetry.toml
+tsne_parameter_plots_by_shape
+param_evolution_plots_mean
+# ruff
+.ruff_cache/
+
+# LSP config files
+pyrightconfig.json
+
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+pyvenv.cfg
+pip-selfcheck.json
+vgg19-dcbb9e9d.pth
+data_synthetic
+# End of https://www.toptal.com/developers/gitignore/api/python,virtualenv,linux
+vtune_*/
+logs/
+reports/
+data_synthetic/
+model_*/
+output_*/
+results/
+model_save/
+log.*
+output1/**
+curr_results/**
+loss_results/**
+results_*/**
+results
+img
+param_evolution_plots_failed
+**/*_kan_*/
+# ...but experiments/inprogress/ holds SOURCE configs, not KAN training output.
+# The glob above targets output dirs (cf. the model_/output_/loss_/img_kanu_*
+# siblings, and experiments/*/archive/*_kan_*/ which are checkpoints+logs+metrics)
+# and also swallowed experiments/inprogress/kspace_filling/ablations_kan_dual_domain/.
+# Its 11 arms are only safe because they were tracked BEFORE the rule existed: a new
+# arm there was invisible to `git status` and refused by `git add` without -f.
+# Re-include the directory itself -- negating the files alone cannot work, because
+# git will not re-include a path whose parent DIRECTORY is excluded. Scoped to
+# inprogress/ so archived output dirs stay ignored.
+!experiments/inprogress/**/*_kan_*/
+model_kanu_*/
+output_kanu_*/
+loss_kanu_*/
+img_kanu_*/
+
+# Metadata files (if generated)
+model_metadata.xlsx
+descriminator_metadata.xlsx
+*-main
+# Compiled Python files
+*.pyc
+*.sqlite
+*.nsys-rep
+*.csv
+*.xlsx
+*.json
+# Campaign findings ledgers are machine-readable artifacts that MUST be tracked
+# despite the blanket *.json rule above (WS-C consumes them for the merged ledger).
+# Campaign findings ledgers must be tracked despite the blanket *.json rule.
+!docs/campaigns/**/*.json
+# Scientific-validation ledgers (per-wave findings) must be tracked despite the
+# blanket *.json rule — they are the durable artifact the master report assembles
+# from, and survive the repo's auto-clean (reset --hard) between turns.
+!TODO/scientific_validation/*.json
+*.png
+# JOSS figures: paper.md embeds these, so the JOSS build needs them tracked
+# despite the blanket *.png rule. Regenerate per paper/README.md.
+!paper/*.png
+profiling_results.zip
+*.zip
+*.db
+*-main/
+*.h5
+*.tflite
+*.pb
+*.ckpt
+*.pt
+*.pth
+*.nii
+*.nii.gz
+*.dicom
+node_modules
+checkpoints/final_model_epoch_100_20250927_011252.safetensors
+*.safetensors
+checkpoints/** */
+.idea
+**/*.backup*
+.idea/copilot.data.migration.agent.xml .idea/copilot.data.migration.ask2agent.xml .idea/copilot.data.migration.ask.xml .idea/copilot.data.migration.edit.xml .idea/mriforge.iml .idea/inspectionProfiles .idea/misc.xml .idea/modules.xml .idea/vcs.xml .idea/workspace.xml
+64mT_data_image
+experiments/inference*
+events.out*
+docs/presentation/mriforge_framework.pdf
+.claude/settings.local.json .claude/skills .claude/worktrees
+
+# Vendored baseline upstreams. The submodule pointers ARE tracked
+# (160000 gitlink mode) — we cannot gitignore the directories
+# themselves. Instead, ``.gitmodules`` sets ``ignore = dirty`` per
+# submodule so transient ``__pycache__/`` etc. don't trigger
+# "modified content" noise in parent-repo ``git status``.
+
+# ============================================================
+# Pre-release additions (Task 10 of mriforge_claude_code_plan.md)
+# ============================================================
+
+# Python build / cache (some entries duplicate earlier lines; harmless)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist/
+.venv/
+venv/
+.python-version
+
+# Data and outputs (never committed)
+databases/
+*.h5
+*.nii
+*.nii.gz
+*.pt
+*.pth
+*.ckpt
+# VF marker fixtures: small, deterministic (fixed-seed) basis/template
+# tensors consumed by the conformal/stego strategies + config-health audit.
+# The blanket *.pt rule above otherwise swallows them, so they never sync
+# to the cluster and the audit fails with "Marker basis not found".
+!data/markers/
+!data/markers/**
+outputs/
+wandb/
+tensorboard/
+lightning_logs/
+
+# Smoke / training run artefacts
+experiments/**/results/*.log
+experiments/**/results/*.json
+experiments/**/results/*.pkl
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs build
+docs/_build/
+docs/_autoapi/
+
+# Audit reports (local-only). Anchored to repo root so nested source dirs
+# named `audit/` (src/mriforge/config/schemas/audit/, tools/audit/, TODO/audit/)
+# aren't accidentally ignored.
+/audit/
+
+# Runtime metric/feature caches written by the training/eval loops.
+# Anchored to repo root so any package-local `cache/` (none today) is safe.
+/cache/
+
+# Version-controlled test-data fixtures wrongly caught by the blanket `*.json`
+# rule above. These are load-bearing allowlists / calibration scaffolds that the
+# test suite reads on the cluster; they MUST be tracked, not ignored.
+!tests/architecture/_known_violations.json
+!tests/contracts/_known_unbuildable.json
+!tests/contracts/_known_unregistered_advertised.json
+!tests/convergence/bounds.json
+!tests/determinism/_reference_hashes.json
+!tests/unit/_known_sim2rank_docstring_counts.json
+
+# Same rule, for the blanket `*.pt` above. This golden is TRACKED here only
+# because it was force-added, which works in a checkout that already has it and
+# fails in every fresh one: `git add -A` silently skips it, so a new clone's
+# first commit omits the fixture while any export manifest still lists it. The
+# seven negations above exist for that reason; this file was the one left out.
+!tests/unit/data/builders/_coil_processing_parity_golden.pt
+
+# WS-4 physics audit ledger artifacts (version-controlled despite blanket *.json)
+!docs/audits/ws4_physics_applied_fixes.json
+!docs/audits/ws4_physics_flag_only_backlog.json
+!docs/audits/ws4_physics_capability_declarations.json
+# WS-6 models audit ledger artifacts (version-controlled despite blanket *.json)
+!docs/audits/ws6_models_applied_fixes.json
+!docs/audits/ws6_models_flag_only_backlog.json
+!docs/audits/ws6_models_capability_declarations.json
+
+# sim2rank paper figures (version-controlled despite the blanket *.png rule above)
+!docs/figures/sim2rank_latest/
+!docs/figures/sim2rank_latest/*.png
+
+# Experiment 11 k-space-filling figure assets. Generated by
+# tools/figures/generate_exp11_mask_figures.py, but version-controlled despite
+# the blanket *.png rule above: without them
+# docs/figures/experiment_11_kspace_filling.tex does not compile from a fresh
+# clone, and regenerating needs a torch environment the docs build has no
+# reason to require.
+!docs/figures/experiment_11_kspace_filling/
+!docs/figures/experiment_11_kspace_filling/*.png
+!docs/figures/experiment_11_kspace_filling/*.json
+
+# Sampling-hierarchy comparison mosaics. Generated by
+# tools/physics/compare_sampling_hierarchies.py, version-controlled despite the
+# blanket *.png rule above because they are the evidence behind the cartesian_vd
+# mapping decision (#953) -- a reviewer must be able to see them without a torch
+# environment to regenerate them.
+!docs/figures/sampling_hierarchy_comparison/
+!docs/figures/sampling_hierarchy_comparison/*.png
+
+# The golden-mask baseline. Version-controlled despite the blanket *.json rule:
+# it IS the refactor-safety check for the sampling module -- a gate whose
+# baseline is not committed cannot detect anything.
+!tests/fixtures/mask_golden_baseline.json
+
+# The config golden baseline. Version-controlled despite the blanket *.json rule
+# for the same reason as the mask baseline: a gate whose baseline is not
+# committed cannot detect anything, and every phase of the diffusion cleanup
+# rests on comparing against it.
+!tests/fixtures/config_golden_baseline.json
+unit_tests
+docs/lean/MRIxFields/.lake
+
+# `scalene view <profile>.json` writes its HTML to the CURRENT DIRECTORY under a
+# FIXED name (`scalene-profile.html`) — not beside the profile it was handed, and
+# not named after it. docs/SCALENE_USAGE.md shows that command run from the repo
+# root, so following the docs drops an untracked ~5 MB file here, overwritten by
+# the next view. Root-anchored on purpose: a `scalene-profile.json` under
+# experiments/results/ is a real profiling artifact, and that tree is already
+# ignored on its own terms (the `results` rule above).
+/scalene-profile.html
+/scalene-profile.json

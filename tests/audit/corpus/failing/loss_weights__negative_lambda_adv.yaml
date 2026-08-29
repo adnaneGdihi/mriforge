@@ -1,0 +1,63 @@
+# FAILING YAML — trips: loss_weights (ValidatorRegistry)
+# Violation: losses.gan.lambda_adv out of range (value 25.0)
+# check_name: loss_weights
+#
+# Repointed 2026-08-12 (#933): the rule used to read the retired top-level
+# 'objectives:' block, which no loadable config can declare -- so it was
+# structurally dead on every real config. It now reads the canonical
+# 'losses.gan.lambda_adv' this fixture declares below.
+
+# expect: registry
+#   'loss_weights' also names a DIFFERENT ConfigHealthChecker method
+#   (check_loss_weights, "all major reconstruction weights are 0.0") that
+#   would not fire on this violation, so this fixture stays registry-only to
+#   avoid colliding with that check's health-checker parametrisation.
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — loss_weights (lambda_adv out of range)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+  training_mode: gan
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_loss_weights
+
+data:
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 4
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_loss_weights/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+  gan:
+    lambda_adv: 25.0  # <<< VIOLATION: exceeds range [0, 10]

@@ -1,0 +1,33 @@
+# zizmor configuration — workflow static-analysis tuning.
+# Scoped to suppress findings that are pragmatic for a research-codebase
+# release-train: the team uses tagged action refs from trusted publishers
+# (the official actions/* org, github/*, gitleaks/*, ossf/*, codecov/*,
+# release-drafter/*, amannn/*, astral-sh/*, dependabot/*, softprops/*,
+# pypa/*, github/codeql-action/*).
+#
+# Pinning every action to a SHA hash is a separate hardening pass (Phase
+# X of the CI ratchet — see docs/explanation/ci_ratchet.md). Until then,
+# the project relies on Dependabot to keep `@v4`-style tags refreshed
+# whenever a trusted publisher releases an update.
+
+rules:
+  unpinned-uses:
+    # "policies" is a list of (pattern, allowed-ref-shape) rules. The
+    # first matching pattern wins. `ref-shape: any` permits a tagged
+    # major-version ref (e.g. `@v4`); `ref-shape: hash` requires a SHA.
+    config:
+      policies:
+        "actions/*": "any"
+        "github/codeql-action/*": "any"
+        "github/*": "any"
+        "ossf/scorecard-action": "any"
+        "codecov/codecov-action": "any"
+        "gitleaks/gitleaks-action": "any"
+        "release-drafter/release-drafter": "any"
+        "amannn/action-semantic-pull-request": "any"
+        "astral-sh/setup-uv": "any"
+        "softprops/action-gh-release": "any"
+        "pypa/gh-action-pypi-publish": "any"
+        # Default: still require a hash. Forces explicit allow-list entries
+        # whenever a new action is introduced.
+        "*": "hash-pin"

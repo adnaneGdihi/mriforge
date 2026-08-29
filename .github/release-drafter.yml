@@ -1,0 +1,85 @@
+# Release-drafter config. Draft release notes are accumulated continuously
+# as PRs merge to main, then published as a single GitHub release when the
+# maintainer tags vX.Y.Z. Aligns with the Conventional Commits prefixes
+# documented in CONTRIBUTING.md.
+
+name-template: "v$RESOLVED_VERSION"
+tag-template: "v$RESOLVED_VERSION"
+
+categories:
+  - title: "Features"
+    labels: [feat, feature, enhancement]
+  - title: "Fixes"
+    labels: [fix, bug]
+  - title: "Performance"
+    labels: [perf, performance]
+  - title: "Documentation"
+    labels: [docs, documentation]
+  - title: "Refactors"
+    labels: [refactor]
+  - title: "Tests"
+    labels: [test, tests]
+  - title: "CI"
+    labels: [ci]
+  - title: "Build & dependencies"
+    labels: [build, dependencies]
+  - title: "Other"
+    labels: ["*"]
+
+change-template: "- $TITLE (#$NUMBER) by @$AUTHOR"
+change-title-escapes: '\<*_&'   # escape markdown so issue titles render cleanly
+
+# Semver bumping driven by Conventional-Commits prefix.
+version-resolver:
+  major:
+    labels: [breaking, "breaking-change"]
+  minor:
+    labels: [feat, feature]
+  patch:
+    labels: [fix, bug, perf, docs, refactor, test, ci, build, dependencies]
+  default: patch
+
+# Conventional-Commits-style auto-labelling: parse the PR title prefix and
+# apply the matching label so the categoriser above can group it.
+autolabeler:
+  - label: feat
+    title: ["/^feat(\\(.+\\))?!?:.+/i"]
+  - label: fix
+    title: ["/^fix(\\(.+\\))?!?:.+/i"]
+  - label: perf
+    title: ["/^perf(\\(.+\\))?!?:.+/i"]
+  - label: docs
+    title: ["/^docs(\\(.+\\))?!?:.+/i"]
+  - label: refactor
+    title: ["/^refactor(\\(.+\\))?!?:.+/i"]
+  - label: test
+    title: ["/^test(\\(.+\\))?!?:.+/i"]
+  - label: ci
+    title: ["/^ci(\\(.+\\))?!?:.+/i"]
+  - label: build
+    title: ["/^build(\\(.+\\))?!?:.+/i"]
+  - label: chore
+    title: ["/^chore(\\(.+\\))?!?:.+/i"]
+  - label: breaking
+    title: ["/^[a-z]+(\\(.+\\))?!:.+/i"]   # any prefix with trailing !
+
+exclude-labels:
+  - skip-changelog
+
+template: |
+  # Release $RESOLVED_VERSION
+
+  $CHANGES
+
+  ## GPU validation
+
+  <!-- Maintainer: fill in the validation matrix from the release checklist. -->
+  - Hardware: TBD
+  - PyTorch: TBD
+  - CUDA: TBD
+  - `pytest -m gpu`: TBD
+  - `pytest tests/physics/`: TBD
+  - `pytest tests/integration/test_determinism_sentinel.py`: TBD
+  - Tier-2 audit on `experiments/active/`: TBD
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION

@@ -1,0 +1,67 @@
+# FAILING YAML — trips: cycle_bloch_requires_discriminator (ConfigHealthChecker)
+# Violation: training.training_mode='cycle_bloch' but model.discriminator_component
+#   is absent.  CycleBlochStrategy.train_step unconditionally accesses
+#   self.env.discriminator which is None without this block → ValueError.
+# check_name: cycle_bloch_requires_discriminator
+# severity: error
+#
+# How the check fires (config_health_checker.py::check_cycle_bloch_requires_discriminator):
+#   training.training_mode = 'cycle_bloch'
+#   'cycle_bloch' in _CYCLE_BLOCH_TRAINING_MODES      → True
+#   model.discriminator_component is None              → error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — cycle_bloch_requires_discriminator (cycle_bloch, no disc_component)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.cycle_bloch.CycleBlochStrategy
+  training_mode: cycle_bloch    # <<< requires model.discriminator_component
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_cycle_bloch_disc
+
+data:
+  dataset_type: synthetic
+  coil_processing_mode: rss
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+  # discriminator_component is intentionally ABSENT — this is the violation
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_cycle_bloch_disc/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+  gan:
+    enable_adversarial: true
+    lambda_adv: 1.0
+    disc_updates: 1
+    r1_interval: 16
+    r1_probability: 0.5
+    gan_loss_type: hinge

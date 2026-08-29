@@ -1,0 +1,253 @@
+# Write an experiment YAML
+
+Every experiment in MRIForge is one YAML file. The schema is the canonical
+v6.0 layout — frozen Pydantic v2 models defined in
+`src/mriforge/config/schemas/`. The audit ladder catches mistakes before
+training starts.
+
+This page is the short, opinionated walkthrough. The dry exhaustive
+reference is at [YAML schema](../reference/yaml_schema.md). For
+multi-experiment campaigns see
+[campaigns_user_guide](https://github.com/adnaneGdihi/mriforge/blob/main/docs/campaigns_user_guide.rst).
+
+## Where the file lives
+
+| Where | When |
+|---|---|
+| `experiments/inprogress/<paradigm>/<arm>.yaml` | **Default** for any new experiment under development. The smoke wrapper auto-discovers everything here. |
+| `experiments/inprogress/<paradigm>/ablations/<arm>.yaml` | Ablation studies sit beside their parent. |
+| `experiments/active/<arm>.yaml` | After smoke + audit pass. Don't put new files here directly. |
+| `experiments/campaigns/<cohort>.yaml` | A campaign manifest — see the campaigns user guide. |
+| `experiments/templates/` | Copy-paste starting points. |
+
+The promotion path is **always** `inprogress → active`, never the other
+direction. See the [four-step paradigm recipe](https://github.com/adnaneGdihi/mriforge/blob/main/CONTRIBUTING.md#adding-a-new-training-paradigm-four-step-recipe).
+
+## The 12 required blocks
+
+Every YAML must declare all of these. The Pydantic schema rejects the
+file with a clear error if anything is missing.
+
+```yaml
+config_version: '6.0'
+
+metadata:
+  name: <arm_name>
+  description: |
+    What this experiment does, why, and what it's compared against.
+  tags: {paradigm: ..., type: ..., novelty: ...}
+  version: '6.0'
+
+acceleration:
+  base_acceleration: 4
+  center_fraction: 0.08
+
+artifacts:
+  persistent_root: experiments/results/<arm_name>
+
+checkpoint:
+  enabled: true
+  keep_best_n: 3
+  keep_last_n: 5
+  save_interval: 10000
+
+data:
+  coil_processing_mode: rss          # or 'sense', 'as_is'
+  dataset_type: nifti_paired         # see schema for full list
+  data_root: ${MRIFORGE_DATA_ROOT}/processed/ulf_to_hf_ldm/train
+  patch_size: [256, 256, 1]
+  batch_size: 2
+  num_workers: 4
+
+losses:
+  output_domain: image               # or 'kspace', 'complex', 'latent'
+  image_losses:
+    - {name: l1,  weight: 1.0, enabled: true}
+    - {name: ssim, weight: 0.5, enabled: true}
+  kspace_losses: []
+  complex_losses: []
+
+logging:
+  experiment_name: <arm_name>
+  level: info
+
+loss_logging:
+  enabled: true
+  csv_path: experiments/results/<arm_name>/logs/losses.csv
+
+metrics:
+  best_metric_name: val_psnr
+  best_metric_mode: max
+  domain: image
+
+model:
+  model_type: <registered_name>
+  in_channels: 1
+  out_channels: 1
+  input_type: image
+  model_kwargs: {}
+
+optimization:
+  optimizer_type: adamw
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  use_amp: false
+
+training:
+  training_mode: <registered_mode>
+  strategy_class: mriforge.infrastructure.training.strategies.<...>
+  epochs: 100
+  device: cuda
+  seed: 42
+  output_dir: experiments/results/<arm_name>
+
+validation:
+  enabled: true
+  metrics: [psnr, ssim]
+  eval_interval: 5000
+
+physics: {}                          # required block; may be empty
+```
+
+## The gotcha checklist
+
+Every YAML must pass these — and they're the easiest places to slip up.
+
+### 1. Diffusion paradigms need `training.diffusion` + `num_timesteps`
+
+If `training.strategy_class` matches `*Diffusion*`, the audit rejects the
+config unless you declare:
+
+```yaml
+training:
+  diffusion:
+    type: score_based            # or 'cold'
+    degradation: null
+  num_timesteps: 100
+```
+
+This applies even to strategies that don't subclass
+`DiffusionTrainingStrategy` — the audit matches by name pattern (e.g.
+`teichmuller_cold_diffusion`, `hrf_manifold_diffusion`).
+
+### 2. Loss-domain block matching
+
+`losses.image_losses[*]` may only contain losses with
+`@register_loss(domain="image")`. Three escape hatches when a loss
+genuinely needs to appear elsewhere:
+
+- Move the loss to its matching block.
+- Set `losses.output_domain: latent` (or whatever the loss domain is).
+- Mark the loss `compatible_with=["image"]` in its decorator (see
+  [add_loss](add_loss.md#domain-spillover-when-the-audit-fights-you)).
+
+### 3. RSS channel collapse on image-domain datasets
+
+`coil_processing_mode: rss` on an image-domain `dataset_type`
+(`nifti`, `nifti_paired`, `npy_slice`) collapses input to 1 channel via
+the RSS magnitude. If `model.in_channels=2` here, the `domain_alignment`
+audit rejects it:
+
+| dataset_type | coil_processing_mode | model.in_channels |
+|---|---|---|
+| `kspace` | any | `2` (real/imag interleave) |
+| `nifti_paired`, `npy_slice` | `rss` | `1` (magnitude) |
+| `nifti_paired`, `npy_slice` | `as_is` | as the file declares |
+
+### 4. MRF strategies need an `mrf:` block
+
+If `training_mode` is one of the MRF aliases, the audit demands specific
+fields:
+
+```yaml
+mrf:
+  spiral_rotation_schedule: golden_angle     # or 'linear', 'random'
+  n_timepoints: 1000
+  sar_max_w_per_kg: 4.0
+  gradient_slew_rate_t_per_m_per_s: 200.0
+  phantom_calibration_path: ${MRIFORGE_DATA_ROOT}/calibration/phantom.h5
+```
+
+The required subset depends on which MRF audit-plan validators are wired
+in for the paradigm — see the audit JSON for the exact list.
+
+### 5. EPI distortion needs `data.phase_encode_axis`
+
+For `beltrami_epi_distortion` and related strategies:
+
+```yaml
+data:
+  phase_encode_axis: -2    # or -1 for transverse PE
+```
+
+### 6. Strategies that read extra batch keys need `data.expose_*` flags
+
+The strategy layer reads `batch["conformal_jacobian"]` (and similar)
+only if the data pipeline mounts the relevant wrapper. Flip the flag:
+
+```yaml
+data:
+  expose_conformal_jacobian: true
+  expose_cortex_flatten_grid: true
+  expose_glm_design_matrix: true
+  expose_scanner_id: true
+```
+
+Without the flag, the strategy gets a `KeyError` mid-training. The
+audit warns but doesn't reject — so this is the bug that bites at
+epoch 1.
+
+### 7. Strategy class + `training_mode` must agree
+
+`training_mode` is matched against `TRAINING_MODE_CONSTRAINTS` in
+`src/mriforge/config/validation_constants.py`. Adding a new strategy
+means adding **three** entries: `STRATEGY_CLASS_PATHS`,
+`VALID_TRAINING_MODES`, and `TRAINING_MODE_CONSTRAINTS`. See
+[add_paradigm](add_paradigm.md#2-register-the-dispatch-key).
+
+### 8. Use `${MRIFORGE_DATA_ROOT}` for data paths
+
+Never hardcode a cluster path. The audit's `hardcoded_cluster_paths`
+check rejects any data field starting with `/project/<user>/` or
+`/scratch/<user>/` *unless* that prefix matches your own
+`MRIFORGE_DATA_ROOT` / `PROJECT_ROOT` env var (see
+[CLUSTER_DATA_LAYOUT.md](../CLUSTER_DATA_LAYOUT.md)).
+
+## Validate before launching
+
+```bash
+mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml             # Tier 0+1, ~100ms
+mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml --probe     # adds Tier 2 (~30s, GPU)
+```
+
+`--strict` (default in the smoke wrapper) exits non-zero on any warning.
+
+## Common errors, decoded
+
+| Error message | Cause | Fix |
+|---|---|---|
+| `extra="forbid"` | YAML has a key the schema doesn't know | Either drop the key, or add it to the appropriate sub-schema |
+| `ValidationError: training_mode` | Typo in the alias | Check `VALID_TRAINING_MODES` |
+| `paradigm_required_fields` | Diffusion paradigm missing `training.diffusion` block | Add it (gotcha #1) |
+| `domain_alignment` | RSS + 2-channel mismatch | Fix `model.in_channels` (gotcha #3) |
+| `loss_domain_block_match` | Loss in wrong block | Move it (gotcha #2) |
+| `hardcoded_cluster_paths` | Literal `/project/...` in YAML | Use `${MRIFORGE_DATA_ROOT}` (gotcha #8) |
+
+## Reference YAMLs to copy from
+
+| Strategy class | Reference YAML |
+|---|---|
+| `ReconstructionTrainingStrategy` | `experiments/active/experiment_42_bloch_cycles.yaml` |
+| `ScoreFieldTomographyStrategy` | `experiments/inprogress/novel_2026/idea_2_score_field_tomography.yaml` |
+| `BeltramiMotionCorrectionStrategy` | `experiments/inprogress/sfc_conformal_2026/idea_4_beltrami_motion_correction.yaml` |
+| `RiemannianMRFDiffusionStrategy` | `experiments/inprogress/mrf_2026/idea_2_riemannian_mrf_diffusion.yaml` |
+| Cold diffusion (Teichmüller) | `experiments/inprogress/sfc_conformal_2026/idea_6_teichmuller_cold_diffusion.yaml` |
+| Generic GAN | `experiments/active/dummy_gan.yaml` (minimal GAN reference) |
+
+Copy-and-modify is cheaper than writing from scratch.
+
+## Next steps
+
+- [YAML schema reference](../reference/yaml_schema.md) — every field, every type.
+- [Audit ladder](../explanation/audit_ladder.md) — what each tier checks.
+- [Add a paradigm](add_paradigm.md) — when a new training mode is needed.

@@ -1,0 +1,124 @@
+# Canonical passing YAML for GAN paradigm.
+# Based on experiments/active/dummy_gan.yaml (known-good active config).
+# Used by: tests/audit/test_audit_regression.py corpus/passing sweep.
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Corpus Passing — GAN Basic
+  description: Minimal GAN config for audit regression corpus
+  tags:
+    - corpus
+    - gan
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+  training_mode: gan
+  epochs: 2
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_gan_basic
+
+data:
+  dataset_type: synthetic
+  patch_size:
+    - 32
+    - 32
+    - 1
+  batch_size: 4
+  num_workers: 0
+  normalize_kspace: false
+  normalize_images: true
+  validation_split: 0.1
+  target_channels: 1
+  samples_per_volume: 2
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+  caching:
+    strategy: none
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+  model_kwargs:
+    base_channels: 32
+    channel_multipliers:
+      - 1
+      - 2
+    num_res_blocks: 1
+    dropout: 0.0
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adam
+  weight_decay: 0.0
+  beta1: 0.5
+  beta2: 0.999
+  use_amp: false
+  enable_gradient_clipping: true
+  gradient_clip_method: norm
+  gradient_clip_value: 1.0
+  scheduler:
+    type: constant
+    warm_up_epochs: 0
+
+acceleration: {}
+
+logging:
+  log_interval: 5
+  log_to_file: false
+  log_to_console: true
+  enable_experiment_tracking: false
+  level: warning
+  log_dir: experiments/results/corpus_gan_basic/logs
+  enable_tensorboard: false
+
+losses:
+  output_domain: image
+  # `training_mode: gan` resolves to a strategy using AdversarialMixin, which
+  # raises ValueError('AdversarialMixin requires `config.losses.gan` to be set')
+  # during construction. This fixture is in `passing/`, so it has to declare it.
+  # It could not be audited before: the file failed to LOAD on `training.seed`,
+  # so this check never ran on it.
+  gan:
+    enable_adversarial: true
+    lambda_adv: 1.0
+    gan_loss_type: lsgan
+    disc_updates: 1
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+metrics:
+  compute_psnr: true
+  compute_ssim: true
+  compute_mse: true
+  metric_interval: 5
+
+validation:
+  enabled: true
+  eval_interval: 5
+
+physics:
+  kspace:
+    enforce_hermitian_symmetry: false
+    enable_kspace_recon: false
+  data_consistency:
+    enabled: false
+
+checkpoint:
+  enabled: false
+
+early_stopping:
+  enabled: false
+  patience: 10
+  mode: min
+  metric: val_loss

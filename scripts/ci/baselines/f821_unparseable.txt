@@ -1,0 +1,7 @@
+# Files that do not parse, so their F821 status is UNKNOWN and every
+# AST gate in the repo silently skips them. Each one is a bug.
+#
+# EMPTY ON PURPOSE. The last entry (scripts/diagnostics/trace_exp11_dataflow.py,
+# 14 committed merge-conflict blocks) was resolved in #1404. An empty list is the
+# goal state, not a missing file -- if a new path appears here, it is silently
+# exempt from every AST gate in the repo until it is removed again.

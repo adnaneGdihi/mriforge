@@ -1,0 +1,68 @@
+name: Test (release)
+
+# Full test suite + mutation + benchmark.  Runs on release tags and can
+# be triggered manually.  Budget: ≤8h.  Marker selection mirrors the
+# "release" lane in
+# docs/superpowers/plans/2026-05-22-unified-test-suite-master-plan.md.
+#
+# Mutation testing (mutmut) and fuzz (atheris) are opt-in extras — the
+# Makefile target prints a clear WARNING and skips gracefully when they
+# are not installed rather than failing the job.
+#
+# GPU-marked tests are included in this lane.
+# TODO: replace `ubuntu-latest` with a CUDA-capable runner label once one
+#       is configured in the repository's Actions runner pool — GPU-marked
+#       tests will be silently skipped on a CPU-only runner (they carry
+#       the `gpu` marker which conftest.py skips without CUDA).
+
+on:
+  push:
+    tags:
+      - "v*"
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: test-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test-release:
+    runs-on: ubuntu-latest  # TODO: CUDA runner for gpu-marked tests
+    timeout-minutes: 480
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install (CPU torch + torchvision from same index)
+        # torch and torchvision must come from the same CPU wheel index or
+        # torchvision's C++ extensions fail to register against libtorch.
+        # See physics-tests.yml for the full explanation.
+        run: |
+          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev]"
+
+      - name: Install optional mutation/fuzz deps (best-effort)
+        # mutmut and atheris are not in [dev] extras — install them
+        # opportunistically; the Makefile targets degrade gracefully when absent.
+        run: pip install mutmut atheris || true
+
+      - name: Run release test lane
+        env:
+          MRIFORGE_SUPPRESS_CLINICAL_WARNING: "1"
+        run: make test-release
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./tests_experiments/coverage_release.xml
+          flags: release
+          fail_ci_if_error: false

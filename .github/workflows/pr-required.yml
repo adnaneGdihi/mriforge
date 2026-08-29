@@ -1,0 +1,296 @@
+name: PR (required)
+
+# The blocking lane for the PUBLIC distribution.
+#
+# THIS FILE IS AN OVERLAY. It lives at
+# scripts/release/public_overlay/.github/workflows/pr-required.yml in the private
+# tree -- inert there, because Actions only reads workflows from the repository
+# root -- and export_public_tree.py maps it onto .github/workflows/pr-required.yml
+# in the export, replacing the private lane's copy. Edit it HERE; an edit made in
+# the exported tree is discarded by the next export.
+#
+# It is a copy rather than a parameterization of the private lane because the two
+# differ in which JOBS exist, not in a value: the private lane's `yaml-audit` job
+# runs five gates over 647 experiment arms, and neither the arms nor the gates are
+# distributed. A gate that cannot see its corpus is REMOVED here, not left in to
+# pass vacuously -- a repo-rooted script run against a tree with no corpus exits 0
+# all-clean, and that reads exactly like a pass.
+#
+# There is deliberately NO `branches:` filter. That filter matches the PR's BASE
+# branch. Pinning it to `main` is what silently disabled every check on every PR
+# in the private repo until 2026-07-12 -- a skipped workflow renders as no check
+# at all rather than a red one, so the PR page looked clean. Do not reintroduce
+# it, not even now that `main` is the only base branch here.
+#
+# Branch protection should require exactly one check: `required`.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-required-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  MRIFORGE_SUPPRESS_CLINICAL_WARNING: "1"
+
+jobs:
+  lint-diff:
+    name: lint (changed files)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # the three-dot diff needs the merge base
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install ruff
+      - name: ruff, scoped to the lines this PR added
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # Whole-file ruff on every touched file is UNSATISFIABLE against a tree
+        # this size: it carries thousands of pre-existing findings, many of them
+        # N806 firing on B0/T1/M0 -- the CORRECT symbols in MRI. A gate that can
+        # never be green is not a gate; it teaches everyone to merge red, and then
+        # a real failure walks straight through. Added files are gated end to end;
+        # modified files are gated only on the lines the PR added.
+        run: python scripts/ci/lint_changed_lines.py --base "${BASE}" --head "${HEAD}"
+      - name: F821 ratchet, whole tree
+        # Deliberately NOT diff-scoped, unlike the step above. The defect this
+        # catches is a mechanical rewrite that is locally well-formed everywhere it
+        # is wrong, and the PR that BREAKS a name and the line that USES it are
+        # usually not the same lines. ruff cannot stand in for it: F821 resolves a
+        # free variable inside a generator expression against a module-scope
+        # binding, so a half-applied rename passes lint and NameErrors at runtime.
+        #
+        # --absent-files-ok is required HERE and is not in the private lane. The
+        # baseline is recorded on the full tree, and this distribution ships a
+        # subset -- scripts/sim2rank/ and scripts/preprocessing/ are dropped
+        # wholesale -- so some recorded rows name files that are simply not here.
+        # The flag downgrades ONLY rows whose file is absent, and only in the
+        # count-went-down direction; a row whose file is PRESENT still fails
+        # exactly as it would on the full tree, and every absence is printed.
+        #
+        # Do NOT "fix" this with --write. Regenerating accepts whatever the shipped
+        # files currently carry, which baselines real defects and raises a ceiling
+        # that is supposed to be a ratchet.
+        run: python scripts/ci/check_f821_ratchet.py --absent-files-ok
+
+  guards:
+    name: guards (pairing + layering + docs)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Source/test pairing
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # --base/--head is mandatory. The script's default mode reads the staging
+        # area, and CI stages nothing, so it would pass without inspecting the PR.
+        run: |
+          python scripts/ci/check_test_paired_with_source.py \
+            --base "${BASE}" --head "${HEAD}"
+      - name: Layering ratchet
+        # Repo-wide scan, ratcheted against scripts/ci/layering_baseline.txt: only
+        # violations this PR *adds* fail the job.
+        run: bash scripts/ci/check_layering.sh
+      - name: Docs navigation (no dead sidebar entries)
+        # The sphinx build is advisory and runs without -W, so a toctree entry
+        # naming a missing document only ever warned. Pure text parsing, no sphinx
+        # and no torch, so it belongs in the blocking lane rather than behind the
+        # docs build.
+        run: python scripts/ci/check_docs_navigation.py
+      - name: Docs commands point at files that exist
+        # Not in the private lane, and it matters far more here. Every path this
+        # gate checks EXISTS in the private tree and some are absent from the
+        # distribution, so a command a reader can paste out of README.md or a
+        # docs/ page is exactly the thing that breaks on export and on nothing
+        # else. --commands-only scopes the exit code to pasteable commands;
+        # prose REFERENCE findings are printed but do not block.
+        #
+        # Its scan root covers docs/ AND the root-level pages. A scan root is an
+        # unaudited constant: while this gate looked only at docs/, no violation
+        # planted inside docs/ could show that README.md was unscanned.
+        run: python scripts/ci/check_docs_paths_exist.py --commands-only
+      - name: DataLoader construction SSOT
+        # Exactly two sanctioned constructors; see the allow-list in the checker.
+        run: python scripts/ci/check_dataloader_construction_ssot.py
+      - name: Emitted health-check names
+        # train.py picks FATAL health failures by matching against the EMITTED
+        # HealthCheckResult.check_name, which is an independent value from the
+        # method name -- they already diverge for 14 of the checks.
+        run: python scripts/ci/check_health_check_names.py
+
+  architecture:
+    name: architecture fitness functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+          # This tier is almost pure AST over source text, but not entirely:
+          # test_config_immutability.py imports mriforge.config.settings in two
+          # function bodies, so the package must still be installed. The claim the
+          # flag makes is only about torchvision.
+          torchvision: "false"
+      - name: Architecture fitness functions
+        # BOTH paths, deliberately. tests/architecture/ holds the detectors;
+        # tests/unit/architecture/ holds the violations planted against them,
+        # proving each detector can still see each rule and each SHAPE
+        # (top-of-file col 0 AND function-local col 8). Running only the first is
+        # the advertised-but-inert shape this job exists to close: the plants
+        # would be collected and never EXECUTED, so gutting a detector's rule
+        # table would keep CI green.
+        #
+        # Deselect, with its reason stated rather than hidden:
+        # test_no_new_oversized_files is RED on arrival. Six files sit over the
+        # 300-LOC ceiling and are absent from
+        # tests/architecture/baselines/large_files.txt -- measured, not inherited:
+        #   infrastructure/orchestration/campaign_report_generator.py    302
+        #   infrastructure/reporting/plotters/__init__.py                303
+        #   models/generators/diffusion_variants.py                      318
+        #   models/generators/domain_adaptation_generators.py            385
+        #   models/generators/generative_variants.py                     308
+        #   models/generators/physics_variant_generators.py              356
+        # They fail identically in the source repository, so this is inherited
+        # debt and not an artefact of the export. Deliberately stated in full here
+        # rather than cited: the upstream tracker is private, so an issue number
+        # would send a reader of THIS repo looking for a page they cannot open.
+        #
+        # The alternative -- MRIFORGE_UPDATE_ARCH_BASELINE=1 -- is worse and is
+        # deliberately NOT taken: the ratchet keys on file identity, so recording
+        # these six would pre-exempt them permanently and make any further growth
+        # invisible. A baseline regeneration must never raise a ceiling. A named
+        # deselect leaves one test disabled; a regenerated baseline silently
+        # disables the rule for those files forever.
+        #
+        # Every other test in the tier runs, including the rest of
+        # test_structure_guard.py.
+        run: |
+          pytest tests/architecture/ tests/unit/architecture/ \
+            -q -p no:cacheprovider \
+            --deselect tests/architecture/test_structure_guard.py::test_no_new_oversized_files
+
+  unit-collect:
+    name: unit tier collects
+    runs-on: ubuntu-latest
+    # Measured on the export itself, not inherited from the source repo's lane:
+    # 39,363 tests collected in 640 s (10m40s) with 0 errors, on this host. The
+    # upstream figure is ~43k, because the export ships fewer test modules -- a
+    # count is bound to the file set it was taken on, so the one published here
+    # is the one measured here. 35 minutes leaves room for a hosted runner being
+    # slower than this host and for the suite growing, without being so generous
+    # that a genuine hang looks like a slow day.
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+          # A model module that fails to import registers nothing, and several
+          # test modules import the registries at module scope -- without
+          # torchvision those modules raise during COLLECTION, which is precisely
+          # what this job asserts cannot happen.
+          torchvision: "true"
+      # Collection only. This job makes NO claim about tests passing; that is a
+      # separate and currently-false claim, and conflating them would make the
+      # required lane un-greenable on arrival.
+      #
+      # It blocks anyway, because "the tier cannot be collected" is not test debt
+      # -- it is a broken tier. pytest ABORTS the whole session on a collection
+      # error, so ONE test module importing a deleted name silently zeroes every
+      # test in the run: the suite exits non-zero having executed nothing, which
+      # looks exactly like an ordinary failure. That state was live upstream for
+      # months, and it hid twice over, because the only thing that reliably ran
+      # was a test invoked by explicit path -- which is how changes get verified.
+      - name: unit/audit/contracts tiers are collectable
+        run: pytest tests/unit tests/audit tests/contracts --collect-only -q -p no:cacheprovider
+
+  physics:
+    name: physics tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      # No paths filter. Physics correctness is load-bearing (fft2c/ifft2c
+      # centering and ortho normalization) and the suite is cheap, so it runs on
+      # every PR regardless of what changed.
+      - run: pytest tests/physics/ -v --tb=short
+
+  security:
+    name: security (pip-audit + gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: read   # gitleaks-action reads the PR's commits to scope its scan
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: mri
+          torchvision: "false"
+      - name: Install pip-audit
+        # Upgrade setuptools LAST: an earlier upgrade is rolled back when torch
+        # installs. Deliberately no upper bound -- a ceiling copied from a
+        # dependency's metadata is a snapshot, not a link, and the previous copy
+        # of one (`<82`, mirroring torch) is what pinned setuptools to a version
+        # PYSEC-2026-3447 later made vulnerable, with no version able to satisfy
+        # both. If a future torch reintroduces an upper bound, pip fails loudly
+        # here rather than silently seating a vulnerable version.
+        run: |
+          pip install pip-audit
+          pip install --upgrade 'setuptools>=83.0.0'
+      - name: Audit installed packages for CVEs
+        # --skip-editable: mriforge's own editable install is not on PyPI. No
+        # --strict: in strict mode pip-audit exits 1 merely because an editable
+        # install cannot be audited. Real CVEs still exit 1.
+        run: pip-audit --skip-editable --progress-spinner off
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          GITLEAKS_ENABLE_SUMMARY: true
+
+  required:
+    name: required
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint-diff, guards, architecture, unit-collect, physics, security]
+    steps:
+      - name: Assert every required job succeeded
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "job results: ${RESULTS}"
+          # Do NOT lean on the implicit success() here. A job that was skipped or
+          # cancelled is not a job that passed, and GitHub reports a skipped
+          # required check as neutral -- which is how a green PR page hides a
+          # check that never ran. Anything not literally "success" fails the gate.
+          for result in ${RESULTS}; do
+            if [ "${result}" != "success" ]; then
+              echo "::error::a required job reported '${result}'"
+              exit 1
+            fi
+          done
+          echo "All required jobs succeeded."

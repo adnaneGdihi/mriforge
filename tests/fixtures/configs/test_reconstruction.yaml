@@ -1,0 +1,70 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  keep_last_n: 1
+  save_interval: 10
+  save_on_epoch: true
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+  use_async_dataloader: false
+logging:
+  log_dir: ./tests/output/reconstruction
+  log_interval: 1
+loss:
+  reconstruction:
+    lambda_l1: 1.0
+    lambda_perceptual: 0.0
+    loss_type: l1
+loss_logging:
+  csv_path: ./tests/output/reconstruction/losses.csv
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_reconstruction
+  tags:
+    type: e2e_test
+metrics:
+  compute_psnr: true
+  enabled: true
+model:
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: unet
+  out_channels: 1
+  spatial_dims: 2
+optimization:
+  learning_rate: 0.0001
+  lr_scheduler_strategy: cosine
+  optimizer_type: adamw
+  use_amp: false
+  warmup_steps: 0
+  weight_decay: 0.0001
+task: reconstruction
+training:
+  epochs: 1
+  device: cpu
+  strategy_class: src.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  task: reconstruction
+  training_mode: reconstruction
+training_mode: reconstruction
+objectives:
+  reconstruction:
+    lambda_l1: 1.0
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

@@ -1,0 +1,59 @@
+name: Training-paradigm proposal
+description: Propose a new training paradigm (registered strategy + dispatch key).
+title: "feat(paradigm): <name>"
+labels: ["paradigm-proposal", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        New training paradigms enter the registry-dispatcher table and the
+        `STRATEGY_CLASS_PATHS` / `VALID_TRAINING_MODES` /
+        `TRAINING_MODE_CONSTRAINTS` triplet. Use this template to scope the
+        proposal before writing code.
+
+  - type: input
+    id: name
+    attributes:
+      label: Paradigm name (dispatch key)
+      description: snake_case alias, used in YAML as `training.training_mode`.
+      placeholder: "tropical_mrf"
+    validations:
+      required: true
+
+  - type: textarea
+    id: math
+    attributes:
+      label: Mathematical formulation
+      description: |
+        Write the objective, the forward model, and any auxiliary losses in
+        LaTeX. Cite the original paper if applicable.
+      render: latex
+    validations:
+      required: true
+
+  - type: textarea
+    id: novelty
+    attributes:
+      label: Novelty vs. existing strategies
+      description: How does this differ from the closest existing paradigm in `src/mriforge/infrastructure/training/strategies/`?
+    validations:
+      required: true
+
+  - type: textarea
+    id: registry_fit
+    attributes:
+      label: Fit with the registry-dispatcher pattern
+      description: |
+        Which existing strategy do you subclass (`BaseTrainingStrategy`,
+        `DiffusionTrainingStrategy`, `GANTrainingStrategy`)? Which losses /
+        models / metrics already in the registry do you reuse?
+    validations:
+      required: true
+
+  - type: textarea
+    id: prior_art
+    attributes:
+      label: Prior art and references
+      description: List relevant papers with DOI or arXiv links.
+    validations:
+      required: true

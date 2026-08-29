@@ -1,0 +1,33 @@
+MRIForge
+Copyright 2026 Adnane Gdihi
+
+This product includes software developed by the MRIForge maintainers as an
+independent research project.
+
+Built on:
+- PyTorch (BSD-3-Clause) — https://pytorch.org
+- MONAI (Apache-2.0) — https://monai.io
+- TorchIO (Apache-2.0) — https://torchio.readthedocs.io
+- Pydantic (MIT) — https://docs.pydantic.dev
+- torchkbnufft (MIT) — https://github.com/mmuckley/torchkbnufft
+
+Each dependency retains its own copyright and licence terms. See the
+respective project's LICENSE file for full attribution.
+
+Optional baseline submodules
+----------------------------
+``external/baselines/`` records two third-party projects as pinned Git
+submodule commits. No third-party source is redistributed here — a clone
+without ``--recursive`` contains neither. Fetching them retrieves code under
+its own licence, not this project's:
+
+- CDiffMR (Apache-2.0) — https://github.com/ayanglab/CDiffMR
+- FDB (MIT, Copyright (c) 2023 ICON Lab) — https://github.com/icon-lab/FDB
+
+Datasets and figures
+--------------------
+No MRI data ships with this repository, and no figure derived from MRI data
+is published from it. M4Raw is CC-BY-4.0 and may be redistributed with
+attribution; fastMRI is governed by its own data-use agreement, and neither
+its data nor images derived from it are redistributed here. The rule and how
+to apply it are in CONTRIBUTING.md, "Figure and data provenance".

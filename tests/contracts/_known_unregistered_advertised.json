@@ -1,0 +1,4 @@
+{
+  "_comment": "model_type names advertised in VALID_MODEL_TYPES but not registered after populate_model_registry(). As of 2026-05-22 triage all 71 names were either WIRED (alias added to stubs.py) or PURGED (removed from VALID_MODEL_TYPES). This list is now empty. Keep it empty; any new entry here represents an audit-surface lie to be fixed promptly.",
+  "unregistered_advertised": []
+}

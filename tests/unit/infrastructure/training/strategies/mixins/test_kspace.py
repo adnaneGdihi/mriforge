@@ -1,0 +1,327 @@
+"""Tests for :mod:`mriforge.infrastructure.training.strategies.mixins.kspace`.
+
+Focused on :meth:`KspaceMixin._prepare_model_input` domain classification.
+
+Regression anchor (2026-06-28): the entire ``experiment_11`` k-space cohort
+delivers **8-channel real-stacked** multi-coil k-space (4 coils x real/imag;
+``cross_contrast`` = 16-ch). The classifier previously treated k-space input as
+k-space only for complex-typed OR exactly 2-channel real tensors, so the 8/16-ch
+arms were misclassified as *image* and an extra ``fft2c`` was applied. A second
+forward FFT reflects the signal (``F{F{img}} = img(-x)``) -> the model's
+"prepared k-space" became a 180-deg-rotated image (the "doubled brain"). These
+tests pin the passthrough so no double-FFT can recur.
+"""
+
+import torch
+
+from mriforge.infrastructure.training.strategies.mixins.kspace import KspaceMixin
+
+
+class _StubConfigModel:
+    def __init__(self, model_domain: str, input_type: str) -> None:
+        self.model_domain = model_domain
+        self.input_type = input_type
+
+
+class _StubConfig:
+    def __init__(self, model_domain: str, input_type: str) -> None:
+        self.model = _StubConfigModel(model_domain, input_type)
+
+
+class _Harness(KspaceMixin):
+    """Minimal carrier exposing only what ``_prepare_model_input`` reads."""
+
+    def __init__(self, model_domain: str, input_type: str) -> None:
+        self.config = _StubConfig(model_domain, input_type)
+        self.device = torch.device("cpu")
+
+
+def test_eight_channel_real_kspace_is_passthrough_no_double_fft():
+    """8-ch real-stacked k-space with input_type=kspace must NOT be FFT'd."""
+    h = _Harness(model_domain="kspace", input_type="kspace")
+    x = torch.randn(1, 8, 16, 16)  # 4 coils x (real, imag)
+    out = h._prepare_model_input(x)
+    # Passthrough: identical object/values, no extra fft2c applied.
+    assert out.shape == x.shape
+    assert torch.equal(out, x)
+
+
+def test_sixteen_channel_real_kspace_is_passthrough():
+    """cross_contrast 16-ch real-stacked k-space must also pass through."""
+    h = _Harness(model_domain="kspace", input_type="kspace")
+    x = torch.randn(1, 16, 16, 16)
+    out = h._prepare_model_input(x)
+    assert torch.equal(out, x)
+
+
+def test_two_channel_real_kspace_still_passthrough():
+    """Regression guard: the original 2-ch behaviour is preserved."""
+    h = _Harness(model_domain="kspace", input_type="kspace")
+    x = torch.randn(1, 2, 16, 16)
+    out = h._prepare_model_input(x)
+    assert torch.equal(out, x)
+
+
+def test_image_input_to_kspace_model_still_transforms():
+    """input_type=image into a k-space model must still get fft2c'd.
+
+    Guards against over-broadening the passthrough: a genuine image-domain
+    real/imag tensor declared ``input_type: image`` must NOT be treated as
+    k-space, so the legitimate ``image_to_kspace`` transform still fires.
+    """
+    h = _Harness(model_domain="kspace", input_type="image")
+    x = torch.randn(1, 8, 16, 16)
+    out = h._prepare_model_input(x)
+    # Transform applied -> not the identity tensor.
+    assert not (out.shape == x.shape and torch.equal(out, x))
+
+
+# ---------------------------------------------------------------------------
+# setup_kspace_components: the accelerator kwargs it hands the mask generator
+#
+# Regression anchor (2026-08-16): a 1-rank probe of
+# ``experiment_11_attention_none`` trained fine and then raised at the first
+# validation step, when the strategy's generator lazily built its accelerator:
+#
+#     TypeError: ['adaptive', 'enable_dynamic_mask', ..., 'mask_seed', ...,
+#     'use_gradient_checkpointing'] is not read by any registered k-space
+#     accelerator, so DensityNestedKSpaceAccelerator would silently discard it.
+#
+# The mixin dumped the whole frozen ``AccelerationConfigSchema`` and removed
+# exactly one key, so every schema default rode along and ``mask_seed`` was
+# never translated to the accelerator's ``seed``. Training never noticed:
+# masks arrive with the batch there, so the accelerator is not constructed
+# until validation asks for one.
+# ---------------------------------------------------------------------------
+
+
+class _StubGenerator:
+    dc_layer = None
+
+
+class _StubEnv:
+    generator = _StubGenerator()
+
+
+class _AccelHarness(KspaceMixin):
+    """Carrier exposing only what ``setup_kspace_components`` reads."""
+
+    def __init__(self, undersampling) -> None:
+        from types import SimpleNamespace
+
+        self.config = SimpleNamespace(
+            undersampling=undersampling,
+            physics=None,
+            model=SimpleNamespace(model_type="kspace_cold_diffusion"),
+        )
+        self.env = _StubEnv()
+        self.device = torch.device("cpu")
+
+    def _is_cold_diffusion(self) -> bool:
+        return True
+
+
+def _exp11_acceleration():
+    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+
+    return AccelerationConfigSchema(
+        acceleration_type="density_nested",
+        base_acceleration=2.0,
+        max_acceleration=32.0,
+        center_fraction=0.08,
+        min_center_fraction=0.02,
+        acceleration_range=[2.0, 4.0, 8.0, 10.0, 12.0, 16.0, 32.0],
+        mask_direction="phase",
+        schedule_type="step",
+        mask_seed=42,
+        enforce_nested=True,
+        enable_dynamic_mask=True,
+    )
+
+
+def test_validation_accelerator_constructs_from_a_real_arm_config():
+    """The exact construction that raised on the cluster must now succeed.
+
+    ``_get_accelerator`` is where the kwargs are finally splatted, so calling it
+    is the assertion — the vocabulary gate raises on any unread name.
+    """
+    h = _AccelHarness(_exp11_acceleration())
+    h.setup_kspace_components(num_timesteps=28)
+    accelerator = h.mask_generator._get_accelerator(None)
+    assert accelerator is not None
+
+
+def test_mask_seed_reaches_the_accelerator_as_seed():
+    """``seed=None`` would send masking to the global RNG (issue #1059).
+
+    The cascade then re-draws a fresh permutation per call instead of
+    truncating one fixed ranking, so ``M_{t+1} ⊆ M_t`` no longer holds — which
+    cold diffusion's forward process assumes.
+    """
+    h = _AccelHarness(_exp11_acceleration())
+    h.setup_kspace_components(num_timesteps=28)
+    assert h.mask_generator._accelerator_kwargs["seed"] == 42
+    assert h.mask_generator._get_accelerator(None).seed == 42
+
+
+def test_unread_schema_defaults_are_not_forwarded():
+    """Anti-vacuity for the test above: a dump-and-filter would carry these."""
+    h = _AccelHarness(_exp11_acceleration())
+    h.setup_kspace_components(num_timesteps=28)
+    kwargs = h.mask_generator._accelerator_kwargs
+    for junk in (
+        "mixed_precision",
+        "use_compile",
+        "use_distributed",
+        "gradient_accumulation_steps",
+        "ground_truth_folder",
+        "schedule_steps",
+        "enable_dynamic_mask",
+        "acceleration_type",
+        "mask_seed",
+    ):
+        assert junk not in kwargs, f"{junk} would reach the accelerator"
+
+
+def test_declared_values_survive_the_translation():
+    """Filtering alone could pass the tests above while dropping real values."""
+    h = _AccelHarness(_exp11_acceleration())
+    h.setup_kspace_components(num_timesteps=28)
+    kwargs = h.mask_generator._accelerator_kwargs
+    assert h.mask_generator.default_pattern == "density_nested"
+    assert kwargs["max_acceleration"] == 32.0
+    assert kwargs["base_acceleration"] == 2.0
+    assert kwargs["min_center_fraction"] == 0.02
+    assert kwargs["acceleration_schedule"] == "step"
+    assert kwargs["mask_direction"] == "phase"
+    assert kwargs["enforce_nested"] is True
+    assert kwargs["acceleration_range"] == [2.0, 4.0, 8.0, 10.0, 12.0, 16.0, 32.0]
+
+
+def test_absent_undersampling_block_keeps_the_historical_default():
+    """No declaration must not silently materialise a 32x ladder."""
+    h = _AccelHarness(None)
+    h.setup_kspace_components(num_timesteps=28)
+    assert h.mask_generator.default_pattern == "linear"
+    assert h.mask_generator._accelerator_kwargs == {}
+
+
+# ---------------------------------------------------------------------------
+# _prepare_validation_data: the published scale must match the tensor it scales
+#
+# Regression anchor (2026-08-19): a 40-iteration cluster relaunch of
+# ``experiment_11_attention_none`` trained fine and died at the first
+# validation step with ``RuntimeError: The size of tensor a (36) must match
+# the size of tensor b (2) at non-singleton dimension 0``.
+#
+# ``36 = 2 subjects x 18 slices``. ``train.py._preprocess_validation_tensor``
+# flattens depth into the batch axis for ``val_batch.input``/``.target`` and
+# leaves per-sample batch fields alone, so ``kspace_scale`` stayed length 2.
+# This method sized ``scale_factor`` correctly from ``input_batch.size(0)`` and
+# then REPLACED it with the length-2 field via ``view(-1, 1, 1, 1)``.
+#
+# The method's own 5D branch cannot compensate: the tensor arrives already 4D,
+# so ``input_batch.dim() == 5`` is False and no expansion runs.
+# ---------------------------------------------------------------------------
+
+
+class _ValidationHarness(KspaceMixin):
+    """Carrier exposing only what ``_prepare_validation_data`` reads."""
+
+    def __init__(self, *, enable_kspace_normalization: bool = True) -> None:
+        from types import SimpleNamespace
+
+        self.config = SimpleNamespace(
+            model=SimpleNamespace(in_channels=1),
+            data=SimpleNamespace(
+                processing=SimpleNamespace(
+                    enable_kspace_normalization=enable_kspace_normalization
+                )
+            ),
+        )
+        self.device = torch.device("cpu")
+
+
+def test_per_subject_scale_expands_to_a_pre_flattened_batch():
+    """The exact cluster shapes: a length-2 scale must become length 36."""
+    h = _ValidationHarness()
+    # Already flattened by train.py: 2 subjects x 18 slices.
+    input_batch = torch.ones(36, 1, 8, 8)
+    target_batch = torch.ones(36, 1, 8, 8)
+    batch_data = {"kspace_scale": torch.tensor([224.36, 198.15])}
+
+    _, _, scale_factor = h._prepare_validation_data(
+        None, input_batch, target_batch, batch_data
+    )
+
+    assert scale_factor.shape == (36, 1, 1, 1)
+    # The multiply that raised on the cluster.
+    assert (input_batch * scale_factor).shape == (36, 1, 8, 8)
+
+
+def test_the_expansion_is_subject_major_not_interleaved():
+    """Anti-vacuity for the shape check above.
+
+    ``repeat`` yields the identical shape and applies subject 0's scale to
+    subject 1's slices -- silently wrong metrics rather than a crash. Pinned by
+    value, with D=3 so the two orderings differ.
+    """
+    h = _ValidationHarness()
+    input_batch = torch.ones(6, 1, 4, 4)
+    batch_data = {"kspace_scale": torch.tensor([10.0, 20.0])}
+
+    _, _, scale_factor = h._prepare_validation_data(
+        None, input_batch, input_batch.clone(), batch_data
+    )
+
+    assert scale_factor.flatten().tolist() == [10.0, 10.0, 10.0, 20.0, 20.0, 20.0]
+
+
+def test_a_published_scale_is_not_recomputed():
+    """Guard the branch boundary: the ``else`` arm divides a second time.
+
+    Reaching the quantile fallback with a scale already published is the defect
+    that ``read_batch_field`` fixed upstream; this pins that the aligned path is
+    still the one taken.
+    """
+    h = _ValidationHarness()
+    input_batch = torch.full((4, 1, 4, 4), 3.0)
+    batch_data = {"kspace_scale": torch.tensor([2.0, 5.0])}
+
+    out_input, _, scale_factor = h._prepare_validation_data(
+        None, input_batch, input_batch.clone(), batch_data
+    )
+
+    # Published path: tensors pass through undivided ("Do not divide again!").
+    assert torch.equal(out_input, input_batch)
+    assert scale_factor.flatten().tolist() == [2.0, 2.0, 5.0, 5.0]
+
+
+def test_a_scalar_published_scale_still_covers_the_batch():
+    """The one arm of the old ndim ladder that was already correct."""
+    h = _ValidationHarness()
+    input_batch = torch.ones(4, 1, 4, 4)
+    batch_data = {"kspace_scale": torch.tensor(9.0)}
+
+    _, _, scale_factor = h._prepare_validation_data(
+        None, input_batch, input_batch.clone(), batch_data
+    )
+
+    assert scale_factor.shape == (4, 1, 1, 1)
+    assert scale_factor.flatten().tolist() == [9.0] * 4
+
+
+def test_an_unalignable_scale_raises_instead_of_reaching_the_multiply():
+    """A length that does not divide has no benign reading (non-negotiable 3).
+
+    Before this change the mismatch surfaced ~40 frames downstream as a bare
+    ``RuntimeError`` at ``hr_fakes * denom_scale`` with no field named.
+    """
+    import pytest
+
+    h = _ValidationHarness()
+    input_batch = torch.ones(36, 1, 8, 8)
+    batch_data = {"kspace_scale": torch.ones(5)}
+
+    with pytest.raises(ValueError, match="kspace_scale"):
+        h._prepare_validation_data(None, input_batch, input_batch.clone(), batch_data)

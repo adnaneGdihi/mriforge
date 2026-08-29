@@ -1,0 +1,63 @@
+# FAILING YAML — trips: denoising_model_channels (ConfigHealthChecker)
+# Violation: model.model_kwargs.denoising_model.input_channels (2) != model.in_channels (1)
+# check_name: denoising_model_channels
+# severity: error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — denoising_model_channels (mismatch)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  max_iterations: 10
+  device: cuda
+  task: diffusion
+  output_dir: experiments/results/corpus_failing_denoising_channels
+  diffusion:
+    timesteps: 100
+    noise_schedule: cosine
+    sampler: cold_mri
+    sampling_steps: 10
+    prediction_type: sample
+    type: cold
+    degradation: kspace_mask
+
+data:
+  coil_processing_mode: rss
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1          # model expects 1-channel input
+  out_channels: 1
+  model_kwargs:
+    denoising_model:
+      input_channels: 2   # <<< VIOLATION: doesn't match in_channels=1
+      output_channels: 1
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adamw
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_denoising_channels/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

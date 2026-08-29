@@ -1,0 +1,49 @@
+# DataLoader binding names -- GENERATED, do not hand-edit.
+# Regenerate: python scripts/ci/refresh_dataloader_binding_names.py
+#
+# Every attribute name under which a torch.utils.data.DataLoader subclass
+# is reachable in this environment. check_dataloader_construction_ssot.py
+# matches call sites against this list, so a new loader class in a new
+# dependency is picked up by regenerating rather than by editing a gate.
+#
+# 34 module(s) were not importable when this was generated,
+# so any loader they alone expose is NOT represented here:
+#   GPUtil
+#   ants
+#   beartype
+#   bitsandbytes
+#   deepspeed
+#   deepspeed.compile.util
+#   fastrad
+#   flash_attn
+#   keras
+#   mamba_ssm
+#   mamba_ssm.modules.mamba_simple
+#   mamba_ssm.ops.selective_scan_interface
+#   nvtx
+#   pydicom
+#   pypapi
+#   pysr
+#   radiomics
+#   ray
+#   sewar
+#   sigpy
+#   sigpy.mri
+#   sigpy.pytorch
+#   timm
+#   timm.layers
+#   tools.generate_feature_matrix
+#   torch_fidelity
+#   torch_geometric
+#   torch_geometric.data
+#   torchdiffeq
+#   transformers
+#   triton
+#   triton.language
+#   xformers
+#   xformers.ops
+DataLoader
+SubjectsLoader
+ThreadDataLoader
+TorchDataLoader
+_TorchDataLoader

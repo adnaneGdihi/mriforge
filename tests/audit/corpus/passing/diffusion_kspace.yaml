@@ -1,0 +1,149 @@
+# Canonical passing YAML for diffusion (k-space cold diffusion) paradigm.
+# Based on experiments/active/dummy_kspace_cold_diffusion.yaml.
+# Used by: tests/audit/test_audit_regression.py corpus/passing sweep.
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Corpus Passing — Diffusion K-Space
+  description: Minimal k-space cold diffusion config for audit regression corpus
+  tags:
+    - corpus
+    - diffusion
+    - kspace
+
+model:
+  model_type: kspace_cold_diffusion_generator
+  input_type: kspace
+  in_channels: 2
+  out_channels: 2
+  spatial_dims: 2
+  model_kwargs:
+    base_channels: 32
+    num_res_blocks: 1
+    timesteps: 100
+    time_embedding_dim: 64
+    use_complex_conv: true
+    activation: complex
+    backbone_type: complex_unet
+    attention_type: dual_domain
+    process_type: cold_diffusion
+
+adapters:
+  # Named by the audit's own fix_hint: the synthetic data form is image-domain
+  # and this model consumes k-space.
+  pre_model:
+    - name: fft_image_to_kspace
+
+data:
+  dataset_type: synthetic
+  patch_size:
+    - 32
+    - 32
+    - 1
+  batch_size: 2
+  num_workers: 0
+  validation_split: 0.1
+  target_channels: 1
+  normalization_type: robust_percentile
+  normalize_kspace: true
+  coil_processing_mode: none
+  num_virtual_coils: 1
+  samples_per_volume: 4
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  epochs: 1
+  max_iterations: 10
+  task: diffusion
+  device: cuda
+  output_dir: experiments/results/corpus_diffusion_kspace
+  num_workers: 0
+  enable_mixed_precision: false
+  diffusion:
+    timesteps: 100
+    noise_schedule: cosine
+    sampler: cold_mri
+    sampling_steps: 10
+    cond_drop_prob: 0.1
+    guidance_scale: 1.0
+    type: cold
+    prediction_type: sample
+    degradation: kspace_mask
+    enable_diffusion_amp: false
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adamw
+  use_amp: false
+  weight_decay: 0.0001
+  beta1: 0.9
+  beta2: 0.999
+  gradient_clip_value: 1.0
+  gradient_clip_method: norm
+  enable_gradient_clipping: true
+  scheduler:
+    type: cosine_annealing
+    T_max: 10
+    eta_min: 0.000001
+    warm_up_epochs: 0
+
+acceleration:
+  acceleration_type: equispaced
+  base_acceleration: 1.0
+  max_acceleration: 8.0
+  center_fraction: 0.08
+  schedule_steps: 100
+
+logging:
+  level: warning
+  log_interval: 10
+  log_dir: experiments/results/corpus_diffusion_kspace/logs
+  enable_tensorboard: false
+  log_to_file: false
+  log_to_console: true
+  enable_experiment_tracking: false
+
+metrics:
+  compute_kspace_error: true
+  compute_psnr: false
+  compute_ssim: false
+  metric_interval: 10
+
+physics:
+  kspace:
+    enable_kspace_recon: true
+    enforce_hermitian_symmetry: false
+  data_consistency:
+    enabled: true
+
+validation:
+  enabled: true
+  eval_interval: 10
+  domain: image
+  output_transform: ifft_magnitude
+
+checkpoint:
+  enabled: false
+
+early_stopping:
+  enabled: false
+
+losses:
+  # The model is `kspace_cold_diffusion_generator`, which declares
+  # output_domain=kspace. Grading its output against image-domain losses needs
+  # an explicit bridge (CLAUDE.md #9 — no silent rescue), and this arm trains in
+  # k-space: `validation.output_transform: ifft_magnitude` is what moves the
+  # PREDICTION to image space for scoring. So the objective is k-space.
+  output_domain: kspace
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

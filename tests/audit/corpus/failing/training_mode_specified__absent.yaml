@@ -1,0 +1,52 @@
+# FAILING YAML — trips: training_mode_specified (ValidatorRegistry)
+# Violation: training block has neither strategy_class nor training_mode.
+# check_name: training_mode_specified
+
+# expect: registry
+#   ConfigHealthChecker has no check by this name; the ValidatorRegistry owns it
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — training_mode_specified (absent)
+
+training:
+  epochs: 10
+  device: cuda
+  output_dir: experiments/results/corpus_failing_no_mode
+  # strategy_class and training_mode are BOTH absent — violation
+
+data:
+  coil_processing_mode: rss
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 4
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: standard_unet
+  in_channels: 1
+  out_channels: 1
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_no_mode/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

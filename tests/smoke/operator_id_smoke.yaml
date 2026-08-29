@@ -1,0 +1,79 @@
+# Tiny operator-ID (Proposal 1) smoke configuration — synthetic phantom data,
+# small image / rank / Krylov dims so it audits and dry-runs fast. Mirrors
+# experiments/inprogress/operator_id/bch_m4raw.yaml at reduced scale.
+
+config_version: '1.0'
+
+metadata:
+  name: operator_id_smoke
+  description: Tiny phantom operator-ID smoke config (Proposal 1).
+  tags: [operator_id, smoke]
+
+data:
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  field_strength: 0.3
+  coil_processing_mode: rss_image
+
+model:
+  model_type: bch_operator_conditioner
+  in_channels: 1
+  out_channels: 1
+  spatial_dims: 2
+  model_kwargs:
+    num_modes: 4
+    num_contrasts: 3
+    covariance_rank: 4
+    rho_bins: 8
+    channels: 1
+    height: 32
+    width: 32
+
+training:
+  strategy_class: operator_id_bch
+  epochs: 1
+  output_dir: experiments/results/operator_id_smoke
+  operator_id:
+    mode_dictionary:
+      - motion_rigid
+      - bias_field_multiplicative
+      - b0_phase
+      - gibbs_truncation
+      - rician_noise
+    bch_order: 2
+    krylov_dim: 16
+    covariance_rank: 4
+    mmd_weight: 1.0
+    soft_truncation_tau: 50.0
+    contrast_field_conditioning: true
+    num_contrasts: 3
+    rho_bins: 8
+
+optimization:
+  optimizer_type: adamw
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+
+losses:
+  complex:
+    - structured_gaussian_nll
+  image:
+    - pushforward_mmd
+
+metrics:
+  compute_psnr: false
+  compute_ssim: false
+
+logging:
+  log_interval: 1
+
+early_stopping:
+  enabled: false
+
+validation:
+  enabled: true
+
+checkpoint:
+  save_interval: 1

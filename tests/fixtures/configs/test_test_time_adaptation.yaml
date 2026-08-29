@@ -1,0 +1,63 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  save_interval: 10
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+logging:
+  log_dir: ./tests/output/test_time_adaptation
+  log_interval: 1
+loss:
+  reconstruction:
+    loss_type: l1
+loss_logging:
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_test_time_adaptation
+  tags:
+    type: e2e_test
+metrics:
+  enabled: true
+model:
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: unet
+  out_channels: 1
+  spatial_dims: 2
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adamw
+  use_amp: false
+task: reconstruction
+training:
+  device: cpu
+  epochs: 1
+  max_iterations: 2
+  strategy_class: src.infrastructure.training.strategies.test_time_adaptation_strategy.TttAdaptationStrategy
+  task: reconstruction
+  training_mode: test_time_adaptation
+objectives:
+  reconstruction:
+    lambda_l1: 1.0
+adaptation:
+  num_steps: 2
+  learning_rate: 1.0e-4
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

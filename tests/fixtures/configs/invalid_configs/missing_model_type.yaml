@@ -1,0 +1,30 @@
+# Invalid Config: Missing model_type
+# This config should FAIL validation. Used for testing error detection.
+
+config_version: "5.0"
+
+data:
+  batch_size: 2
+
+model:
+  # model_type is INTENTIONALLY MISSING - should cause validation error
+  in_channels: 2
+  out_channels: 2
+
+training:
+  training_mode: diffusion
+
+optimization:
+  learning_rate: 0.0001
+
+logging:
+  log_interval: 10
+
+losses:
+  
+
+checkpoint: {}
+
+max_iterations: 100
+run:
+  seed: 42

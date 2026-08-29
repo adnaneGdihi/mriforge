@@ -1,0 +1,42 @@
+# IEEE-style Matplotlib defaults for mriforge reports.
+# Loaded by src.infrastructure.reporting.style.use_default_style().
+font.family: serif
+font.serif: DejaVu Serif, Bitstream Vera Serif, Computer Modern Roman, Times New Roman
+font.size: 9
+axes.labelsize: 9
+axes.titlesize: 10
+xtick.labelsize: 8
+ytick.labelsize: 8
+legend.fontsize: 8
+figure.titlesize: 10
+
+axes.linewidth: 0.6
+axes.edgecolor: 333333
+axes.spines.top: False
+axes.spines.right: False
+axes.grid: True
+axes.grid.axis: y
+grid.color: dddddd
+grid.linewidth: 0.4
+grid.alpha: 0.7
+
+xtick.direction: out
+ytick.direction: out
+xtick.major.width: 0.6
+ytick.major.width: 0.6
+xtick.major.size: 3
+ytick.major.size: 3
+
+lines.linewidth: 1.4
+lines.markersize: 3.5
+errorbar.capsize: 2
+
+savefig.format: pdf
+savefig.bbox: tight
+savefig.pad_inches: 0.02
+savefig.dpi: 300
+
+# Okabe–Ito (color-blind-safe) palette.
+axes.prop_cycle: cycler('color', ['000000', 'E69F00', '56B4E9', '009E73', 'F0E442', '0072B2', 'D55E00', 'CC79A7'])
+
+image.cmap: viridis

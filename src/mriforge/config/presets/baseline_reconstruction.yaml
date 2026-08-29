@@ -1,0 +1,74 @@
+config_version: '6.0'
+
+experiment:
+  name: baseline_reconstruction_preset
+  description: Standard reconstruction-only baseline (no adversarial training)
+  tags: [baseline, reconstruction]
+
+data:
+  dataset_type: fastmri_knee
+  batch_size: 32
+  num_workers: 4
+  pin_memory: true
+  augment: true
+  center_fraction: 0.08
+  acceleration: 4
+
+model:
+  model_type: standard_unet
+  in_channels: 2
+  out_channels: 2
+  features: [64, 128, 256, 512]
+  num_residual_blocks: 3
+
+optimization:
+  epochs: 80
+  optimizer:
+    type: adam
+    learning_rate: 0.001
+    betas: [0.9, 0.999]
+    eps: 1.0e-8
+  scheduler: cosine
+  scheduler_T_max: 80
+
+
+training:
+  training_mode: reconstruction
+  device: cuda
+  enable_checkpointing: true
+  checkpoint_interval: 5
+  validate_interval: 2
+
+objectives:
+  reconstruction:
+    lambda_l1: 1.0
+    lambda_l2: 0.1
+    lambda_ssim: 0.1
+    enable_perceptual: false
+
+validation:
+  enabled: true
+  validation_interval: 2
+  metrics: [psnr, ssim, mae]
+  num_samples: 50
+
+checkpoint:
+  save_best: true
+  monitor_metric: validation_ssim
+  mode: max
+  save_frequency: 5
+
+acceleration:
+  use_amp: true
+  num_gpus: 1
+  strategy: none
+
+physics:
+  data_consistency:
+    enabled: true
+    method: hard
+    weight: 1.0
+
+workflow:
+  name: mri_structural
+  task: reconstruction

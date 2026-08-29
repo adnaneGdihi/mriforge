@@ -1,0 +1,56 @@
+name: Stale issues and PRs
+
+# Solo-maintainer hygiene: issues and PRs that haven't seen activity in a
+# long time get a polite reminder, then close if still inactive. This is
+# essential for keeping the backlog signal-to-noise high on a project with
+# one reviewer.
+
+# Manual-only: the daily `schedule:` was removed when CI became pull-request-triggered
+# by policy (docs/contributing/ci.rst). Run it by hand from the Actions tab when the
+# backlog needs a sweep; restoring the cron is a one-line revert.
+on:
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/stale@v9
+        with:
+          # ── Issues ────────────────────────────────────────────────
+          days-before-issue-stale: 60
+          days-before-issue-close: 14
+          stale-issue-label: stale
+          exempt-issue-labels: "pinned,security,roadmap,known-bug"
+          stale-issue-message: |
+            This issue has had no activity for 60 days. It will be closed in
+            14 days unless someone leaves a comment or applies a label from
+            the exempt list (`pinned`, `security`, `roadmap`, `known-bug`).
+            Reopening a closed issue is always fine — closure is bookkeeping,
+            not dismissal.
+          close-issue-message: |
+            Closing for inactivity. If this is still relevant, reopen with a
+            comment summarising the current state.
+
+          # ── Pull requests ─────────────────────────────────────────
+          days-before-pr-stale: 30
+          days-before-pr-close: 14
+          stale-pr-label: stale
+          exempt-pr-labels: "pinned,security,WIP,blocked"
+          stale-pr-message: |
+            This PR has had no activity for 30 days. It will be closed in 14
+            days unless rebased or commented on. Mark it `pinned` if it's
+            intentionally on hold or `blocked` if it's waiting on another
+            change.
+          close-pr-message: |
+            Closing for inactivity. Reopen if you want to pick it back up.
+
+          # ── Knobs ─────────────────────────────────────────────────
+          operations-per-run: 100
+          ascending: true   # oldest first
+          remove-stale-when-updated: true

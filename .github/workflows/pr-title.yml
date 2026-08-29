@@ -1,0 +1,55 @@
+name: PR title
+
+# Uses `pull_request_target` so the linter can post a status check from the
+# base-repo context. SAFETY: this workflow NEVER checks out PR code. It only
+# reads `github.event.pull_request.title`, which is metadata. No secret
+# exfiltration surface exists — see
+# https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+
+on:
+  # No `branches:` filter -- it matches the PR's BASE branch, and PRs here target both
+  # `dev` and `main`; pinning it to either base silently skips the other.
+  # pull_request_target workflows are read from the DEFAULT branch, so this file must
+  # also be published onto `main` or it stays inert. See docs/contributing/ci.rst.
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+concurrency:
+  group: pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  conventional-commits:
+    name: Conventional Commits prefix
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Matches the prefix set documented in CONTRIBUTING.md.
+          types: |
+            feat
+            fix
+            docs
+            test
+            refactor
+            chore
+            ci
+            perf
+            build
+          # Optional scope; if present must be lowercase kebab-case.
+          requireScope: false
+          subjectPattern: ^[^A-Z].+$
+          subjectPatternError: |
+            The subject of the PR title must start with a lowercase letter.
+            Examples:
+              feat(losses): add Wasserstein-GP loss
+              fix(physics): correct fft2c normalisation for AMP path
+              docs(api): regenerate autoapi after registry rename
+          validateSingleCommit: false

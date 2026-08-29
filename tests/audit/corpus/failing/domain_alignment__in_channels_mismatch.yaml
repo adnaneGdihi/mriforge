@@ -1,0 +1,76 @@
+# FAILING YAML — trips: domain_alignment (ConfigHealthChecker)
+# Violation: coil_processing_mode='rss' on a kspace dataset produces 2
+# channels (real+imag RSS), but model.in_channels=1 — mismatch.
+# The health checker fires domain_alignment with severity="error".
+# check_name: domain_alignment
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — domain_alignment (in_channels mismatch rss kspace)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  epochs: 1
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_domain_alignment
+
+data:
+  coil_processing_mode: rss
+  dataset_type: kspace
+  patch_size: [32, 32, 1]
+  batch_size: 4
+  num_workers: 0
+  normalize_kspace: true
+  validation_split: 0.1
+  target_channels: 1
+  samples_per_volume: 2
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+  caching:
+    strategy: none
+
+model:
+  model_type: standard_unet
+  in_channels: 1   # VIOLATION: rss on kspace → 2 channels (real+imag), not 1
+  out_channels: 1
+  model_kwargs:
+    base_channels: 32
+    channel_multipliers: [1, 2]
+    num_res_blocks: 1
+    dropout: 0.0
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+  weight_decay: 0.0
+  use_amp: false
+  enable_gradient_clipping: false
+
+acceleration:
+  base_acceleration: 4.0
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_domain_alignment/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+physics:
+  kspace:
+    enforce_hermitian_symmetry: false
+    enable_kspace_recon: false
+  data_consistency:
+    enabled: false

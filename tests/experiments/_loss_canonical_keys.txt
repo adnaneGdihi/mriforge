@@ -1,0 +1,105 @@
+# GOLDEN: every loss name declared anywhere in the live corpus -> the canonical key
+# its weight is filed under in the LossWeightTable.
+#
+# WHY THIS FILE EXISTS: test_ssot_weight_matches_the_weight_the_arm_actually_trained_at
+# canonicalises BOTH sides through canonical_loss_name(), so an alias change moves the
+# table key and the lookup key together and that test stays green -- while every consumer
+# resolving the OLD key now finds nothing declared (and weights.py RAISES). This pin makes
+# an alias mutation visible. Note `lambda_gp -> r1_regularization`: WGAN-GP's weight is
+# filed under R1's key today, because `gradient_penalty` is an alias of R1 (issue #191).
+#
+# Regenerate deliberately, and co-edit the consumers, with:
+#   MRIFORGE_UPDATE_LOSS_KEY_GOLDEN=1 pytest tests/experiments/test_loss_weight_no_op_migration.py
+beltrami_diagnostic -> beltrami_diagnostic
+beltrami_epi_residual -> beltrami_epi_residual
+bloch_equivariance_residual -> bloch_equivariance_residual
+complex_l1 -> complex_l1
+complex_mse -> complex_mse
+complex_spatial_gradient -> complex_spatial_gradient
+concomitant_phase_residual -> concomitant_phase_residual
+conformal_modulus -> conformal_modulus
+cubical_ph_w2 -> cubical_ph_w2
+data_consistency -> data_consistency
+diffusion_mse -> diffusion_mse
+field_flow_velocity -> field_flow_velocity
+fisher_rao_geodesic -> fisher_rao_geodesic
+focal_frequency_radial -> focal_frequency_radial
+frequency -> frequency
+frequency_domain -> frequency_domain_consistency
+frontdoor_criterion -> frontdoor_criterion
+gradient_domain_consistency -> gradient_domain_consistency
+heteroscedastic_ulf -> heteroscedastic_ulf
+hfen -> hfen
+high_frequency_residual -> high_frequency_residual
+hjb_residual -> hjb_residual
+hodge_decomposition -> hodge_decomposition
+hrf_likelihood -> hrf_likelihood
+hyperelastic_jacobian -> hyperelastic_jacobian
+joint_multi_contrast_sparsity -> joint_multi_contrast_sparsity
+koopman_linearity -> koopman_linearity
+l1 -> l1
+l2 -> l2
+lambda_adv -> adversarial
+lambda_complex_l1 -> complex_l1
+lambda_complex_spatial_gradient -> complex_spatial_gradient
+lambda_cycle -> cycle_consistency
+lambda_cycle_adv -> cycle_adv
+lambda_cycle_bloch -> cycle_bloch
+lambda_diversity -> diversity
+lambda_gp -> r1_regularization
+lambda_hfen -> hfen
+lambda_identity -> identity_preservation
+lambda_l1 -> l1
+lambda_log_spectral -> log_spectral
+lambda_magnitude_tv -> magnitude_tv
+lambda_marker -> marker_corruption
+lambda_mse -> l2
+lambda_nce -> nce
+lambda_pde -> helmholtz_pde
+lambda_perceptual -> perceptual
+lambda_pinn_dc -> pinn_dc
+lambda_pre_dc_kspace -> pre_dc_kspace
+lambda_r1 -> r1
+lambda_se3_equivariance -> se3_equivariance_defect
+lambda_sense_adjoint_l1 -> sense_adjoint_l1
+lambda_sobolev_kspace -> sobolev_kspace
+lambda_ssim -> ssim
+lambda_style -> style
+lambda_unit_norm_coil -> unit_norm_coil
+lesion_weighted -> lesion_weighted
+levy_score_consistency -> levy_score_consistency
+log_spectral -> log_spectral
+lpips -> lpips
+mind_ssc -> mind_ssc
+mmd_paired_distribution_match -> mmd_paired_distribution_match
+ms_ssim -> ms_ssim
+mse -> l2
+ncchi_consistency -> ncchi_consistency
+nll_bits_per_dim -> nll_bits_per_dim
+ood_gated_reconstruction -> ood_gated_reconstruction
+per_pair_consistency_residual -> per_pair_consistency_residual
+perceptual -> perceptual
+phase_smoothness_complex -> phase_smoothness_complex
+phase_stego_score -> phase_stego_score
+pisco_self_consistency -> pisco_self_consistency
+primary_ideal_membership -> primary_ideal_membership
+rectified_flow -> rectified_flow
+resetting_consistency -> resetting_consistency
+rician_consistency -> rician_consistency
+segmentation_equivariance -> segmentation_equivariance
+sense_adjoint_l1 -> sense_adjoint_l1
+sheaf_consistency -> sheaf_consistency
+sobel_edge -> sobel_edge
+sobolev_kspace -> sobolev_kspace
+soft_dtw -> soft_dtw
+spectral_radial_prior -> spectral_radial_prior
+spectral_triple_intertwining -> spectral_triple_intertwining
+ssdu -> ssdu
+ssim -> ssim
+stein_discrepancy -> stein_discrepancy
+teichmuller_geodesic -> teichmuller_geodesic
+tissue_parameter_physics_constraint -> tissue_parameter_physics_constraint
+tissue_parameter_prior_smoothness -> tissue_parameter_prior_smoothness
+tropical_semiring_consistency -> tropical_semiring_consistency
+tv -> tv
+weighted_kspace_l1 -> weighted_kspace_l1

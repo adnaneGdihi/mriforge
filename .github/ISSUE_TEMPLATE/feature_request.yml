@@ -1,0 +1,40 @@
+name: Feature request
+description: Suggest a new feature, API, or extension to MRIForge.
+title: "feat: <one-line summary>"
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: What problem does this feature solve? Cite a paper, an experiment, or a use case.
+    validations:
+      required: true
+
+  - type: textarea
+    id: api
+    attributes:
+      label: Proposed API
+      description: How would users invoke this feature? Show a Python snippet or YAML excerpt.
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you weigh? Why is the proposed API the right one?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: implement
+    attributes:
+      label: Willingness to implement
+      options:
+        - "Yes — I will open a PR"
+        - "Maybe — I could help with review or testing"
+        - "No — proposing only"
+    validations:
+      required: true

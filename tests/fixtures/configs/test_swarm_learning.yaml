@@ -1,0 +1,64 @@
+augmentation:
+  enabled: false
+checkpoint:
+  enabled: true
+  save_interval: 10
+config_version: '5.0'
+data:
+  batch_size: 2
+  dataset_type: synthetic
+  num_workers: 0
+  patch_size:
+  - 64
+  - 64
+  - 1
+logging:
+  log_dir: ./tests/output/swarm_learning
+  log_interval: 1
+loss:
+  reconstruction:
+    loss_type: l1
+loss_logging:
+  enabled: true
+  frequency: 10
+metadata:
+  name: test_swarm_learning
+  tags:
+    type: e2e_test
+metrics:
+  enabled: true
+model:
+  in_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+  model_type: unet
+  out_channels: 1
+  spatial_dims: 2
+model_type: unet
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adamw
+  use_amp: false
+task: reconstruction
+training:
+  device: cpu
+  epochs: 1
+  max_iterations: 2
+  strategy_class: src.infrastructure.training.strategies.swarm_learning_strategy.SwarmLearningStrategy
+  task: reconstruction
+  training_mode: swarm
+training_mode: swarm
+objectives:
+  l1: 1.0
+  strategy_class: src.infrastructure.training.strategies.swarm_learning_strategy.SwarmLearningStrategy
+  task: reconstruction
+  training_mode: swarm
+validation:
+  enabled: true
+  eval_interval: 2
+
+workflow:
+  regime: mri_structural
+  task: reconstruction

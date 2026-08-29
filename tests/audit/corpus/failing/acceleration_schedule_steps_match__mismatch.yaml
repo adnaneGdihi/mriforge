@@ -1,0 +1,68 @@
+# FAILING YAML — trips: acceleration_schedule_steps_match (ConfigHealthChecker)
+# Violation: training.diffusion.timesteps (200) != acceleration.schedule_steps (100).
+# check_name: acceleration_schedule_steps_match
+# severity: error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — acceleration_schedule_steps_match (timesteps != schedule_steps)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  max_iterations: 10
+  device: cuda
+  task: diffusion
+  output_dir: experiments/results/corpus_failing_schedule_steps
+  diffusion:
+    timesteps: 200          # 200 diffusion steps
+    noise_schedule: cosine
+    sampler: cold_mri
+    sampling_steps: 20
+    prediction_type: sample
+    type: cold
+    degradation: kspace_mask
+
+data:
+  coil_processing_mode: rss
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: kspace_cold_diffusion_generator
+  in_channels: 2
+  out_channels: 2
+  model_kwargs:
+    backbone_type: complex_unet
+    attention_type: dual_domain
+
+optimization:
+  learning_rate: 0.0002
+  optimizer_type: adamw
+
+acceleration:
+  base_acceleration: 1.0
+  max_acceleration: 8.0
+  center_fraction: 0.08
+  schedule_steps: 100    # <<< VIOLATION: differs from training.diffusion.timesteps=200
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_schedule_steps/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

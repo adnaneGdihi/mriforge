@@ -1,0 +1,146 @@
+name: PR (advisory)
+
+# Repo-wide scans. Every job is continue-on-error: a failure shows as a red X on the
+# PR and gates nothing. This is the visible half of the ratchet -- the backlog stays
+# on the radar while pr-required.yml holds the line on what each PR actually touches.
+#
+# THIS FILE IS AN OVERLAY -- see the header of pr-required.yml. Edit it at
+# scripts/release/public_overlay/.github/workflows/pr-advisory.yml in the source
+# repository; an edit made in the exported tree is discarded by the next export.
+#
+# It differs from the private lane by exactly one job: `impacted-tests` is dropped,
+# because it drives scripts/ci/select_impacted_tests.py, which is not distributed.
+# Kept in, it would fail on every PR with "No such file or directory" -- a red X
+# that says nothing about the PR and trains readers to ignore this lane.
+#
+# No `branches:` filter -- see pr-required.yml.
+# Nothing in this file may ever be added to branch protection.
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-advisory-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lint-full:
+    name: ruff (whole repo)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install ruff
+      - run: ruff check src/ tests/
+      - run: ruff format --check src/ tests/
+
+  mypy:
+    name: mypy (core, config, domain)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      - run: mypy src/mriforge/core src/mriforge/config src/mriforge/domain
+
+  pre-commit:
+    name: pre-commit (all hooks, all files)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      # pre-commit caches its tool installs in ~/.cache/pre-commit, keyed by the
+      # config hash. restore-keys hits on a partial match when one hook bumps.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-py3.12-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            pre-commit-${{ runner.os }}-py3.12-
+      - run: pip install pre-commit
+      - run: pre-commit run --all-files --show-diff-on-failure --color=always
+
+  docs:
+    name: sphinx build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Does this PR touch docs or source?
+        id: touched
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        # A workflow-level `paths:` filter would skip the whole file, and this lane
+        # also hosts jobs that must run unconditionally. Gate the expensive job here
+        # instead: sphinx-autoapi over the package is a long build.
+        run: |
+          if git diff --name-only "${BASE}...${HEAD}" -- \
+               docs/ src/mriforge/ pyproject.toml | grep -q .; then
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=false" >> "$GITHUB_OUTPUT"
+            echo "Neither docs/ nor src/mriforge/ changed -- skipping the docs build."
+          fi
+      - uses: actions/setup-python@v5
+        if: steps.touched.outputs.any == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install docs extra
+        if: steps.touched.outputs.any == 'true'
+        run: pip install -e ".[docs]"
+      - name: Build docs (warnings allowed)
+        if: steps.touched.outputs.any == 'true'
+        # No -W: it reliably hung on imports it could not satisfy. Hardening the
+        # docs config is a separate pass.
+        run: sphinx-build -b html docs/ docs/_build/
+
+  dependency-review:
+    name: dependency review (new-dep CVE / licence)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      # This action needs GitHub Advanced Security on a PRIVATE repo, which is why
+      # it is advisory upstream. On a public repository it is available with no
+      # licence, so this is the one job that is strictly more useful here than in
+      # the source repo. It stays continue-on-error only because this whole lane is
+      # advisory by construction -- promoting it is a reasonable later change.
+      - uses: actions/dependency-review-action@v4
+
+  zizmor:
+    name: zizmor (workflow static analysis)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      # Advisory while the unpinned-uses backlog drains: zizmor's `regular` persona
+      # flags every `actions/checkout@v4`-style tagged ref, even for trusted
+      # publishers. Pinning every action to a SHA is a separate hardening pass.
+      - run: uvx zizmor --persona=regular --format=plain .github/workflows/

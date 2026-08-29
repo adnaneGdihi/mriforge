@@ -1,0 +1,54 @@
+# FAILING YAML — trips: complex_unet_even_channels (ConfigHealthChecker)
+# Violation: backbone_type='complex_unet' requires even in_channels, but
+#   in_channels=3 (odd).
+# check_name: complex_unet_even_channels
+# severity: error
+
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: Failing — complex_unet_even_channels (odd in_channels with complex_unet)
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  max_iterations: 10
+  device: cuda
+  task: reconstruction
+  output_dir: experiments/results/corpus_failing_complex_unet_channels
+
+data:
+  coil_processing_mode: rss
+  dataset_type: synthetic
+  patch_size: [32, 32, 1]
+  batch_size: 2
+  num_workers: 0
+  datasets:
+    - name: dummy
+      path: databases/m4raw/data/multicoil_train
+
+model:
+  model_type: kspace_cold_diffusion_generator
+  in_channels: 3        # <<< VIOLATION: complex_unet needs even channels, 3 is odd
+  out_channels: 3
+  model_kwargs:
+    backbone_type: complex_unet   # triggers the even-channels check
+
+optimization:
+  learning_rate: 0.0001
+  optimizer_type: adam
+
+logging:
+  log_interval: 5
+  level: warning
+  log_dir: experiments/results/corpus_failing_complex_unet_channels/logs
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []

@@ -1,0 +1,6 @@
+{
+  "_schema": "1",
+  "_note": "Calibrated by: pytest tests/determinism/ --recalibrate on cluster.",
+  "_how_to_recalibrate": "Delete the hash key below and run: pytest tests/determinism/test_determinism.py::TestParamDeltaHash -v  The test will skip and print the hash to store here.",
+  "param_delta_hash": {}
+}

@@ -1,0 +1,1665 @@
+# v1.0 Reference Configuration Template — the schema SSOT
+# =======================================================
+#
+# The canonical, load-passing reference for the CURRENT schema. Copy this file,
+# change the values you care about, and your YAML round-trips through
+# ``TrainingSettings.from_yaml()``. When the schema and a doc disagree, this
+# file is the one that is executable — it is loaded by the test suite, so it
+# cannot drift silently the way prose can.
+#
+# WHAT "COMPREHENSIVE" MEANS HERE, precisely — the claim is about CHOICES, not
+# about every field. EVERY field whose annotation is an Enum or a
+# ``Literal[...]`` is documented and carries an inline ``# options:`` comment
+# holding the complete allowed set, and EVERY top-level block appears. That is
+# a closed claim rather than a sample, and
+# ``tests/unit/config/test_reference_template_options.py`` re-derives it from
+# the Pydantic models on every run: a list that drifts fails, a new Enum field
+# with no entry fails, a key with no field behind it fails.
+#
+# Deliberately stated as "every" and not as a number. The count was 153 when
+# this was written and 154 one merge later; a hardcoded total in prose is the
+# same species of rot the test exists to catch, and nothing would have checked
+# it. Run the test if you want today's figure.
+#
+# Deliberately NOT covered, because a list would be noise rather than
+# documentation: plain ``bool`` fields — the large majority, and "true, false"
+# tells you nothing — and free-form scalars (numbers, paths, kwargs dicts). Dispatch-key
+# fields whose value set is a REGISTRY rather than an annotation carry a
+# pointer instead of a list; the same test asserts the pointed-at symbol still
+# imports.
+#
+# Documentation for a field you are not using is COMMENTED, one convention
+# throughout: ``# `` followed by the exact line it would be live. Uncomment and
+# it is valid YAML at the right depth. The comment marker is not indentation —
+# writing ``  #   key:`` where ``  # key:`` is meant silently reparents the key
+# into the block above it, which is how two examples here ended up documented
+# as children of ``dataset_type``.
+#
+# The three files under ``experiments/`` with similar names are NOT peers of
+# this one and should not be copied from: both
+# ``experiments/shared/training_config_schema_reference{,_new}.yaml`` are
+# byte-identical to each other and declare ``config_version: '5.0'``, which the
+# loader REFUSES, and ``experiments/templates/categorical_values_reference.yaml``
+# is a hand-written option catalogue that has rotted in both directions (on
+# ``training_mode`` alone: 3 members that no longer exist, 6 missing). This
+# file is the only one that is executed, and therefore the only one that is
+# true.
+#
+# Schema policy (CLAUDE.md):
+#
+#   * ``extra="forbid"`` — every key MUST trace back to a real Pydantic field,
+#     top-level and nested. An unknown key makes the YAML unloadable. Comment
+#     unused blocks out rather than deleting the documentation.
+#   * The settings object is ``frozen=True`` after load.
+#   * Declare ``CANONICAL_CONFIG_VERSION``. ``6.0``/``6.1`` still load — the
+#     loader folds them — but ``check_config_version_is_canonical`` reports a
+#     legacy declaration as an ERROR, because the fold is what is draining.
+#
+# History, so nothing is assumed lost. This file was ``v6.1_reference.yaml``;
+# ``v6.0_reference.yaml`` was retired alongside the rename. That was measured,
+# not asserted: of v6.0's 239 documented paths, 41 were unique to it and ALL 41
+# were legacy spellings whose canonical target v6.1 already carried (0 had a
+# canonical target absent here). So v6.0 documented no functionality this file
+# does not — it documented the same functionality in the retired spelling, which
+# is exactly what a reference should stop teaching. Its 41 staged keys were also
+# the entire template-root contribution to the rename countdown.
+#
+# The 6.1 additions it introduced are all still here and still the reference for
+# their features: ``physics.concomitant`` (CAUR — Maxwell concomitant fields),
+# ``physics.relaxation_priors`` (Bloch-constrained translation T1/T2),
+# ``physics.gradient_waveform_uri`` (pulse-sequence co-design), ``acquisition:``
+# (PILOT codesign + BALD active acquisition), ``certification:`` (conformal /
+# CHD / PRC / PAC-Bayes / badge), ``audit:`` (KSD Tier-3 defensibility) and
+# ``mrf:`` (MR-fingerprinting acquisition metadata).
+#
+# This template is exercised by
+# ``tests/unit/config/test_reference_templates_experiment_name.py`` —
+# any schema drift that breaks ``from_yaml()`` on this file fails CI
+# loudly.
+
+# The ONLY accepted value. PR #891 emptied ``LEGACY_CONFIG_VERSIONS``, so
+# ``ACCEPTED_CONFIG_VERSIONS`` is now exactly ``{'1.0'}`` and ``settings.py``
+# RAISES on anything else -- legacy '6.0'/'6.1' are refused, NOT folded. This
+# line used to say they still load, and this is the file people copy from.
+config_version: '1.0'
+
+
+# ============================================================================
+# DATA CONFIGURATION  (DataConfigSchema)
+# ============================================================================
+data:
+  # How samples are batched and moved to the device (phase 9).
+  loader:
+    batch_size: 16
+    num_workers: 4
+    persistent_workers: true
+    prefetch_factor: 2
+    pin_memory: true
+
+  # How multi-coil data is reduced before the model sees it.
+  coils:
+    processing_mode: 'none'                      # options: 'none', 'flatten', 'svd', 'magnitude', 'rss', 'rss_image'
+    num_virtual_coils: 4
+
+  # What representation the loader hands the model (phase 9b). Leaves drop the
+  # redundant suffix -- the block name supplies the noun, as with `expose:`.
+  domain:
+    # must agree with what the model consumes
+    output: 'image'                              # options: 'image', 'kspace'
+    target_channels: 1     # 1 for RSS, >1 for multi-contrast
+    input_artifact: null   # override the task's default artifact variant
+    target_artifact: null
+    graph_type: null       # non-Cartesian graph delivery
+    enable_graph_encoding: false
+    graph_config: {}
+
+  # What decides which records train and which validate (phase 9b). The
+  # strategy sits with the companions that make it valid: 'loso' needs
+  # holdout_site, 'loso_subject' needs EXACTLY ONE of holdout_subject /
+  # loso_fold, 'random' needs validation_fraction.
+  split:
+    type: 'auto'                                 # options: 'auto', 'directory', 'manifest', 'random', 'loso', 'loso_subject'
+    validation_fraction: 0.1
+    holdout_site: null    # site id(s) held out entirely, for type='loso'
+    train_sites: null     # null = every site except holdout_site
+    holdout_subject: null # subject id held out, for type='loso_subject'
+    loso_fold: null       #   ...or an index into the SORTED subject ids
+    max_train_subjects: null   # smoke/debug caps; null = full split
+    max_val_subjects: null
+
+  # Extra per-sample metadata the loader emits. The block supplies the verb.
+  expose:
+    acquisition_params: false
+    conformal_jacobian: false
+    cortex_flatten_grid: false
+    glm_design_matrix: false
+    scanner_id: false
+    field_strength: false
+    site_id: false
+
+  # `dataset_type` stays FLAT on purpose: it is a DISPATCH key, not a location.
+  # dataset_instantiator, config_health_checker and DATASET_TYPE_SIGNAL_DOMAINS
+  # all branch on it, and it is already the first line a reader sees.
+  # options: 'kspace', 'm4raw', 'nifti', 'nifti_paired', 'contrast_aware_paired',
+  #          'npy_slice', 'image', 'dicom', 'synthetic', 'preprocessed',
+  #          'pde_synthetic', 'quantitative', 'cine', 'bart_kspace', 'bids_paired',
+  #          'png_paired', 'field_ref', 'ismrmrd_kspace', 'oracle_bssfp', 'mrixfields'
+  # (Aliases like 'fastmri_knee'/'fastmri_brain'/'volume_h5' are normalised
+  # to 'kspace'; 'paired_nifti'/'paired_mri' → 'nifti_paired'; '3d' → 'nifti'.)
+  dataset_type: 'kspace'
+
+  # ── NEX (multi-repetition averaging) — REQUIRED READING for dataset_type: m4raw
+  #
+  # Left commented because both defaults are correct for every dataset EXCEPT
+  # M4Raw. Uncomment them the moment you set `dataset_type: 'm4raw'`; a live value
+  # here would advertise a knob that is inert for the other 20 dispatch types.
+  #
+  # M4Raw stores several PHASE-INCOHERENT repetitions per anatomy (separate
+  # acquisitions with independent global phase drift). The default `complex_mean`
+  # plain-averages them in complex k-space, which CANCELS signal rather than
+  # averaging it: the resulting "high-SNR reference" has SNR *below a single
+  # repetition* and scrambled phase. That is what drove k-space cold diffusion to
+  # predict near-real k-space and emit a 180-degree centro-symmetric doubled
+  # brain. `phase_aligned_mean` aligns each repetition's global phase to rep 0
+  # first, which is what actually buys the sqrt(N) SNR.
+  #
+  # target_mode: 'phase_aligned_mean'     # options: 'complex_mean', 'phase_aligned_mean'
+  #                                       # 'complex_mean' is legacy and destructive on M4Raw
+  #
+  # Leave-one-out NEX target: drop the INPUT repetition (rep 0) from the average
+  # so input and target noise are uncorrelated. Without it the input's own noise
+  # sits inside the target at 1/N amplitude and the supervision is biased toward
+  # PRESERVING that noise. Costs sqrt(N-1) vs sqrt(N) SNR, and only engages with
+  # >= 3 repetitions -- with 2 it silently falls back to the all-reps average, so
+  # a mixed-repetition dataset gets a DIFFERENT target definition per contrast.
+  # It changes the reference the PSNR/SSIM metrics grade against, so runs that
+  # differ on it are NOT numerically comparable: flip it cohort-wide, never
+  # per-arm.
+  #
+  # nex_target_exclude_input: false
+  #
+  # SSOT: data/datasets/m4raw_dataset.py::_average_reps · rules: .claude/rules/data.md
+  # Audit: `m4raw_nex_target_mode_declared` (advisory) flags an m4raw arm that
+  # declares neither.
+
+  # WHERE the bytes come from (phase 9g). `data_root`/`data_layout` drop the
+  # `data_` prefix -- the outer block supplies it. The `_path` leaves keep their
+  # full names: under the naming rule `<thing>_path` is a file, and index /
+  # validation_index / paired_manifest are the things.
+  source:
+    root: './data'                 # the tree the arm reads from
+    layout: 'flat'                 # options: 'flat', 'bids'
+    index_path: null               # .pkl/.json enumerating the TRAIN split
+    validation_index_path: null    # explicit VAL manifest; null = carve from index_path
+    paired_manifest_path: null     # v4 paired JSON (ULF/HF records)
+    preprocessing_dir: null        # a *_image/ preprocessing output tree
+
+  # v6.0 REQUIRED: explicit [H, W, D] — no img_size/target_size auto-migration.
+  # How samples are DRAWN from a volume, before anything is done to them
+  # (phase 9e). The queue's three knobs finally sit together: patch_size is what
+  # a sample IS, samples_per_volume how many per subject per epoch, queue_length
+  # the RAM buffer holding them.
+  sampling:
+    patch_size: [128, 128, 32]   # (W, H, D); D=1 for 2D. A 2-tuple is normalised to D=1.
+    samples_per_volume: 8
+    queue_length: 64
+    enable_slab_mode: false      # 2.5D: flatten depth to channels, keep middle target slice
+    enable_slice_2d: false       # one sample per axial slice of a 3D paired volume
+    num_synthetic_samples: 10    # fallback when the dataset resolves empty
+
+  # NOT part of `split:` on purpose -- nothing reads test_split (issue #665),
+  # and a tidy home for an inert knob implies it works.
+  test_split: 0.1
+
+  # Normalisation
+  # What is done to the VALUES between disk and the model, in the order it
+  # happens (phase 9d). The four booleans take the ratified `enable_<thing>`
+  # spelling and each sits directly above the nouns it gates.
+  processing:
+    # k-space scaling
+    enable_kspace_normalization: false
+    kspace_percentile: 0.99
+    kspace_scale_domain: 'kspace'                # options: 'kspace', 'image'
+    enable_log_scaling: false
+    log_scaling_center_fraction: 0.25
+    # image-domain normalisation
+    normalization_type: 'none'                   # options: 'none', 'standard', 'minmax', 'percentile', 'robust_percentile'
+    normalization_kwargs: {}
+    enable_image_normalization: false
+    enable_image_rescale: false
+    rescale_range: [-1.0, 1.0]
+    rescale_percentiles: [0.0, 100.0]
+    # downstream
+    data_range: null                # explicit range for PSNR/SSIM; null = dynamic
+    transforms: []
+
+  # I/O shape control
+  # NOT part of `domain:` on purpose -- nothing in src/mriforge reads
+  # return_image_domain (it is carried in KNOWN_UNCONSUMED), and a tidy home for
+  # an inert knob implies it works. Same call as data.test_split above.
+  return_image_domain: false
+
+  # What counts as the INPUT and what counts as the TARGET.
+  # Named `pairing:`, not `contrast:` -- three of these fields are ULF/HF
+  # field-strength pairing with no contrast content, and `data.contrast` would
+  # collide with `data.input_contrast`/`data.target_contrast` below, which are
+  # per-contrast NORMALIZATION specs rather than selection filters.
+  pairing:
+    # input side; null = load everything available
+    contrasts: null                 # e.g. ['T1w', 'FLAIR']
+    sessions: null                  # e.g. ['01', '02']
+    # target side; each null = mirror its input counterpart above
+    target_contrasts: null          # e.g. ['T2w']
+    target_sessions: null
+    # pairing off entirely: each sample is one contrast, repetition-averaged
+    single_contrast: false
+    # which end of a ULF/HF pair is the input; name is <input>_to_<target>.
+    # 'hf_to_hf'/'ulf_to_ulf' autoencode one field and DROP the opposite arm.
+    bidirectional_mode: 'ulf_to_hf'              # options: 'ulf_to_hf', 'hf_to_ulf', 'hf_to_hf', 'ulf_to_ulf'
+    hf_resolution: null                          # options: null, 'highres', 'lowres', 'unknown'
+    # admit records with no partner (validation/inference on unpaired ULF)
+    allow_unpaired: false
+
+  # Exposure flags — opt-in surfaces for the downstream Dataset/Strategy
+  # (see DataConfigSchema.expose_*). All default to False.
+  # NOT part of `sampling:` on purpose -- nothing reads phase_encode_axis from
+  # the config (FMRIVolumeDataset takes it as a constructor default, and no
+  # dataset_type selects that class). Same call as test_split / return_image_domain.
+  phase_encode_axis: null          # options: null, -2, -1
+
+  # Augmentation (TorchIO-driven).
+  augmentation:
+    enabled: false
+    probability: 0.5
+    enable_rotation: false
+    enable_flip: false
+    enable_noise: false
+    enable_bias_field: false
+    enable_motion_blur: false
+    enable_rician_noise: false
+    enable_ghosting: false
+    enable_spike: false
+    enable_b0_distortion: false
+    enable_mixup: false
+    enable_cutmix: false
+
+  # Caching policy.
+  caching:
+    strategy: 'none'               # options: 'none', 'ram', 'disk'
+    staging_behavior: 'full'       # options: 'full', 'progressive'
+    cleanup_trigger: 'session_end' # options: 'session_end', 'epoch_end', 'never'
+
+  # Collation policy (Phase-4 universal collator).
+  collation:
+    # options: null, 'image', 'slab', 'graph', 'sequence', 'mixed',
+    #          'robust', 'physics'
+    strategy: null
+    padding_mode: 'zeros'          # options: 'zeros', 'reflect', 'replicate'
+    padding_value: 0.0
+    allow_variable_shapes: false
+    validate_nans: true
+
+  # --- remaining fields of this block that have a constrained value set. -----
+  # Commented because each would otherwise change what the template resolves
+  # to; uncomment the lines you need. Generated from the schema -- see
+  # tests/unit/config/test_reference_template_options.py, which fails if any
+  # list here stops matching its Enum/Literal.
+  #   slab_target_mode: 'middle'                   # options: 'middle', 'flatten', 'keep'
+
+  # Resample / crop helpers.
+  resample:
+    enabled: false
+    strategy: 'reference'          # options: 'reference', 'isotropic'
+    interpolation: 'bspline'       # options: 'nearest', 'linear', 'bspline'
+    anti_aliasing: true
+
+  crop_or_pad:
+    enabled: false
+    padding_mode: 'reflect'        # options: 'zero', 'reflect', 'edge', 'mean'
+    crop_strategy: 'center'        # options: 'center', 'foreground', 'corner'
+
+  # Acquisition metadata expose block.
+  acquisition_metadata:
+    enabled: false
+    source: 'bids_json'            # options: 'bids_json', 'dicom', 'h5_attrs', 'yaml_inline'
+    fields: []
+    strict: false
+
+  # Quantitative-map regression (Phase 4b).
+  quantitative:
+    enabled: false
+    target_maps: []
+    units: 'physical'              # options: 'physical', 'normalized'
+
+  # --- remaining fields of this block that have a constrained value set. -----
+  # Commented because each would otherwise change what the template resolves
+  # to; uncomment the lines you need. Generated from the schema -- see
+  # tests/unit/config/test_reference_template_options.py, which fails if any
+  # list here stops matching its Enum/Literal.
+  #   input_source: null                           # options: null, 'contrasts', 'maps'
+
+  # Temporal / cine (Phase 4c).
+  temporal:
+    enabled: false
+    frames_per_window: 8
+    frame_axis: 3                  # options: 0, 1, 2, 3
+    temporal_overlap: 2
+
+  # --- remaining fields of this block that have a constrained value set. -----
+  # Commented because each would otherwise change what the template resolves
+  # to; uncomment the lines you need. Generated from the schema -- see
+  # tests/unit/config/test_reference_template_options.py, which fails if any
+  # list here stops matching its Enum/Literal.
+  #   target_source: null                          # options: null, 'sibling', 'self'
+
+  # fMRI (4-D BOLD series). Distinct from `temporal:` above, which is cine:
+  # both carry a `target_source`, but they are different fields with different
+  # vocabularies -- cine also accepts 'self', fMRI does not.
+  fmri:
+    enabled: false
+    volume_glob: '**/*.nii*'
+    tr_seconds: 0.72
+    phase_encode_axis: -2
+    target_suffix: '_target'
+
+  # --- remaining fields of this block that have a constrained value set. -----
+  # Commented because each would otherwise change what the template resolves
+  # to; uncomment the lines you need. Generated from the schema -- see
+  # tests/unit/config/test_reference_template_options.py, which fails if any
+  # list here stops matching its Enum/Literal.
+  #   target_source: null                          # options: null, 'sibling'
+
+  # Multi-domain / domain adaptation.
+  multi_domain:
+    enabled: false
+    domains: []
+    balancing: 'round_robin'       # options: 'round_robin', 'stratified', 'concat'
+    target_supervised: false
+
+  # Latent diffusion (Stage-1 autoencoder reuse).
+  latent_diffusion:
+    enabled: false
+    stage1_checkpoint: null
+    latent_key: 'latent'
+
+  # Coordinate grid emission (e.g., for INR / SIREN consumers).
+  emit_coordinates:
+    enabled: false
+    normalize: true
+    include_batch_dim: true
+
+  # Meta-learning batches.
+  meta_learning:
+    enabled: false
+    support_size: 4
+    query_size: 4
+    tasks_per_epoch: 100
+
+  # Optional manifest-driven roles.
+  manifest_roles:
+    inputs: []
+    targets: []
+    auxiliary: []
+
+# --- remaining fields of this block that have a constrained value set. -----
+# Commented because each would otherwise change what the template resolves
+# to; uncomment the lines you need. Generated from the schema -- see
+# tests/unit/config/test_reference_template_options.py, which fails if any
+# list here stops matching its Enum/Literal.
+#   bart:
+#     density_compensation: 'none'               # options: 'none', 'radial', 'iterative'
+#     sampling: 'cartesian'                      # options: 'cartesian', 'radial', 'spiral', 'non_cartesian'
+#     trajectory_source: 'none'                  # options: 'none', 'golden_angle', 'sibling_cfl', 'ismrmrd'
+#   datasets:
+#     - split: 'train'                           # options: 'train', 'val', 'both'
+#   input_contrast:
+#     normalization: 'percentile'                # options: 'percentile', 'zscore', 'minmax', 'none'
+#   ismrmrd:
+#     density_compensation: 'iterative'          # options: 'none', 'iterative', 'radial'
+#   modes:
+#     eval:
+#       output:
+#         multi_channel:
+#           channels:
+#             - dtype: 'float32'                 # options: 'float32', 'float16', 'int16', 'uint16'
+#         temporal:
+#           frame_axis_out: 3                    # options: 0, 1, 2, 3
+#         format: 'nifti'                        # options: 'nifti', 'h5', 'npy'
+#       sampler:
+#         aggregator: null                       # options: null, 'average', 'hann', 'crop'
+#         type: 'uniform'                        # options: 'uniform', 'full', 'grid', 'label', 'weighted', 'temporal_uniform', 'temporal_grid'
+#       role: null                               # options: null, 'clean_reference', 'metric_ref', 'uncertainty', 'manifest'
+#     infer:
+#       output:
+#         multi_channel:
+#           channels:
+#             - dtype: 'float32'                 # options: 'float32', 'float16', 'int16', 'uint16'
+#         temporal:
+#           frame_axis_out: 3                    # options: 0, 1, 2, 3
+#         format: 'nifti'                        # options: 'nifti', 'h5', 'npy'
+#       sampler:
+#         aggregator: null                       # options: null, 'average', 'hann', 'crop'
+#         type: 'uniform'                        # options: 'uniform', 'full', 'grid', 'label', 'weighted', 'temporal_uniform', 'temporal_grid'
+#       role: null                               # options: null, 'clean_reference', 'metric_ref', 'uncertainty', 'manifest'
+#     train:
+#       output:
+#         multi_channel:
+#           channels:
+#             - dtype: 'float32'                 # options: 'float32', 'float16', 'int16', 'uint16'
+#         temporal:
+#           frame_axis_out: 3                    # options: 0, 1, 2, 3
+#         format: 'nifti'                        # options: 'nifti', 'h5', 'npy'
+#       sampler:
+#         aggregator: null                       # options: null, 'average', 'hann', 'crop'
+#         type: 'uniform'                        # options: 'uniform', 'full', 'grid', 'label', 'weighted', 'temporal_uniform', 'temporal_grid'
+#       role: null                               # options: null, 'clean_reference', 'metric_ref', 'uncertainty', 'manifest'
+#     val:
+#       output:
+#         multi_channel:
+#           channels:
+#             - dtype: 'float32'                 # options: 'float32', 'float16', 'int16', 'uint16'
+#         temporal:
+#           frame_axis_out: 3                    # options: 0, 1, 2, 3
+#         format: 'nifti'                        # options: 'nifti', 'h5', 'npy'
+#       sampler:
+#         aggregator: null                       # options: null, 'average', 'hann', 'crop'
+#         type: 'uniform'                        # options: 'uniform', 'full', 'grid', 'label', 'weighted', 'temporal_uniform', 'temporal_grid'
+#       role: null                               # options: null, 'clean_reference', 'metric_ref', 'uncertainty', 'manifest'
+#   mrixfields:
+#     pairing_policy: 'all_pairs'                # options: 'fixed_target', 'all_pairs', 'ulf_source', 'multi_source', 'multi_contrast', 'prior'
+#     slice_mode: 'all_slices'                   # options: 'central', 'all_slices', 'volume'
+#   multi_contrast:
+#     acquisition_params:
+#       - contrast_type: 'spin_echo'             # options: 'spin_echo', 'inversion_recovery', 'gradient_echo', 'diffusion_weighted', 'ssfp', 'mprage'
+#   perfusion:
+#     aif_source: 'population'                   # options: 'population', 'measured'
+#     kinetic_model: 'extended_tofts'            # options: 'extended_tofts'
+#   phase_contrast:
+#     encoding_scheme: 'four_point_reference'    # options: 'four_point_reference'
+#     through_plane_axis: 'z'                    # options: 'x', 'y', 'z'
+#   spectroscopy:
+#     signal_model: 'mrs_lorentzian'             # options: 'mrs_lorentzian'
+#   target_contrast:
+#     normalization: 'percentile'                # options: 'percentile', 'zscore', 'minmax', 'none'
+#   target_mode: 'complex_mean'                  # options: 'complex_mean', 'phase_aligned_mean'
+
+# ============================================================================
+# MODEL CONFIGURATION  (ModelConfigSchema)
+# ============================================================================
+model:
+  # options: see MODEL_REGISTRY (>500 entries) — populated via
+  # mriforge.models.init_registry.populate_model_registry().
+  # Common: 'unet', 'standard_unet', 'enhanced_unet', 'attention_unet',
+  # 'mamba_unet', 'vit', 'swin', 'fno', 'score_based', 'mamba_reconstruction',
+  # 'unet_3d', 'vnet', 'unetr', etc.
+  model_type: 'standard_unet'
+  in_channels: 2                   # complex data as interleaved (real, imag)
+  out_channels: 2
+  base_channels: 64
+  depth: 4
+  spatial_dims: 2                  # options: 2, 3
+  input_type: 'image'              # options: 'image', 'kspace', 'sinogram', 'frequency'
+  output_activation: null
+  target_domain: null
+  model_kwargs: {}
+
+  # Latent / generative scalars.
+  z_dim: 256
+  kan_type: 'BSpline'              # options: 'BSpline', 'RBF', 'Wavelet' (see KANType)
+  wavelet_type: null
+  wav_version: null
+
+  # Weight init.
+  weight_init_type: 'he_normal'    # options: 'he_normal', 'xavier_uniform', 'orthogonal', ...
+  weight_init_gain: 1.0
+  weight_init_activation: 'relu'   # options: 'relu', 'leaky_relu', 'gelu', 'silu', 'tanh', 'sigmoid'
+  apply_weight_init: true
+
+  # Conditioning chain (FiLM / concat / sum into encoder).
+  conditioning:
+    enabled: false
+    sources: []
+    embed_dim: 128
+    fusion: 'concat'               # options: 'concat', 'sum'
+    injection: 'film'              # options: 'film'
+    encoder_kwargs: {}
+
+# ============================================================================
+# TRAINING CONFIGURATION  (TrainingStrategyConfigSchema)
+# ============================================================================
+  model_domain: 'image'    # options: 'image', 'kspace'
+training:
+  # options: see TrainingStrategyFactory.STRATEGY_CLASS_PATHS
+  # (mriforge.infrastructure.training.strategy_factory) — short alias OR
+  # full dotted path. Short names include 'gan', 'diffusion', 'vae',
+  # 'reconstruction', 'ssl', 'mae', 'pinn', 'physics_driven',
+  # 'domain_adaptation', 'cycle_bloch', 'virtual_fiducial',
+  # 'flow_matching', 'rectified_flow', 'tto', 'multi', 'x_diffusion',
+  # 'sle_compressed_sensing', and many more (>100 entries in v6.1).
+  strategy_class: 'mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy'
+
+  epochs: 100
+  max_iterations: 50000
+  max_steps_per_epoch: null
+  # Whether the iteration budget above is counted per rank or across the whole
+  # job. Under DDP the two differ by world_size, so a run that means 'global'
+  # and leaves this at the default trains world_size times longer than intended.
+  iteration_budget_scope: 'per_rank'   # options: 'per_rank', 'global'
+  task: null
+  device: null                     # null → inherits top-level device
+  output_dir: null
+
+  # Active paradigm block — pick exactly one to fill out below.
+  # v6.1 highlights diffusion; alternatives are shown commented.
+  diffusion:
+    timesteps: 1000
+    noise_schedule: 'cosine'       # options: null, 'linear', 'cosine', 'sqrt', 'quadratic'
+    sampler: 'ddpm'                # options: 'ddpm', 'ddim', 'pndm', 'lms', 'euler', 'euler_a'
+    sampling_steps: 100
+    cond_drop_prob: 0.1
+    guidance_scale: 7.5
+    prediction_type: 'epsilon'     # options: 'epsilon', 'sample', 'v_prediction'
+    enable_diffusion_amp: false
+    enforce_output_range: true
+    lambda_mse: 1.0
+
+# --- remaining fields of this block that have a constrained value set. -----
+# Commented because each would otherwise change what the template resolves
+# to; uncomment the lines you need. Generated from the schema -- see
+# tests/unit/config/test_reference_template_options.py, which fails if any
+# list here stops matching its Enum/Literal.
+#   bloch_manifold_dps:
+#     prediction_type: 'epsilon'                 # options: 'epsilon', 'x0'
+#     pulse_sequence: 'spgr'                     # options: 'gre', 'spgr', 'mprage', 'bssfp', 'mrf_fisp', 'mrf_truefisp'
+#     sampler_type: 'ddim'                       # options: 'ddim', 'ddpm'
+#   bloch_synth:
+#     opaque_band: 'highpass'                    # options: 'highpass'
+#     segmenter_backend: 'label_dice'            # options: 'none', 'label_dice'
+#     signal_model: 'spgr'                       # options: 'spgr'
+#   certified_robustness:
+#     attack_norm: 'linf'                        # options: 'linf', 'l2'
+#   cs_mno:
+#     architecture:
+#       activation: 'gelu'                       # options: 'gelu', 'relu', 'silu'
+#     scan:
+#       mode: 'hilbert_2d'                       # options: 'hilbert_2d', 'hilbert_3d', 'morton_2d', 'morton_3d', 'snake_2d', 'zigzag_2d', 'raster_2d', 'raster_3d'
+#   diffusion:
+#     # Which generative paradigm trains this arm. `null` is the transitional
+#     # "unspecified" tag -- equivalent to omitting the key, and it is what the
+#     # 75 arms predating the paradigm union resolve to. Prefer a real tag.
+#     type: 'cold'                               # options: null, 'cold', 'ddpm', 'ddim', 'score_based', 'rectified_flow', 'latent_diffusion', 'chi_square'
+#   equivariance_conformal:
+#     exchangeability_test: 'ks_test'            # options: 'ks_test', 'none'
+#     group: 'SO2'                               # options: 'SO2', 'SE2'
+#   equivariant_imaging:
+#     group: 'dihedral'                          # options: 'dihedral', 'small_rotation'
+#     noise_model: 'gaussian_kspace'             # options: 'gaussian_kspace', 'ncchi_magnitude'
+#   federated_config:
+#     aggregation_strategy: 'fed_avg'             # options: 'fed_avg', 'fed_prox', 'fed_opt', 'fed_adam', 'scaffold', 'fed_nova'
+#   flow:
+#     sampling_method: 'euler'                    # options: 'euler', 'midpoint', 'rk45', 'heun'
+#   motion:
+#     motion_type: 'smooth'                       # options: 'smooth', 'abrupt', 'respiratory', 'cardiac', 'rigid', 'elastic'
+#   field_bridge:
+#     velocity_norm: 'l2'                        # options: 'l1', 'l2'
+#   field_cocycle:
+#     triple_sampling: 'uniform_distinct'        # options: 'uniform_distinct'
+#   field_flow:
+#     solver: 'heun'                             # options: 'euler', 'heun'
+#     velocity_norm: 'l2'                        # options: 'l1', 'l2'
+#   field_guided_diffusion:
+#     beta_schedule: 'cosine'                    # options: 'cosine', 'linear'
+#   generative_refiner:
+#     beta_schedule: 'cosine'                    # options: 'cosine', 'linear'
+#     forward_operator: 'field_lowpass'          # options: 'field_lowpass', 'wiener_band'
+#   hamiltonian_acquisition:
+#     integrator: 'leapfrog'                     # options: 'leapfrog', 'rk4_symplectic'
+#     potential_arch: 'siren'                    # options: 'mlp', 'siren', 'fourier_features_mlp'
+#   ib_active_acquisition:
+#     mode: 'linear_gaussian'                    # options: 'linear_gaussian', 'nonlinear'
+#   ib_vf:
+#     navigator_source: 'dc_kspace'              # options: 'dc_kspace', 'central_line'
+#   mae:
+#     mask_domain: 'image'                       # options: 'image', 'kspace'
+#   mrs_quantification:
+#     parameter_activation: 'softplus'           # options: 'softplus', 'none'
+#   multi:
+#     flow:
+#       - action: 'call'                         # options: 'call', 'loop', 'assign', 'detach'
+#     routines:
+#       - action: 'call'                         # options: 'call', 'loop', 'assign', 'detach'
+#     stages:
+#       - stage_config:
+#           early_stopping:
+#             mode: 'min'                        # options: 'min', 'max'
+#           metrics:
+#             best_metric_mode: 'min'            # options: 'min', 'max'
+#           optimization:
+#             compile:
+#               mode: 'default'                  # options: 'default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs'
+#   perfusion_kinetic:
+#     parameter_activation: 'softplus'           # options: 'softplus', 'none'
+#   quality_matching:
+#     target:
+#       pair_layout: 'field_keyed'               # options: 'field_keyed', 'explicit'
+#       pairing: 'unpaired'                      # options: 'paired', 'unpaired'
+#       source: 'cohort'                         # options: 'cohort', 'literal'
+#     method: 'differential_evolution'           # options: 'differential_evolution', 'nelder_mead'
+#   recoverability_vib:
+#     rate_reduction: 'sum'                      # options: 'sum', 'mean_per_dim'
+#   se3_equivariant_navigator:
+#     group: 'SE3'                               # options: 'SO3', 'SE3'
+#   ssdu:
+#     noise_model: 'gaussian_kspace'             # options: 'gaussian_kspace', 'ncchi_magnitude'
+#   trajectory_recon:
+#     trajectory_units: 'cycles_per_fov'         # options: 'cycles_per_fov', 'rad_per_pixel'
+#   twin_dps:
+#     phase_stego_basis: 'fourier'               # options: 'fourier', 'wavelet'
+#   ulf_dps:
+#     beta_schedule: 'cosine'                    # options: 'cosine', 'linear'
+
+  # Alternative paradigm sub-blocks (commented — only one active at a time,
+  # but each is a real schema field accepted here).
+  #
+  # vae / latent:
+  # latent:
+  #   latent_dim: 256
+  #   beta_kl: 1.0
+  #   anneal_kl_beta: false
+  #   kl_anneal_steps: 10000
+  #   latent_loss_type: 'kl_divergence'  # options: 'kl_divergence', 'vq', 'commit'
+  #   n_embeddings: 512
+  #   embedding_dim: 64
+  #
+  # gan:
+  #   phase_schedule: null              # ProGAN phase boundaries (list[int])
+  #   progan_gradient_penalty_lambda: 10.0
+  #   beta_tc_weight: 1.0
+  #
+  # pnp:                                # Plug-and-play denoiser strategy
+  #   enabled: false
+  #   iterations: 50
+  #   rho: 1.0
+  #   spectral_norm_iters: 1
+  #   denoiser_lipschitz_constant: 1.0
+  #
+  # multi:                              # Pipeline / multi-stage curriculum
+  #   stages: []
+  #   routines: {}
+  #   flow: []
+  #   evaluate_intermediates: true
+  #
+  # multi_parameter:                    # Bloch multi-parameter regression
+  #   parameters: []
+  #   uncertainty_weighting: true
+  #   bloch_consistency_lambda: 0.5
+  #   n_contrasts: 3
+  #
+  # scattering_besov:                   # B-1.3 scattering-Besov detail prior (MRIxFields ->7T)
+  #   lambda_l1: 1.0                    # weight of L1 to the 7T target
+  #   lambda_scatter: 0.5              # weight of the detail prior (0 => L1-only control)
+  #   n_scales: 3                      # wavelet scales in the (fixed, parameter-free) filterbank
+  #   n_orientations: 4               # orientations per scale
+  #   besov_s: 1.0                    # Besov exponent; 2^(j*s) up-weights finer scales
+  #   scatter_weight: 1.0             # internal weight of the scattering (modulus) component
+  #   besov_weight: 1.0               # internal weight of the Besov (regularity) component
+
+# ============================================================================
+# OPTIMIZATION CONFIGURATION  (OptimizationConfigSchema)
+# ============================================================================
+optimization:
+  # Five named sub-blocks. The flat spellings (optimization.learning_rate, ...)
+  # still LOAD -- a mode="before" validator folds each into its sub-block -- but
+  # they are retired: nothing in Python can read them, and
+  # scripts/ci/check_no_legacy_config_keys.py counts how many arms still use
+  # them. Write the nested form in anything new.
+
+  optimizer:
+    # Closed vocabulary — see OptimizerType in config/schemas/enums.py. Case and
+    # a small alias table are normalised; an unknown name raises at load time.
+    #   torch:   'adam', 'adamw', 'sgd', 'rmsprop', 'adamax', 'nadam', 'radam',
+    #            'adagrad', 'adadelta', 'asgd', 'rprop', 'adafactor',
+    #            'lbfgs', 'sparseadam'   (the last two accept no weight_decay)
+    #   in-repo: 'lars', 'lamb', 'lion'
+    #   extras:  'adam8bit', 'adamw8bit'          -> pip install -e '.[bnb]'
+    #            'schedulefree_adamw', 'schedulefree_sgd' -> '.[schedulefree]'
+    type: 'adamw'
+    learning_rate: 1.0e-4
+    generator_learning_rate: null  # GAN: split G/D LR (null → use learning_rate)
+    discriminator_learning_rate: null
+    weight_decay: 1.0e-5
+    # Either the scalar pair OR `betas`, not both with different values.
+    beta1: 0.9
+    beta2: 0.999
+    # betas: [0.9, 0.999]          # takes precedence over beta1/beta2
+    nesterov: null                 # SGD / LARS
+    amsgrad: null                  # Adam / AdamW
+    kwargs: {}                     # validated against the optimizer's signature
+
+    # Per-parameter-group overrides, keyed by a named_parameters() prefix. A key
+    # matching zero parameters RAISES (a renamed submodule must not silently
+    # degrade the arm to a uniform LR).
+    # param_groups:
+    #   residual_head:
+    #     learning_rate: 1.0e-5    # or lr_multiplier, not both
+    #     weight_decay: 0.0
+    #     freeze: false            # freeze != lr 0: a zero-LR group still decays
+
+    # Lookahead (Zhang et al. 2019) wraps the resolved base optimizer. A wrapper,
+    # not an optimizer type value — it has no meaning without an inner optimizer.
+    lookahead:
+      enabled: false
+      sync_period: 5               # the paper's k / la_steps
+      alpha: 0.5
+
+    # NOTE: there is deliberately no `sam:` block and 'sam' is NOT a legal
+    # optimizer type. SAM needs two forward+backward passes per step, so it needs
+    # the closure that only StepExecutor holds -- it returns with
+    # optimizers/sharpness_aware_stepper.py. A `sam:` block shipped here briefly
+    # with zero readers; declaring it validated and did nothing.
+
+  # Everything between loss.backward() and optimizer.step().
+  gradient:
+    accumulation_steps: 1
+    enable_checkpointing: false    # trade compute for activation memory
+    detect_anomalies: false        # torch.autograd anomaly mode; global, 2-4x slower
+    clip:
+      enabled: true
+      method: 'norm'               # options: 'norm', 'value'
+      value: 1.0
+
+  # Autocast. Note the third state: dtype 'float32' disables AMP even when
+  # enabled is true, which is how an arm asks for fp32 without touching the flag.
+  precision:
+    enabled: true
+    dtype: null                    # null/'float16' → fp16, 'bfloat16', 'float32'
+
+  # torch.compile. Compilation failure RAISES — asking for a compiled model and
+  # silently training an eager one is a lie about what ran. enabled: false is
+  # how you ask for eager.
+  compile:
+    enabled: false
+    # options: 'default', 'reduce-overhead', 'max-autotune', 'max-autotune-no-cudagraphs'
+    mode: 'default'
+    backend: 'inductor'            # validated against torch._dynamo.list_backends()
+    fullgraph: false
+    dynamic: true
+
+  # Diagnostics only — none of these change what the run computes.
+  memory:
+    enable_monitoring: false
+    monitoring_interval: 50
+    enable_fragmentation_mitigation: false
+    cleanup_interval: 100
+    enable_batch_size_optimization: false
+    safety_margin: 0.8
+
+  # LR scheduling — still FLAT, but #662 is FIXED (2026-08-08). The strategy
+  # alone now resolves: `lr_scheduler_strategy: cosine` with no `scheduler:`
+  # dict anneals over training.max_iterations. Before the fix it resolved to no
+  # scheduler at all, so 531 corpus arms trained at a constant LR while their
+  # config said cosine. Only a DECLARED strategy is honoured — the default
+  # below is not, or the 305 arms that declare nothing would all start annealing.
+  # A `scheduler:` dict is needed only to parameterise the family.
+  #
+  # 'warmup' / 'linear_warmup' / 'warmup_cosine' also require warmup_steps > 0:
+  # the alias resolves the decay half only, so without it the warmup the name
+  # promises would be silently dropped. The resolver raises instead.
+  # options: 'cosine', 'cosine_annealing', 'cosine_annealing_warm_restarts',
+  #          'step', 'linear_decay', 'exponential', 'plateau', 'constant',
+  #          'warmup', 'linear_warmup', 'warmup_cosine'
+  lr_scheduler_strategy: 'cosine'
+  warmup_steps: 0
+  lr_scheduler_kwargs: {}
+  # scheduler:
+  #   T_max: 50000
+  #   eta_min: 1.0e-6
+  #   warmup_steps: 500
+
+# ============================================================================
+# LOSSES CONFIGURATION  (LossConfigSchema — Single Source of Truth)
+# ============================================================================
+losses:
+  # How the objective is ASSEMBLED, as opposed to which terms are in it.
+  # `exclude_defaults` is NOT a negated boolean -- it is a list of loss NAMES to
+  # leave out, so there is nothing to invert.
+  policy:
+    output_domain: 'image'        # options: '', 'image', 'kspace', 'complex_image'
+                                  # required once any *_losses list is used
+    exclude_defaults: []          # e.g. ['mse'] drops the paradigm's implicit MSE
+
+  # Declarative loss lists. Each entry is a LossComponentConfig
+  # (name + weight + enabled + kwargs). The 'name' string is looked
+  # up in the LossRegistry (mriforge.models.losses).
+  image_losses:
+    - name: 'l1'
+      weight: 1.0
+      enabled: true
+      kwargs: {}
+    - name: 'ssim'
+      weight: 0.1
+      enabled: true
+      kwargs: {}
+
+  kspace_losses: []
+  complex_losses: []
+
+  # INERT: zero readers and zero corpus declarations (issue #676). Left flat --
+  # a tidy home would imply they work.
+
+  # Per-paradigm legacy weights (ReconstructionLossesConfig).
+  reconstruction:
+    enable_l1: true
+    lambda_l1: 10.0
+    enable_perceptual: false
+    lambda_perceptual: 10.0
+    enable_ssim: false
+    lambda_ssim: 0.0
+    enable_lpips: false
+    lambda_lpips: 0.0
+    enable_hfen: false
+    lambda_hfen: 0.0
+    loss_type: 'l1'                # options: 'l1', 'l2', 'huber', 'mse'
+
+  # GAN losses.
+  gan:
+    enable_adversarial: false
+    lambda_adv: 1.0
+    enable_gradient_penalty: false
+    lambda_gp: 10.0
+    # options: 'wgan-gp', 'hinge', 'bce', 'lsgan', 'wgan', 'wgan_softplus', 'vanilla'
+    gan_loss_type: 'wgan-gp'
+    disc_updates: 1
+    label_smoothing: 0.0
+
+  # Diffusion losses.
+  diffusion:
+    enable_diffusion: true
+    lambda_mse: 1.0
+    prediction_type: 'epsilon'     # options: 'epsilon', 'sample', 'v_prediction'
+    timesteps: 1000
+    noise_schedule: 'cosine'       # options: 'linear', 'cosine', 'sqrt', 'quadratic'
+    sampler: 'ddpm'
+
+  # Physics-informed losses.
+  physics:
+    enable_bloch_residual: false
+    lambda_bloch_residual: 1.0
+    enable_physics_constraint: false
+    lambda_physics_constraint: 0.1
+    enable_parallel_imaging: false
+    lambda_parallel_imaging: 1.0
+    enable_snr_preserving: false
+    lambda_snr_preserving: 1.0
+    target_snr: 20.0
+
+  # SSL contrastive losses (active only for SSL/MAE paradigms).
+  ssl:
+    enable_contrastive: false
+    lambda_contrastive: 1.0
+    temperature: 0.07
+
+  # PINN PDE-residual losses.
+  pinn:
+    enable_pde: false
+    lambda_pde: 0.1
+    enable_unit_norm_coil: false
+    lambda_unit_norm_coil: 10.0
+    enable_magnitude_tv: false
+    lambda_magnitude_tv: 0.001
+
+# ============================================================================
+# METRICS CONFIGURATION  (MetricsConfigSchema)
+# ============================================================================
+  lambda_deep_supervision: 0.0
+metrics:
+  enable_tracking: true
+  compute_psnr: true
+  compute_ssim: true
+  compute_mse: true
+  compute_mae: true
+  compute_lpips: false
+  compute_fid: false
+  compute_robust_mri_psnr: false
+  compute_nmse: false
+  compute_nrmse: false
+  compute_snr: false
+  compute_hfen: false
+  compute_ms_ssim: false
+  compute_advanced_metrics: true
+  metric_interval: 1000
+  eval_on_epoch: true
+  track_best_metric: true
+  best_metric_name: 'val_loss'
+  best_metric_mode: 'min'          # options: 'min', 'max'
+
+# ============================================================================
+# VALIDATION CONFIGURATION  (ValidationConfigSchema)
+# ============================================================================
+validation:
+  # Grouped into six sub-blocks (phase 10a). The flat spellings below the blocks
+  # are the ones that were NOT grouped, and the comment says why for each.
+  schedule:
+    interval_steps: 1000      # absorbs the old `eval_interval` AND `frequency_steps`
+    on_epoch: true
+    interval_epochs: 1
+
+  loader:
+    batch_size: null          # absorbs `val_batch_size` AND `validation_batch_size`;
+                              # null inherits the training batch size
+    chunk_size: 2
+    num_batches: null
+    num_samples: null
+    shuffle: false
+
+  # Named `scoring`, not `metrics`: `validation.metrics` is itself a retired key,
+  # and the fold matches on the key name alone -- a block called `metrics` would
+  # be folded into itself.
+  scoring:
+    compute: null             # e.g. ['psnr', 'ssim']; null inherits training.metrics
+    primary: 'psnr'
+    domain: null              # options: 'image', 'kspace', null (auto-detect)
+    # options: 'ifft_magnitude', 'ifft_sense_adjoint', 'magnitude', null.
+    # 'ifft_mag_combine' and 'fft' were advertised here and dispatched by
+    # nothing (#937); they RAISE now, so they are not listed.
+    output_transform: null
+    enable_image_metrics: true
+
+  visualization:
+    enabled: false
+    interval: 1000
+
+  sampling:                   # diffusion paradigms only
+    steps: null               # null falls back to training.diffusion.sampling_steps
+    enable_multistep_cold: false
+
+  # Gates that can FAIL a run rather than merely measure it.
+  gates:
+    input_dependence_tol: null    # L4 measurement-independence (DC-blob) gate
+    held_out_severity_eval: false # digital-twin / robustness studies
+    hallucination_test:
+      enabled: false
+      # options: 'feature_insertion', 'lesion_swap', 'edge_jitter'
+      method: 'feature_insertion'
+
+  # --- ungrouped on purpose: nothing reads these, and a tidy home would imply
+  # they work. `enabled` and `split` are issue #673; the rest are carried by
+  # KNOWN_UNCONSUMED in tests/unit/config/test_schema_key_consumption.py.
+  enabled: true               # INERT: validation runs regardless
+  split: 0.2                  # INERT: data.split.validation_fraction is the live one
+  validation_metric: 'loss'   # INERT: near-duplicate of scoring.primary, different default
+  use_training_loss: true     # INERT
+  num_visualizations: 4       # INERT
+  visualization_dir: './visualizations'   # INERT
+
+  # The one LIVE ungrouped scalar: a memory-policy knob belonging to no group.
+  empty_cache_before_validation: true
+
+# ============================================================================
+# CHECKPOINT CONFIGURATION  (CheckpointConfigSchema)
+# ============================================================================
+checkpoint:
+  enabled: true
+  save_dir: './checkpoints'
+  save_interval: 1000
+  save_on_epoch: true
+  keep_last_n: 5
+  keep_best_n: 3
+  pretrained_path: null
+  load_optimizer_state: true
+  load_scheduler_state: true
+  resume_training: false
+  format: 'safetensors'            # options: 'safetensors', 'pt'
+
+# ============================================================================
+# LOGGING CONFIGURATION  (LoggingConfigSchema)
+# ============================================================================
+logging:
+  # Grouped into seven sub-blocks (phase 10b). The flat spellings still load and
+  # are folded into place, but they are gone from Python.
+  identity:
+    # NB: the experiment name MUST live under `logging:`, not at top level --
+    # TrainingSettings is `extra="forbid"` and only LoggingConfigSchema has it.
+    experiment: 'v1_0_reference_config'
+    run: null                        # null derives a run name
+    notes: null
+    tags: {}
+
+  sinks:                             # where log lines go, and how much of them
+    level: 'info'                    # options: 'debug', 'info', 'warning', 'error', 'critical'
+    silent: false
+    to_console: true
+    to_file: true
+    dir: './logs'
+
+  intervals:                         # every-N-steps cadences
+    log: 10
+    save: 100
+    validation_images: 1             # every N validations
+    anomaly_check: 100
+    histogram: 1000                  # weight/grad histograms every N steps.
+    # Deliberately far coarser than `log`: add_histogram copies EVERY parameter
+    # to host memory, which is a GPU sync per tensor (non-negotiable #9).
+
+  images:
+    log_input: false
+    log_validation: true
+    log_difference: true             # |prediction - target|
+    save_validation: true            # to disk, as opposed to the tracker
+    max_per_batch: 4
+
+  tracking:
+    enabled: true
+    service: 'tensorboard'           # options: 'tensorboard', 'none'
+    # `wandb` and `mlflow` were advertised here and neither ever existed in
+    # code. `service` was a bare string compared against "tensorboard", so
+    # declaring either disabled tracking silently. It is a closed enum now.
+    enable_tensorboard: true
+    tensorboard_dir: null            # relative to the RUN dir; null -> <run_dir>/tensorboard
+
+  # Named `snapshots`, not `debug_snapshots`: that is the retired scalar's own
+  # name, and a destination block may not share it -- a migrated arm would be
+  # folded into itself.
+  snapshots:                         # json + image dumps at start-of-training
+    enabled: true
+    interval_steps: 0                # 0 = use `log_steps` instead
+    max_calls: 8
+    save_images: true
+    save_json: true
+    log_steps: [0, 1, 2, 10]
+
+  report_cases:
+    enabled: true
+    subdir: 'report_cases'
+
+  # --- ungrouped on purpose: nothing reads these, and a tidy home would imply
+  # they work. All seven below are carried by KNOWN_UNCONSUMED in
+  # tests/unit/config/test_schema_key_consumption.py.
+  #
+  # `wandb_project` / `wandb_entity` are NOT here: declaring either now RAISES
+  # (#675, 2026-08-12) rather than being accepted-and-ignored, so this
+  # template -- what new arms copy from -- must not write them. See
+  # logging.py's `_refuse_deferred_wandb` validator.
+  log_weights: false                 # INERT
+  log_activations: false             # INERT
+  log_validation_graphs: true        # INERT
+  save_images_per_epoch: 4           # INERT
+  progress_bar_enabled: true         # INERT
+  progress_bar_on_warning: true      # INERT
+  progress_bar_no_progress: false    # INERT
+
+  # LIVE, but both its group-mates above are inert, so there is no group to join.
+  log_gradients: false
+
+# ============================================================================
+# EARLY STOPPING  (EarlyStoppingConfigSchema)
+# ============================================================================
+early_stopping:
+  enabled: true
+  patience: 10
+  patience_min_iterations: null
+  metric: 'val_loss'
+  mode: 'min'                      # options: 'min', 'max'
+  min_delta: 1.0e-4
+  check_interval: 1000
+  restore_best_weights: true
+
+# ============================================================================
+# EMA (Exponential Moving Average)  (EMAConfigSchema)
+# ============================================================================
+ema:
+  enabled: false
+  decay: 0.999
+  update_frequency: 1
+  enable_adaptive_ema: false
+  warmup_steps: 0
+  initial_decay: 0.0
+  final_decay: 0.999
+  stability_threshold: 1.0e-6
+  adaptation_rate: 0.01
+  enable_momentum_scaling: false
+  enable_ema_for_optimizer: false
+
+# ============================================================================
+# LOSS LOGGING  (LossLoggingConfigSchema)
+# ============================================================================
+loss_logging:
+  frequency: 1
+  output_dir: null
+
+# ============================================================================
+# ACCELERATION  (AccelerationConfigSchema) — k-space mask scheduling
+# ============================================================================
+# Renamed from `acceleration:` in phase 11 -- the old name meant both the MRI
+# k-space acceleration factor and compute acceleration. The legacy spelling
+# still loads (a ROOT fold moves the whole block).
+undersampling:
+  base_acceleration: 4.0
+  max_acceleration: 8.0
+  # options: 'linear', 'polynomial', 'exponential', 'step', 'power_law'
+  acceleration_schedule: 'linear'
+  schedule_steps: 10000
+  schedule_power: 2.0
+  # options: the keys of infrastructure/physics/sampling._ACCELERATOR_REGISTRY --
+  #   'equispaced', 'uniform_cartesian', 'variable_density', 'variable_density_1d',
+  #   'variable_density_2d_gaussian', 'variable_density_cava',
+  #   'fractional_variable_density', 'random_cartesian', 'poisson_disk', 'radial',
+  #   'spiral', 'golden_angle', 'partial_fourier', 'nested', 'learned_pattern',
+  #   'multi_mask', 'linear'.
+  # NOT MaskType: that enum drives the separate static-mask path and its members
+  #   ('cartesian_lines', 'cartesian_peripheral', 'sle_kappa', ...) are not
+  #   accelerators. The two vocabularies overlap but are not the same set.
+  acceleration_type: 'variable_density'
+  center_fraction: 0.08
+  density_power: 2.0
+  sigma_scaling: 0.25
+  std_scale: 4.0
+  pf_fraction: 0.75
+  mask_combination_mode: 'rotate'
+  undersampling_pattern: 'random'
+  enable_dynamic_mask: false
+  mask_seed: null
+  # Coerce the cascade so M_{t+1} is a subset of M_t at every timestep, which is
+  # what cold diffusion's forward process assumes. Off by default: enabling it
+  # changes the masks of any family that does not already nest. Enforcement can
+  # only REMOVE samples, so a family that re-draws its pattern per timestep
+  # collapses and raises rather than degrading silently.
+  enforce_nested: false
+  # Minimum share of the requested budget an enforced mask may realise before
+  # enforce_nested raises. Only read when enforce_nested is true.
+  nested_tolerance: 0.5
+
+  # Adaptive (post-hoc PILOT-style adaptive acquisition).
+  adaptive:
+    enabled: false
+
+# --- remaining fields of this block that have a constrained value set. -----
+# Commented because each would otherwise change what the template resolves
+# to; uncomment the lines you need. Generated from the schema -- see
+# tests/unit/config/test_reference_template_options.py, which fails if any
+# list here stops matching its Enum/Literal.
+#   schedule_type: null                          # options: null, 'linear', 'polynomial', 'exponential', 'step', 'power_law'
+
+# ============================================================================
+# PHYSICS  (PhysicsConfigSchema)
+# ============================================================================
+physics:
+  # Forward model — DC projection / soft DC weighted insertion.
+  data_consistency:
+    enabled: true
+    method: 'projection_2d_consistency'
+    weight: 1.0
+    noise_type: 'gaussian'
+    train_noise_level: 0.01
+    eval_noise_level: 0.005
+    enable_acs_decoupling: false
+    enable_acs_replacement: true
+    acs_mask_center_fraction: 0.08
+
+  # ESPIRiT / PINN coil sensitivity estimation.
+  coil_sensitivity:
+    enable_estimation: false
+    estimation_method: 'espirit'   # options: 'espirit', 'pinn', 'siren_pinn', 'cached'
+    estimation_type: 'dynamic'     # options: 'dynamic', 'static'
+    calibration_region_size: 24
+    num_threads: 4
+    precomputed_path: null
+    precomputed_type: 'pt'
+
+  # k-space sanity rails.
+  kspace:
+    enable_kspace_recon: false
+    enforce_hermitian_symmetry: true
+    zero_pad_reconstruction: false
+    data_range: 1.0
+    max_magnitude: 1.0
+
+  # Sparsity / TV regularisation hooks.
+  regularization:
+    enable_tv: false
+    tv_weight: 0.01
+    tv_type: 'isotropic'           # options: 'isotropic', 'anisotropic'
+    enable_wavelets: false
+    wavelet_weight: 0.01
+    wavelet_family: 'db4'          # options: pywt families ('db1'..'db20', 'sym2'..., 'coif1'...)
+    wavelet_levels: 3
+    enable_sparsity: false
+    sparsity_weight: 0.001
+    sparsity_type: 'l1'            # options: 'l1', 'l2', 'log'
+    physics_penalty_weight: 0.0
+    l2_penalty: 0.0
+
+  iterative_refinement:
+    enabled: false
+    num_steps: 1
+    dc_weight: 1.0
+    residual_learning: false
+
+  phase_correction:
+    enable_phase_estimation: false
+    estimation_method: 'voxel_wise'  # options: 'voxel_wise', 'patch', 'mrf_dictionary'
+    phase_smoothing: true
+
+  b0_correction:
+    enable_b0_correction: false
+    num_shim_orders: 2
+    estimate_from_data: true
+
+  b0_simulation:
+    enabled: false
+    max_hz: null
+    style: 'smooth'                  # options: 'smooth', 'piecewise', 'spike'
+    probability: 0.5
+
+  field_strength: 3.0
+
+  motion_correction:
+    enable_motion_correction: false
+    # options: 'translational', 'rigid', 'affine', 'elastic'
+    motion_type: 'translational'
+    reference_frame: 'middle'        # options: 'middle', 'first', 'last'
+    method: 'standard'
+
+  compressed_sensing:
+    enabled: false
+    sampling_pattern: 'cartesian'    # options: 'cartesian', 'radial', 'spiral', 'poisson_disc'
+    acceleration_factor: 4.0
+    sparsity_transform: 'wavelet'    # options: 'wavelet', 'tv', 'identity'
+    reconstruction_algorithm: 'iterative_soft_thresh'  # options: 'iterative_soft_thresh', 'admm', 'pgd'
+    num_iterations: 10
+    threshold_scaling: 1.0
+    convergence_tolerance: 1.0e-5
+    step_size: 0.1
+    enforce_data_consistency: true
+    use_adaptive_threshold: false
+
+  pinn:
+    enabled: false
+    pde_type: 'wave_equation'        # options: 'wave_equation', 'heat_equation', 'maxwell'
+    boundary_condition: 'dirichlet'  # options: 'dirichlet', 'neumann', 'periodic'
+    collocation_points: 2048
+    lambda_pde: 0.1
+    warmup_epochs: 200
+    alpha_ema: 0.9
+    map_save_interval: 5
+
+  bloch_simulation:
+    enabled: false
+    target_tr: 3000.0
+    target_te: 100.0
+
+  digital_twin:
+    enabled: false
+    marker_type: 'gaussian'          # options: 'gaussian', 'cross'
+    corner_offset: 0.8
+    marker_sigma: 0.03
+    learnable_markers: false
+    motion_type: 'rigid'             # options: 'rigid', 'periodic', 'random_shot', 'elastic'
+    motion_composite: []             # options: list of motion_type values, in compose order
+    motion_severity: 1.0
+    # EVERY enable_* defaults FALSE (changed 2026-08-03): they sit under a parent
+    # whose own `enabled` is false, so a true default meant that switching the twin
+    # on bought corruption unasked. This block showed the first three as `true`
+    # until 2026-08-06; that was stale, not a different default.
+    enable_motion: false
+    enable_b0: false
+    enable_b1: false
+    enable_undersampling: false
+    enable_gibbs: false
+    enable_chemical_shift: false
+    enable_eddy_current: false
+    enable_spike_noise: false
+    enable_rf_crosstalk: false
+    enable_b0_distortion: false
+    enable_gradient_nonlinearity: false
+    enable_rf_zipper: false
+    enable_magic_angle: false
+
+    # The complex-AWGN stage has NO enable flag — it always runs. Its severity is
+    # degradation_ranges['noise'] (see below), so pinning that to [0.0, 0.0] is the
+    # only way to silence it.
+    snr_min: 10.0                    # amplitude SNR in dB; each forward pass draws
+    snr_max: 25.0                    # a target uniformly from [snr_min, snr_max]
+
+    # Which degradations couple to the diffusion corruption factor, and the
+    # [vmin, vmax] window each severity is remapped onto. Two banks are accepted:
+    # the simulator's 14 NATIVE axes, and the 31 keys of DEGRADATION_REGISTRY
+    # (applied as standalone operators after the native pipeline). Five names are in
+    # both — b0, chemical_shift, gibbs, gradient_nonlinearity, magic_angle — and are
+    # then handled NATIVELY, so the registry operator of the same name does not run.
+    #
+    # Two rules with teeth:
+    #   * a feature ABSENT from a non-empty progressive_degradations is held STATIC
+    #     at effective cf 1.0, i.e. full strength, not skipped;
+    #   * a DEGENERATE range [t, t] pins that axis at t regardless of the corruption
+    #     factor. That is how a fitted DegradationChain replays as ordinary config
+    #     (see infrastructure/physics/degradation_chain.py).
+    progressive_degradations: ['motion', 'noise', 'b0', 'b1']
+    degradation_ranges:
+      motion: [0.0, 1.0]
+      noise: [0.0, 1.0]
+      b0: [0.0, 1.0]
+      b1: [0.0, 1.0]
+      rf_zipper: [0.0, 1.0]
+      gradient_nonlinearity: [0.0, 1.0]
+
+    # SHAPE of the severity ramp over diffusion timesteps — the same vocabulary as
+    # undersampling.acceleration_schedule above, because it is the same ramp applied
+    # to severity instead of acceleration. Until these existed the remap from the
+    # corruption factor onto (vmin, vmax) was linear and there was no way to say
+    # otherwise. 'linear' is the identity and reproduces every config written
+    # before them.
+    #
+    # 'step' differs from undersampling's: there it indexes an explicit
+    # acceleration_range LIST, and severity has only the (vmin, vmax) pair, so here
+    # it is binary at the midpoint — vmin below, vmax above.
+    # options: 'linear', 'polynomial', 'power_law', 'exponential', 'step'
+    degradation_schedule: 'linear'      # applies to every axis...
+    degradation_schedules: {}           # ...unless overridden per axis, e.g.
+                                        #   {motion: step, noise: power_law}
+                                        # Keys must name a known axis AND appear in
+                                        # progressive_degradations: an axis absent
+                                        # from a non-empty list is held STATIC at
+                                        # full strength, so its ramp never fires.
+    degradation_schedule_power: 2.0     # read only by power_law / polynomial
+
+    # Apply the twin as a transversal data-pipeline transform (DigitalTwinDegradation)
+    # instead of inside a VF strategy: corrupts the acquisition into `input` and keeps
+    # the clean `target`. K-SPACE datasets only — it raises on a subject carrying
+    # neither `kspace_raw` nor `kspace`. Leave off for VF arms, which corrupt
+    # internally; both routes at once double-corrupts.
+    apply_as_transform: false
+    transform_degradation_only: true  # skip VF marker embedding on the transform route
+
+  # ----------------------------------------------------------------------------
+  # v6.1 NEW: physics sub-blocks (default disabled — v6.0 behaviour preserved)
+  # ----------------------------------------------------------------------------
+
+  # (v6.1 new) Concomitant-field correction at low B0 (CAUR — idea 1).
+  # Maxwell concomitant fields scale as G^2 / (2 * B0); negligible at
+  # 1.5/3T, significant at 64 mT.
+  concomitant:
+    enabled: false
+    max_gradient_T_per_m: 0.040
+    waveform_uri: null              # null → trapezoid assumed
+
+  # (v6.1 new) Tissue-class T1/T2 priors for Bloch-constrained translation (idea 3).
+  relaxation_priors:
+    enabled: false
+    t1_table_uri: null              # CSV/JSON: (tissue_class, T1_ms) per field strength
+    t2_table_uri: null
+
+  # (v6.1 new) Differentiable pulse-sequence co-design (idea 4).
+  gradient_waveform_uri: null       # null → use legacy hard-coded waveform
+
+# --- remaining fields of this block that have a constrained value set. -----
+# Commented because each would otherwise change what the template resolves
+# to; uncomment the lines you need. Generated from the schema -- see
+# tests/unit/config/test_reference_template_options.py, which fails if any
+# list here stops matching its Enum/Literal.
+#   coil_processing:
+#     combine:
+#       method: 'none'                           # options: 'none', 'rss', 'sense'
+#     compression:
+#       method: 'none'                           # options: 'none', 'svd', 'gcc'
+#     estimation:
+#       method: 'power_iter'                     # options: 'none', 'power_iter', 'espirit', 'pinn', 'rss', 'file'
+#     output:
+#       channels: 'complex'                      # options: 'complex', 'real_interleaved', 'magnitude'
+#       domain: 'kspace'                         # options: 'kspace', 'image', 'source'
+#   multi_acquisition:
+#     forward_psf:
+#       source: 'assumed'                        # options: 'assumed', 'measured'
+#     subvoxel_registration:
+#       shift_source: 'blind'                    # options: 'blind', 'recovered', 'oracle'
+#     method: null                               # options: null, 'double_angle', 'afi', 'dual_echo', 'bloch_siegert', 'mrf', 'lowrank_temporal', 'subvoxel_sr', 'bssfp_banding'
+
+# ============================================================================
+# (v6.1 new) ACQUISITION  (AcquisitionConfigSchema)
+# ============================================================================
+acquisition:
+  codesign:
+    enabled: false
+  active:
+    enabled: false
+
+# ============================================================================
+# (v6.1 new) CERTIFICATION  (CertificationConfigSchema)
+# ============================================================================
+# Regulatory / certification side-channels. R1 CDFC (conformal),
+# R2 CHD (covariate-shift), R4 PRC (pathology recall), R5 PAC-Bayes,
+# V.3 validation badge. All default disabled.
+certification:
+  conformal:
+    enabled: false
+  chd:
+    enabled: false
+  pathology_recall:
+    enabled: false
+  pac_bayes:
+    enabled: false
+  badge:
+    enabled: false
+
+# --- remaining fields of this block that have a constrained value set. -----
+# Commented because each would otherwise change what the template resolves
+# to; uncomment the lines you need. Generated from the schema -- see
+# tests/unit/config/test_reference_template_options.py, which fails if any
+# list here stops matching its Enum/Literal.
+#   dice_risk:
+#     segmenter_backend: 'label_dice'            # options: 'label_dice', 'synthseg'
+
+# ============================================================================
+# (v6.1 new) AUDIT  (AuditConfigSchema) — Tier-3 defensibility checks
+# ============================================================================
+# Currently exposes audit.ksd (kernelised Stein discrepancy). Other
+# Tier-3 audits land here as the audit_plan_novel.md roadmap progresses.
+audit:
+  ksd: null                         # set to {enabled: true, ...} to activate
+
+# ============================================================================
+# (v6.1 new) MRF  (MRFConfigSchema) — MR-fingerprinting metadata
+# ============================================================================
+mrf:
+  spiral_rotation_schedule: null    # options: null, 'golden_angle', 'linear', 'random'
+  conformal_kspace_map: null
+  n_timepoints: null
+  sar_max_w_per_kg: null
+  gradient_slew_rate_t_per_m_per_s: null
+  phantom_calibration_path: null
+  calibration_dataset: null
+
+# ============================================================================
+# PARALLEL  (ParallelismConfigSchema) — DDP / FSDP / PEFT
+# ============================================================================
+parallel:
+  # ``strategy`` is the ONE switch. 'ddp' / 'fsdp' / 'deepspeed' need a process
+  # group — launch with:
+  #   torchrun --nproc_per_node=N -m mriforge.cli train-distributed --config <this>
+  # 'dp' is single-process/N-GPU and needs no launcher.
+  #
+  # A sub-block flag must AGREE with strategy: 'fsdp' requires fsdp.enabled: true
+  # and 'deepspeed' requires deepspeed.enabled: true. Declaring only one half
+  # raises at load time. (These used to be independent switches, so
+  # strategy: 'fsdp' raised deep inside the build while fsdp.enabled alone
+  # sharded silently.)
+  strategy: 'none'                  # options: 'none', 'dp', 'ddp', 'fsdp', 'deepspeed'
+  num_devices: 1
+  num_nodes: 1
+  # THIS is the backend SSOT. `train-distributed --backend` overrides it only
+  # when explicitly passed.
+  backend: 'nccl'                   # options: 'nccl', 'gloo', 'mpi'
+  find_unused_parameters: false
+  gradient_as_bucket_view: false
+  static_graph: false
+  sync_batch_norm: false            # needs a process group; rejected for 'dp'
+
+  fsdp:
+    enabled: false                  # must equal (strategy == 'fsdp')
+    sharding_strategy: 'full_shard' # options: 'full_shard', 'shard_grad_op', 'no_shard', 'hybrid_shard'
+    auto_wrap_policy: 'size_based'  # options: 'size_based', 'transformer_block', 'none'
+    # REQUIRED when auto_wrap_policy is 'transformer_block'. An empty list
+    # matches no module, which is what made that policy wrap nothing while
+    # logging that it had sharded.
+    transformer_layer_cls: []
+    min_num_params: 1000000         # size_based policy only
+    cpu_offload: false
+    mixed_precision: 'bf16'         # options: 'bf16', 'fp16', null
+    activation_checkpointing: false
+    limit_all_gathers: true
+    use_orig_params: true
+
+  # DeepSpeed ZeRO. This block is the SSOT; the ds_config dict is DERIVED from it
+  # by build_deepspeed_config and written beside the run's provenance. There is
+  # deliberately no `config_path`: a hand-edited ds_config.json has no committed
+  # generator, and a divergence from this YAML would be silent.
+  #
+  # Batch size, gradient accumulation, gradient clipping and fp16/bf16 are NOT
+  # declarable here — they come from data.batch_size and optimization.*.
+  deepspeed:
+    enabled: false                  # must equal (strategy == 'deepspeed')
+    zero_stage: 0                   # options: 0, 1, 2, 3
+    offload_optimizer: 'none'       # options: 'none', 'cpu', 'nvme'
+    offload_param: 'none'           # options: 'none', 'cpu', 'nvme'
+    nvme_path: null                 # required when either offload target is 'nvme'
+    contiguous_gradients: true
+    overlap_comm: true
+    reduce_bucket_size: 500000000
+    allgather_bucket_size: 500000000
+    round_robin_gradients: false
+    stage3_gather_16bit_weights_on_model_save: true
+    # Also write a single-file checkpoint_best.pt beside the sharded tag dir, so
+    # inference / campaign evaluation need not understand ZeRO shards.
+    save_consolidated_best: true
+    # OFF by default: engine.step() issues collectives, so a GAN whose
+    # discriminator steps every k iterations DEADLOCKS rather than erroring.
+    allow_multi_engine: false
+    steps_per_print: 1000
+
+  # --- remaining fields of this block that have a constrained value set. -----
+  # Commented because each would otherwise change what the template resolves
+  # to; uncomment the lines you need. Generated from the schema -- see
+  # tests/unit/config/test_reference_template_options.py, which fails if any
+  # list here stops matching its Enum/Literal.
+  #   zenflow:
+  #     select_interval: 'auto'                    # options: 'auto'
+  #     select_strategy: 'auto'                    # options: 'auto', 'step', 'epoch'
+  #     update_interval: 'auto'                    # options: 'auto'
+
+  peft:
+    enabled: false
+    method: 'lora'                  # options: 'lora', 'adapter', 'prefix_tuning', 'bitfit'
+    rank: 8
+    alpha: 16.0
+    dropout: 0.0
+    target_modules: []
+    bias_mode: 'none'               # options: 'none', 'all', 'lora_only'
+
+# ============================================================================
+# OPTIONAL TOP-LEVEL BLOCKS — left commented; uncomment as needed.
+# ============================================================================
+#
+# reporting:                        # ReportingSettings — end-of-training report
+#   enabled: false
+#   task: 'default'                            # options: 'default', 'reconstruction', 'synthesis',
+#                                                         'super_resolution', 'gan', 'diffusion', 'vae', 'calibration'
+#   case_selection: 'best_median_worst'        # options: 'best_median_worst', 'random', 'first'
+#   style: 'nature'                            # options: 'nature', 'ieee'
+#   out_subdir: 'report'
+#
+# adapters:                         # AdaptersConfigSchema — declarative adapter chains
+#   pre_model: []
+#   post_model: []
+#   pre_loss_pred: []
+#   pre_loss_target: []
+#   pre_metric: []
+#
+# artifacts: {}                # DEPRECATED and unused -- set training.output_dir instead
+#
+# backend_acceleration:          # SPECTRA / WCSR co-simulation backend
+#   backend: 'spectra'
+#   cosim_bridge_addr: null
+#   enable_nmae: true
+#   gridding_kernel_width: 4
+#   lanes: 4
+#   mesh_cols: 4
+#   mesh_rows: 4
+#   oversampling: 2.0
+#   pe_mode_policy: null                       # options: 'mixed', 'fp32', 'bf16', 'fp8'
+#   per_channel_scaling: true
+#   runtime: null                              # options: 'cosim', 'rocc'
+#
+# diffusion: {}                # free-form dict[str, Any]; distinct from the `training.diffusion` block
+#
+# loss_schedule:                 # declarative loss-weight schedule; `rules:` is a LIST
+#   checkpoint_min_interval: null
+#   checkpoint_on_change: false
+#   enabled: false
+#   rules:
+#     - name: '...'
+#       target: '...'
+#       action:
+#         factor: null
+#         max_weight: null
+#         min_weight: null
+#         over: null
+#         shape: null                          # options: 'linear', 'sigmoid'
+#         to: null
+#         type: 'set_weight'                   # options: 'set_weight', 'scale', 'ramp', 'enable', 'disable'
+#       monitor_after:
+#         expect: null                         # options: 'improve', 'not_worse'
+#         metric: '...'
+#         min_delta: 0.0
+#         mode: null                           # options: 'min', 'max'
+#         on_failure: null                     # options: 'rollback', 'hold', 'continue'
+#         window: 3
+#       trigger:
+#         at: null
+#         cooldown: null
+#         every: null
+#         loss_key: null
+#         metric: null
+#         min_delta: null
+#         mode: null                           # options: null, 'min', 'max'
+#         patience: null
+#         type: 'iteration'                    # options: 'iteration', 'epoch', 'metric_plateau', 'loss_plateau',
+#                                                         'metric_threshold'
+#         value: null
+#
+# plugins:                       # out-of-tree component registration
+#   enabled: false
+#   paths: '...'
+#
+# privacy:                       # DP-SGD accounting
+#   dataset_size: null
+#   max_grad_norm: 1.0
+#   noise_multiplier: 1.1
+#   target_delta: 1e-05
+#
+# metadata: {}                      # free-form dict[str, Any]
+
+workflow:
+  # options: 'mri_structural', 'mri_quantitative', 'mri_fingerprinting',
+  #          'mri_functional', 'mri_diffusion_weighted', 'mri_perfusion',
+  #          'mri_spectroscopy', 'mri_flow', 'mri_dynamic', 'nmr_spectroscopy', 'ct',
+  #          'xray', 'ultrasound', 'optical'
+  regime: mri_structural
+  # options: null, 'reconstruction', 'denoising', 'super_resolution', 'synthesis',
+  #          'field_translation', 'contrast_translation', 'parameter_mapping',
+  #          'motion_correction', 'acquisition_design'
+  task: reconstruction
+  # What this arm CONSUMES, not what it emits (== ModelCapabilities.input_domain).
+  # `image`, not `kspace`, even though data.dataset_type is `kspace`: standard_unet
+  # declares input_domain=("image",), so the arm bridges. The distinction is the
+  # whole point of the field -- reading it as *emits* would reject every
+  # parameter-mapping arm, which emits off-regime by construction.
+  # options: null, 'image', 'kspace', 'complex_image', 'latent', 'pde_grid', 'mesh',
+  #          'spectrum'
+  signal_domain: image
+  spatial_rank: 2
+run:
+  seed: 42
+  # ----------------------------------------------------------------------------
+  # Top-level scalars (TrainingSettings)
+  # ----------------------------------------------------------------------------
+  device: 'cuda'           # options: 'cuda', 'cpu', 'mps', 'auto'

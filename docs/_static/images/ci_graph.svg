@@ -1,0 +1,203 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 830" width="100%" role="img"
+     aria-labelledby="ci-graph-title ci-graph-desc">
+  <title id="ci-graph-title">The three MRIForge CI lanes</title>
+  <desc id="ci-graph-desc">A pull request triggers two lanes. The pr-required lane runs six
+    diff-scoped jobs (lint-diff, guards, physics, impacted-tests, yaml-audit, security) which
+    all feed a single aggregator job called "required"; that aggregator is the only check
+    branch protection requires, and it blocks merge. The pr-advisory lane runs seven repo-wide
+    jobs which never block. A schedule and tag pushes drive a third lane holding the nightly
+    full test suite, the CUDA benchmark, and the release workflows.</desc>
+
+  <style>
+    .bg     { fill: #ffffff; }
+    .title  { font: 700 19px sans-serif; fill: #101828; }
+    .sub    { font: 400 12.5px sans-serif; fill: #667085; }
+    .lane   { font: 700 14px sans-serif; fill: #101828; }
+    .lanesub{ font: 400 11.5px sans-serif; fill: #475467; }
+    .chip   { font: 700 12px sans-serif; fill: #101828; }
+    .chipd  { font: 400 10px sans-serif; fill: #475467; }
+    .trig   { font: 700 12px sans-serif; fill: #101828; }
+    .trigd  { font: 400 10px sans-serif; fill: #475467; }
+    .note   { font: 400 12px sans-serif; fill: #475467; }
+    .noteb  { font: 700 12px sans-serif; fill: #101828; }
+    .req    { font: 700 15px sans-serif; fill: #7a271a; }
+    .reqd   { font: 400 10.5px sans-serif; fill: #b42318; }
+    .muted  { font: 400 10px sans-serif; fill: #98a2b3; }
+
+    .box1   { fill: #fef3f2; stroke: #d92d20; stroke-width: 2; }
+    .box2   { fill: #fffaeb; stroke: #b54708; stroke-width: 2; stroke-dasharray: 9 5; }
+    .box3   { fill: #f0f9ff; stroke: #026aa2; stroke-width: 2; stroke-dasharray: 2 4; }
+    .c1     { fill: #ffffff; stroke: #d92d20; stroke-width: 1.4; }
+    .c2     { fill: #ffffff; stroke: #b54708; stroke-width: 1.2; stroke-dasharray: 5 3; }
+    .c3     { fill: #ffffff; stroke: #026aa2; stroke-width: 1.2; stroke-dasharray: 2 3; }
+    .cdim   { fill: #f2f4f7; stroke: #98a2b3; stroke-width: 1.2; stroke-dasharray: 2 3; }
+    .reqbox { fill: #fee4e2; stroke: #912018; stroke-width: 2.5; }
+    .tbox   { fill: #f9fafb; stroke: #667085; stroke-width: 1.4; }
+    .callout{ fill: #f9fafb; stroke: #d0d5dd; stroke-width: 1.4; }
+    .edge   { stroke: #98a2b3; stroke-width: 1.4; fill: none; }
+    .edgeb  { stroke: #d92d20; stroke-width: 1.6; fill: none; }
+
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0b0f19; }
+      .title, .lane, .chip, .trig, .noteb { fill: #f2f4f7; }
+      .sub, .lanesub, .chipd, .trigd, .note { fill: #98a2b3; }
+      .req { fill: #fda29b; } .reqd { fill: #fda29b; }
+      .box1 { fill: #2a1512; } .box2 { fill: #2a1f0d; } .box3 { fill: #0d1f2a; }
+      .c1, .c2, .c3 { fill: #111827; }
+      .cdim { fill: #1a1f2b; }
+      .reqbox { fill: #55160c; stroke: #f97066; }
+      .tbox, .callout { fill: #111827; stroke: #344054; }
+    }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1240" height="830"/>
+
+  <defs>
+    <marker id="arw" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#98a2b3"/>
+    </marker>
+    <marker id="arwb" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#d92d20"/>
+    </marker>
+  </defs>
+
+  <text class="title" x="30" y="32">MRIForge continuous integration: three lanes</text>
+  <text class="sub"   x="30" y="54">Exactly one check can block a merge. Everything else is information.</text>
+
+  <!-- ══ triggers ══ -->
+  <rect class="tbox" x="30" y="268" width="176" height="66" rx="8"/>
+  <text class="trig"  x="46" y="294">pull_request</text>
+  <text class="trigd" x="46" y="312">any base branch —</text>
+  <text class="trigd" x="46" y="325">no `branches:` filter</text>
+
+  <rect class="tbox" x="30" y="596" width="176" height="46" rx="8"/>
+  <text class="trig"  x="46" y="617">schedule</text>
+  <text class="trigd" x="46" y="633">02:00 UTC daily</text>
+
+  <rect class="tbox" x="30" y="654" width="176" height="46" rx="8"/>
+  <text class="trig"  x="46" y="675">push: tags v*</text>
+  <text class="trigd" x="46" y="691">release only</text>
+
+  <path class="edge" d="M206,288 H222 V214 H228" marker-end="url(#arw)"/>
+  <path class="edge" d="M206,314 H222 V462 H228" marker-end="url(#arw)"/>
+  <path class="edge" d="M206,619 H228"           marker-end="url(#arw)"/>
+  <path class="edge" d="M206,677 H222 V660 H228" marker-end="url(#arw)"/>
+
+  <!-- ══ LANE 1 — blocking ══ -->
+  <rect class="box1" x="230" y="80" width="980" height="272" rx="12"/>
+  <text class="lane"    x="252" y="108">1 · pr-required.yml — BLOCKS MERGE</text>
+  <text class="lanesub" x="252" y="127">Every job is scoped to the PR's diff, so cost scales with the change, not with the repo.</text>
+
+  <rect class="c1" x="255" y="145" width="145" height="58" rx="7"/>
+  <text class="chip"  x="267" y="169">lint-diff</text>
+  <text class="chipd" x="267" y="186">ruff on changed files</text>
+
+  <rect class="c1" x="410" y="145" width="145" height="58" rx="7"/>
+  <text class="chip"  x="422" y="169">guards</text>
+  <text class="chipd" x="422" y="186">pairing + layering</text>
+
+  <rect class="c1" x="565" y="145" width="145" height="58" rx="7"/>
+  <text class="chip"  x="577" y="169">physics</text>
+  <text class="chipd" x="577" y="186">tests/physics/, always</text>
+
+  <rect class="c1" x="720" y="145" width="145" height="58" rx="7"/>
+  <text class="chip"  x="732" y="169">impacted-tests</text>
+  <text class="chipd" x="732" y="186">core + paired tests</text>
+
+  <rect class="c1" x="875" y="145" width="145" height="58" rx="7"/>
+  <text class="chip"  x="887" y="169">yaml-audit</text>
+  <text class="chipd" x="887" y="186">Tier 0+1, changed YAML</text>
+
+  <rect class="c1" x="1030" y="145" width="155" height="58" rx="7"/>
+  <text class="chip"  x="1042" y="169">security</text>
+  <text class="chipd" x="1042" y="186">pip-audit + gitleaks</text>
+
+  <path class="edgeb" d="M327,203  V228"/>
+  <path class="edgeb" d="M482,203  V228"/>
+  <path class="edgeb" d="M637,203  V228"/>
+  <path class="edgeb" d="M792,203  V228"/>
+  <path class="edgeb" d="M947,203  V228"/>
+  <path class="edgeb" d="M1107,203 V228"/>
+  <path class="edgeb" d="M327,228  H1107"/>
+  <path class="edgeb" d="M717,228  V246" marker-end="url(#arwb)"/>
+
+  <rect class="reqbox" x="590" y="250" width="255" height="58" rx="8"/>
+  <text class="req"  x="613" y="277">required</text>
+  <text class="reqd" x="613" y="295">needs: every job above</text>
+
+  <text class="noteb" x="252" y="266">The aggregator</text>
+  <text class="note"  x="252" y="285">Branch protection on `dev`</text>
+  <text class="note"  x="252" y="301">requires this ONE check,</text>
+  <text class="note"  x="252" y="317">never the job list.</text>
+
+  <text class="note"  x="880" y="266">Fails on anything that is not</text>
+  <text class="note"  x="880" y="285">literally `success` — including</text>
+  <text class="note"  x="880" y="301">`skipped`, which GitHub reports</text>
+  <text class="note"  x="880" y="317">as neutral and would sneak past.</text>
+  <text class="muted" x="252" y="336">A protected job *list* breaks silently on rename; a skipped required check pins a PR at `pending` forever. One aggregator sidesteps both.</text>
+
+  <!-- ══ LANE 2 — advisory ══ -->
+  <rect class="box2" x="230" y="374" width="980" height="172" rx="12"/>
+  <text class="lane"    x="252" y="402">2 · pr-advisory.yml — never blocks</text>
+  <text class="lanesub" x="252" y="421">Repo-wide scans. Red is a backlog item, not a merge blocker: 13,223 ruff violations, 2,517 unformatted files.</text>
+
+  <rect class="c2" x="255" y="437" width="126" height="52" rx="7"/>
+  <text class="chip"  x="266" y="459">ruff</text>
+  <text class="chipd" x="266" y="476">whole repo</text>
+
+  <rect class="c2" x="391" y="437" width="126" height="52" rx="7"/>
+  <text class="chip"  x="402" y="459">mypy</text>
+  <text class="chipd" x="402" y="476">core/config/domain</text>
+
+  <rect class="c2" x="527" y="437" width="126" height="52" rx="7"/>
+  <text class="chip"  x="538" y="459">pre-commit</text>
+  <text class="chipd" x="538" y="476">all hooks, all files</text>
+
+  <rect class="c2" x="663" y="437" width="126" height="52" rx="7"/>
+  <text class="chip"  x="674" y="459">sphinx</text>
+  <text class="chipd" x="674" y="476">docs build</text>
+
+  <rect class="c2" x="799" y="437" width="126" height="52" rx="7"/>
+  <text class="chip"  x="810" y="459">dep-review</text>
+  <text class="chipd" x="810" y="476">needs GHAS</text>
+
+  <rect class="c2" x="935" y="437" width="120" height="52" rx="7"/>
+  <text class="chip"  x="946" y="459">zizmor</text>
+  <text class="chipd" x="946" y="476">workflow lint</text>
+
+  <rect class="c2" x="1065" y="437" width="120" height="52" rx="7"/>
+  <text class="chip"  x="1076" y="459">codeql</text>
+  <text class="chipd" x="1076" y="476">needs GHAS</text>
+
+  <text class="muted" x="252" y="512">Every job carries `continue-on-error: true`. Nothing here may ever be added to branch protection — that is what makes the ratchet survivable.</text>
+  <text class="muted" x="252" y="530">Promotion path: a check that goes green on a clean tree moves into lane 1 and joins the `required` job's `needs:` list.</text>
+
+  <!-- ══ LANE 3 — scheduled ══ -->
+  <rect class="box3" x="230" y="568" width="980" height="150" rx="12"/>
+  <text class="lane"    x="252" y="596">3 · scheduled and release — off the PR path</text>
+  <text class="lanesub" x="252" y="615">The lane that can afford to be slow. It is the backstop for whatever the path-based test selector in lane 1 missed.</text>
+
+  <rect class="c3" x="255" y="631" width="200" height="54" rx="7"/>
+  <text class="chip"  x="267" y="654">nightly · full suite</text>
+  <text class="chipd" x="267" y="671">all 28,919 tests</text>
+
+  <rect class="cdim" x="465" y="631" width="215" height="54" rx="7"/>
+  <text class="chip"  x="477" y="654">nightly · performance</text>
+  <text class="chipd" x="477" y="671">inert: needs a CUDA runner</text>
+
+  <rect class="c3" x="690" y="631" width="160" height="54" rx="7"/>
+  <text class="chip"  x="702" y="654">release</text>
+  <text class="chipd" x="702" y="671">build + publish</text>
+
+  <rect class="c3" x="860" y="631" width="160" height="54" rx="7"/>
+  <text class="chip"  x="872" y="654">test-release</text>
+  <text class="chipd" x="872" y="671">full suite on a tag</text>
+
+  <text class="muted" x="255" y="704">`performance` runs only when the CUDA_RUNNER_LABEL repo variable is set. It never falls back to ubuntu-latest: a CPU benchmark reporting green is the silent fallback #9b forbids.</text>
+
+  <!-- ══ callout ══ -->
+  <rect class="callout" x="30" y="740" width="1180" height="72" rx="10"/>
+  <text class="noteb" x="50" y="765">Why every one of these checks was dead until 2026-07-12</text>
+  <text class="note"  x="50" y="785">All 21 workflows filtered their trigger on `branches: [main]` — and that filter matches the pull request's BASE branch, not its head. Every PR here</text>
+  <text class="note"  x="50" y="802">targets `dev`, so nothing fired. A skipped workflow renders as no check at all rather than a red one, so the PR page looked perfectly clean.</text>
+</svg>

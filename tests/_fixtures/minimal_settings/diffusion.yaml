@@ -1,0 +1,108 @@
+# UNVERIFIED: validate via mriforge audit on cluster before promoting to active/
+# Minimal settings fixture for the diffusion family.
+# Covers strategy keys: diffusion, rectified_flow, flow_matching,
+#   fisher_rao_flow, resetting_diffusion, levy_diffusion,
+#   tissue_diffusion_pretrain
+config_version: '1.0'
+
+run:
+  seed: 42
+metadata:
+  name: minimal_diffusion_fixture
+  description: Minimal CPU smoke fixture for DiffusionTrainingStrategy
+  tags:
+    - fixture
+    - minimal
+    - diffusion
+
+training:
+  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  epochs: 1
+  max_iterations: 2
+  device: cpu
+  task: reconstruction
+  output_dir: /tmp/mriforge_test/diffusion
+  enable_mixed_precision: false
+  enable_gradient_checkpointing: false
+  physics_informed: false
+  diffusion:
+    type: ddpm
+    timesteps: 10
+    noise_schedule: linear
+    beta_start: 0.0001
+    beta_end: 0.02
+    prediction_type: epsilon
+  num_timesteps: 10
+  latent:
+    latent_dim: 4
+    beta_kl: 0.0
+
+data:
+  dataset_type: synthetic
+  patch_size: [16, 16, 1]
+  batch_size: 2
+  num_workers: 0
+  normalize_kspace: false
+  normalize_images: true
+  validation_split: 0.1
+  target_channels: 1
+  samples_per_volume: 2
+  datasets:
+    - name: synthetic
+      path: /tmp/synthetic_placeholder
+
+model:
+  model_type: standard_unet
+  in_channels: 2
+  out_channels: 2
+  model_kwargs:
+    base_channels: 8
+    channel_multipliers: [1, 2]
+    num_res_blocks: 1
+    dropout: 0.0
+
+optimization:
+  learning_rate: 1.0e-4
+  optimizer_type: adam
+  weight_decay: 0.0
+  beta1: 0.9
+  beta2: 0.999
+  use_amp: false
+  enable_gradient_clipping: false
+
+acceleration:
+  base_acceleration: 4.0
+
+losses:
+  output_domain: image
+  image_losses:
+    - name: mse
+      weight: 1.0
+      enabled: true
+  kspace_losses: []
+  complex_losses: []
+
+physics:
+  kspace:
+    enforce_hermitian_symmetry: false
+    enable_kspace_recon: false
+  data_consistency:
+    enabled: false
+
+logging:
+  log_interval: 1
+  log_to_file: false
+  log_to_console: false
+  enable_experiment_tracking: false
+  level: warning
+
+checkpoint:
+  enabled: false
+
+validation:
+  enabled: false
+
+metrics:
+  compute_psnr: false
+  compute_ssim: false
+  compute_mse: true

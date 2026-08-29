@@ -1,0 +1,70 @@
+# Path → label mappings for actions/labeler@v7.
+#
+# Schema: each top-level key is a label name. The value is a list of path
+# globs. A PR gets the label if any of its changed files matches any of
+# the globs.
+#
+# Keep this list short and orthogonal — labels are most useful when they
+# answer a clear "which subsystem does this touch?" question.
+
+physics:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/infrastructure/physics/**
+          - tests/physics/**
+
+models:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/models/**
+
+losses:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/models/losses/**
+
+data:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/data/**
+
+training:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/infrastructure/training/**
+          - src/mriforge/pipelines/train.py
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - src/mriforge/config/**
+
+experiments:
+  - changed-files:
+      - any-glob-to-any-file:
+          - experiments/**
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - docs/**
+          - "**/*.md"
+          - "**/*.rst"
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - .github/**
+          - scripts/ci/**
+          - .pre-commit-config.yaml
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - tests/**
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - pyproject.toml
+          - requirements*.txt
