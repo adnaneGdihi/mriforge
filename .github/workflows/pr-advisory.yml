@@ -67,7 +67,7 @@ jobs:
           cache: pip
       # pre-commit caches its tool installs in ~/.cache/pre-commit, keyed by the
       # config hash. restore-keys hits on a partial match when one hook bumps.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/pre-commit
           key: pre-commit-${{ runner.os }}-py3.12-${{ hashFiles('.pre-commit-config.yaml') }}
