@@ -130,7 +130,7 @@ jobs:
       # licence, so this is the one job that is strictly more useful here than in
       # the source repo. It stays continue-on-error only because this whole lane is
       # advisory by construction -- promoting it is a reasonable later change.
-      - uses: actions/dependency-review-action@v4
+      - uses: actions/dependency-review-action@v5
 
   zizmor:
     name: zizmor (workflow static analysis)
