@@ -466,9 +466,7 @@ def _provenance_from_run(tmp_path, monkeypatch, *, requested_device):
     # 2026-07-31 (``renames.py:509``) and now RAISES rather than folding, so this
     # helper -- and both device tests below it -- had been failing on a
     # ValidationError that never reached the behaviour under test.
-    cfg = TrainingSettings.settings_from_dict(
-        {**_config_dict(tmp_path), "run": {"device": "cpu"}}
-    )
+    cfg = TrainingSettings.settings_from_dict({**_config_dict(tmp_path), "run": {"device": "cpu"}})
     env = _env(cfg)  # TrainingEnvironment.from_components(..., device="cpu")
     monkeypatch.setattr(train_mod, "TrainingEnvironmentDirector", lambda *a, **k: _RaiseOnBuild())
     monkeypatch.setattr(
@@ -1481,7 +1479,9 @@ class TestFatalHealthChecksAbortBeforeBootstrap:
             FATAL_HEALTH_CHECKS,
         )
 
-        script = Path(__file__).resolve().parents[3] / "scripts" / "ci" / "check_health_check_names.py"
+        script = (
+            Path(__file__).resolve().parents[3] / "scripts" / "ci" / "check_health_check_names.py"
+        )
         spec = importlib.util.spec_from_file_location("_check_health_check_names", script)
         assert spec is not None and spec.loader is not None
         gate = importlib.util.module_from_spec(spec)
@@ -1623,9 +1623,7 @@ def _train_ast():
 
     from spectramr.pipelines import train
 
-    return ast.parse(
-        textwrap.dedent(inspect.getsource(train.run_training_pipeline))
-    )
+    return ast.parse(textwrap.dedent(inspect.getsource(train.run_training_pipeline)))
 
 
 def _ancestors(tree, target):
@@ -1916,9 +1914,7 @@ class TestTheLogDestinationIsStamped:
                 for tgt in targets:
                     if isinstance(tgt, ast.Name) and "log" in tgt.id.lower():
                         names.add(tgt.id)
-                        keys |= {
-                            k.value for k in node.value.keys if isinstance(k, ast.Constant)
-                        }
+                        keys |= {k.value for k in node.value.keys if isinstance(k, ast.Constant)}
         for node in ast.walk(tree):
             if isinstance(node, ast.Assign):
                 for tgt in node.targets:
@@ -1953,9 +1949,7 @@ class TestTheLogDestinationIsStamped:
         tree, _ = self._stamp()
         keys = self._record_keys(tree)
         assert "relocated_from" in keys, f"a relocation is not recorded: {keys}"
-        assert "incomplete" in keys, (
-            f"a relocated log is not flagged incomplete: {keys}"
-        )
+        assert "incomplete" in keys, f"a relocated log is not flagged incomplete: {keys}"
 
     def test_it_reads_the_service_attributes_rather_than_guessing_a_path(self):
         """Reconstructing `sinks.dir + name` would report the path the service
@@ -2043,15 +2037,13 @@ class TestValidationCanFire:
         ("max_iterations", "eval_interval"),
         [
             (30000, 5000),  # the arm as declared -- 6 events
-            (5000, 5000),   # the override that was actually run -- 1 event, last iteration
+            (5000, 5000),  # the override that was actually run -- 1 event, last iteration
             (5000, 1),
             (10, 10),
             (10, 3),
         ],
     )
-    def test_reachable_intervals_are_reported_reachable(
-        self, max_iterations, eval_interval
-    ):
+    def test_reachable_intervals_are_reported_reachable(self, max_iterations, eval_interval):
         assert _simulate_validation_events(
             max_iterations=max_iterations, eval_interval=eval_interval
         )
@@ -2063,17 +2055,16 @@ class TestValidationCanFire:
         ("max_iterations", "eval_interval"),
         [
             (4000, 5000),  # the silent regime: one notch below the observed override
-            (40, 5000),    # the budget the sibling guards' comments were measured at
+            (40, 5000),  # the budget the sibling guards' comments were measured at
             (1, 2),
             (999, 1000),
         ],
     )
-    def test_unreachable_intervals_are_reported_unreachable(
-        self, max_iterations, eval_interval
-    ):
-        assert _simulate_validation_events(
-            max_iterations=max_iterations, eval_interval=eval_interval
-        ) == []
+    def test_unreachable_intervals_are_reported_unreachable(self, max_iterations, eval_interval):
+        assert (
+            _simulate_validation_events(max_iterations=max_iterations, eval_interval=eval_interval)
+            == []
+        )
         assert not train_mod.validation_can_fire(
             eval_interval=eval_interval, max_iterations=max_iterations
         )
@@ -2087,12 +2078,8 @@ class TestValidationCanFire:
         value that never fires. Pinning both sides stops a future edit from
         sliding the comparison.
         """
-        assert train_mod.validation_can_fire(
-            eval_interval=5000, max_iterations=5000
-        )
-        assert not train_mod.validation_can_fire(
-            eval_interval=5001, max_iterations=5000
-        )
+        assert train_mod.validation_can_fire(eval_interval=5000, max_iterations=5000)
+        assert not train_mod.validation_can_fire(eval_interval=5001, max_iterations=5000)
 
     def test_epoch_mode_rescues_an_unreachable_step_interval(self):
         """`on_epoch` adds events, so it can make an over-budget interval moot."""
@@ -2203,9 +2190,9 @@ class TestEpochValidationCanFire:
                         simulated = _simulate_validation_events(
                             eval_interval=max_iterations + 1, **shape
                         )
-                        assert train_mod.epoch_validation_can_fire(**shape) == bool(
-                            simulated
-                        ), shape
+                        assert train_mod.epoch_validation_can_fire(**shape) == bool(simulated), (
+                            shape
+                        )
 
 
 class TestTheResumeDirectorCarriesTheParallelRuntime:
@@ -2562,3 +2549,66 @@ class TestReportArtifactWritesAreRankGuardedAndOrdered:
         from spectramr.infrastructure.distributed.distributed_training import RankUtility
 
         RankUtility.barrier()  # must not raise
+
+
+# ---------------------------------------------------------------------------
+# `metadata.author` reaches the run record (2026-09-03).
+#
+# The field was declared on ExperimentMetadataSchema and read nowhere, which is
+# what `TestReachabilityAwareConsumption::test_no_new_unreachable_reads` reports
+# once the typed metadata mount makes the key visible: a key the YAMLs set whose
+# only reads cannot execute. A run record that names the run but not who declared
+# it answers half of the same provenance question, so the summary stamps it.
+# ---------------------------------------------------------------------------
+
+
+def test_the_run_summary_carries_the_declared_author(tmp_path) -> None:
+    """The fires-test: an arm's `metadata.author` reaches `run_summary.json`."""
+    import json
+    import logging
+    from types import SimpleNamespace
+
+    from spectramr.pipelines import train as train_mod
+
+    config = SimpleNamespace(
+        metadata=SimpleNamespace(name="an_arm", author="Adnane Gdihi"),
+        logging=SimpleNamespace(identity=SimpleNamespace(run=None)),
+        training=SimpleNamespace(strategy_class="S", training_mode="reconstruction"),
+        model=SimpleNamespace(model_type="unet"),
+    )
+    train_mod._emit_run_summary(
+        config,
+        run_dir=tmp_path,
+        result={"success": True},
+        seed=42,
+        logger_=logging.getLogger(__name__),
+        provenance={"run_id": "r1"},
+    )
+    summary = json.loads((tmp_path / "run_summary.json").read_text())
+    assert summary["author"] == "Adnane Gdihi"
+    assert summary["run_name"] == "an_arm"
+
+
+def test_the_run_summary_author_is_none_when_the_arm_declares_none(tmp_path) -> None:
+    """Absent is a state to report, not one to invent."""
+    import json
+    import logging
+    from types import SimpleNamespace
+
+    from spectramr.pipelines import train as train_mod
+
+    config = SimpleNamespace(
+        metadata=SimpleNamespace(name="an_arm", author=None),
+        logging=SimpleNamespace(identity=SimpleNamespace(run=None)),
+        training=SimpleNamespace(strategy_class="S", training_mode="reconstruction"),
+        model=SimpleNamespace(model_type="unet"),
+    )
+    train_mod._emit_run_summary(
+        config,
+        run_dir=tmp_path,
+        result={"success": True},
+        seed=42,
+        logger_=logging.getLogger(__name__),
+        provenance=None,
+    )
+    assert json.loads((tmp_path / "run_summary.json").read_text())["author"] is None

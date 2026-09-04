@@ -731,6 +731,17 @@ scripts/ci/baselines/f821_unparseable.txt #   ship, so the gate exits 1 in the e
 #   new repo (`--write`). The direction is DOWNWARD -- rows removed, never a raised
 #   ceiling -- which is the only direction non-negotiable 20 permits.
 scripts/ci/check_test_paired_with_source.py
+scripts/ci/check_no_stale_package_name.py # the third .pre-commit-config.yaml local
+#   hook. It is a RUNNER, not a rule: NEEDLES and _offending_files come from
+#   tests/architecture/test_no_stale_package_name.py, which ships under the wholesale
+#   tests/ allowance. Shipping the config while dropping this file leaves the published
+#   repo with a hook whose entry does not exist -- `pre-commit run --all-files` in
+#   pr-advisory then fails with "No such file or directory", the red X that lane's
+#   header exists to prevent -- and strands the shipped
+#   tests/unit/scripts/test_check_no_stale_package_name.py on an absent subject, the
+#   same shape as the migrate_config_keys pair below. Caught by verifying a
+#   materialized export, not by reading this list; the detector that now catches it
+#   automatically is test_every_shipped_pre_commit_hook_entry_ships_its_subject.
 scripts/ci/lint_changed_lines.py
 # The two docs gates the published pr-required.yml already invokes. They were
 # missing from this list while the published tree carried them, so the export and

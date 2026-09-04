@@ -50,6 +50,7 @@ from spectramr.pipelines.train import run_training_pipeline
 
 logger = logging.getLogger(__name__)
 
+
 class TrainingFailedError(RuntimeError):
     """A scripted ``fit`` run did not succeed.
 
@@ -150,7 +151,12 @@ _PARADIGM_DEFAULTS: dict[str, dict[str, Any]] = {
         "losses": _RECON_LOSSES,
         "training": {
             "cartoon_texture_safe": {
-                "lambda_l1": 1.0,
+                # No ``lambda_l1`` here: the L1 weight moved onto
+                # ``losses.image_losses`` (one owner, corpus review) and the
+                # legacy spelling now RAISES at load, so writing it made
+                # ``fit --paradigm cartoon_texture_safe`` unloadable. The
+                # ``_RECON_LOSSES`` block above carries ``l1`` at 1.0, the
+                # value this line used to set.
                 "lambda_ct": 0.5,
                 "tv_weight": 0.15,
                 "n_iter": 40,
@@ -164,7 +170,9 @@ _PARADIGM_DEFAULTS: dict[str, dict[str, Any]] = {
     # (recon + beta*rate) reads this block. Standard (input,target) data.
     "recoverability_vib": {
         "losses": _RECON_LOSSES,
-        "training": {"recoverability_vib": {"beta": 0.001, "lambda_recon": 1.0}},
+        # ``lambda_recon`` is retired for the same reason as ``lambda_l1`` above;
+        # ``_RECON_LOSSES`` carries the reconstruction weight at 1.0.
+        "training": {"recoverability_vib": {"beta": 0.001}},
     },
     # Generic generative strategy — reads nothing beyond the base; the model's
     # log_prob/training_loss is consulted with a documented fallback order.
@@ -453,9 +461,7 @@ def fit(
         device=torch_device,
     )
 
-    result = run_training_pipeline(
-        settings, device=str(torch_device), env=env, strategy=strategy
-    )
+    result = run_training_pipeline(settings, device=str(torch_device), env=env, strategy=strategy)
     if raise_on_failure and result.get("success") is not True:
         raise TrainingFailedError(
             f"fit(paradigm={paradigm!r}) did not succeed: "

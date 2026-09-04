@@ -26,6 +26,7 @@ import sys
 from pathlib import Path, PurePosixPath
 
 import pytest
+import yaml
 
 SCRIPT = Path(__file__).resolve().parents[3] / "scripts" / "release" / "export_public_tree.py"
 REAL_ALLOWLIST = SCRIPT.parent / "public_allowlist.txt"
@@ -640,9 +641,7 @@ def test_no_shipped_experiment_yaml_declares_a_key_the_schema_discards() -> None
     for path in shipped:
         found = detector.discarded_keys(path)
         if found:
-            offenders[path.relative_to(repo_root).as_posix()] = sorted(
-                k for k, _ in found
-            )
+            offenders[path.relative_to(repo_root).as_posix()] = sorted(k for k, _ in found)
 
     assert not offenders, (
         "shipped experiment YAML(s) declare keys the schema silently discards. "
@@ -1625,9 +1624,7 @@ def test_an_overlay_whose_target_does_not_ship_is_dead_and_fails_under_strict(
     assert strict.returncode == 2, strict.stdout
 
 
-def test_the_manifest_hashes_what_is_on_disk_not_the_git_blob(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_the_manifest_hashes_what_is_on_disk_not_the_git_blob(repo: Path, tmp_path: Path) -> None:
     """The manifest is a provenance claim about the EXPORT, not about the commit.
 
     Hashing the pre-overlay blob would describe a file the export does not contain.
@@ -1642,9 +1639,7 @@ def test_the_manifest_hashes_what_is_on_disk_not_the_git_blob(
     assert entry["size"] == len(replaced)
 
 
-def test_the_manifest_records_the_overlay_as_a_stated_decision(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_the_manifest_records_the_overlay_as_a_stated_decision(repo: Path, tmp_path: Path) -> None:
     _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
     out = tmp_path / "out"
     _export(repo, _allowlist(tmp_path, "src/", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR)
@@ -1676,9 +1671,7 @@ def test_a_root_level_overlay_file_replaces_a_root_file_and_is_named_in_the_summ
     assert "README.md" in proc.stdout, "an unintended substitution must at least be visible"
 
 
-def test_an_overlay_source_never_ships_at_its_storage_path(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_an_overlay_source_never_ships_at_its_storage_path(repo: Path, tmp_path: Path) -> None:
     """The overlay tree is content, not membership -- so it must not also ship as itself.
 
     The real allowlist carries a bare ``scripts/release/`` allowance, which matched the
@@ -1763,15 +1756,11 @@ def test_an_overlay_identical_to_its_target_is_redundant_and_fails_under_strict(
     assert strict.returncode == 2, strict.stdout
 
 
-def test_an_overlay_that_differs_is_not_reported_as_redundant(
-    repo: Path, tmp_path: Path
-) -> None:
+def test_an_overlay_that_differs_is_not_reported_as_redundant(repo: Path, tmp_path: Path) -> None:
     """Negative control: the ratchet must not fire on the case the overlay exists for."""
     _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
     out = tmp_path / "out"
-    proc = _export(
-        repo, _allowlist(tmp_path, "src/"), out, "--overlay", OVERLAY_DIR, "--strict"
-    )
+    proc = _export(repo, _allowlist(tmp_path, "src/"), out, "--overlay", OVERLAY_DIR, "--strict")
     assert proc.returncode == 0, proc.stdout
     assert "REDUNDANT OVERLAY" not in proc.stdout
     assert _manifest(out)["redundant_overlay_files"] == []
@@ -1862,3 +1851,169 @@ def test_the_overlay_f821_baseline_is_derived_from_the_real_one() -> None:
         "the f821 overlay has drifted from its source. Regenerate it as the real "
         "baseline minus the rows whose path does not ship."
     )
+
+
+# ---------------------------------------------------------------------------
+# A shipped pre-commit hook must have a shipped subject.
+#
+# `.pre-commit-config.yaml` ships, and the published pr-advisory lane runs
+# `pre-commit run --all-files`, so every local hook it declares executes in the
+# public repo. A hook whose `entry` names a path the allowlist drops fails there
+# with "No such file or directory" -- a red X that says nothing about the PR,
+# which is precisely what the overlay header of pr-advisory.yml exists to avoid.
+#
+# The two neighbouring detectors both miss this shape, which is why it is a
+# separate one rather than a widened predicate. `_unshipped_imports` reads
+# `import` statements, and a pre-commit entry is not an import; the denied-path
+# scan asks whether a path is *denied*, and an entry pointing at a merely
+# unlisted file is excluded without ever being denied. Detector blindness is
+# multidimensional: covering one axis says nothing about the next.
+# ---------------------------------------------------------------------------
+
+_PRE_COMMIT_CONFIG = ".pre-commit-config.yaml"
+
+
+def _entry_path_tokens(entry: str) -> list[str]:
+    """Tokens of a hook ``entry`` that could name an in-tree path.
+
+    ``entry`` is an argv prefix rather than a shell string, so a plain split is
+    what pre-commit itself does. A token is a candidate when it carries a
+    separator, which drops the interpreter (``python``) and bare flags without
+    needing to enumerate either.
+    """
+    return [t for t in entry.split() if "/" in t and not t.startswith("-")]
+
+
+def _unshipped_entry_paths(config_text: str, shipped: set[str], repo_root: Path) -> list[str]:
+    """Entry paths that exist in the source tree but are absent from *shipped*.
+
+    A token that names nothing in this tree is not this detector's business: it
+    is a tool name that happens to contain a separator, or a defect for the hook
+    to report. The question asked here is the narrower one the export can
+    actually answer -- does the allowlist drop something a shipped hook needs?
+    """
+    offenders: list[str] = []
+    for repo in yaml.safe_load(config_text).get("repos", []):
+        if repo.get("repo") != "local":
+            continue
+        for hook in repo.get("hooks", []):
+            for token in _entry_path_tokens(str(hook.get("entry", ""))):
+                if not (repo_root / token).exists():
+                    continue
+                if token in shipped:
+                    continue
+                # A directory counts as shipped when any file under it ships.
+                if any(s.startswith(token.rstrip("/") + "/") for s in shipped):
+                    continue
+                offenders.append(f"{hook.get('id', '?')}: {token}")
+    return sorted(offenders)
+
+
+def _synthetic_config(entry: str) -> str:
+    """A minimal one-hook config, built here rather than read from disk.
+
+    Planting against the real file would make the plant depend on the very
+    content under test.
+    """
+    return (
+        "repos:\n"
+        "  - repo: local\n"
+        "    hooks:\n"
+        "      - id: planted\n"
+        f"        entry: {entry}\n"
+        "        language: system\n"
+    )
+
+
+def test_every_shipped_pre_commit_hook_entry_ships_its_subject() -> None:
+    """The real assertion: no shipped hook points at a path the export drops."""
+    repo_root, shipped_list = _shipped_paths()
+    shipped = set(shipped_list)
+
+    assert _PRE_COMMIT_CONFIG in shipped, (
+        f"{_PRE_COMMIT_CONFIG} no longer ships, so no hook of it runs in the "
+        "published repo and every assertion below is vacuous. Either restore the "
+        "allowance or delete this detector -- do not leave it passing."
+    )
+
+    text = (repo_root / _PRE_COMMIT_CONFIG).read_text(encoding="utf-8")
+    scanned = sum(
+        len(_entry_path_tokens(str(hook.get("entry", ""))))
+        for repo in yaml.safe_load(text).get("repos", [])
+        if repo.get("repo") == "local"
+        for hook in repo.get("hooks", [])
+    )
+    assert scanned >= 3, (
+        f"only {scanned} entry path token(s) parsed out of {_PRE_COMMIT_CONFIG}; "
+        "each local hook names a script, so the parse is wrong and a clean "
+        "result here means nothing"
+    )
+
+    offenders = _unshipped_entry_paths(text, shipped, repo_root)
+    assert not offenders, (
+        "the exported .pre-commit-config.yaml declares local hooks whose entry "
+        "paths the allowlist drops. In the published repo `pre-commit run "
+        "--all-files` fails on each with 'No such file or directory'.\n"
+        + "\n".join(f"  {o}" for o in offenders)
+    )
+
+
+@pytest.mark.parametrize(
+    "entry,expected",
+    [
+        (
+            "python scripts/ci/check_no_stale_package_name.py",
+            "scripts/ci/check_no_stale_package_name.py",
+        ),
+        (
+            "python scripts/ci/check_witness_corpus.py experiments/inprogress",
+            "experiments/inprogress",
+        ),
+    ],
+)
+def test_entry_detector_flags_a_dropped_path(entry: str, expected: str) -> None:
+    """Planted red: with nothing shipped, every real entry path is an offence."""
+    repo_root, _ = _shipped_paths()
+    assert (repo_root / expected).exists(), f"plant is stale: {expected} is gone"
+    found = _unshipped_entry_paths(_synthetic_config(entry), set(), repo_root)
+    assert any(expected in f for f in found), f"detector missed {expected}: {found}"
+
+
+def test_entry_detector_stays_silent_when_the_subject_ships() -> None:
+    repo_root, _ = _shipped_paths()
+    token = "scripts/ci/check_test_paired_with_source.py"
+    assert _unshipped_entry_paths(_synthetic_config(f"python {token}"), {token}, repo_root) == []
+
+
+def test_entry_detector_accepts_a_directory_whose_files_ship() -> None:
+    """A directory token ships when anything under it does -- not as a literal."""
+    repo_root, _ = _shipped_paths()
+    under = "experiments/inprogress/reconstruction"
+    assert (
+        _unshipped_entry_paths(
+            _synthetic_config("python scripts/ci/check_witness_corpus.py experiments/inprogress"),
+            {"scripts/ci/check_witness_corpus.py", under + "/anything.yaml"},
+            repo_root,
+        )
+        == []
+    )
+
+
+def test_entry_detector_ignores_a_token_that_names_nothing() -> None:
+    """A tool name carrying a separator is not a missing file."""
+    repo_root, _ = _shipped_paths()
+    assert _unshipped_entry_paths(_synthetic_config("some/tool --fix"), set(), repo_root) == []
+
+
+def test_entry_detector_ignores_hooks_from_remote_repos() -> None:
+    """Only `repo: local` entries resolve against this tree."""
+    repo_root, _ = _shipped_paths()
+    remote = (
+        "repos:\n"
+        "  - repo: https://github.com/example/thing\n"
+        "    rev: v1\n"
+        "    hooks:\n"
+        "      - id: whatever\n"
+        "        entry: python scripts/ci/check_no_stale_package_name.py\n"
+    )
+    assert _unshipped_entry_paths(remote, set(), repo_root) == []

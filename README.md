@@ -2,8 +2,20 @@
 
 > **NOT FOR CLINICAL USE.** Research software only. See [DISCLAIMER.md](DISCLAIMER.md).
 
-[![License](https://img.shields.io/github/license/adnaneGdihi/spectramr.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+
+<!-- The licence badge is the STATIC form, deliberately. The dynamic endpoint
+     `img.shields.io/github/license/<owner>/<repo>.svg` reads the GitHub API as an
+     anonymous client, which cannot see a private repository: it rendered
+     `<title>license: repo not found</title>` here while returning HTTP 200, so it
+     was displaying a broken badge in the one slot a reader most expects to be
+     right. Measured 2026-09-03, by reading the SVG's <title> rather than its
+     status code -- the same trap the conda badge note below records. Swap back to
+     the dynamic form on the day this repository becomes public, and not before;
+     until then the static string and `LICENSE` are kept in step by
+     `pyproject.toml`'s `license = "Apache-2.0"`, which is what actually ships. -->
+
 
 <!-- Restore each badge below on the day the thing it measures exists. Every one of
      them resolved to a 404 or an unfilled placeholder: nothing is on PyPI, the

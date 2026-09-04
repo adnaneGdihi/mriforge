@@ -35,9 +35,7 @@ class TestMetricComputationSSOT:
     @pytest.fixture
     def metrics_computer(self):
         """Create ValidationMetricsComputer with default config."""
-        config = ValidationMetricsConfig.from_dict(
-            {"metrics": ["psnr", "ssim", "nmse"]}
-        )
+        config = ValidationMetricsConfig.from_dict({"metrics": ["psnr", "ssim", "nmse"]})
         return ValidationMetricsComputer(config=config, device="cpu", domain="image")
 
     def test_validation_metrics_computer_is_ssot(
@@ -60,9 +58,7 @@ class TestMetricComputationSSOT:
         assert isinstance(metrics["ssim"], float)
         assert isinstance(metrics["nmse"], float)
 
-    def test_metrics_computer_domain_awareness(
-        self, sample_predictions, sample_targets
-    ):
+    def test_metrics_computer_domain_awareness(self, sample_predictions, sample_targets):
         """
         Test that metrics computer supports domain-aware computation.
 
@@ -108,9 +104,9 @@ class TestMetricComputationSSOT:
 
             # Metrics should be scalar floats, regardless of batch size
             for metric_name, metric_value in metrics.items():
-                assert isinstance(
-                    metric_value, float
-                ), f"Metric {metric_name} not reduced to scalar for batch_size={batch_size}"
+                assert isinstance(metric_value, float), (
+                    f"Metric {metric_name} not reduced to scalar for batch_size={batch_size}"
+                )
 
 
 class TestStrategyMetricConsistency:
@@ -124,9 +120,9 @@ class TestStrategyMetricConsistency:
         """
         from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
-        assert hasattr(
-            BaseTrainingStrategy, "_get_validation_metrics_computer"
-        ), "BaseTrainingStrategy missing _get_validation_metrics_computer() helper"
+        assert hasattr(BaseTrainingStrategy, "_get_validation_metrics_computer"), (
+            "BaseTrainingStrategy missing _get_validation_metrics_computer() helper"
+        )
 
     def test_no_manual_metric_computation_in_strategies(self):
         """
@@ -191,6 +187,11 @@ class TestMetricComputerIntegration:
 
         # Minimal stub that satisfies MetricsMixin interface
         class _StubStrategy(MetricsMixin):
+            # ``capabilities`` is what the validation-metric gate asks a strategy
+            # for now (the emitted-metrics mechanism): a stub without it raises
+            # before the lazy-loading behaviour under test is reached.
+            capabilities = None
+
             def __init__(self):
                 self.device = "cpu"
                 self._validation_computer = None
@@ -219,9 +220,9 @@ class TestMetricComputerIntegration:
         computer2 = strategy._get_validation_metrics_computer(config)
 
         # Should return same cached instance
-        assert (
-            computer1 is computer2
-        ), "Metrics computer not cached (creates new instance on every call)"
+        assert computer1 is computer2, (
+            "Metrics computer not cached (creates new instance on every call)"
+        )
 
         # Verify it's actually a ValidationMetricsComputer
         from spectramr.core.metrics.computer import ValidationMetricsComputer
@@ -251,9 +252,9 @@ class TestMetricComputerIntegration:
         val_metrics = computer.compute(val_preds, val_targets)
 
         # Both should return same metric keys (values will differ due to different data)
-        assert set(train_metrics.keys()) == set(
-            val_metrics.keys()
-        ), "Train and validation metrics use different computation paths"
+        assert set(train_metrics.keys()) == set(val_metrics.keys()), (
+            "Train and validation metrics use different computation paths"
+        )
 
 
 class TestMetricPrefixing:

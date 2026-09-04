@@ -469,7 +469,7 @@ data:
 #         type: 'uniform'                        # options: 'uniform', 'full', 'grid', 'label', 'weighted', 'temporal_uniform', 'temporal_grid'
 #       role: null                               # options: null, 'clean_reference', 'metric_ref', 'uncertainty', 'manifest'
 #   mrixfields:
-#     pairing_policy: 'all_pairs'                # options: 'fixed_target', 'all_pairs', 'ulf_source', 'multi_source', 'multi_contrast', 'prior'
+#     pairing_policy: 'all_pairs'                # options: 'fixed_target', 'all_pairs', 'ulf_source', 'multi_source', 'multi_contrast', 'multi_field', 'prior'
 #     slice_mode: 'all_slices'                   # options: 'central', 'all_slices', 'volume'
 #   multi_contrast:
 #     acquisition_params:

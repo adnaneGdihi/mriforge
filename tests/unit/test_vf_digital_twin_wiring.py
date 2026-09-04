@@ -13,6 +13,7 @@ This test asserts every such arm now declares an *enabled* twin with at least
 one degradation flag on, and that the degradation matches the arm's physics
 axis.  It is data-free (pure schema load) so it runs in the unit tier.
 """
+
 from __future__ import annotations
 
 import os
@@ -107,10 +108,26 @@ EXPECTED_FIDELITY = {
 }
 
 
+def _metadata_extra(metadata: object, key: str) -> object | None:
+    """Read a free-form metadata key off the typed schema or a raw dict.
+
+    ``TrainingSettings.metadata`` was a bare ``dict`` until the typed
+    ``ExperimentMetadataSchema`` was mounted on it (corpus review, T0.4);
+    ``acquisition_fidelity`` is not a declared field, so it lives in the
+    model's ``extra="allow"`` bag and neither ``[...]`` nor ``.get(...)``
+    reaches it any more. One reader for both shapes, so this test says what it
+    means whichever one it is handed.
+    """
+    if isinstance(metadata, dict):
+        return metadata.get(key)
+    extra = getattr(metadata, "model_extra", None) or {}
+    return extra.get(key, getattr(metadata, key, None))
+
+
 @pytest.mark.parametrize("stem, status", sorted(EXPECTED_FIDELITY.items()))
 def test_overclaimed_arms_carry_honest_fidelity_stamp(stem: str, status: str) -> None:
     cfg = TrainingSettings.from_yaml(str(VF_DIR / f"{stem}.yaml"))
-    af = cfg.metadata.get("acquisition_fidelity")
+    af = _metadata_extra(cfg.metadata, "acquisition_fidelity")
     assert af is not None, f"{stem}: missing acquisition_fidelity provenance"
     assert af["status"] == status
     # the caveat must name both what the method needs and that it is not faithful
@@ -145,7 +162,7 @@ def test_faithful_arms_wired_to_multi_acquisition(
     ma = cfg.physics.multi_acquisition
     assert ma.enabled is True and ma.method == method
     assert cfg.model.in_channels == in_ch and cfg.model.out_channels == out_ch
-    assert cfg.metadata["acquisition_fidelity"]["status"] == "faithful_simulated"
+    assert _metadata_extra(cfg.metadata, "acquisition_fidelity")["status"] == "faithful_simulated"
 
 
 # ---------------------------------------------------------------------------
@@ -179,9 +196,7 @@ def test_no_vf_arm_carries_dead_validation_split(path: pathlib.Path) -> None:
     )
 
 
-@pytest.mark.parametrize(
-    "stem", sorted(FAITHFUL_ARMS), ids=lambda s: s
-)
+@pytest.mark.parametrize("stem", sorted(FAITHFUL_ARMS), ids=lambda s: s)
 def test_faithful_multi_acq_arms_pass_coil_channels(stem: str) -> None:
     """Synthesised-stack arms decouple in_channels from the coil count, so they
     must use passthrough coils (`none`); svd would re-impose in_channels==2*nvc."""

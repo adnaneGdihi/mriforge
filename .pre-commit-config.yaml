@@ -12,8 +12,14 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
 
+  # The rev must not fall behind the `ruff>=0.15` floor in pyproject.toml. It
+  # did: this hook was pinned to v0.5.0, eleven minor versions below the floor,
+  # so it reformatted files into a style the project's own ruff immediately
+  # reverted -- `ruff format --check` reported "1 file would be reformatted" on
+  # a file this hook had just written. Two formatters with different opinions
+  # and no owner is a formatting war, not a gate (non-negotiable 17).
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.0
+    rev: v0.16.2
     hooks:
       - id: ruff
         args: ["--fix"]
@@ -40,6 +46,31 @@ repos:
 
   - repo: local
     hooks:
+      # ALWAYS-RUN. No `files:` filter and `always_run: true`, so this fires on
+      # every commit regardless of which paths the commit touches. That is the
+      # point: the defect it catches is invisible to a path-scoped check. During
+      # the most recent package rename, a clean three-way merge carried two
+      # imports of the retired package into a file nobody had listed as
+      # affected -- the merge routed hunks by path and never inspected their
+      # contents. Only a whole-tree content scan saw it.
+      #
+      # This comment does not spell the retired name, and that is not squeamish:
+      # the check is content-based, so a literal here would make the config file
+      # its own first offender. The guard demonstrated this by going red on an
+      # earlier draft of these very lines.
+      #
+      # `language: python` rather than `system` because the rule owner it
+      # imports (tests/architecture/test_no_stale_package_name.py) imports
+      # pytest at module scope, and the CI job that runs `pre-commit run
+      # --all-files` installs pre-commit alone. The hook provisions its own.
+      - id: no-stale-package-name
+        name: no pre-rename package name anywhere in the tree
+        entry: python scripts/ci/check_no_stale_package_name.py
+        language: python
+        additional_dependencies: [pytest]
+        always_run: true
+        pass_filenames: false
+        stages: [pre-commit]
       - id: test-paired-with-source
         name: source change requires paired test change
         entry: python scripts/ci/check_test_paired_with_source.py

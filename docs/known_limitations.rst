@@ -82,13 +82,15 @@ This is the failure mode to know about when a knob you set appears to do
 nothing. It is not detectable by reading the config back, because the key is
 gone by then.
 
-The private tree carries a census script that reports every discarded key across
-a directory of configs, but it reads the internal experiment-corpus layout and is
-**not published with this release**. This page therefore names the failure mode
-rather than handing you a command that is not in your checkout. To check one
-config by hand, compare the keys your YAML sets in a block against the fields the
-schema for that block declares: a key in the first and not the second is being
-dropped.
+.. code-block:: console
+
+   $ python scripts/ci/report_discarded_config_keys.py <dir>
+
+That script reports every such key across a directory of configs. Run it on your
+own configs; a clean report is a meaningful result, and a non-empty one names the
+block and the key. Pass the directory explicitly -- it defaults to
+``experiments/inprogress``, which is an internal path that does not exist in this
+distribution.
 
 To re-measure the class counts above:
 

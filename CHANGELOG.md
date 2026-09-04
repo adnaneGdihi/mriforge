@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-<!-- This section becomes `## [0.1.0] - <date>` on the day the tag is cut, and the
-     link definitions at the foot are filled in then. It was written as a released
-     0.1.0 dated 2026-08-01 while no tag, no GitHub release and no PyPI
-     distribution existed, so the compare/tag links below resolved to nothing. A
-     changelog that claims a release is the one file a reader trusts about what was
-     released. -->
+## [0.1.0] - 2026-09-04
+
+<!-- Cut from `[Unreleased]` in preparation for the `v0.1.0` tag, which is the
+     action that actually publishes. The heading is not cosmetic: it is one of the
+     four version declarations `scripts/release/build_dist.py` reconciles, and
+     `changelog_version()` deliberately SKIPS `[Unreleased]`, so while this section
+     carried that heading the reconciler reported `CHANGELOG.md: unreadable` and
+     `release.yml` would have failed at the build step -- before reaching PyPI --
+     for every tag pushed. Verified by calling the reconciler directly rather than
+     by reading it.
+
+     The date must equal the day the tag is pushed. If that slips, change it here
+     first; the tag is what makes the claim public, and until it is pushed this
+     heading claims nothing that a reader can see. The earlier version of this file
+     dated a released 0.1.0 at 2026-08-01 while no tag, no GitHub release and no
+     PyPI distribution existed, which is the failure this note exists to prevent. -->
 
 ### Added
 - Initial public release of spectraMR.

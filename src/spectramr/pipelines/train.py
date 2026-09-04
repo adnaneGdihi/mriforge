@@ -1332,6 +1332,16 @@ def _emit_run_summary(
             "run_name": prov.get("run_name")
             or config.logging.identity.run
             or (config.metadata.name if getattr(config, "metadata", None) else None),
+            # The arm's declared author, beside the name the line above reads. It was
+            # a declared field no code path touched: the reachability ratchet reports
+            # a key set by the YAMLs whose only reads cannot execute, and a run record
+            # that names the run but not who declared it is the smaller half of the
+            # same provenance question (non-negotiable 8).
+            "author": (
+                getattr(config.metadata, "author", None)
+                if getattr(config, "metadata", None)
+                else None
+            ),
             "seed": seed,
             "success": (bool(result.get("success", True)) if isinstance(result, dict) else None),
             "strategy_class": (
