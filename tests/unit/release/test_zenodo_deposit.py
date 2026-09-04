@@ -644,3 +644,118 @@ def test_a_json_payload_is_still_declared_json(mod, sent):
 def test_a_bodyless_request_declares_no_content_type(mod, sent):
     mod._request("https://zenodo.org/api/deposit/depositions/1", "tok")
     assert sent[0].get_header("Content-type") is None
+
+
+# ---------------------------------------------------------------------------
+# 7. Resuming a draft a previous run left open
+#
+# `actions/newversion` is not idempotent. With a draft already open it does not
+# return it -- it refuses, with a message about the parent's files that names
+# nothing about drafts at all (spectraMR run 33898806002: `400 files.enabled:
+# Please remove all files first`, after run 33898113922 died mid-upload). So any
+# deposit that fails after the draft is created could never be retried.
+# ---------------------------------------------------------------------------
+
+
+class _FakeDepositions:
+    """An explicit id -> deposition map, so no case can be answered by accident.
+
+    The first version of this fake keyed on the URL and returned a *draft* shape
+    whenever the URL matched ``draft_link``.  In the real self-referential case the
+    parent's URL and its ``latest_draft`` link are the SAME string, so the parent
+    lookup was answered with the draft body, ``links`` came back without
+    ``latest_draft``, and two tests passed without ever reaching the branch they
+    name.  Planted violations found it: they went green.  Model the deposition, not
+    the request.
+    """
+
+    API = "https://zenodo.org/api/deposit/depositions"
+
+    def __init__(self, records: dict[int, dict]):
+        self.records = records
+        self.calls: list[tuple[str, str]] = []
+
+    def __call__(self, url, token, method="GET", payload=None, data=None):
+        self.calls.append((method, url))
+        if url.endswith("/actions/newversion"):
+            return {"links": {"latest_draft": f"{self.API}/1000"}}
+        return self.records[int(url.rstrip("/").rsplit("/", 1)[1])]
+
+    @property
+    def posted_newversion(self) -> bool:
+        return any(u.endswith("/actions/newversion") for _, u in self.calls)
+
+
+def _published(rec_id: int, *, latest_draft: str | None = None, submitted: bool | None = True):
+    body = {"id": rec_id, "files": [], "links": {}}
+    if submitted is not None:
+        body["submitted"] = submitted
+    if latest_draft:
+        body["links"]["latest_draft"] = latest_draft
+    return body
+
+
+def test_an_open_draft_is_resumed_instead_of_asking_for_another(mod, monkeypatch):
+    api = _FakeDepositions.API
+    fake = _FakeDepositions(
+        {
+            22291317: _published(22291317, latest_draft=f"{api}/999"),
+            999: {"id": 999, "submitted": False, "files": [], "links": {"bucket": "b"}},
+        }
+    )
+    monkeypatch.setattr(mod, "_request", fake)
+    assert mod.open_new_version(22291317, "tok", mod.LIVE_API)["id"] == 999
+    assert not fake.posted_newversion, "newversion refuses while a draft is open"
+
+
+def test_with_no_open_draft_a_new_version_is_requested(mod, monkeypatch):
+    fake = _FakeDepositions({22291317: _published(22291317), 1000: {"id": 1000}})
+    monkeypatch.setattr(mod, "_request", fake)
+    mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert fake.posted_newversion
+
+
+def test_a_submitted_deposition_is_not_mistaken_for_an_open_draft(mod, monkeypatch):
+    """`links.latest_draft` is present on a PUBLISHED record too, pointing at itself.
+
+    Following it blindly uploads the new artefacts into the published record, which
+    cannot be undone.  Here the link and the parent URL are the same string, which
+    is what the real API returns.
+    """
+    api = _FakeDepositions.API
+    fake = _FakeDepositions(
+        {
+            22291317: _published(22291317, latest_draft=f"{api}/22291317", submitted=True),
+            1000: {"id": 1000},
+        }
+    )
+    monkeypatch.setattr(mod, "_request", fake)
+    mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert fake.posted_newversion
+
+
+def test_a_self_referential_link_is_refused_even_with_no_submitted_flag(mod, monkeypatch):
+    """The id check, not the flag, is what covers a deposition that omits `submitted`."""
+    api = _FakeDepositions.API
+    fake = _FakeDepositions(
+        {
+            22291317: _published(22291317, latest_draft=f"{api}/22291317", submitted=None),
+            1000: {"id": 1000},
+        }
+    )
+    monkeypatch.setattr(mod, "_request", fake)
+    mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert fake.posted_newversion
+
+
+def test_a_refusal_reports_the_parent_state_it_decided_from(mod, monkeypatch, capsys):
+    def boom(url, token, method="GET", payload=None, data=None):
+        if url.endswith("/actions/newversion"):
+            raise RuntimeError("400: files.enabled")
+        return {"id": 22291317, "submitted": True, "links": {"self": "s", "publish": "p"}}
+
+    monkeypatch.setattr(mod, "_request", boom)
+    with pytest.raises(RuntimeError):
+        mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    err = capsys.readouterr().err
+    assert "publish" in err and "submitted=True" in err

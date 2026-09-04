@@ -228,9 +228,48 @@ def open_new_version(parent_id: int, token: str, api: str) -> dict:
     existing concept and would silently stop pointing at the project's archive.
     Only ``actions/newversion`` adds a version underneath it.
     """
-    resp = _request(f"{api}/deposit/depositions/{parent_id}/actions/newversion", token, "POST")
+    parent = _request(f"{api}/deposit/depositions/{parent_id}", token)
+    open_draft = find_open_draft(parent, token)
+    if open_draft is not None:
+        print(f"draft deposition {open_draft['id']} RESUMED (a new version was already open)")
+        return open_draft
+
+    try:
+        resp = _request(f"{api}/deposit/depositions/{parent_id}/actions/newversion", token, "POST")
+    except RuntimeError:
+        # Report the state the decision was made from rather than only the refusal:
+        # this call is not idempotent, and the reason it fails is in the parent.
+        print(f"  parent {parent_id} links: {sorted(parent.get('links', {}))}", file=sys.stderr)
+        print(
+            f"  parent submitted={parent.get('submitted')} state={parent.get('state')}",
+            file=sys.stderr,
+        )
+        raise
     latest = resp["links"]["latest_draft"]
     return _request(latest, token)
+
+
+def find_open_draft(parent: dict, token: str) -> dict | None:
+    """The parent's unsubmitted new-version draft, if one is already open.
+
+    ``actions/newversion`` is **not idempotent**: with a draft already open it does
+    not hand it back, it refuses -- observed as
+    ``400 files.enabled: Please remove all files first`` (spectraMR run
+    33898806002, after a failed upload left run 33898113922's draft behind). So a
+    retry of a partially-failed deposit could never succeed without this.
+
+    ``links.latest_draft`` also appears on a *published* deposition, pointing at
+    itself, so the ``submitted`` flag is what distinguishes an open draft from the
+    record it belongs to -- following the link alone would silently re-upload into
+    the published record.
+    """
+    link = parent.get("links", {}).get("latest_draft")
+    if not link:
+        return None
+    draft = _request(link, token)
+    if draft.get("submitted") or draft.get("id") == parent.get("id"):
+        return None
+    return draft
 
 
 def resolve_carry_forward(cli: list[str] | None, env: str | None) -> tuple[str, ...]:
