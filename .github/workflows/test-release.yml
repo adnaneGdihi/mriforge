@@ -1,13 +1,31 @@
 name: Test (release)
 
-# Full test suite + mutation + benchmark.  Runs on release tags and can
-# be triggered manually.  Budget: ≤8h.  Marker selection mirrors the
-# "release" lane in
-# docs/superpowers/plans/2026-05-22-unified-test-suite-master-plan.md.
+# Full test suite + mutation testing, on a release tag. Publishes nothing and
+# gates nothing: `release.yml` is what reaches PyPI, and it does not wait on this.
 #
-# Mutation testing (mutmut) and fuzz (atheris) are opt-in extras — the
-# Makefile target prints a clear WARNING and skips gracefully when they
-# are not installed rather than failing the job.
+# WHAT THIS LANE HAD NEVER DONE, until 2026-09-04. Run 33881085296 is the record:
+# 40m42s, conclusion=failure, and `7 skipped, 3 warnings, 3 errors in 2245.79s`.
+# Three tests loaded a `scripts/` file by path that the public allowlist does not
+# ship, so pytest reported `Interrupted: 3 errors during collection` -- and pytest
+# aborts the whole session on a collection error. **Zero tests ever executed.**
+# `make` stopped on that line, so mutation testing never ran either, and the
+# coverage upload was skipped, which is why the codecov badge never filled.
+# Fixed in `tests/utils/repo_scripts.py`; the two structural changes below make
+# the next occurrence cheaper to see.
+#
+# 1. The suite and the mutation run are now separate JOBS rather than two lines of
+#    one `make` target. They are independent, so they run concurrently -- and,
+#    more importantly, a red suite no longer silently cancels mutation testing.
+# 2. Coverage uploads `if: always()`. A lane whose suite is expected to be red
+#    (dev is standing-red) must still report, or its one durable artefact is lost
+#    exactly when it is most useful.
+#
+# Deliberately NOT parallelized with pytest-xdist: measured on this suite, the
+# failure SET diverges by worker count -- 16 failures serial, 43 at `-n 2`, 31 at
+# `-n 4`, 27 at `-n 8` -- because the metric registry carries cross-file state.
+# A hosted runner is 4 cores, so `-n auto` there would invent ~15 phantom
+# failures. See the comment on `test-release-suite` in the Makefile, and the
+# isolation defect filed against the metrics registry.
 #
 # GPU-marked tests are included in this lane.
 # TODO: replace `ubuntu-latest` with a CUDA-capable runner label once one
@@ -19,9 +37,15 @@ on:
   push:
     tags:
       - "v*"
-  release:
-    types: [published]
   workflow_dispatch:
+
+# No `release: types: [published]`. It could not fire on the path it was written
+# for: the GitHub Release here is published BY a workflow using GITHUB_TOKEN, and
+# GitHub suppresses workflow runs triggered that way to prevent recursion --
+# confirmed on the v0.1.0 release, where no second run appeared. On the remaining
+# path (a maintainer publishing a release by hand) it was actively harmful: the
+# tag push has already started this lane, `cancel-in-progress: false` queues
+# rather than replaces, and the result is two full-length runs of the same commit.
 
 permissions:
   contents: read
@@ -31,38 +55,57 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  test-release:
+  suite:
+    name: full test suite
     runs-on: ubuntu-latest  # TODO: CUDA runner for gpu-marked tests
+    # Left at the original budget on purpose. No run of this lane has ever
+    # executed a test, so there is no measurement to size it from; resize once a
+    # completed run reports a real duration.
     timeout-minutes: 480
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - uses: ./.github/actions/setup-env
         with:
-          python-version: "3.12"
-          cache: pip
+          extras: dev
 
-      - name: Install (CPU torch + torchvision from same index)
-        # torch and torchvision must come from the same CPU wheel index or
-        # torchvision's C++ extensions fail to register against libtorch.
-        # See physics-tests.yml for the full explanation.
-        run: |
-          pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install -e ".[dev]"
+      - name: Install atheris (best-effort)
+        # Fuzz targets live in tests/ and skip themselves when atheris is absent;
+        # it is not in [dev] because it needs a compiler toolchain.
+        run: pip install atheris || true
 
-      - name: Install optional mutation/fuzz deps (best-effort)
-        # mutmut and atheris are not in [dev] extras — install them
-        # opportunistically; the Makefile targets degrade gracefully when absent.
-        run: pip install mutmut atheris || true
-
-      - name: Run release test lane
+      - name: Run the full suite
         env:
           SPECTRAMR_SUPPRESS_CLINICAL_WARNING: "1"
-        run: make test-release
+        run: make test-release-suite
 
       - name: Upload coverage
+        # `always()`: the suite is expected to be red while dev is standing-red,
+        # and the coverage XML is still valid and still the point.
+        if: always()
         uses: codecov/codecov-action@v7
         with:
           file: ./tests_experiments/coverage_release.xml
           flags: release
           fail_ci_if_error: false
+
+  mutation:
+    name: mutation testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 480
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+
+      - name: Install mutmut (best-effort)
+        # Not in [dev]; `make test-mutation` prints a WARNING and exits 0 without
+        # it, so a failure here must not fail the job.
+        run: pip install mutmut || true
+
+      - name: Run mutation testing
+        env:
+          SPECTRAMR_SUPPRESS_CLINICAL_WARNING: "1"
+        run: make test-mutation

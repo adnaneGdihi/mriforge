@@ -86,6 +86,13 @@ DOI_BADGE = "[![DOI](https://zenodo.org/badge/DOI/{doi}.svg)](https://doi.org/{d
 CONCEPT_DOI = "10.5281/zenodo.22291316"
 VERSION_DOI = "10.5281/zenodo.22291317"
 
+#: Zenodo record ids, DERIVED from the two DOIs above rather than written a third
+#: and fourth time.  ``PARENT_RECORD_ID`` is the published record a new release is
+#: added *under*; ``CONCEPT_RECID`` is the parent whose DOI the README cites and
+#: which every version must keep reporting.
+PARENT_RECORD_ID = int(VERSION_DOI.rsplit(".", 1)[1])
+CONCEPT_RECID = CONCEPT_DOI.rsplit(".", 1)[1]
+
 #: Neither the status code nor the rendered content of a Zenodo badge can tell a live
 #: DOI from a typo: ``/badge/DOI/<doi>.svg`` emits no ``<title>`` (that is a shields.io
 #: convention) and does not validate its argument -- measured 2026-09-04, a real DOI, a
@@ -123,15 +130,6 @@ def report_badge(record: dict) -> str:
             file=sys.stderr,
         )
     line = doi_badge(doi)
-    if doi != CONCEPT_DOI:
-        print(
-            f"  NOTE: this record's badge DOI ({doi}) is not the one recorded in"
-            f" CONCEPT_DOI ({CONCEPT_DOI}).  A NEW concept DOI means a new Zenodo"
-            " record rather than a new version of the existing one -- check that"
-            " before updating the constant, since the published badge would then"
-            " stop pointing at the project's own archive.",
-            file=sys.stderr,
-        )
     print(f"\n  README badge line for this record:\n    {line}")
     print(
         "  README.md, its BibTeX block and CITATION.cff are pinned to"
@@ -212,13 +210,122 @@ def _request(
         raise RuntimeError(f"{method} {url} -> {exc.code}: {exc.read().decode()[:600]}") from exc
 
 
+def open_new_version(parent_id: int, token: str, api: str) -> dict:
+    """A draft that is a NEW VERSION of ``parent_id``, not a new record.
+
+    ``POST /deposit/depositions`` mints a brand-new record with its own **concept**
+    DOI -- which is the wrong call for every release after the first, because the
+    published badge, the README BibTeX block and ``CITATION.cff`` all cite the
+    existing concept and would silently stop pointing at the project's archive.
+    Only ``actions/newversion`` adds a version underneath it.
+    """
+    resp = _request(f"{api}/deposit/depositions/{parent_id}/actions/newversion", token, "POST")
+    latest = resp["links"]["latest_draft"]
+    return _request(latest, token)
+
+
+def resolve_carry_forward(cli: list[str] | None, env: str | None) -> tuple[str, ...]:
+    """The one place the carry-forward set is interpreted.
+
+    Two declaration homes -- ``--carry-forward`` and ``ZENODO_CARRY_FORWARD`` -- and
+    one resolver, because a second resolver does not announce itself: both would
+    compute a plausible set and which ran would depend on the call path.  Homes that
+    *disagree* raise rather than electing a silent winner; a home that is merely
+    absent defers.  Tokens split on the OS path separator or on whitespace, the same
+    convention ``SPECTRAMR_PLUGINS`` already uses.
+    """
+    from_cli = tuple(cli or ())
+    from_env = tuple(env.replace(os.pathsep, " ").split()) if env else ()
+    if from_cli and from_env and from_cli != from_env:
+        raise RuntimeError(
+            f"--carry-forward says {list(from_cli)} but ZENODO_CARRY_FORWARD says "
+            f"{list(from_env)}. Two homes for one decision must not be reconciled by "
+            "picking one silently -- set exactly one of them."
+        )
+    return from_cli or from_env
+
+
+def discard_inherited_files(
+    draft: dict, token: str, carry_forward: tuple[str, ...] = ()
+) -> list[str]:
+    """Drop the files Zenodo copied in from the previous version, except named ones.
+
+    ``newversion`` seeds the draft with the parent's files.  Left alone they are
+    published alongside the new ones -- and because every distribution artefact is
+    version-stamped, *keeping* them all would make each release hoard every earlier
+    wheel and sdist.  So the default is to drop, and anything that should ride the
+    tip is named explicitly in ``carry_forward``.
+
+    A named file that the draft does not carry **raises**.  That is the whole point
+    of naming it: the silent alternative strands the file on the old version, which
+    is invisible until someone resolves the concept DOI and finds it missing, and a
+    published record cannot be edited afterwards.
+    """
+    present = {}
+    for entry in draft.get("files", []):
+        present[entry.get("filename") or entry.get("key", "<unnamed>")] = entry
+
+    missing = [name for name in carry_forward if name not in present]
+    if missing:
+        raise RuntimeError(
+            f"asked to carry forward {missing}, but this draft inherited "
+            f"{sorted(present)}. Absent is a state to report, not one to infer: "
+            "either the parent record no longer holds that file or the name is a "
+            "typo, and dropping it quietly would strand it on the old version."
+        )
+
+    dropped = []
+    for name, entry in present.items():
+        if name in carry_forward:
+            print(f"  carried forward inherited file {name}")
+            continue
+        _request(entry["links"]["self"], token, "DELETE")
+        dropped.append(name)
+        print(f"  dropped inherited file {name}")
+    return dropped
+
+
+def assert_concept_unchanged(draft: dict, api: str) -> None:
+    """Refuse to publish a draft that would mint a second concept DOI.
+
+    This is the gate that used to be a NOTE printed *after* ``actions/publish`` --
+    one owner for the invariant, and it now runs while the deposit is still a
+    draft.  Skipped on the sandbox, which has its own id space.
+    """
+    if api != LIVE_API:
+        return
+    recid = str(draft.get("conceptrecid") or "")
+    if recid != CONCEPT_RECID:
+        raise RuntimeError(
+            f"this draft's concept record is {recid or '<absent>'}, not {CONCEPT_RECID} "
+            f"({CONCEPT_DOI}). Publishing it would mint a SECOND concept DOI and orphan "
+            "the README badge, the README BibTeX block and CITATION.cff. Deposit a new "
+            "version of the existing record instead of a new record."
+        )
+
+
 def deposit(
-    metadata: dict[str, object], files: list[Path], token: str, api: str, publish: bool
+    metadata: dict[str, object],
+    files: list[Path],
+    token: str,
+    api: str,
+    publish: bool,
+    parent_id: int | None = PARENT_RECORD_ID,
+    carry_forward: tuple[str, ...] = (),
 ) -> dict:
-    """Create a draft, attach every file, set metadata, optionally publish."""
-    draft = _request(f"{api}/deposit/depositions", token, "POST", payload={})
+    """Draft, attach every file, set metadata, optionally publish.
+
+    ``parent_id`` is the published record to add a version to; ``None`` mints a new
+    record, which is correct only for a first-ever deposit or on the sandbox.
+    """
+    if parent_id is None:
+        draft = _request(f"{api}/deposit/depositions", token, "POST", payload={})
+        print(f"draft deposition {draft['id']} created (NEW record -- new concept DOI)")
+    else:
+        draft = open_new_version(parent_id, token, api)
+        print(f"draft deposition {draft['id']} created (new VERSION of record {parent_id})")
+        discard_inherited_files(draft, token, carry_forward)
     dep_id, bucket = draft["id"], draft["links"]["bucket"]
-    print(f"draft deposition {dep_id} created")
 
     for path in files:
         _request(f"{bucket}/{path.name}", token, "PUT", data=path.read_bytes())
@@ -231,6 +338,7 @@ def deposit(
     print(f"  metadata set; reserved DOI: {doi}")
 
     if publish:
+        assert_concept_unchanged(updated, api)
         published = _request(f"{api}/deposit/depositions/{dep_id}/actions/publish", token, "POST")
         print(f"PUBLISHED -- DOI {published['doi']} (irreversible)")
         report_badge(published)
@@ -252,6 +360,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("--sandbox", action="store_true", help="use sandbox.zenodo.org")
     parser.add_argument(
+        "--new-record",
+        action="store_true",
+        help=(
+            "mint a NEW Zenodo record with its own concept DOI, instead of adding a "
+            "version to the published one. Correct for a first-ever deposit only -- it "
+            "orphans the README badge and CITATION.cff for any later release."
+        ),
+    )
+    parser.add_argument(
+        "--carry-forward",
+        action="append",
+        metavar="FILENAME",
+        help=(
+            "an inherited file to keep on the new version, by exact name (repeatable). "
+            "Everything else the parent record holds is dropped, so that each release "
+            "does not hoard every earlier wheel. A name the draft does not carry raises. "
+            "Also settable as ZENODO_CARRY_FORWARD."
+        ),
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="print the payload and exit; no network, no token needed",
@@ -262,8 +390,14 @@ def main(argv: list[str] | None = None) -> int:
         json.loads(METADATA_FILE.read_text(encoding="utf-8")), package_version()
     )
 
+    carry_forward = resolve_carry_forward(
+        args.carry_forward, os.environ.get("ZENODO_CARRY_FORWARD")
+    )
+
     if args.dry_run:
         print(json.dumps({"metadata": metadata}, indent=2, sort_keys=True))
+        for name in carry_forward:
+            print(f"would carry forward inherited file: {name}")
         dist = REPO_ROOT / args.dist
         if dist.is_dir():
             for p in distribution_files(dist):
@@ -281,12 +415,16 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 2
 
+    # The sandbox has its own id space, so PARENT_RECORD_ID means nothing there.
+    parent = None if (args.new_record or args.sandbox) else PARENT_RECORD_ID
     deposit(
         metadata,
         distribution_files(REPO_ROOT / args.dist),
         token,
         SANDBOX_API if args.sandbox else LIVE_API,
         args.publish,
+        parent_id=parent,
+        carry_forward=carry_forward,
     )
     return 0
 

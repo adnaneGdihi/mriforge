@@ -18,33 +18,28 @@ Discovery is tested against a synthetic byte tree (a 128-byte preamble + ``DICM`
 is enough for magic identification); the heavy pydicom pixel decode is not
 exercised here.
 """
+
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 import pytest
 
-REPO = Path(__file__).resolve().parents[3]
-_SCRIPT = REPO / "scripts" / "preprocessing" / "dicom_to_nifti.py"
-
-
-def _load_script():
-    """Import the script module by path (``scripts/`` is not a package)."""
-    spec = importlib.util.spec_from_file_location("dicom_to_nifti", _SCRIPT)
-    assert spec and spec.loader
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
+from tests.utils.repo_scripts import load_script_module
 
 # The script imports `pydicom` and `nibabel`, neither declared in pyproject and both
-# absent from a clean `[dev]` env. `_load_script` EXECUTES it at module scope, so a
+# absent from a clean `[dev]` env. The load below EXECUTES it at module scope, so a
 # missing dep aborts collection for all of tests/unit (#804, CI-only variant).
+#
+# The SCRIPT going missing is the same hazard reached by a different absence, and it
+# was unguarded: `scripts/preprocessing/` is not in the public allowlist, so in the
+# export this raised `FileNotFoundError` during collection. Both deps happen to be
+# installed transitively, so the importorskips above do NOT mask it. Hence the
+# helper, which skips in the export and fails loudly in a private checkout.
 pytest.importorskip("pydicom")
 pytest.importorskip("nibabel")
 
-conv = _load_script()
+conv = load_script_module("scripts/preprocessing/dicom_to_nifti.py", "dicom_to_nifti")
 
 # A minimal DICOM Part-10 stream: 128-byte preamble then the ``DICM`` magic.
 _DICOM = b"\x00" * 128 + b"DICM" + b"\x00" * 64

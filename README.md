@@ -2,98 +2,33 @@
 
 > **NOT FOR CLINICAL USE.** Research software only. See [DISCLAIMER.md](DISCLAIMER.md).
 
-[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22291316.svg)](https://doi.org/10.5281/zenodo.22291316)
-
-<!-- The licence badge is the STATIC form, deliberately. The dynamic endpoint
-     `img.shields.io/github/license/<owner>/<repo>.svg` reads the GitHub API as an
-     anonymous client, which cannot see a private repository: it rendered
-     `<title>license: repo not found</title>` here while returning HTTP 200, so it
-     was displaying a broken badge in the one slot a reader most expects to be
-     right. Measured 2026-09-03, by reading the SVG's <title> rather than its
-     status code -- the same trap the conda badge note below records. Swap back to
-     the dynamic form on the day this repository becomes public, and not before;
-     until then the static string and `LICENSE` are kept in step by
-     `pyproject.toml`'s `license = "Apache-2.0"`, which is what actually ships. -->
-
-
-<!-- Restore each badge below on the day the thing it measures exists. Every one of
-     them resolved to a 404 or an unfilled placeholder: nothing is on PyPI, the
-     project is not imported on Read the Docs, codecov has no report, and the CI
-     badge named `test.yml`, a workflow that does not exist in this repository.
-     That last clause is now stale in one respect and kept for the record: the
-     badge below was retargeted onto `pr-required.yml`, which does exist and is
-     the single required aggregator.
-     The note that stood here added "and Actions is disabled for the project
-     anyway, so no lane runs at all" -- that was true when the repo was created
-     and is not true now: Actions is ENABLED on adnaneGdihi/spectramr, and the
-     merged dependabot PRs there ran real checks. So the CI badge below is the
-     one that could be restored today; the rest still measure things that do not
-     exist. A badge is a claim a reader cannot check without clicking; a broken
-     one is worse than an absent one.
-
-     The last two are new. Each is left deliberately UNFILLED, and each names the
-     one number that fills it -- because for both of them, the obvious way to
-     check a badge does not work. Measured 2026-09-03, not assumed:
-
-       * DOI -- FILLED 2026-09-04, and promoted out of this block to the live badge
-       row at the top. It carries the CONCEPT DOI (10.5281/zenodo.22291316),
-       NOT the per-deposit version DOI that Zenodo's page shows you first -- whose
-       number is deliberately not written out here, because the test that keeps this
-       badge honest greps the whole file for it and a worked example in a comment
-       would be indistinguishable from the mistake. It is recorded once, in
-       `zenodo_deposit.VERSION_DOI`. Zenodo mints both: the concept DOI is the parent that
-       always redirects to the newest version (verified -- it resolves to record
-       22291317 today), while the version DOI is frozen on one deposit and would
-       silently stop tracking the project at v0.2.0. `zenodo_deposit.report_badge`
-       prefers `conceptdoi` for exactly this reason and owns the line's shape;
-       `scripts/release/zenodo_deposit.py:CONCEPT_DOI` owns the number, and
-       `tests/unit/release/test_zenodo_deposit.py` pins README, the BibTeX block
-       below and `CITATION.cff` to it so the four cannot drift apart.
-
-       Kept for the record, because it is the trap that made the form non-obvious:
-       Zenodo publishes TWO badge endpoints and only one applies here. The repo-id
-       form -- `/badge/<github repo id>.svg` linking to `/badge/latestdoi/<id>` --
-       belongs to Zenodo's GitHub INTEGRATION, which only sees public repositories
-       and only fires on a published GitHub release. `zenodo_deposit.py` deposits
-       over the REST API instead, deliberately, because that works while the
-       repository is private -- so it never registers the repo-id mapping. Probed
-       against this repo's real numeric id (1347566284 -- a numeric id survives a
-       rename, which is why the badge is keyed on it and not on the name):
-       `/badge/1347566284.svg` -> 404 and `/badge/latestdoi/1347566284` -> 404. Do
-       NOT "restore" the repo-id form; it is the shape that looks filled and is dead.
-
-       And a correction to the advice in the conda bullet below, which does NOT
-       generalise to this endpoint: `/badge/DOI/<doi>.svg` emits no `<title>` at
-       all, so grepping for one reports every Zenodo badge as broken. Worse, the
-       endpoint does not validate its argument -- it renders whatever string you
-       hand it. Measured 2026-09-04: a real DOI, a nonexistent zenodo id and the
-       literal `not-a-doi-at-all` all returned HTTP 200 with a well-formed SVG
-       (1217 / 1223 / 1200 bytes) reading back the string it was given. Neither the
-       status code NOR the rendered content can tell a live DOI from a typo. The
-       only probe that discriminates is resolving the DOI itself:
-       `curl -sI https://doi.org/<doi>` -> 302 for a real one, 404 for a fake.
-       * Conda. Keyed on the channel `adnanegdihi`, which is the GitHub handle
-         lower-cased and NOT a verified anaconda.org account -- if the account is
-         named differently, `ANACONDA_CHANNEL` (the repository variable the
-         workflow reads) and this URL must be changed together; the badge cannot
-         read the variable. Its status code proves nothing in either direction:
-         shields serves HTTP 200 for a channel/package that does not exist, with
-         the words "conda: not found" rendered INTO the SVG, and anaconda.org
-         serves HTTP 200 for a nonsense path too (a nonexistent channel returned
-         23,643 bytes with a 404 marker in the body). So verify this badge by
-         LOOKING at it, or by grepping the SVG's `<title>` -- never by curl'ing
-         for a 2xx.
-
 [![PyPI version](https://img.shields.io/pypi/v/spectramr.svg)](https://pypi.org/project/spectramr/)
 [![Python](https://img.shields.io/pypi/pyversions/spectramr.svg)](https://pypi.org/project/spectramr/)
-[![CI](https://github.com/adnaneGdihi/spectramr/actions/workflows/pr-required.yml/badge.svg)](https://github.com/adnaneGdihi/spectramr/actions/workflows/pr-required.yml)
-[![codecov](https://codecov.io/gh/adnaneGdihi/spectramr/branch/main/graph/badge.svg)](https://codecov.io/gh/adnaneGdihi/spectramr)
-[![Documentation Status](https://readthedocs.org/projects/spectramr/badge/?version=latest)](https://spectramr.readthedocs.io)
-[![Downloads](https://static.pepy.tech/badge/spectramr/month)](https://pepy.tech/project/spectramr)
-[![Conda](https://img.shields.io/conda/vn/adnanegdihi/spectramr.svg)](https://anaconda.org/adnanegdihi/spectramr)
--->
+[![License](https://img.shields.io/github/license/adnaneGdihi/spectraMR.svg)](LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22291316.svg)](https://doi.org/10.5281/zenodo.22291316)
+[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+
+<!-- Verify a badge by its rendered <title>, never by HTTP status: shields serves
+     200 with "not found" painted into the SVG. All five above were checked that
+     way on 2026-09-04 (pypi v0.1.0 / python 3.12 / license Apache-2.0).
+
+     Held back, each with the one thing that fills it:
+       CI        -- pr-required.yml triggers on pull_request, so `main` has no run
+                    and shields reports the newest PR's instead.
+       docs      -- the Read the Docs project is not imported yet.
+       downloads -- pepy serves a 45-byte 404 and shields/pypistats answers
+                    "rate limited by upstream service"; both need PyPI history.
+       codecov   -- no report has been uploaded.
+
+     The DOI is Zenodo's CONCEPT DOI, the parent that follows every release, not
+     the per-deposit version DOI (which would freeze at v0.1.0). Its number and
+     the line's shape are owned by scripts/release/zenodo_deposit.py and pinned
+     here by tests/unit/release/test_zenodo_deposit.py. Do NOT swap in Zenodo's
+     repo-id badge form: it belongs to Zenodo's GitHub integration, which only
+     fires on a GitHub release of a public repo and so never registered a mapping
+     for the REST-API deposits used here. Probed against this repo's numeric id,
+     `1347566284`: both `/badge/1347566284.svg` and `/badge/latestdoi/1347566284`
+     return 404. It is the shape that looks filled and is dead. -->
 
 spectraMR is a research framework for MRI reconstruction, super-resolution,
 quantitative mapping, and generative modelling. It registers 153 training
@@ -231,50 +166,120 @@ dataset layer imports TorchIO unconditionally. `spectramr --help`,
 `spectramr --version` and the loss registry (217, unaffected) still work. Install
 `[mri]` unless you are deliberately vendoring a subset.
 
-Three extras sit deliberately **outside** `[all]`, because each pulls a heavy or
-platform-specific build:
-
-```bash
-pip install spectramr[bnb]          # bitsandbytes
-pip install spectramr[deepspeed]    # deepspeed
-pip install -e '.[mamba]' --no-build-isolation   # mamba-ssm, causal-conv1d
-```
-
-`[mamba]` compiles a CUDA selective-scan kernel, needs `nvcc`, and must be
-installed **after** torch is present. Without it, Mamba/SSM models fail loudly
-rather than degrading silently.
-
 A few registered components need a package that no extra installs -- see
 [docs/known_limitations.rst](docs/known_limitations.rst).
 
-### What pip actually resolves
+### Pinning the CUDA build
 
-The `pytorch-cu126` index pin in `pyproject.toml` lives under `[tool.uv.sources]`
-and `[[tool.uv.index]]`. **Neither reaches wheel metadata** -- the published
-requirement is a bare `torch>=2.11` -- so installing from PyPI does not give you
-the pinned build. Measured on a fresh venv from the published wheel:
+The `pytorch-cu126` pin in `pyproject.toml` lives under `[tool.uv.sources]` and
+`[[tool.uv.index]]`, and **neither reaches wheel metadata** -- the published
+requirement is a bare `torch>=2.8`. Installing from PyPI therefore resolves the
+newest CUDA build rather than the pinned one: measured on a fresh venv from the
+published wheel, `torch 2.13.0+cu130` plus the whole `nvidia-*-cu13` stack,
+`cuda-toolkit` and `triton` -- **5.1 GB**, none of it asked for.
 
-| | Resolved |
-|---|---|
-| torch | `2.13.0+cu130` (CUDA **13.0**, not the pinned 12.6) |
-| CUDA runtime | the full `nvidia-*-cu13` stack, `cuda-toolkit`, `triton` -- pulled automatically |
-| pandas | `3.0.5` -- `pandas>=2.3` admits the 3.x major |
-| Total | **5.1 GB** |
-
-So CUDA-enabled PyTorch is *not* installed separately: you get it by default, at
-a CUDA version this project does not pin. Pin it yourself if that matters, by
-installing torch **first** from the index you want -- afterwards costs a
-multi-gigabyte reinstall:
+That matters on Volta. **cu126 is the last wheel lane that still ships `sm_70`**,
+so a V100 (compute capability 7.0) fails every kernel launch on a cu13x build
+with `cudaErrorNoKernelImageForDevice`. Install torch **first**, from the index
+you want; doing it afterwards costs a multi-gigabyte reinstall:
 
 ```bash
-# CUDA 12.6 -- what this project pins, and the only wheel lane that still ships
-# sm_70 for Volta / V100 (compute capability 7.0) GPUs. `uv.lock` resolves
-# torch 2.13.0+cu126 / torchvision 0.28.0+cu126 from this index.
-pip install torch --index-url https://download.pytorch.org/whl/cu126
+pip install torch --index-url https://download.pytorch.org/whl/cu126   # V100 / sm_70
+pip install torch --index-url https://download.pytorch.org/whl/cpu     # CPU-only, air-gapped
+pip install spectramr[mri]
 ```
 
-For a CPU-only or air-gapped machine, substitute the `cpu` index. The CI runs
-against the CPU wheel; downstream GPU work is your responsibility.
+CI runs against the CPU wheel; downstream GPU work is yours to pin.
+
+## Bring your own code
+
+spectraMR is `pip`-installable, so a model, loss, metric, dataset or training
+strategy of your own can live **outside** this repository and still be selected
+by name from a YAML config or the scripting API. Nothing is forked and nothing is
+subclassed: you register a component, and the framework imports it.
+
+### 1. Register it
+
+The decorator *is* the registration -- it runs on import:
+
+```python
+# my_pkg/models/my_unet.py
+import torch.nn as nn
+from spectramr import register_model
+
+@register_model("my_unet", "reconstruction")
+class MyUNet(nn.Module):
+    def __init__(self, in_channels=2, out_channels=2, **kwargs):
+        super().__init__()
+        self.body = nn.Conv2d(in_channels, out_channels, 3, padding=1)
+
+    def forward(self, x):
+        return self.body(x)
+```
+
+`register_loss` and `register_metric` are exported alongside it and work the same
+way. Training strategies are the one exception: they resolve from a dotted-path
+map rather than a decorator registry, so a plugin strategy is named either by its
+full path in `training.strategy_class` or by a short name declared in the
+`spectramr.strategies` entry-point group.
+
+### 2. Make it discoverable
+
+A decorator only fires if something imports the module. Three layers do that, and
+they differ in exactly one way that matters -- what happens when the import fails:
+
+| Layer | Declared in | On failure |
+|---|---|---|
+| Entry points | your package's `pyproject.toml` | **warns** -- a broken third-party plugin must not kill an unrelated run |
+| `SPECTRAMR_PLUGINS` | the environment | **raises** |
+| `plugins.paths` | the experiment YAML | **raises** |
+
+The last two are things *you* declared, so an unimportable path raises
+`PluginImportError` at startup rather than silently doing nothing, and the
+resolved list is stamped into the run's `provenance.json`.
+
+**Entry points** — for a shareable, installable plugin distribution. The five
+groups are `spectramr.models`, `.losses`, `.metrics`, `.datasets` and
+`.strategies`:
+
+```toml
+[project.entry-points."spectramr.models"]
+my_unet = "my_pkg.models.my_unet"              # imported -> fires @register_model
+
+[project.entry-points."spectramr.strategies"]
+my_paradigm = "my_pkg.strategies.MyStrategy"   # short name -> dotted path
+```
+
+**Environment variable** — for a scratch script or a one-off override; paths are
+separated by the OS path separator or by whitespace:
+
+```bash
+export SPECTRAMR_PLUGINS="my_pkg.models.my_unet my_pkg.losses.my_loss"
+spectramr train --config experiment.yaml
+```
+
+**Config block** — for an experiment that should carry its own dependencies:
+
+```yaml
+plugins:
+  enabled: true          # gates `paths` only; the other two layers run regardless
+  paths:
+    - my_pkg.models.my_unet
+
+model:
+  model_type: my_unet    # resolves -- the plugin was imported first
+```
+
+### 3. Names do not collide silently
+
+The in-tree registry is populated **first**, so re-registering a name the
+framework already owns is a hard error rather than an override: an explicit
+`SPECTRAMR_PLUGINS` or `plugins.paths` collision raises, and an entry-point
+collision warns while the in-tree component wins. A third-party package must
+never quietly replace a framework one. Pick `my_unet`, not `unet`.
+
+Full guide, including the in-process scripting API:
+[docs/plugins.rst](docs/plugins.rst).
 
 ## What's in the box
 

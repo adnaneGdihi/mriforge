@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `scripts/release/zenodo_deposit.py` can deposit a **new version** of the published
+  Zenodo record (`actions/newversion`) instead of only minting a new record, and
+  discards the files Zenodo inherits from the previous version before uploading.
+- README: a "Bring your own code" guide covering the three plugin-discovery layers
+  (entry points, `SPECTRAMR_PLUGINS`, `plugins.paths`) and the collision rules.
+- `.readthedocs.yaml` pre-installs the CPU torch wheel, so a docs build does not
+  resolve the 5.1 GB CUDA stack it never uses.
+
+### Changed
+- The Zenodo concept-DOI check is now a gate that raises **before** `actions/publish`
+  rather than a note printed after it; the weaker copy in `report_badge` is gone.
+- README badges: the licence badge moves to the dynamic form now that the repository
+  is public, and ~90 lines of commented-out badge archaeology were removed.
+
+### Removed
+- README: the "What pip actually resolves" section. The load-bearing part -- cu126 is
+  the last wheel lane shipping `sm_70`, so a V100 needs it -- is now under
+  Installation as "Pinning the CUDA build".
+
 ## [0.1.0] - 2026-09-04
 
 <!-- Cut from `[Unreleased]` in preparation for the `v0.1.0` tag, which is the
@@ -51,7 +71,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`.readthedocs.yaml`). The hosted site is not live as of v0.1.0.
 - Apache-2.0 licence + clinical-use disclaimer.
 - PyPI Trusted Publishing pipeline (`release.yml`) producing wheel + sdist on tag
-  push. Nothing has been published to PyPI as of v0.1.0.
+  push. `spectramr` 0.1.0 is published, carrying both artefacts
+  (`spectramr-0.1.0-py3-none-any.whl` and `spectramr-0.1.0.tar.gz`).
 - GitHub Actions CI on pull requests: a blocking `pr-required` lane (changed-line
   lint, repository guards, architecture fitness functions, unit-test collection,
   physics tests, dependency and secret scanning) aggregated behind a single
@@ -62,10 +83,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue templates (bug / feature / paradigm-proposal) and PR template with DCO
   sign-off checklist.
 
-<!-- Restored ahead of the tag, deliberately: both links 404 until `v0.1.0` is
-     pushed to the PUBLIC repo, and the alternative was a second export-and-publish
-     cycle for two lines. If the tag slips past 2026-09-04, the `[0.1.0]` heading date
-     above and `date-released` in CITATION.cff both have to move with it -- they are
-     three separate declarations of the same day and nothing reconciles them. -->
+<!-- Both links resolve as of 2026-09-04: `v0.1.0` is pushed and the GitHub Release
+     is published. Verified by status, and the probe was checked against a tag that
+     does not exist first -- `releases/tag/v9.9.9` and `compare/v9.9.9...HEAD` both
+     return 404, so the 200s here mean something. The `[0.1.0]` heading date above
+     and `date-released` in CITATION.cff are two further declarations of the same
+     day, and nothing reconciles the three; change them together. -->
 [Unreleased]: https://github.com/adnaneGdihi/spectramr/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/adnaneGdihi/spectramr/releases/tag/v0.1.0

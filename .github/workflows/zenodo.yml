@@ -18,6 +18,10 @@ on:
         description: "Deposit to sandbox.zenodo.org instead of the live archive."
         type: boolean
         default: false
+      carry_forward:
+        description: "Inherited files to keep on the new version, space-separated. Everything else the parent record holds is dropped. A name the draft does not carry fails the run."
+        type: string
+        default: "spectraMR.pdf"
 
 # A deposition token is not a repository credential: nothing here needs write
 # access to the tree, and the token arrives through `secrets`, scoped to the one
@@ -55,6 +59,10 @@ jobs:
           # shell string is the standard script-injection seam.
           PUBLISH: ${{ inputs.publish }}
           SANDBOX: ${{ inputs.sandbox }}
+          # Read by the script straight from the environment. A filename input has
+          # no safe spelling inside the `$args` word-splitting below -- that pattern
+          # is sound for boolean flags and is the injection seam for anything else.
+          ZENODO_CARRY_FORWARD: ${{ inputs.carry_forward }}
         run: |
           args=""
           [ "$PUBLISH" = "true" ] && args="$args --publish"

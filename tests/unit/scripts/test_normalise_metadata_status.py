@@ -2,20 +2,19 @@
 
 from __future__ import annotations
 
-import importlib.util
-import sys
-from pathlib import Path
-
 import pytest
 import yaml
 
-_SCRIPT = (
-    Path(__file__).resolve().parents[3] / "scripts" / "migrations" / "normalise_metadata_status.py"
+from tests.utils.repo_scripts import load_script_module
+
+# `scripts/migrations/` is not in the public allowlist, so loading it by path raised
+# `FileNotFoundError` at module scope in the export -- a collection error, which
+# aborts the whole session. The helper skips there, and still fails loudly when the
+# script goes missing from a private checkout. It also owns the `sys.modules`
+# registration this block used to do by hand.
+_mod = load_script_module(
+    "scripts/migrations/normalise_metadata_status.py", "normalise_metadata_status"
 )
-_spec = importlib.util.spec_from_file_location("normalise_metadata_status", _SCRIPT)
-_mod = importlib.util.module_from_spec(_spec)
-sys.modules["normalise_metadata_status"] = _mod
-_spec.loader.exec_module(_mod)
 
 _ARM = """config_version: '1.0'
 metadata:

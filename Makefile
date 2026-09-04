@@ -1,4 +1,4 @@
-.PHONY: format test test-all cov-unit cov-full test-coverage test-missing clean train predict eda eda-dry-run help install-topology env-show check-deps check-deps-imports test-precommit test-pr test-nightly test-release diagnostics diagnostics-fast skill-health reachable dev-health gate
+.PHONY: format test test-all cov-unit cov-full test-coverage test-missing clean train predict eda eda-dry-run help install-topology env-show check-deps check-deps-imports test-precommit test-pr test-nightly test-release test-release-suite test-mutation diagnostics diagnostics-fast skill-health reachable dev-health gate
 
 # -----------------------------------------------------------------------------
 # Environment-variable loading.
@@ -132,13 +132,61 @@ test-nightly:
 
 # release lane — everything + mutation + benchmark.
 # ≤8h; requires CUDA runner and mutmut/atheris installed.
-test-release:
+#
+# Split into two halves so CI runs them as CONCURRENT jobs (test-release.yml).
+# `test-release` keeps the sequential meaning for a local run. Nothing in
+# test-mutation reads the suite's result, so the ordering was never a dependency
+# -- only a convenience -- and on CI it was pure serial dead time. The pytest
+# invocation stays in ONE place (non-negotiable 17): the workflow calls this
+# target, it does not restate the command.
+test-release-suite:
 	@$(VENV) python -m pytest \
+		--timeout=900 \
 		--hypothesis-seed=0 \
 		--cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_release.xml \
 		--cov-report=term-missing:skip-covered \
 		-q tests/
+
+# `--timeout=900` -- a per-test ceiling, not a session one.
+#
+# pytest-timeout is ALREADY a hard dependency, added so the 16 files carrying
+# `@pytest.mark.timeout(...)` are honoured. Nothing ever set a DEFAULT, so a test
+# with no marker can block forever and burn the entire 480-minute job budget with
+# no failure to read. #1284 is exactly that shape: tests/unit/pipelines hangs on a
+# network call, order-dependent, so the test it lands on moves. This converts a
+# silent 8-hour stall into one named red test in 15 minutes. A per-test
+# `@pytest.mark.timeout(...)` still overrides it.
+#
+# Measured on tests/unit/physics, 2026-09-04: serial 17.76s vs 18.44s with the
+# flag, identical 4 failed / 662 passed / 2 skipped. Confirmed against
+# `--timeout-method=thread` too (18.24s, same set), so the default signal method
+# is not doing anything surprising here.
+#
+# NOT parallelised -- deliberately, and this is the part to re-check before
+# changing it. `-n auto --dist loadfile` looks free (pytest-xdist is already a
+# dependency and pr-advisory's impacted-tests job already uses it) and is not:
+# it CHANGES THE FAILURE SET at low worker counts. Measured over
+# tests/unit/physics + tests/unit/core (3512 tests), same tree, same commit:
+#
+#     serial   197s   16 failed   <- the truth
+#     -n 2     142s   43 failed
+#     -n 4     144s   31 failed   <- what a 4-core hosted runner would report
+#     -n 8     166s   27 failed
+#     -n 16    214s   16 failed   <- matches serial exactly
+#
+# The extra failures are all registry-contract tests under
+# tests/unit/core/metrics/ asserting a metric's declared `needs`, e.g.
+# `assert () == ('sibling_contrasts',)` -- the tuple comes back EMPTY when the
+# modules are split across processes, so registration content depends on which
+# test files share a worker. Widening to 16 hides it again, which is why a
+# 24-core laptop reports a clean run and a hosted runner would not. Note also
+# there is no wall-clock case for it here: 1.37x at n=4, and SLOWER than serial
+# at n=16, because every worker re-imports torch and the model registry.
+# OMP_NUM_THREADS=1 does not change either number (154s, 30 failed).
+# Fix the isolation defect first; then this is a one-flag change.
+
+test-release: test-release-suite
 	$(MAKE) test-mutation
 
 clean:

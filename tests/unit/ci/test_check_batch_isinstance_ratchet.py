@@ -9,22 +9,18 @@ shape. So each test here plants a guard the gate must catch, and the
 
 from __future__ import annotations
 
-import importlib.util
 from pathlib import Path
 
 import pytest
 
-_GATE = Path(__file__).resolve().parents[3] / "scripts" / "ci" / "check_batch_isinstance_ratchet.py"
+from tests.utils.repo_scripts import load_script_module
 
-
-def _load():
-    spec = importlib.util.spec_from_file_location("batch_ratchet", _GATE)
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-
-gate = _load()
+# Loaded through the shared helper rather than a local ``spec_from_file_location``:
+# the gate is not in the public allowlist, so in the export this line used to raise
+# ``FileNotFoundError`` at module scope -- a COLLECTION error, which aborts the whole
+# pytest session. The helper skips there and still fails loudly if the file goes
+# missing from a private checkout.
+gate = load_script_module("scripts/ci/check_batch_isinstance_ratchet.py", "batch_ratchet")
 
 
 # --- shapes the gate MUST catch -------------------------------------------

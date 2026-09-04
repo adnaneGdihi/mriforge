@@ -59,7 +59,11 @@ _ALLOWED_NON_PR_EVENTS: dict[str, dict[str, str]] = {
         # NOT the artefact: this lane does `pip install -e .` and `make test-release`,
         # so it exercises the checkout. release.yml is what verifies what is published.
         "push": "tag-only: runs the full test lane against the tagged source tree",
-        "release": "fires when a maintainer publishes the GitHub Release",
+        # `release: types: [published]` was removed 2026-09-04, and this entry with
+        # it -- GitHub suppresses runs triggered by a GITHUB_TOKEN-published release
+        # (so it never fired on the automated path), while on a manual publish it
+        # queued a second full-length run behind the tag's. `_stale_entries` is what
+        # made the pair inseparable, which is the point of it.
     },
     "claude.yml": {
         "issues": "the @claude bot; the job body requires an @claude mention",

@@ -193,16 +193,17 @@ def test_each_disagreement_is_detected(mod, mutate_readme, mutate_citation, expe
     )
 
 
-def test_report_badge_flags_a_record_whose_concept_doi_is_not_the_recorded_one(mod, capsys):
-    """A NEW concept DOI means a new record, not a new version -- it must not pass quietly."""
+def test_the_concept_check_is_not_duplicated_in_report_badge(mod, capsys):
+    """One owner. ``report_badge`` used to print a NOTE when the concept DOI was not
+    the recorded one -- *after* ``actions/publish`` had already run, so it named a
+    problem at the one moment nothing could be done about it. The invariant now
+    belongs to ``assert_concept_unchanged``, which raises while the deposit is still
+    a draft (see section 4). Keeping the weaker copy as defence in depth is exactly
+    what non-negotiable 17 forbids: neither would then be audited as the sole line.
+    """
     mod.report_badge({"doi": "10.5281/zenodo.1", "conceptdoi": "10.5281/zenodo.2"})
-    assert "not the one recorded in CONCEPT_DOI" in capsys.readouterr().err
-
-
-def test_report_badge_is_quiet_for_the_recorded_concept_doi(mod, capsys):
-    """The silence half: a guard that fires on everything is not a guard."""
-    mod.report_badge({"doi": mod.VERSION_DOI, "conceptdoi": mod.CONCEPT_DOI})
     assert "not the one recorded in CONCEPT_DOI" not in capsys.readouterr().err
+    assert hasattr(mod, "assert_concept_unchanged"), "the elected owner is gone"
 
 
 def test_the_concept_doi_wins_over_the_version_doi(mod):
@@ -323,3 +324,241 @@ def test_the_new_release_paths_are_tracked_by_git(path):
         check=False,
     )
     assert proc.returncode == 0, f"{path} is not tracked by git: {proc.stderr.strip()}"
+
+
+# --------------------------------------------------------------------------- 4
+#
+# A release after the first must add a VERSION to the published record, never mint a
+# new one.  ``POST /deposit/depositions`` and ``POST .../actions/newversion`` both
+# return a perfectly good draft, and the difference only shows up in the concept DOI
+# of the published result -- by which point it is irreversible and the README badge,
+# the README BibTeX block and CITATION.cff all point at an archive that no longer
+# tracks the project.  So the discrimination is made here, on the call the script
+# issues, and the gate that enforces it is exercised in both directions.
+
+
+class _FakeZenodo:
+    """Records every request and answers with the shape Zenodo really returns."""
+
+    def __init__(self, *, conceptrecid: str = "22291316", inherited: tuple[str, ...] = ()):
+        self.calls: list[tuple[str, str]] = []
+        self.conceptrecid = conceptrecid
+        self.inherited = inherited
+
+    def __call__(self, url, token, method="GET", payload=None, data=None):
+        self.calls.append((method, url))
+        if url.endswith("/actions/newversion"):
+            return {"links": {"latest_draft": "https://zenodo.org/api/deposit/depositions/999"}}
+        if url.endswith("/actions/publish"):
+            return {"doi": "10.5281/zenodo.999", "conceptdoi": "10.5281/zenodo.22291316"}
+        if data is not None or method == "DELETE":
+            return {}
+        return self._draft()
+
+    def _draft(self) -> dict:
+        return {
+            "id": 999,
+            "conceptrecid": self.conceptrecid,
+            "metadata": {"prereserve_doi": {"doi": "10.5281/zenodo.999"}},
+            "links": {
+                "bucket": "https://zenodo.org/api/files/bucket",
+                "html": "https://zenodo.org/deposit/999",
+            },
+            "files": [
+                {
+                    "filename": name,
+                    "links": {"self": f"https://zenodo.org/api/deposit/depositions/999/files/{n}"},
+                }
+                for n, name in enumerate(self.inherited)
+            ],
+        }
+
+    def methods_for(self, needle: str) -> list[str]:
+        return [m for m, u in self.calls if needle in u]
+
+
+@pytest.fixture
+def artefact(tmp_path: Path) -> Path:
+    wheel = tmp_path / "spectramr-0.1.0-py3-none-any.whl"
+    wheel.write_bytes(b"not really a wheel")
+    return wheel
+
+
+def _run(mod, fake, artefact, monkeypatch, **kw):
+    monkeypatch.setattr(mod, "_request", fake)
+    return mod.deposit(
+        {"title": "t"}, [artefact], "tok", mod.LIVE_API, kw.pop("publish", False), **kw
+    )
+
+
+def test_a_release_adds_a_version_rather_than_minting_a_new_record(mod, artefact, monkeypatch):
+    fake = _FakeZenodo()
+    _run(mod, fake, artefact, monkeypatch)
+
+    assert fake.methods_for("/actions/newversion") == ["POST"], "newversion was not called"
+    # The tell: a bare POST to the collection endpoint is what mints a new concept DOI.
+    assert ("POST", f"{mod.LIVE_API}/deposit/depositions") not in fake.calls
+
+
+def test_the_default_parent_is_the_published_record(mod, artefact, monkeypatch):
+    fake = _FakeZenodo()
+    _run(mod, fake, artefact, monkeypatch)
+    assert any(
+        f"/depositions/{mod.PARENT_RECORD_ID}/actions/newversion" in u for _, u in fake.calls
+    )
+
+
+def test_inherited_files_are_dropped_before_the_new_ones_are_uploaded(mod, artefact, monkeypatch):
+    # newversion seeds the draft with the parent's files; published, they cannot be
+    # removed, so v0.1.0's PDF would ship inside the v0.2.0 record.
+    fake = _FakeZenodo(inherited=("spectraMR.pdf",))
+    _run(mod, fake, artefact, monkeypatch)
+
+    order = [m for m, _ in fake.calls]
+    assert "DELETE" in order, "the inherited file was published alongside the new ones"
+    assert order.index("DELETE") < order.index("PUT"), "deleted after uploading, not before"
+
+
+def test_a_first_ever_deposit_can_still_mint_a_record(mod, artefact, monkeypatch):
+    fake = _FakeZenodo()
+    _run(mod, fake, artefact, monkeypatch, parent_id=None)
+
+    assert ("POST", f"{mod.LIVE_API}/deposit/depositions") in fake.calls
+    assert fake.methods_for("/actions/newversion") == []
+
+
+def test_publish_is_refused_before_a_second_concept_doi_can_be_minted(mod, artefact, monkeypatch):
+    # PLANTED: a draft whose parent concept is not the one the README cites.
+    fake = _FakeZenodo(conceptrecid="99999999")
+    with pytest.raises(RuntimeError, match=r"SECOND concept DOI"):
+        _run(mod, fake, artefact, monkeypatch, publish=True)
+
+    # The point of the gate is *when* it fires. A note printed afterwards is not one.
+    assert fake.methods_for("/actions/publish") == [], "published anyway -- irreversibly"
+
+
+def test_publish_proceeds_when_the_concept_is_the_published_one(mod, artefact, monkeypatch):
+    fake = _FakeZenodo(conceptrecid=mod.CONCEPT_RECID)
+    _run(mod, fake, artefact, monkeypatch, publish=True)
+    assert fake.methods_for("/actions/publish") == ["POST"]
+
+
+def test_the_sandbox_has_its_own_id_space_and_is_exempt(mod):
+    # Enforcing a zenodo.org concept id against sandbox.zenodo.org would fail every
+    # rehearsal -- a gate that cannot pass stops being run.
+    mod.assert_concept_unchanged({"conceptrecid": "1"}, mod.SANDBOX_API)
+    with pytest.raises(RuntimeError):
+        mod.assert_concept_unchanged({"conceptrecid": "1"}, mod.LIVE_API)
+
+
+def test_an_absent_conceptrecid_is_refused_rather_than_assumed(mod):
+    with pytest.raises(RuntimeError, match="<absent>"):
+        mod.assert_concept_unchanged({}, mod.LIVE_API)
+
+
+def test_the_record_ids_are_derived_from_the_dois_not_written_again(mod):
+    # One owner for each number: re-typing them is how the two drift apart.
+    assert str(mod.PARENT_RECORD_ID) == mod.VERSION_DOI.rsplit(".", 1)[1]
+    assert mod.CONCEPT_DOI.rsplit(".", 1)[1] == mod.CONCEPT_RECID
+    assert int(mod.CONCEPT_RECID) != mod.PARENT_RECORD_ID
+
+
+# ---------------------------------------------------------------------------
+# 5. Which inherited files ride the new version
+#
+# `newversion` seeds the draft with the parent's files, so the choice is forced on
+# every release after the first.  Dropping everything is the safe default -- a
+# published file cannot be removed, and every distribution artefact is
+# version-stamped, so keeping them all makes each record hoard every earlier wheel.
+# What must ride the tip is therefore *named*, and a name that is not there raises:
+# the silent alternative strands the file on the old version, where nobody looks
+# until they resolve the concept DOI and find it missing.
+# ---------------------------------------------------------------------------
+
+
+def test_a_named_inherited_file_is_kept_while_the_rest_are_dropped(mod, artefact, monkeypatch):
+    fake = _FakeZenodo(inherited=("spectraMR.pdf", "spectramr-0.0.9-py3-none-any.whl"))
+    _run(
+        fake=fake,
+        mod=mod,
+        artefact=artefact,
+        monkeypatch=monkeypatch,
+        carry_forward=("spectraMR.pdf",),
+    )
+    deleted = [u for m, u in fake.calls if m == "DELETE"]
+    assert len(deleted) == 1, f"expected exactly one deletion, got {deleted}"
+    assert deleted[0].endswith("/files/1"), "the wheel is index 1; the PDF must survive"
+
+
+def test_by_default_every_inherited_file_is_dropped(mod, artefact, monkeypatch):
+    """The accumulation guard: without a name, nothing is carried."""
+    fake = _FakeZenodo(inherited=("spectraMR.pdf", "spectramr-0.0.9-py3-none-any.whl"))
+    _run(fake=fake, mod=mod, artefact=artefact, monkeypatch=monkeypatch)
+    assert len([u for m, u in fake.calls if m == "DELETE"]) == 2
+
+
+def test_carrying_forward_a_file_the_draft_does_not_hold_raises(mod, artefact, monkeypatch):
+    fake = _FakeZenodo(inherited=("spectraMR.pdf",))
+    with pytest.raises(RuntimeError, match="carry forward"):
+        _run(
+            fake=fake,
+            mod=mod,
+            artefact=artefact,
+            monkeypatch=monkeypatch,
+            carry_forward=("paper.pdf",),
+        )
+    assert "DELETE" not in [m for m, _ in fake.calls], "must refuse before deleting anything"
+
+
+def test_the_carry_forward_check_runs_before_any_deletion(mod, artefact, monkeypatch):
+    """A typo must not cost the files it was not about."""
+    fake = _FakeZenodo(inherited=("a.pdf", "b.whl"))
+    with pytest.raises(RuntimeError):
+        _run(
+            fake=fake,
+            mod=mod,
+            artefact=artefact,
+            monkeypatch=monkeypatch,
+            carry_forward=("a.pdf", "typo.pdf"),
+        )
+    assert [m for m, _ in fake.calls if m == "DELETE"] == []
+
+
+@pytest.mark.parametrize(
+    ("cli", "env", "expected"),
+    [
+        (None, None, ()),
+        (["a.pdf"], None, ("a.pdf",)),
+        (None, "a.pdf b.pdf", ("a.pdf", "b.pdf")),
+        (None, "a.pdf:b.pdf", ("a.pdf", "b.pdf")),
+        (["a.pdf"], "a.pdf", ("a.pdf",)),
+    ],
+)
+def test_the_two_declaration_homes_resolve_in_one_place(mod, cli, env, expected):
+    assert mod.resolve_carry_forward(cli, env) == expected
+
+
+def test_two_homes_that_disagree_raise_rather_than_electing_a_winner(mod):
+    with pytest.raises(RuntimeError, match="ZENODO_CARRY_FORWARD"):
+        mod.resolve_carry_forward(["a.pdf"], "b.pdf")
+
+
+def test_the_workflow_default_names_the_paper(mod):
+    """The next release must not silently strand the PDF on the old version.
+
+    An empty default would do exactly that, and it would look like a normal run.
+    Paired with the raise above, this default is self-auditing: if a future parent
+    record no longer holds the file, the dispatch fails loudly instead.
+    """
+    wf = yaml.safe_load((REPO_ROOT / ".github/workflows/zenodo.yml").read_text())
+    inputs = wf[True]["workflow_dispatch"]["inputs"]
+    assert inputs["carry_forward"]["default"] == "spectraMR.pdf"
+
+
+def test_the_filename_input_reaches_the_script_through_the_environment(mod):
+    """`$args` word-splitting is safe for booleans and is the injection seam here."""
+    text = (REPO_ROOT / ".github/workflows/zenodo.yml").read_text()
+    assert "ZENODO_CARRY_FORWARD: ${{ inputs.carry_forward }}" in text
+    assert "inputs.carry_forward }}" not in text.split("run: |")[1], (
+        "the input must not be interpolated into the run block"
+    )

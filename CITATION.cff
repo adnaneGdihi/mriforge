@@ -23,7 +23,12 @@ doi: "10.5281/zenodo.22291316"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.22291317"
-    description: "Archived snapshot of the v0.1.0 release."
+    # NOT a code archive: this record's only file is `spectraMR.pdf` (61,061 bytes,
+    # read from the Zenodo API on 2026-09-04). The source is distributed from GitHub
+    # and PyPI; Zenodo carries the paper and mints the citable DOI. Cite the concept
+    # DOI above -- this version DOI is frozen at v0.1.0 by design and stops tracking
+    # the project at the next release.
+    description: "Version record for v0.1.0; archives the accompanying paper."
 repository-code: "https://github.com/adnaneGdihi/spectramr"
 url: "https://github.com/adnaneGdihi/spectramr"
 keywords:
