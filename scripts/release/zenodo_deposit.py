@@ -229,7 +229,7 @@ def open_new_version(parent_id: int, token: str, api: str) -> dict:
     Only ``actions/newversion`` adds a version underneath it.
     """
     parent = _request(f"{api}/deposit/depositions/{parent_id}", token)
-    open_draft = find_open_draft(parent, token)
+    open_draft = find_open_draft(parent, token, api)
     if open_draft is not None:
         print(f"draft deposition {open_draft['id']} RESUMED (a new version was already open)")
         return open_draft
@@ -249,27 +249,35 @@ def open_new_version(parent_id: int, token: str, api: str) -> dict:
     return _request(latest, token)
 
 
-def find_open_draft(parent: dict, token: str) -> dict | None:
-    """The parent's unsubmitted new-version draft, if one is already open.
+def find_open_draft(parent: dict, token: str, api: str) -> dict | None:
+    """The unsubmitted new-version draft of ``parent``'s concept, if one exists.
 
-    ``actions/newversion`` is **not idempotent**: with a draft already open it does
-    not hand it back, it refuses -- observed as
-    ``400 files.enabled: Please remove all files first`` (spectraMR run
-    33898806002, after a failed upload left run 33898113922's draft behind). So a
-    retry of a partially-failed deposit could never succeed without this.
+    Elected as the **single** way this is answered, replacing a walk of the parent's
+    ``links.latest_draft``.  That link is present on a published deposition
+    (confirmed in the failure diagnostic of spectraMR run 33899459907, which listed
+    it among 21 links) but does not resolve to the open draft, so following it found
+    nothing while a draft plainly existed and ``newversion`` kept refusing.  Two
+    ways to answer one question is how that stayed invisible; the listing endpoint
+    is authoritative and link-spelling-independent.
 
-    ``links.latest_draft`` also appears on a *published* deposition, pointing at
-    itself, so the ``submitted`` flag is what distinguishes an open draft from the
-    record it belongs to -- following the link alone would silently re-upload into
-    the published record.
+    More than one open draft **raises** rather than picking: uploading release
+    artefacts into the wrong draft is not recoverable once it is published.
     """
-    link = parent.get("links", {}).get("latest_draft")
-    if not link:
-        return None
-    draft = _request(link, token)
-    if draft.get("submitted") or draft.get("id") == parent.get("id"):
-        return None
-    return draft
+    concept = str(parent.get("conceptrecid") or "")
+    listing = _request(f"{api}/deposit/depositions?status=draft&all_versions=true&size=100", token)
+    drafts = [
+        d
+        for d in (listing if isinstance(listing, list) else [])
+        if not d.get("submitted") and str(d.get("conceptrecid") or "") == concept
+    ]
+    print(f"  open drafts under concept {concept}: {[d.get('id') for d in drafts] or 'none'}")
+    if len(drafts) > 1:
+        raise RuntimeError(
+            f"concept {concept} has {len(drafts)} open drafts "
+            f"({[d.get('id') for d in drafts]}). Refusing to guess which one this "
+            "release belongs to -- discard the ones that are not wanted first."
+        )
+    return drafts[0] if drafts else None
 
 
 def resolve_carry_forward(cli: list[str] | None, env: str | None) -> tuple[str, ...]:

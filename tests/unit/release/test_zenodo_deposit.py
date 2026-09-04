@@ -658,101 +658,123 @@ def test_a_bodyless_request_declares_no_content_type(mod, sent):
 
 
 class _FakeDepositions:
-    """An explicit id -> deposition map, so no case can be answered by accident.
+    """Models the deposition *store*: one parent plus whatever drafts exist.
 
-    The first version of this fake keyed on the URL and returned a *draft* shape
-    whenever the URL matched ``draft_link``.  In the real self-referential case the
-    parent's URL and its ``latest_draft`` link are the SAME string, so the parent
-    lookup was answered with the draft body, ``links`` came back without
-    ``latest_draft``, and two tests passed without ever reaching the branch they
-    name.  Planted violations found it: they went green.  Model the deposition, not
-    the request.
+    Two earlier fakes here were vacuous and planted violations found both.  The
+    first keyed on URL and answered the parent lookup with a draft body whenever
+    the two URLs coincided -- which is exactly the real self-referential case.  The
+    second modelled ``links.latest_draft`` as if it resolved to the open draft; the
+    live API disagreed (run 33899459907).  So this one models what the listing
+    endpoint returns, which is what the code now asks.
     """
 
     API = "https://zenodo.org/api/deposit/depositions"
 
-    def __init__(self, records: dict[int, dict]):
-        self.records = records
+    def __init__(self, parent: dict, drafts: list[dict] | None = None):
+        self.parent = parent
+        self.drafts = drafts or []
         self.calls: list[tuple[str, str]] = []
 
     def __call__(self, url, token, method="GET", payload=None, data=None):
         self.calls.append((method, url))
         if url.endswith("/actions/newversion"):
             return {"links": {"latest_draft": f"{self.API}/1000"}}
-        return self.records[int(url.rstrip("/").rsplit("/", 1)[1])]
+        if "?" in url:  # the listing endpoint
+            return self.drafts
+        if url.rstrip("/").rsplit("/", 1)[1] == str(self.parent["id"]):
+            return self.parent
+        return {"id": 1000, "submitted": False, "files": [], "links": {"bucket": "b"}}
 
     @property
     def posted_newversion(self) -> bool:
         return any(u.endswith("/actions/newversion") for _, u in self.calls)
 
+    @property
+    def listing_query(self) -> str:
+        return next((u for _, u in self.calls if "?" in u), "")
 
-def _published(rec_id: int, *, latest_draft: str | None = None, submitted: bool | None = True):
-    body = {"id": rec_id, "files": [], "links": {}}
-    if submitted is not None:
-        body["submitted"] = submitted
-    if latest_draft:
-        body["links"]["latest_draft"] = latest_draft
+
+def _parent(concept: str = "22291316") -> dict:
+    return {
+        "id": 22291317,
+        "submitted": True,
+        "state": "done",
+        "conceptrecid": concept,
+        "files": [],
+        "links": {"latest_draft": f"{_FakeDepositions.API}/22291317"},
+    }
+
+
+def _draft(did: int, concept: str = "22291316", **kw) -> dict:
+    body = {
+        "id": did,
+        "submitted": False,
+        "conceptrecid": concept,
+        "files": [],
+        "links": {"bucket": "b"},
+    }
+    body.update(kw)
     return body
 
 
 def test_an_open_draft_is_resumed_instead_of_asking_for_another(mod, monkeypatch):
-    api = _FakeDepositions.API
-    fake = _FakeDepositions(
-        {
-            22291317: _published(22291317, latest_draft=f"{api}/999"),
-            999: {"id": 999, "submitted": False, "files": [], "links": {"bucket": "b"}},
-        }
-    )
+    fake = _FakeDepositions(_parent(), [_draft(22308371)])
     monkeypatch.setattr(mod, "_request", fake)
-    assert mod.open_new_version(22291317, "tok", mod.LIVE_API)["id"] == 999
+    assert mod.open_new_version(22291317, "tok", mod.LIVE_API)["id"] == 22308371
     assert not fake.posted_newversion, "newversion refuses while a draft is open"
 
 
 def test_with_no_open_draft_a_new_version_is_requested(mod, monkeypatch):
-    fake = _FakeDepositions({22291317: _published(22291317), 1000: {"id": 1000}})
+    fake = _FakeDepositions(_parent(), [])
     monkeypatch.setattr(mod, "_request", fake)
     mod.open_new_version(22291317, "tok", mod.LIVE_API)
     assert fake.posted_newversion
 
 
-def test_a_submitted_deposition_is_not_mistaken_for_an_open_draft(mod, monkeypatch):
-    """`links.latest_draft` is present on a PUBLISHED record too, pointing at itself.
+def test_a_draft_of_a_different_concept_is_not_adopted(mod, monkeypatch):
+    """Other projects in the same Zenodo account also have open drafts."""
+    fake = _FakeDepositions(_parent(), [_draft(555, concept="99999999")])
+    monkeypatch.setattr(mod, "_request", fake)
+    mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert fake.posted_newversion, "a foreign draft must not be mistaken for ours"
 
-    Following it blindly uploads the new artefacts into the published record, which
-    cannot be undone.  Here the link and the parent URL are the same string, which
-    is what the real API returns.
-    """
-    api = _FakeDepositions.API
-    fake = _FakeDepositions(
-        {
-            22291317: _published(22291317, latest_draft=f"{api}/22291317", submitted=True),
-            1000: {"id": 1000},
-        }
-    )
+
+def test_a_submitted_deposition_in_the_listing_is_not_a_draft(mod, monkeypatch):
+    fake = _FakeDepositions(_parent(), [_draft(22308371, submitted=True)])
     monkeypatch.setattr(mod, "_request", fake)
     mod.open_new_version(22291317, "tok", mod.LIVE_API)
     assert fake.posted_newversion
 
 
-def test_a_self_referential_link_is_refused_even_with_no_submitted_flag(mod, monkeypatch):
-    """The id check, not the flag, is what covers a deposition that omits `submitted`."""
-    api = _FakeDepositions.API
-    fake = _FakeDepositions(
-        {
-            22291317: _published(22291317, latest_draft=f"{api}/22291317", submitted=None),
-            1000: {"id": 1000},
-        }
-    )
+def test_two_open_drafts_raise_rather_than_picking_one(mod, monkeypatch):
+    fake = _FakeDepositions(_parent(), [_draft(22308371), _draft(22308999)])
+    monkeypatch.setattr(mod, "_request", fake)
+    with pytest.raises(RuntimeError, match="2 open drafts"):
+        mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert not fake.posted_newversion
+
+
+def test_the_listing_asks_for_drafts_across_all_versions(mod, monkeypatch):
+    """`all_versions` is what makes an older concept's draft visible at all."""
+    fake = _FakeDepositions(_parent(), [])
     monkeypatch.setattr(mod, "_request", fake)
     mod.open_new_version(22291317, "tok", mod.LIVE_API)
-    assert fake.posted_newversion
+    assert "status=draft" in fake.listing_query
+    assert "all_versions=true" in fake.listing_query
 
 
 def test_a_refusal_reports_the_parent_state_it_decided_from(mod, monkeypatch, capsys):
     def boom(url, token, method="GET", payload=None, data=None):
         if url.endswith("/actions/newversion"):
             raise RuntimeError("400: files.enabled")
-        return {"id": 22291317, "submitted": True, "links": {"self": "s", "publish": "p"}}
+        if "?" in url:
+            return []
+        return {
+            "id": 22291317,
+            "submitted": True,
+            "conceptrecid": "22291316",
+            "links": {"self": "s", "publish": "p"},
+        }
 
     monkeypatch.setattr(mod, "_request", boom)
     with pytest.raises(RuntimeError):
