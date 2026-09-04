@@ -1,4 +1,4 @@
-.PHONY: format test test-all cov-unit cov-full test-coverage test-missing clean train predict eda eda-dry-run help install-topology env-show check-deps check-deps-imports test-precommit test-pr test-nightly test-release diagnostics diagnostics-fast skill-health reachable dev-health
+.PHONY: format test test-all cov-unit cov-full test-coverage test-missing clean train predict eda eda-dry-run help install-topology env-show check-deps check-deps-imports test-precommit test-pr test-nightly test-release diagnostics diagnostics-fast skill-health reachable dev-health gate
 
 # -----------------------------------------------------------------------------
 # Environment-variable loading.
@@ -25,7 +25,7 @@ export $(foreach pair,$(DOTENV_PAIRS),$(word 1,$(subst =, ,$(pair))))
 endif
 
 help:
-	@echo "MRIForge Development Commands"
+	@echo "spectraMR Development Commands"
 	@echo "============================"
 	@echo "make format      - Run code formatting (ruff check --fix + ruff format)"
 	@echo "make test        - Run test suite"
@@ -38,6 +38,7 @@ help:
 	@echo "make eda         - Dataset EDA: full per-dataset figures from data/manifests + databases/"
 	@echo "make eda-quick   - Dataset EDA with a small sample budget (2/dataset)"
 	@echo "make eda-dataset - Dataset EDA for a subset (DATASETS='id1 id2 ...')"
+	@echo "make gate        - Run the blocking PR lane locally (PASS/FAIL/UNRUNNABLE)"
 	@echo "make diagnostics      - Refresh diagnostics bundles (md summary + fresh forensics png)"
 	@echo "make diagnostics-fast - Refresh diagnostics bundles, logs/audit/metrics only (no forensics)"
 
@@ -66,7 +67,7 @@ cov-unit:
 		tests/physics/ tests/metrics/ \
 		tests/unit/physics/ tests/unit/metrics/ tests/unit/losses/ \
 		tests/unit/config/ tests/unit/transforms/ tests/unit/registration/ \
-		--cov=src/mriforge --cov-branch \
+		--cov=src/spectramr --cov-branch \
 		--cov-report=term-missing:skip-covered \
 		--cov-report=xml:tests_experiments/coverage_local.xml \
 		--cov-fail-under=0 \
@@ -74,12 +75,12 @@ cov-unit:
 
 # cov-full: comprehensive suite (slow, cluster/CI use)
 cov-full:
-	@$(VENV) python -m pytest tests/ --cov=src/mriforge --cov-branch \
+	@$(VENV) python -m pytest tests/ --cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_local.xml \
 		-q
 
 test-coverage:
-	python -m pytest --cov=src/mriforge --cov-branch \
+	python -m pytest --cov=src/spectramr --cov-branch \
 	       --cov-report=html:htmlcov \
 	       --cov-report=term-missing:skip-covered \
 	       --cov-report=xml:coverage.xml \
@@ -101,7 +102,7 @@ test-missing:
 test-precommit:
 	@$(VENV) python -m pytest \
 		-m "not gpu and not slow and not fuzz and not benchmark and not convergence and not differential" \
-		--cov=src/mriforge --cov-branch \
+		--cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_precommit.xml \
 		--cov-report=term-missing:skip-covered \
 		-q tests/
@@ -113,7 +114,7 @@ test-precommit:
 test-pr:
 	@$(VENV) python -m pytest \
 		-m "not fuzz and not benchmark" \
-		--cov=src/mriforge --cov-branch \
+		--cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_pr.xml \
 		--cov-report=term-missing:skip-covered \
 		-q tests/
@@ -124,7 +125,7 @@ test-nightly:
 	@$(VENV) python -m pytest \
 		-m "not benchmark" \
 		--hypothesis-seed=0 \
-		--cov=src/mriforge --cov-branch \
+		--cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_nightly.xml \
 		--cov-report=term-missing:skip-covered \
 		-q tests/
@@ -134,7 +135,7 @@ test-nightly:
 test-release:
 	@$(VENV) python -m pytest \
 		--hypothesis-seed=0 \
-		--cov=src/mriforge --cov-branch \
+		--cov=src/spectramr --cov-branch \
 		--cov-report=xml:tests_experiments/coverage_release.xml \
 		--cov-report=term-missing:skip-covered \
 		-q tests/
@@ -145,32 +146,54 @@ clean:
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 	rm -rf .pytest_cache .ruff_cache .mypy_cache
 
-CONFIG ?= experiments/active/dummy_gan.yaml
+# The default names a config that ships. `experiments/active/dummy_gan.yaml` was
+# the default and is NOT in the published tree, so `make train` failed on a fresh
+# clone with "no such file" -- the first command a new reader runs.
+CONFIG ?= experiments/templates/comprehensive_config_template.yaml
 train:
-	python -m mriforge.cli train --config $(CONFIG)
+	python -m spectramr.cli train --config $(CONFIG)
 
+# INPUT has no default that is true anywhere: `data/test/` existed in neither tree
+# (`data/` holds dataset payloads and is gitignored). Refuse rather than invent one
+# -- an inference run against a silently-wrong directory is worse than a stopped
+# one, and `predict` cannot guess what the reader wants reconstructed.
+INPUT ?=
 predict:
-	python -m mriforge.cli predict --config $(CONFIG) --model checkpoints/best.pt --input data/test/
+	@test -n "$(INPUT)" || { echo "make predict needs INPUT=<dir-or-file>, e.g. make predict INPUT=path/to/kspace/"; exit 2; }
+	python -m spectramr.cli predict --config $(CONFIG) --model $(MODEL) --input $(INPUT)
+
+# Where `predict` looks for weights. Was hardcoded to checkpoints/best.pt, which
+# the training loop only writes once a run has completed.
+MODEL ?= checkpoints/best.pt
 
 benchmark:
-	python -m mriforge.cli benchmark --suite standard
+	python -m spectramr.cli benchmark --suite standard
 
-# EDA Framework targets
+# EDA Framework targets.
+#
+# `run_eda.sh` is a research-tree script and is NOT in the published export, so
+# these four targets are advertised by `make help` in a tree that cannot run them.
+# The guard makes that a STATED absence rather than a bare "No such file or
+# directory": the reader learns the feature is not part of this distribution
+# instead of suspecting a broken checkout. Absent is a state to report, never one
+# to infer (non-negotiable 18).
+EDA := @test -x ./run_eda.sh || { echo "run_eda.sh is not part of the published spectraMR tree -- dataset EDA ships with the research repository only."; exit 2; }; ./run_eda.sh
+
 eda-dry-run:
 	@echo "Running dataset EDA dry-run (cards + coverage only)..."
-	./run_eda.sh --dry-run
+	$(EDA) --dry-run
 
 eda:
 	@echo "Running full dataset EDA..."
-	./run_eda.sh
+	$(EDA)
 
 eda-quick:
 	@echo "Running quick dataset EDA (2 samples/dataset)..."
-	./run_eda.sh --samples-per-dataset 2
+	$(EDA) --samples-per-dataset 2
 
 eda-dataset:
 	@echo "Running dataset EDA for a subset: make eda-dataset DATASETS='fastmri_knee_singlecoil m4raw_multicoil_train_kspace'"
-	./run_eda.sh --datasets $(DATASETS)
+	$(EDA) --datasets $(DATASETS)
 
 eda-clean:
 	@echo "Cleaning EDA results..."
@@ -202,25 +225,44 @@ diagnostics:
 # `--also-user` adds ~/.claude/skills; `--extra-root` is needed from a worktree,
 # where `.claude` being gitignored means only force-added skills are present.
 # From a worktree, add the primary checkout's skills, e.g.
-#   make skill-health SKILL_ROOTS="--extra-root /path/to/mriforge/.claude/skills"
+#   make skill-health SKILL_ROOTS="--extra-root /path/to/spectramr/.claude/skills"
 SKILL_ROOTS ?=
 skill-health:
+	@test -f scripts/maintenance/check_skill_health.py || { echo "check_skill_health.py is not part of the published spectraMR tree -- skill health ships with the research repository only."; exit 2; }
 	@$(PYTHON) scripts/maintenance/check_skill_health.py --also-user $(SKILL_ROOTS)
 
 # Registered is not reachable. Probes each registry twice in cold subprocesses --
 # documented entry point vs a full module walk -- and reports names that only
 # appear after the walk. Those cannot be resolved from a YAML config.
 # Slower (spawns interpreters); not part of the fast lane.
-# The probes inherit THIS interpreter, so they need one with mriforge installed.
+# The probes inherit THIS interpreter, so they need one with spectramr installed.
 # From a worktree (no local .venv) pass the primary checkout's:
-#   make reachable PYTHON=/path/to/mriforge/.venv/bin/python
+#   make reachable PYTHON=/path/to/spectramr/.venv/bin/python
 reachable:
 	@$(PYTHON) scripts/maintenance/prove_reachable.py --audit
 
 # The pre-PR sweep. Both halves take their own passthrough, so from a worktree:
-#   make dev-health PYTHON=/path/to/mriforge/.venv/bin/python \
-#       SKILL_ROOTS="--extra-root /path/to/mriforge/.claude/skills"
+#   make dev-health PYTHON=/path/to/spectramr/.venv/bin/python \
+#       SKILL_ROOTS="--extra-root /path/to/spectramr/.claude/skills"
 dev-health: skill-health reachable
+
+# The blocking PR lane, run by hand. Actions is disabled on the private research
+# repository -- not on the published one, where this lane fires on every PR -- so
+# `.github/workflows/pr-required.yml` describes a lane that never fires -- 8 jobs, 13
+# guard scripts and the architecture fitness functions with no execution path. This is
+# that path. It PARSES the workflow rather than restating it, so a job added there shows
+# up here with no edit (non-negotiable 17), and it reports PASS / FAIL / UNRUNNABLE
+# without ever folding the third into the first (non-negotiable 18).
+#
+#   make gate                       # the whole lane
+#   make gate GATE_ARGS="--list"    # what it derived, without running it
+#   make gate GATE_ARGS="--jobs guards,lint-diff --quiet"
+#
+# Exit 1 = something failed. Exit 2 = something could not run (a tool is absent); pass
+# --allow-unrunnable to state that you accept that gap rather than silently inheriting it.
+GATE_ARGS ?=
+gate:
+	@$(PYTHON) scripts/ci/run_required_locally.py $(GATE_ARGS)
 
 diagnostics-fast:
 	./scripts/ci/refresh_diagnostics.sh --no-forensics
@@ -275,10 +317,10 @@ test-mutation:
 		. .venv/bin/activate && \
 		mutmut run \
 			--paths-to-mutate \
-				src/mriforge/infrastructure/physics/fft_ops.py,\
-				src/mriforge/infrastructure/physics/data_consistency.py,\
-				src/mriforge/infrastructure/physics/coil_sensitivity.py,\
-				src/mriforge/infrastructure/validation/config_health_checker.py \
+				src/spectramr/infrastructure/physics/fft_ops.py,\
+				src/spectramr/infrastructure/physics/data_consistency.py,\
+				src/spectramr/infrastructure/physics/coil_sensitivity.py,\
+				src/spectramr/infrastructure/validation/config_health_checker.py \
 			--tests-dir tests/unit/physics/ \
 			--runner "python -m pytest -x -q --tb=no" && \
 		mutmut results; \

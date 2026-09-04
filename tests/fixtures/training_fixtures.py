@@ -12,19 +12,19 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.loss import (
+from spectramr.config.schemas.loss import (
     L1LossConfig,
     LossConfigSchema,
     ReconstructionLossesConfig,
     SSIMLossConfig,
 )
-from mriforge.infrastructure.di.di_container import DIContainer
-from mriforge.infrastructure.loss_audit import verify_startup_losses
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.infrastructure.di.di_container import DIContainer
+from spectramr.infrastructure.loss_audit import verify_startup_losses
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
-from mriforge.models.losses.composed_loss import ComposedLoss, WeightedLoss
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.composed_loss import ComposedLoss, WeightedLoss
+from spectramr.models.losses.registry import create_loss
 
 
 @dataclass

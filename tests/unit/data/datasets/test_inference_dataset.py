@@ -1,4 +1,4 @@
-"""Tests for :class:`mriforge.data.datasets.inference_dataset.InferenceDataset`.
+"""Tests for :class:`spectramr.data.datasets.inference_dataset.InferenceDataset`.
 
 Focus: the dataset serves EVERY slice of a 3-D volume as its own inference
 sample, rather than silently collapsing each volume to its central slice. An
@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.inference_dataset import InferenceDataset
+from spectramr.data.datasets.inference_dataset import InferenceDataset
 
 
 def _write_nifti(path: Path, array: np.ndarray) -> None:
@@ -106,7 +106,7 @@ class TestSliceCountProbeAvoidsDecoding:
     def test_npy_shape_comes_from_the_header(self, tmp_path) -> None:
         import numpy as np
 
-        from mriforge.data.datasets.inference_dataset import InferenceDataset
+        from spectramr.data.datasets.inference_dataset import InferenceDataset
 
         path = tmp_path / "vol.npy"
         np.save(path, np.zeros((7, 32, 32), dtype=np.float32))
@@ -115,7 +115,7 @@ class TestSliceCountProbeAvoidsDecoding:
     def test_h5_shape_comes_from_the_header(self, tmp_path) -> None:
         h5py = pytest.importorskip("h5py")
 
-        from mriforge.data.datasets.inference_dataset import InferenceDataset
+        from spectramr.data.datasets.inference_dataset import InferenceDataset
 
         path = tmp_path / "vol.h5"
         with h5py.File(path, "w") as f:
@@ -131,7 +131,7 @@ class TestSliceCountProbeAvoidsDecoding:
         """
         import numpy as np
 
-        from mriforge.data.datasets.inference_dataset import InferenceDataset
+        from spectramr.data.datasets.inference_dataset import InferenceDataset
 
         full = tmp_path / "full.npy"
         np.save(full, np.zeros((9, 64, 64), dtype=np.float32))
@@ -145,7 +145,7 @@ class TestSliceCountProbeAvoidsDecoding:
     def test_an_unprobeable_format_returns_none_not_a_guess(self, tmp_path) -> None:
         """``None`` routes the caller to a real decode. A guessed count would
         serve the wrong number of slices, silently."""
-        from mriforge.data.datasets.inference_dataset import InferenceDataset
+        from spectramr.data.datasets.inference_dataset import InferenceDataset
 
         path = tmp_path / "image.png"
         path.write_bytes(b"not really a png")
@@ -153,7 +153,7 @@ class TestSliceCountProbeAvoidsDecoding:
 
     def test_a_corrupt_header_is_not_fatal(self, tmp_path) -> None:
         """A probe must never be the thing that kills the run."""
-        from mriforge.data.datasets.inference_dataset import InferenceDataset
+        from spectramr.data.datasets.inference_dataset import InferenceDataset
 
         path = tmp_path / "bad.npy"
         path.write_bytes(b"\x00" * 32)

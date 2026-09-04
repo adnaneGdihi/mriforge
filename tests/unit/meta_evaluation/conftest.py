@@ -17,13 +17,13 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     MetricSet,
     SimulatorConfig,
     precompute_metric_values,
     run_simulator,
 )
-from mriforge.core.metrics.meta_evaluation.types import MetricEvaluationDataset
+from spectramr.core.metrics.meta_evaluation.types import MetricEvaluationDataset
 
 
 def _phantom(seed: int, size: int = 32) -> torch.Tensor:

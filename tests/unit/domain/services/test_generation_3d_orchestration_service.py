@@ -16,8 +16,8 @@ import logging
 
 import torch
 
-import mriforge.domain.services.generation_3d_orchestration_service as gen3d_module
-from mriforge.domain.services.generation_3d_orchestration_service import (
+import spectramr.domain.services.generation_3d_orchestration_service as gen3d_module
+from spectramr.domain.services.generation_3d_orchestration_service import (
     Generation3DOrchestrationService,
     GenerationMode,
     GenerationRequest,

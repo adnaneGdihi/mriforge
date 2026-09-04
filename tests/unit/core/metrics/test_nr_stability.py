@@ -9,7 +9,7 @@ CPU-only, fast, deterministic. Each metric is covered by:
   for an identity (perfectly equivariant) reconstructor; PEDU rises with
   acceleration for a null-space-filling reconstructor;
 * the **graceful-degradation path** — ``nan`` when the required
-  :class:`~mriforge.core.metrics.context.MetricContext` fields are absent.
+  :class:`~spectramr.core.metrics.context.MetricContext` fields are absent.
 
 The synthetic reconstructors:
 
@@ -30,20 +30,20 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.nr_stability import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.nr_stability import (
     ForwardModelEquivarianceDefect,
     LocalReconstructionJacobianSpectralNorm,
     PosteriorEnsembleDisagreementUncertainty,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.infrastructure.physics.fft_ops import (
     fft2c,
     ifft2c,
     sense_adjoint,
     sense_forward,
 )
-from mriforge.infrastructure.physics.sampling import MaskGenerator
+from spectramr.infrastructure.physics.sampling import MaskGenerator
 
 
 def _spearman_sign(xs: list[float], ys: list[float]) -> float:

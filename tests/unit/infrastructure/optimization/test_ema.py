@@ -15,7 +15,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.optimization.ema import ModelEma
+from spectramr.infrastructure.optimization.ema import ModelEma
 
 
 def _const_model(val: float) -> nn.Module:

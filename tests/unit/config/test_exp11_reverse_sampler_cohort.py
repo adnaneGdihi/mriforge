@@ -122,7 +122,7 @@ def test_allowed_modes_are_valid_reverse_modes() -> None:
     src = (
         Path(__file__).resolve().parents[3]
         / "src"
-        / "mriforge"
+        / "spectramr"
         / "models"
         / "diffusion"
         / "kspace_process.py"

@@ -1,6 +1,6 @@
 r"""Tests for the synthetic-marker estimator utilities.
 
-Targets ``mriforge.infrastructure.physics.marker_estimators``.
+Targets ``spectramr.infrastructure.physics.marker_estimators``.
 
 Categories:
 
@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.marker_estimators import (
+from spectramr.infrastructure.physics.marker_estimators import (
     ConformalResult,
     GreedyPlacementResult,
     conformal_coverage_check,

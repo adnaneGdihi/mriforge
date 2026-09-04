@@ -10,7 +10,7 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import KSpaceAccelerator
+from spectramr.infrastructure.physics.sampling import KSpaceAccelerator
 
 
 class _ConcreteAccelerator(KSpaceAccelerator):

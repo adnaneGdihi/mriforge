@@ -82,7 +82,7 @@ class TestIterPairedVolumes:
 
     def test_happy_path_yields_one_pair(self, paired_records):
         """Default (ordinal) pairing yields the single rank-0 pair."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = paired_records
         results = list(
@@ -94,7 +94,7 @@ class TestIterPairedVolumes:
 
     def test_paired_volume_attributes(self, paired_records):
         """subject_id-mode pairing: attributes + shared-id subject_id preserved."""
-        from mriforge.data.builders.mrixfields_baseline_eval import PairedVolume, iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import PairedVolume, iter_paired_volumes
 
         records, data_root = paired_records
         pv = next(
@@ -127,7 +127,7 @@ class TestIterPairedVolumes:
 
     def test_missing_target_skips_and_warns(self, tmp_path, caplog):
         """subject_id mode: subject with source but no target is skipped + warns."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records = [
             {
@@ -143,7 +143,7 @@ class TestIterPairedVolumes:
         ]
         data_root = _make_challenge_data(tmp_path, records)
 
-        with caplog.at_level(logging.WARNING, logger="mriforge.data.builders.mrixfields_baseline_eval"):
+        with caplog.at_level(logging.WARNING, logger="spectramr.data.builders.mrixfields_baseline_eval"):
             results = list(
                 iter_paired_volumes(
                     records, data_root, source_field=0.1, target_field=7.0, contrast="T1w",
@@ -156,7 +156,7 @@ class TestIterPairedVolumes:
 
     def test_missing_source_skips_and_warns(self, tmp_path, caplog):
         """subject_id mode: subject with target but no source is skipped + warns."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records = [
             {
@@ -172,7 +172,7 @@ class TestIterPairedVolumes:
         ]
         data_root = _make_challenge_data(tmp_path, records)
 
-        with caplog.at_level(logging.WARNING, logger="mriforge.data.builders.mrixfields_baseline_eval"):
+        with caplog.at_level(logging.WARNING, logger="spectramr.data.builders.mrixfields_baseline_eval"):
             results = list(
                 iter_paired_volumes(
                     records, data_root, source_field=0.1, target_field=7.0, contrast="T1w",
@@ -185,7 +185,7 @@ class TestIterPairedVolumes:
 
     def test_out_of_range_volume_still_yielded_with_warning(self, tmp_path, caplog):
         """A volume with values up to 5.0 is yielded but a range warning is logged."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         # Write one record with a volume that has values in [0, 5]
         records = [
@@ -224,7 +224,7 @@ class TestIterPairedVolumes:
         img_ok.header.set_zooms((1.0, 1.0, 1.0))
         nib.save(img_ok, str(tgt_path))
 
-        with caplog.at_level(logging.WARNING, logger="mriforge.data.builders.mrixfields_baseline_eval"):
+        with caplog.at_level(logging.WARNING, logger="spectramr.data.builders.mrixfields_baseline_eval"):
             results = list(
                 iter_paired_volumes(
                     records, data_root, source_field=0.1, target_field=7.0, contrast="T1w"
@@ -241,7 +241,7 @@ class TestIterPairedVolumes:
 
     def test_split_filter_excludes_other_splits(self, tmp_path):
         """Records from a different split prefix are excluded."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records = [
             {
@@ -278,7 +278,7 @@ class TestIterPairedVolumes:
 
     def test_contrast_filter_excludes_wrong_contrast(self, paired_records):
         """Records with a different contrast are excluded."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = paired_records
         results = list(
@@ -317,7 +317,7 @@ class TestOrdinalPairing:
 
     def test_ordinal_pairs_distinct_ids_by_rank(self, tmp_path):
         """Source ids {0001,0002} <-> target ids {0016,0017} pair 2 by rank."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(
             tmp_path, ["0001", "0002"], ["0016", "0017"]
@@ -337,7 +337,7 @@ class TestOrdinalPairing:
 
     def test_ordinal_default_is_ordinal(self, tmp_path):
         """Omitting `pairing` uses ordinal (distinct ids still pair — proves default)."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(
             tmp_path, ["0001", "0002"], ["0016", "0017"]
@@ -352,7 +352,7 @@ class TestOrdinalPairing:
 
     def test_subject_id_mode_yields_zero_on_distinct_ids(self, tmp_path):
         """subject_id pairing yields NOTHING on per-field ids (the C1 bug it fixes)."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(
             tmp_path, ["0001", "0002"], ["0016", "0017"]
@@ -367,13 +367,13 @@ class TestOrdinalPairing:
 
     def test_ordinal_count_mismatch_warns(self, tmp_path, caplog):
         """Unequal source/target counts pair min(len) and warn naming the counts."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(
             tmp_path, ["0001", "0002"], ["0016"]  # 2 source, 1 target
         )
         with caplog.at_level(
-            logging.WARNING, logger="mriforge.data.builders.mrixfields_baseline_eval"
+            logging.WARNING, logger="spectramr.data.builders.mrixfields_baseline_eval"
         ):
             results = list(
                 iter_paired_volumes(
@@ -390,7 +390,7 @@ class TestOrdinalPairing:
 
     def test_ordinal_empty_side_yields_nothing(self, tmp_path):
         """Empty target-field list yields nothing (no warning; runner guard catches)."""
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(
             tmp_path, ["0001", "0002"], []  # no target records
@@ -404,7 +404,7 @@ class TestOrdinalPairing:
         assert results == []
 
     def test_unknown_pairing_raises(self, tmp_path):
-        from mriforge.data.builders.mrixfields_baseline_eval import iter_paired_volumes
+        from spectramr.data.builders.mrixfields_baseline_eval import iter_paired_volumes
 
         records, data_root = self._cross_field_records(tmp_path, ["0001"], ["0016"])
         with pytest.raises(ValueError, match="pairing"):
@@ -419,7 +419,7 @@ class TestOrdinalPairing:
 class TestLoadManifestRecords:
 
     def test_load_manifest_records(self, tmp_path):
-        from mriforge.data.builders.mrixfields_baseline_eval import load_manifest_records
+        from spectramr.data.builders.mrixfields_baseline_eval import load_manifest_records
 
         manifest = {
             "records": [

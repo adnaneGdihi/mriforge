@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.mamba.cv_ssd import ComplexSSMLayer
+from spectramr.models.mamba.cv_ssd import ComplexSSMLayer
 
 
 def _reference_forward(module: ComplexSSMLayer, x: torch.Tensor) -> torch.Tensor:

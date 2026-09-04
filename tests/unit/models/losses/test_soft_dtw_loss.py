@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.soft_dtw_loss import SoftDTWLoss, _soft_dtw_distance
+from spectramr.models.losses.soft_dtw_loss import SoftDTWLoss, _soft_dtw_distance
 
 
 class TestSoftDTWDistance:
@@ -99,7 +99,7 @@ class TestSoftDTWLoss:
 
     def test_registration(self):
         """Soft-DTW loss should be in the loss registry."""
-        from mriforge.models.losses.registry import list_available
+        from spectramr.models.losses.registry import list_available
 
         available = list_available()
         assert "soft_dtw" in available

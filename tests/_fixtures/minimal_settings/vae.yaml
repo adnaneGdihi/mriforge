@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster before promoting to active/
+# UNVERIFIED: validate via spectramr audit on cluster before promoting to active/
 # Minimal settings fixture for the VAE family.
 # Covers strategy keys: vae, vqvae, disentangled_vae
 config_version: '1.0'
@@ -14,12 +14,12 @@ metadata:
     - vae
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.vae.VAETrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.vae.VAETrainingStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: reconstruction
-  output_dir: /tmp/mriforge_test/vae
+  output_dir: /tmp/spectramr_test/vae
   enable_mixed_precision: false
   enable_gradient_checkpointing: false
   physics_informed: false

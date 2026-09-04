@@ -1,4 +1,4 @@
-"""Unit tests for ``mriforge.data.builders.data_loader_builder``.
+"""Unit tests for ``spectramr.data.builders.data_loader_builder``.
 
 Focuses on ``wrap_with_distributed_sampler`` — the DDP rewrap helper that must
 faithfully carry over the source loader's settings (CLAUDE.md pitfall #11 keeps
@@ -12,7 +12,7 @@ from unittest.mock import patch
 import torch
 from torch.utils.data import DataLoader, Sampler, TensorDataset
 
-from mriforge.data.builders.data_loader_builder import wrap_with_distributed_sampler
+from spectramr.data.builders.data_loader_builder import wrap_with_distributed_sampler
 
 
 class _SequentialFakeSampler(Sampler):
@@ -77,7 +77,7 @@ def test_distributed_rewrap_preserves_core_settings() -> None:
 
 
 def test_dead_loader_trio_removed_from_module() -> None:
-    import mriforge.data.builders.data_loader_builder as mod
+    import spectramr.data.builders.data_loader_builder as mod
 
     for name in ("DataLoaderBuilder", "DataLoaderBuildConfig", "build_data_loaders"):
         assert not hasattr(mod, name), (
@@ -87,7 +87,7 @@ def test_dead_loader_trio_removed_from_module() -> None:
 
 
 def test_dead_loader_trio_removed_from_package_exports() -> None:
-    import mriforge.data.builders as pkg
+    import spectramr.data.builders as pkg
 
     for name in ("DataLoaderBuilder", "DataLoaderBuildConfig"):
         assert name not in pkg.__all__
@@ -95,7 +95,7 @@ def test_dead_loader_trio_removed_from_package_exports() -> None:
 
 
 def test_wrap_with_distributed_sampler_still_importable() -> None:
-    from mriforge.data.builders.data_loader_builder import (
+    from spectramr.data.builders.data_loader_builder import (
         wrap_with_distributed_sampler as fn,
     )
 

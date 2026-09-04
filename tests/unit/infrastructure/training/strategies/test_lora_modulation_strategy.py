@@ -7,11 +7,11 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.lora_modulation_strategy import (
+from spectramr.infrastructure.training.strategies.lora_modulation_strategy import (
     LoRAModulationStrategy,
     compute_lora_modulation_loss,
 )
-from mriforge.models.generators.lora_modulation_net import LoRAModulationNet
+from spectramr.models.generators.lora_modulation_net import LoRAModulationNet
 
 
 def _net() -> LoRAModulationNet:
@@ -83,7 +83,7 @@ def test_field_sensitivity_monitor_separates_arms() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(LoRAModulationStrategy)
@@ -129,8 +129,8 @@ def test_validation_forward_raises_without_both_fields() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "lora_modulation" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "lora_modulation" in TrainingStrategyConfigSchema.model_fields

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 def _checker() -> ConfigHealthChecker:

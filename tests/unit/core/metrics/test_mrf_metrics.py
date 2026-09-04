@@ -1,6 +1,6 @@
 """Coverage tests for the MRF quantitative metrics (WS-2).
 
-Targets :mod:`mriforge.core.metrics.quantitative.mrf_metrics`:
+Targets :mod:`spectramr.core.metrics.quantitative.mrf_metrics`:
 
 * :class:`GeodesicMRFParameterError` — chart-space distance on the
   5-D Bloch manifold; identical input -> 0, distinct -> positive/finite,
@@ -20,7 +20,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative.mrf_metrics import (
+from spectramr.core.metrics.quantitative.mrf_metrics import (
     CosinePreservationScore,
     CrossScannerT1T2Concordance,
     GeodesicMRFParameterError,

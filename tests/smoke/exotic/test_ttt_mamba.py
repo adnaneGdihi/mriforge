@@ -5,7 +5,7 @@ Unit tests for TTT-Mamba.
 import pytest
 import torch
 
-from mriforge.models.edge.ttt_mamba import TTTMambaBlock
+from spectramr.models.edge.ttt_mamba import TTTMambaBlock
 
 
 @pytest.fixture

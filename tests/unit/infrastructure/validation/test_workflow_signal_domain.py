@@ -12,10 +12,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
-from mriforge.models.capabilities import ModelCapabilities
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.models.capabilities import ModelCapabilities
 
 
 def _check(
@@ -47,7 +47,7 @@ def _check(
             input_type=None,
         ),
     )
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     caps = (
         ModelCapabilities(input_domain=input_domain)
@@ -135,7 +135,7 @@ def test_it_checks_the_input_domain_not_the_output() -> None:
     PASS on the spectroscopy regime.
     """
     checker = ConfigHealthChecker.__new__(ConfigHealthChecker)
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     MODEL_REGISTRY["_mrs_probe"] = {
         "capabilities": ModelCapabilities(
@@ -181,8 +181,8 @@ def test_spectrum_is_a_real_domain_literal() -> None:
     """
     from typing import get_args
 
-    from mriforge.domain.workflows import WORKFLOW_PROFILES
-    from mriforge.models.capabilities import Domain
+    from spectramr.domain.workflows import WORKFLOW_PROFILES
+    from spectramr.models.capabilities import Domain
 
     declared = WORKFLOW_PROFILES[Regime.SPECTROSCOPIC].signal_domains
     assert declared == frozenset({"spectrum"})
@@ -201,8 +201,8 @@ def test_every_profile_signal_domain_is_a_real_domain_literal() -> None:
     """
     from typing import get_args
 
-    from mriforge.domain.workflows import WORKFLOW_PROFILES
-    from mriforge.models.capabilities import Domain
+    from spectramr.domain.workflows import WORKFLOW_PROFILES
+    from spectramr.models.capabilities import Domain
 
     known = set(get_args(Domain))
     for regime, profile in WORKFLOW_PROFILES.items():

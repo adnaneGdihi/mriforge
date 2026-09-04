@@ -40,7 +40,7 @@ def _anatomy(b: int, c: int, h: int, w: int, seed: int = 0) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_digital_twin_import():
     """CornerFiducialEmbedder imports cleanly."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(32, 32), marker_type="gaussian")
     assert emb is not None
@@ -49,7 +49,7 @@ def test_canary_digital_twin_import():
 @pytest.mark.physics
 def test_canary_fiducial_embedder_gaussian():
     """Gaussian embedder forward returns correct shapes."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(32, 32), marker_type="gaussian")
     anatomy = _anatomy(1, 1, 32, 32)
@@ -61,7 +61,7 @@ def test_canary_fiducial_embedder_gaussian():
 @pytest.mark.physics
 def test_canary_fiducial_embedder_cross():
     """Cross embedder forward returns correct shapes."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(32, 32), marker_type="cross")
     anatomy = _anatomy(1, 1, 32, 32)
@@ -72,7 +72,7 @@ def test_canary_fiducial_embedder_cross():
 @pytest.mark.physics
 def test_canary_fiducial_embedder_none():
     """'none' marker type: joint image == anatomy."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(16, 16), marker_type="none")
     anatomy = _anatomy(1, 1, 16, 16)
@@ -98,7 +98,7 @@ def test_canary_fiducial_embedder_none():
     ids=["b1c1-sq", "b2c1-64", "b1c2-rect", "b2c4-multi"],
 )
 def test_fiducial_embedder_shape(marker_type, b, c, h, w):
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(h, w), marker_type=marker_type)
     anatomy = _anatomy(b, c, h, w)
@@ -111,7 +111,7 @@ def test_fiducial_embedder_shape(marker_type, b, c, h, w):
 @pytest.mark.parametrize("marker_type", ["gaussian", "cross"])
 def test_fiducial_embedder_marker_adds_signal(marker_type):
     """Joint image should differ from anatomy (markers were added)."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(32, 32), marker_type=marker_type)
     anatomy = _anatomy(1, 1, 32, 32, seed=1)
@@ -134,7 +134,7 @@ def test_fiducial_embedder_marker_adds_signal(marker_type):
     ids=[shape_id((b, c, h, w)) for (b, c, h, w) in SHAPE_MATRIX_2D if h <= 128 and w <= 128],
 )
 def test_fiducial_embedder_shape_matrix(b, c, h, w):
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(h, w), marker_type="gaussian")
     anatomy = _anatomy(b, c, h, w)
@@ -151,7 +151,7 @@ def test_fiducial_embedder_shape_matrix(b, c, h, w):
 def test_fiducial_embedder_edge_zero_anatomy():
     """Zero anatomy: marker prior should still be non-zero (anatomy=0 → zero scale,
     but the prior is returned independently)."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(im_size=(32, 32), marker_type="gaussian")
     anatomy = torch.zeros(1, 1, 32, 32, dtype=torch.complex64)
@@ -163,7 +163,7 @@ def test_fiducial_embedder_edge_zero_anatomy():
 @pytest.mark.physics
 def test_fiducial_embedder_edge_multi_contrast_per_channel():
     """per_channel_marker_prior=True: prior has per-channel shape."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     emb = CornerFiducialEmbedder(
         im_size=(32, 32), marker_type="gaussian", per_channel_marker_prior=True
@@ -176,7 +176,7 @@ def test_fiducial_embedder_edge_multi_contrast_per_channel():
 @pytest.mark.physics
 def test_fiducial_embedder_edge_with_coil_sensitivities():
     """Multi-coil path: providing coil_sensitivities runs without error."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     b, c, h, w = 1, 4, 32, 32
     emb = CornerFiducialEmbedder(im_size=(h, w), marker_type="gaussian")
@@ -194,7 +194,7 @@ def test_fiducial_embedder_edge_with_coil_sensitivities():
 @pytest.mark.physics
 def test_fiducial_embedder_raises_invalid_marker_type():
     """CornerFiducialEmbedder must raise ValueError for unknown marker_type."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
+    from spectramr.infrastructure.physics.digital_twin_simulator import CornerFiducialEmbedder
 
     with pytest.raises(ValueError, match="marker_type"):
         CornerFiducialEmbedder(im_size=(32, 32), marker_type="polygon")
@@ -216,7 +216,7 @@ def test_from_config_type_hints_resolve():
     """
     import typing
 
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 
@@ -231,7 +231,7 @@ def test_progressive_degradations_rejects_unknown_entry():
     Per pitfall #15: an exposed knob (degradation feature name) must be
     validated against the canonical set the forward pass dispatches on.
     """
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 
@@ -242,7 +242,7 @@ def test_progressive_degradations_rejects_unknown_entry():
 @pytest.mark.physics
 def test_degradation_ranges_rejects_unknown_key():
     """A typo'd degradation_ranges key must RAISE (pitfall #15)."""
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 
@@ -257,7 +257,7 @@ def test_canonical_degradation_keys_accepted():
     Regression guard: validation must NOT reject any key actually consumed by
     ``_get_effective_cf`` call sites.
     """
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 

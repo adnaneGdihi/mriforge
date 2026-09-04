@@ -17,10 +17,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.enums import Maturity, Regime
-from mriforge.domain.workflows import WORKFLOW_PROFILES
-from mriforge.domain.workflows.profiles import WorkflowProfile
-from mriforge.infrastructure.validation.workflow_ledger import (
+from spectramr.config.schemas.enums import Maturity, Regime
+from spectramr.domain.workflows import WORKFLOW_PROFILES
+from spectramr.domain.workflows.profiles import WorkflowProfile
+from spectramr.infrastructure.validation.workflow_ledger import (
     forward_model_declared,
     losses_tagged,
     metrics_tagged,
@@ -72,7 +72,7 @@ def test_signal_model_regime_matches_the_profile(regime: Regime) -> None:
     rule, and mean nothing — the registry check alone cannot catch that, because
     the key is perfectly real.
     """
-    from mriforge.infrastructure.physics.signal_models.registry import (
+    from spectramr.infrastructure.physics.signal_models.registry import (
         get_signal_model,
     )
 
@@ -199,7 +199,7 @@ def test_declared_tasks_are_supported_by_the_regime(regime: Regime) -> None:
     ``supported_tasks`` does not include — so tagging it would have asserted a
     regime × task pairing the profile itself denies.
     """
-    from mriforge.infrastructure.validation.workflow_ledger import (
+    from spectramr.infrastructure.validation.workflow_ledger import (
         _declared_workflows,
         _iter_strategy_classes,
     )
@@ -391,8 +391,8 @@ def test_perfusion_config_default_matches_the_profiles_declared_signal_model() -
     defaults to the profile's declared model and the strategy resolves it
     through ``get_signal_model``, so this pins the two ends together.
     """
-    from mriforge.config.schemas.data import PerfusionConfigSchema
-    from mriforge.infrastructure.physics.signal_models.registry import get_signal_model
+    from spectramr.config.schemas.data import PerfusionConfigSchema
+    from spectramr.infrastructure.physics.signal_models.registry import get_signal_model
 
     declared = WORKFLOW_PROFILES[Regime.PERFUSION].signal_model
     assert PerfusionConfigSchema().kinetic_model == declared, (
@@ -441,9 +441,9 @@ def _profile_consumer_modules() -> list[pathlib.Path]:
     ``.modality`` across ``src/`` hits the EDA catalogue's unrelated
     ``entry.modality`` and would report the field as read.
     """
-    import mriforge
+    import spectramr
 
-    src = pathlib.Path(mriforge.__file__).resolve().parent
+    src = pathlib.Path(spectramr.__file__).resolve().parent
     definition_site = src / "domain" / "workflows" / "profiles.py"
     consumers = []
     for path in sorted(src.rglob("*.py")):
@@ -591,10 +591,10 @@ def test_qspace_strategy_reads_the_directions_key_the_data_layer_writes() -> Non
     and a source check that the strategy reads that same key and no longer returns
     base on a missing one.
     """
-    import mriforge
-    from mriforge.infrastructure.training.strategies import qspace_diffusion_strategy
+    import spectramr
+    from spectramr.infrastructure.training.strategies import qspace_diffusion_strategy
 
-    data_root = pathlib.Path(mriforge.__file__).resolve().parent / "data"
+    data_root = pathlib.Path(spectramr.__file__).resolve().parent / "data"
     written: set[str] = set()
     for path in sorted(data_root.rglob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -641,7 +641,7 @@ def test_required_axes_guard_skips_unannotated_but_rejects_annotated() -> None:
     Uses a deliberately non-existent dataset_type rather than a real one, so this
     keeps testing the polarity rather than today's contents of the table.
     """
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 

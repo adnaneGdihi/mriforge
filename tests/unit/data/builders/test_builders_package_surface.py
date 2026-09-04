@@ -1,4 +1,4 @@
-"""What `mriforge.data.builders` exports after the unrunnable lineage was cut.
+"""What `spectramr.data.builders` exports after the unrunnable lineage was cut.
 
 Unit 6a. `DatasetBuilder(ABC)` / `DatasetBuilderRegistry` / `DatasetBuildConfig`
 / `validation.py` were an abstract-base + registry dataset-creation design that
@@ -22,7 +22,7 @@ def test_no_export_is_dangling() -> None:
     `validate_dataset_config` was left in `__all__` after its import went; it
     would have raised only on `from ... import *`, which nothing does.
     """
-    import mriforge.data.builders as builders
+    import spectramr.data.builders as builders
 
     missing = [name for name in builders.__all__ if not hasattr(builders, name)]
     assert missing == [], f"__all__ names nothing defines: {missing}"
@@ -31,10 +31,10 @@ def test_no_export_is_dangling() -> None:
 @pytest.mark.parametrize(
     "module",
     [
-        "mriforge.data.builders.dataset_builder",
-        "mriforge.data.builders.validation",
-        "mriforge.data.builders.config",
-        "mriforge.data.augmentation_interface",
+        "spectramr.data.builders.dataset_builder",
+        "spectramr.data.builders.validation",
+        "spectramr.data.builders.config",
+        "spectramr.data.augmentation_interface",
     ],
 )
 def test_the_unrunnable_lineage_is_gone(module: str) -> None:
@@ -50,13 +50,13 @@ def test_the_live_substitutes_are_reachable() -> None:
     check — written deliberately because the deleted one used a raw
     `Path().exists()` that disagreed with how the loader resolves roots.
     """
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
     assert hasattr(DatasetInstantiator, "create_datasets")
 
     import inspect
 
-    from mriforge import bootstrap
+    from spectramr import bootstrap
 
     assert "_validate_data_availability_at_startup" in dir(bootstrap)
     assert "PathResolver.resolve" in inspect.getsource(
@@ -68,6 +68,6 @@ def test_the_surviving_validate_name_is_a_different_function() -> None:
     """`validate_dataset_config` also exists in `config/schemas/validator_registry`
     — dict-based, live, and unrelated. The deleted one took a
     `DatasetBuildConfig` and shared only the name."""
-    from mriforge.config.schemas.validator_registry import _validate_dataset_config
+    from spectramr.config.schemas.validator_registry import _validate_dataset_config
 
     assert _validate_dataset_config({"data": {"patch_size": 16}}) == []

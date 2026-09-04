@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.domain.training import TrainingStrategy
+from spectramr.domain.training import TrainingStrategy
 
 
 def test_training_strategy_is_abstract() -> None:

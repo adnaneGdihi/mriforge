@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def check_adjoint(A, A_adjoint, x_shape, y_shape, dtype=torch.complex64, device="cpu", tol=1e-5):
@@ -50,7 +50,7 @@ def test_sense_adjoint_bridge():
     is conjugation; here we check the full SENSE operator numerically:
     ``<A x, y> = <x, A^H y>``.
     """
-    from mriforge.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
+    from spectramr.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
 
     torch.manual_seed(0)
     B, C, H, W = 1, 4, 16, 16

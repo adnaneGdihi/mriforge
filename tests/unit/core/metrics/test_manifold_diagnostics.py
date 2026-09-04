@@ -13,7 +13,7 @@ import math
 import numpy as np
 import pytest
 
-from mriforge.core.metrics.manifold_diagnostics import (
+from spectramr.core.metrics.manifold_diagnostics import (
     certified_error_bound,
     estimate_reach,
     manifold_departure,

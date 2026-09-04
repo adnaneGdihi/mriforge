@@ -38,15 +38,15 @@ from pydantic import BaseModel
 
 
 def _schema_field_names() -> set[str]:
-    """Every field name declared anywhere under ``mriforge.config``."""
-    import mriforge.config.schemas as schemas_pkg
+    """Every field name declared anywhere under ``spectramr.config``."""
+    import spectramr.config.schemas as schemas_pkg
 
     for mod in pkgutil.walk_packages(schemas_pkg.__path__, schemas_pkg.__name__ + "."):
         try:
             importlib.import_module(mod.name)
         except Exception:  # pragma: no cover - optional extras
             continue
-    importlib.import_module("mriforge.config.settings")
+    importlib.import_module("spectramr.config.settings")
 
     seen: set[type] = set()
     stack: list[type] = [BaseModel]
@@ -57,7 +57,7 @@ def _schema_field_names() -> set[str]:
                 stack.append(sub)
     names: set[str] = set()
     for cls in seen:
-        if cls.__module__.startswith("mriforge.config"):
+        if cls.__module__.startswith("spectramr.config"):
             names |= set(cls.model_fields)
     return names
 

@@ -19,7 +19,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.calibration import (  # noqa: E402
+from spectramr.infrastructure.calibration import (  # noqa: E402
     ConformalCalibrator,
     resolve_calibration_score,
 )

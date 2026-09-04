@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.vendor_prompt_embedding import VendorPromptEmbedding
+from spectramr.models.blocks.vendor_prompt_embedding import VendorPromptEmbedding
 
 
 def test_zero_init_means_identity_at_construction() -> None:
@@ -74,8 +74,8 @@ def test_rejects_zero_vendor_cohort() -> None:
 
 def test_audit_check_skips_when_vendor_map_empty() -> None:
     """The audit must be a no-op when vendor conditioning is not enabled."""
-    from mriforge.config.settings import TrainingSettings  # type: ignore
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings  # type: ignore
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -97,7 +97,7 @@ def test_audit_check_skips_when_vendor_map_empty() -> None:
 
 def test_audit_check_rejects_mismatched_cardinality() -> None:
     """vendor_map and n_vendors must agree when both are set."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.ulf_map_strategy import (
+from spectramr.infrastructure.training.strategies.ulf_map_strategy import (
     _fft2c_dc_index,
     _lowpass_otf,
     ulf_degrade,
@@ -21,7 +21,7 @@ def test_lowpass_otf_peaks_on_fft2c_dc_and_is_real_for_even(n: int) -> None:
     # must stay real (the .real cast was silently discarding up to ~47% imag energy).
     import torch as _t
 
-    from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
     dc = _fft2c_dc_index(n, n, _t.device("cpu"))
     otf = _lowpass_otf(n, n, 0.3, _t.device("cpu"), _t.float32)[0, 0]
@@ -38,7 +38,7 @@ def test_lowpass_otf_centered_on_odd_sizes(n: int) -> None:
     # still place the peak on DC (residual imag is tiny vs the ~0.9 pre-fix bug).
     import torch as _t
 
-    from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
     dc = _fft2c_dc_index(n, n, _t.device("cpu"))
     otf = _lowpass_otf(n, n, 0.3, _t.device("cpu"), _t.float32)[0, 0]
@@ -62,7 +62,7 @@ def test_ulf_sigma_increases_as_field_drops() -> None:
 def test_forward_operator_is_a_nontrivial_lowpass() -> None:
     # A is a genuine field-dependent low-pass (NOT identity): it blurs and reduces
     # high-frequency energy. (Fixes the review's A=identity facade finding.)
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     x = torch.rand(1, 1, 16, 16)
     ax = ulf_degrade(x, blur_cutoff=0.3)
@@ -87,7 +87,7 @@ def test_high_field_data_consistency() -> None:
 def test_data_term_constrains_passband() -> None:
     # With a real low-pass A + high data weight + identity prior, the passband (DC)
     # of the output tracks the measurement (H=1 at DC -> exact data consistency).
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     y = torch.rand(1, 1, 16, 16)
     out = ulf_map_solve(
@@ -132,7 +132,7 @@ def test_field_knob_changes_solution() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "ulf_map" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
 
@@ -142,7 +142,7 @@ def test_validation_forward_runs_map() -> None:
     # bare instance with a stub denoiser and the ulf_map config knobs.
     import types
 
-    from mriforge.infrastructure.training.strategies.ulf_map_strategy import UlfMapStrategy
+    from spectramr.infrastructure.training.strategies.ulf_map_strategy import UlfMapStrategy
 
     strat = object.__new__(UlfMapStrategy)
     strat._denoiser = lambda x: x  # identity prox
@@ -157,8 +157,8 @@ def test_validation_forward_runs_map() -> None:
 
 
 def test_config_mounted_and_frozen() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.config.schemas.training.ulf_map import UlfMapConfig
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.ulf_map import UlfMapConfig
 
     assert "ulf_map" in TrainingStrategyConfigSchema.model_fields
     c = UlfMapConfig()

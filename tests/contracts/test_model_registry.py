@@ -47,8 +47,8 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.models.capabilities import ModelCapabilities
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.capabilities import ModelCapabilities
+from spectramr.models.registry import MODEL_REGISTRY
 from tests.utils.minimal_builders import build_minimal_model, expected_output_ok, phantom_for
 from tests.utils.registry_iterators import all_models
 
@@ -163,7 +163,7 @@ def test_model_registry_capabilities_valid_values(name: str) -> None:
     - accepts_complex / expects_real_imag_interleaved / requires_paired_data,
       if set, are booleans.
     """
-    from mriforge.models.capabilities import Domain
+    from spectramr.models.capabilities import Domain
 
     entry = MODEL_REGISTRY[name]
     caps: ModelCapabilities = entry["capabilities"]

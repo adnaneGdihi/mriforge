@@ -19,21 +19,21 @@ from __future__ import annotations
 class TestOptimizerTypeIsTheConfigEnum:
     def test_is_the_same_object_as_the_config_layer_enum(self) -> None:
         """Identity, not equality — a re-export cannot drift, a copy can."""
-        from mriforge.config.schemas.enums import OptimizerType as CanonicalOptimizerType
-        from mriforge.domain.entities.data.types import OptimizerType
+        from spectramr.config.schemas.enums import OptimizerType as CanonicalOptimizerType
+        from spectramr.domain.entities.data.types import OptimizerType
 
         assert OptimizerType is CanonicalOptimizerType
 
     def test_is_still_exported(self) -> None:
         """The public alias survives the collapse (it is in ``__all__``)."""
-        from mriforge.domain.entities.data import types
+        from spectramr.domain.entities.data import types
 
         assert "OptimizerType" in types.__all__
         assert getattr(types, "OptimizerType", None) is not None
 
     def test_carries_the_full_vocabulary_not_the_old_three(self) -> None:
         """The old Literal advertised 3 names; the enum advertises the real set."""
-        from mriforge.domain.entities.data.types import OptimizerType
+        from spectramr.domain.entities.data.types import OptimizerType
 
         values = {m.value for m in OptimizerType}
         # The three the old Literal knew about, plus names it could never express.
@@ -50,7 +50,7 @@ class TestOptimizerTypeIsTheConfigEnum:
         """
         import inspect
 
-        from mriforge.domain.entities.data import types
+        from spectramr.domain.entities.data import types
 
         src = inspect.getsource(types)
         assert "OptimizerType = Literal[" not in src, (

@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.breakthrough_geometric_generators import (
+from spectramr.models.generators.breakthrough_geometric_generators import (
     HeisenbergReconUNet,
     HyperbolicCineUNet,
 )
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.registry import MODEL_REGISTRY
 
 _GEOM_GENERATORS = [
     ("hyperbolic_cine_unet", HyperbolicCineUNet),

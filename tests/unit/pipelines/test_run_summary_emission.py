@@ -37,7 +37,7 @@ from tests.utils.config_block_stub import block_stub
 
 def test_run_summary_stamp_round_trip(tmp_path: Path) -> None:
     """``_emit_run_summary`` writes a JSON with the expected keys."""
-    from mriforge.pipelines.train import _emit_run_summary
+    from spectramr.pipelines.train import _emit_run_summary
 
     logger_stub = SimpleNamespace(
         info=lambda *a, **k: None,
@@ -46,16 +46,14 @@ def test_run_summary_stamp_round_trip(tmp_path: Path) -> None:
     config = SimpleNamespace(
         logging=block_stub("logging", run_name="exp_smoke"),
         training=SimpleNamespace(
-            strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
+            strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
         ),
         model=SimpleNamespace(model_type="latent_diffusion_residual_head"),
         metadata=None,
     )
     result = {"success": True, "best_metrics": {"psnr": 32.4}}
 
-    _emit_run_summary(
-        config, run_dir=tmp_path, result=result, seed=42, logger_=logger_stub
-    )
+    _emit_run_summary(config, run_dir=tmp_path, result=result, seed=42, logger_=logger_stub)
     path = tmp_path / "run_summary.json"
     assert path.exists(), "run_summary.json must land in the run output dir"
 
@@ -67,7 +65,7 @@ def test_run_summary_stamp_round_trip(tmp_path: Path) -> None:
     assert parsed["model_type"] == "latent_diffusion_residual_head"
     assert parsed["best_metrics"] == {"psnr": 32.4}
     assert parsed["error"] is None
-    assert parsed["launch"] is None  # not started via `mriforge launch` → no-op
+    assert parsed["launch"] is None  # not started via `spectramr launch` → no-op
 
 
 def test_run_summary_folds_in_provenance_and_timing(tmp_path: Path) -> None:
@@ -75,11 +73,9 @@ def test_run_summary_folds_in_provenance_and_timing(tmp_path: Path) -> None:
     traceability record: run_id, git, host, config hash, and wall-clock."""
     from datetime import datetime
 
-    from mriforge.pipelines.train import _emit_run_summary
+    from spectramr.pipelines.train import _emit_run_summary
 
-    logger_stub = SimpleNamespace(
-        info=lambda *a, **k: None, warning=lambda *a, **k: None
-    )
+    logger_stub = SimpleNamespace(info=lambda *a, **k: None, warning=lambda *a, **k: None)
     config = SimpleNamespace(
         logging=block_stub("logging", run_name="exp_smoke"),
         training=SimpleNamespace(strategy_class="X.DiffusionTrainingStrategy"),
@@ -141,11 +137,9 @@ def test_run_summary_stamps_node_hardware(tmp_path: Path) -> None:
     """``iterations_per_sec`` is not comparable across arms without the GPU
     count/type and the cores/RAM the run actually had, so the footer carries a
     compact census of ``env.node`` (2026-07-25)."""
-    from mriforge.pipelines.train import _emit_run_summary
+    from spectramr.pipelines.train import _emit_run_summary
 
-    logger_stub = SimpleNamespace(
-        info=lambda *a, **k: None, warning=lambda *a, **k: None
-    )
+    logger_stub = SimpleNamespace(info=lambda *a, **k: None, warning=lambda *a, **k: None)
     config = SimpleNamespace(
         logging=block_stub("logging", run_name="exp_smoke"),
         training=SimpleNamespace(strategy_class="X.DiffusionTrainingStrategy"),
@@ -195,7 +189,8 @@ def test_run_summary_stamps_node_hardware(tmp_path: Path) -> None:
 
 def test_run_summary_records_failure(tmp_path: Path) -> None:
     """A failed-run result must surface the error string in the summary."""
-    from mriforge.pipelines.train import _emit_run_summary
+    from spectramr.config.schemas.base import ExperimentMetadataSchema
+    from spectramr.pipelines.train import _emit_run_summary
 
     logger_stub = SimpleNamespace(
         info=lambda *a, **k: None,
@@ -212,13 +207,11 @@ def test_run_summary_records_failure(tmp_path: Path) -> None:
         # resulting AttributeError was swallowed into "no summary file written"
         # rather than a visible error.
         model=SimpleNamespace(model_type="unet"),
-        metadata={"name": "fallback_name"},
+        metadata=ExperimentMetadataSchema(name="fallback_name"),
     )
     result = {"success": False, "error": "boom"}
 
-    _emit_run_summary(
-        config, run_dir=tmp_path, result=result, seed=0, logger_=logger_stub
-    )
+    _emit_run_summary(config, run_dir=tmp_path, result=result, seed=0, logger_=logger_stub)
     parsed = json.loads((tmp_path / "run_summary.json").read_text())
     assert parsed["run_name"] == "fallback_name"
     assert parsed["success"] is False
@@ -231,7 +224,7 @@ def test_run_summary_soft_fails_on_bad_dir(tmp_path: Path) -> None:
     Point the helper at a file rather than a directory; ``mkdir`` will
     fail but the helper must swallow the exception with a warning.
     """
-    from mriforge.pipelines.train import _emit_run_summary
+    from spectramr.pipelines.train import _emit_run_summary
 
     warnings: list[str] = []
 

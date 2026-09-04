@@ -21,12 +21,12 @@ import yaml
 # file. Import each name from the module that defines it; a re-export from
 # hpo_search_spaces would make that module a second owner of names it no longer
 # has (non-negotiable 17).
-from mriforge.infrastructure.hpo.dotted_override import (
+from spectramr.infrastructure.hpo.dotted_override import (
     _ListSelector,
     _tokenize_path,
     apply_dotted_override,
 )
-from mriforge.pipelines.hpo_search_spaces import (
+from spectramr.pipelines.hpo_search_spaces import (
     PRESETS,
     Distribution,
     SearchSpace,

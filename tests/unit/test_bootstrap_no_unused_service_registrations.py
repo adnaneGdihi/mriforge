@@ -28,11 +28,11 @@ BANNED_REGISTRATIONS = (
 def _bootstrap_source() -> str:
     """Read bootstrap.py via its imported module path.
 
-    The old hardcoded ``src/bootstrap.py`` went stale in the src→mriforge
+    The old hardcoded ``src/bootstrap.py`` went stale in the src→spectramr
     refactor and this guard silently failed on FileNotFoundError ever since
     (repaired 2026-07-01 — same fix as the sibling infer-kwargs guard).
     """
-    import mriforge.bootstrap as bootstrap_mod
+    import spectramr.bootstrap as bootstrap_mod
 
     return Path(bootstrap_mod.__file__).read_text(encoding="utf-8")
 
@@ -55,7 +55,7 @@ def test_data_availability_check_has_no_silent_importerror_arm() -> None:
     ``except ImportError: skip validation`` arm — no import remained inside
     the try, and silently skipping validation is pitfall #9. Neither may
     return."""
-    import mriforge.bootstrap as bootstrap_mod
+    import spectramr.bootstrap as bootstrap_mod
 
     src = inspect.getsource(bootstrap_mod._validate_data_availability_at_startup)
     assert "except ImportError" not in src, (

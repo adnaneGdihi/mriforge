@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.infrastructure.reporting.metadata``.
+"""Tests for ``spectramr.infrastructure.reporting.metadata``.
 
 The paired test file this module never had — which is part of why ``_REPO_ROOT``
 could be off by one level for months (#721).
@@ -17,14 +17,14 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.reporting import metadata as meta_mod
+from spectramr.infrastructure.reporting import metadata as meta_mod
 
 
 class TestRepoRootAnchor:
     """``_REPO_ROOT`` must be the repository root, not ``src/``.
 
     It was ``parents[3]``, correct while the package lived at ``src/`` and
-    silently wrong after the 2026-05 ``src -> src/mriforge`` refactor added a
+    silently wrong after the 2026-05 ``src -> src/spectramr`` refactor added a
     level. Nothing caught it because the only consumer returns ``None`` on a
     miss, so every baseline recorded ``upstream_commit: None`` (#721).
     """

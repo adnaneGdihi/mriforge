@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.dynamics.neural_ode import NeuralODEDynamics
-from mriforge.infrastructure.physics.rectified_flow import RectifiedFlow
-from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
-from mriforge.models.generators.kspace_cold_diffusion_generator import PureKSpaceUNet
-from mriforge.models.generators.nesvor import NeSVoR
-from mriforge.models.vae.wavelet_kan_vae import WaveletKANVAE
+from spectramr.infrastructure.physics.dynamics.neural_ode import NeuralODEDynamics
+from spectramr.infrastructure.physics.rectified_flow import RectifiedFlow
+from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
+from spectramr.models.generators.kspace_cold_diffusion_generator import PureKSpaceUNet
+from spectramr.models.generators.nesvor import NeSVoR
+from spectramr.models.vae.wavelet_kan_vae import WaveletKANVAE
 
 
 class TestRemediationImplementations:
@@ -143,7 +143,7 @@ class TestRemediationImplementations:
         # With mask=1 everywhere, the hard DC projection in k-space replaces
         # every frequency with the measurement. The expected image-domain
         # output is therefore ifft2c(measured).
-        from mriforge.infrastructure.physics.fft_ops import _to_complex, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import _to_complex, ifft2c
 
         expected_complex = ifft2c(_to_complex(measured))
         expected = torch.cat([expected_complex.real, expected_complex.imag], dim=1)

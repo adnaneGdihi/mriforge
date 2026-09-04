@@ -1,7 +1,7 @@
 """Tests for the synthetic PDE benchmark dataset.
 
 Two reference solvers ship under
-``mriforge.data.datasets.pde_synthetic`` — Burgers 1-D (Fourier
+``spectramr.data.datasets.pde_synthetic`` — Burgers 1-D (Fourier
 pseudo-spectral) and Darcy 2-D (5-point FD + scipy spsolve). These
 tests pin numerical sanity invariants that any operator-paper user
 relies on:
@@ -22,7 +22,7 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.data.datasets.pde_synthetic import (  # noqa: E402
+from spectramr.data.datasets.pde_synthetic import (  # noqa: E402
     BurgersDataset,
     DarcyDataset,
     make_pde_dataset,

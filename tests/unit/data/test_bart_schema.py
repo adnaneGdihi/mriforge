@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import BartConfigSchema, DataConfigSchema
+from spectramr.config.schemas.data import BartConfigSchema, DataConfigSchema
 
 
 def test_bart_defaults_are_disabled() -> None:

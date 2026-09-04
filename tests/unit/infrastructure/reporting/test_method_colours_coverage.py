@@ -3,7 +3,7 @@
 Locks beautify-backlog item 2.3
 (``TODO/backlog_beautify_logging_and_reporting.md``): every registered
 strategy in ``STRATEGY_CLASS_PATHS`` must have a deterministic colour
-in :data:`mriforge.infrastructure.reporting.style.METHOD_COLOURS`. Without
+in :data:`spectramr.infrastructure.reporting.style.METHOD_COLOURS`. Without
 this, headline figures fall back to the matplotlib cycler order, which
 gives the same method two different colours in different plots.
 
@@ -22,15 +22,15 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 
 
 def _read_strategy_keys() -> set[str]:
-    # post-2026-05 src→mriforge refactor layout + import prefix
-    factory = (REPO_ROOT / "src" / "mriforge" / "infrastructure" / "training"
+    # post-2026-05 src→spectramr refactor layout + import prefix
+    factory = (REPO_ROOT / "src" / "spectramr" / "infrastructure" / "training"
                / "strategy_factory.py").read_text()
     return set(re.findall(
-        r'^\s+"([a-z_]+)":\s+"(?:src|mriforge)\.infrastructure', factory, re.M))
+        r'^\s+"([a-z_]+)":\s+"(?:src|spectramr)\.infrastructure', factory, re.M))
 
 
 def _read_method_colour_keys() -> set[str]:
-    style = (REPO_ROOT / "src" / "mriforge" / "infrastructure" / "reporting" / "style.py").read_text()
+    style = (REPO_ROOT / "src" / "spectramr" / "infrastructure" / "reporting" / "style.py").read_text()
     m = re.search(r"METHOD_COLOURS:[^=]*=\s*\{(.+?)\n\}", style, re.S)
     assert m, "Could not locate METHOD_COLOURS in style.py"
     return set(re.findall(r'"([a-z_]+)":', m.group(1)))
@@ -50,7 +50,7 @@ def test_every_strategy_has_a_method_colour() -> None:
 
 def test_colour_for_a_known_strategy_returns_registered_value() -> None:
     """``colour_for`` resolves a deterministic value (not cycler fallback)."""
-    from mriforge.infrastructure.reporting.style import (
+    from spectramr.infrastructure.reporting.style import (
         METHOD_COLOURS,
         OKABE_ITO,
         colour_for,

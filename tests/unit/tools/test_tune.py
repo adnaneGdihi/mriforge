@@ -1,9 +1,9 @@
-"""Import-smoke + regression tests for ``mriforge.tools.tune``.
+"""Import-smoke + regression tests for ``spectramr.tools.tune``.
 
-WS-8 (Outer-shell) fix: ``src/mriforge/tools/tune.py`` previously carried a
+WS-8 (Outer-shell) fix: ``src/spectramr/tools/tune.py`` previously carried a
 ``sys.path.append(...)`` hack (plus the now-unused ``sys`` and ``Path``
 imports) so the script could be run as a loose file. With the package
-installed (``pip install -e``) and the ``mriforge.tools`` namespace in place,
+installed (``pip install -e``) and the ``spectramr.tools`` namespace in place,
 that manipulation is dead weight and risks shadowing the real install path.
 
 These tests pin the fix:
@@ -27,14 +27,14 @@ import pytest
 
 pytestmark = pytest.mark.unit
 
-MODULE_NAME = "mriforge.tools.tune"
+MODULE_NAME = "spectramr.tools.tune"
 
 
 def test_tune_imports_cleanly_and_exposes_main() -> None:
     """Importing the module succeeds and yields a callable ``main``."""
     module = importlib.import_module(MODULE_NAME)
 
-    assert hasattr(module, "main"), "mriforge.tools.tune must expose `main`"
+    assert hasattr(module, "main"), "spectramr.tools.tune must expose `main`"
     assert callable(module.main), "`main` must be callable"
 
 

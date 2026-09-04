@@ -16,25 +16,25 @@ import pytest
 import torch
 from PIL import Image
 
-from mriforge.domain.interfaces.checkpoint_service_interface import ICheckpointService
-from mriforge.domain.interfaces.dataset_interfaces import (
+from spectramr.domain.interfaces.checkpoint_service_interface import ICheckpointService
+from spectramr.domain.interfaces.dataset_interfaces import (
     IAugmentationStrategy,
     ICacheManager,
     IDataLoader,
     IFileDiscoverer,
     IImageTransformer,
 )
-from mriforge.domain.interfaces.memory_optimization_interface import (
+from spectramr.domain.interfaces.memory_optimization_interface import (
     IMemoryOptimizationService,
 )
-from mriforge.domain.interfaces.service_interfaces import (
+from spectramr.domain.interfaces.service_interfaces import (
     IConfigurationService,
     IDeviceManager,
     ILoggingService,
     IMetricsService,
     ITrainingOrchestrator,
 )
-from mriforge.domain.interfaces.service_interfaces import (
+from spectramr.domain.interfaces.service_interfaces import (
     IMemoryOptimizationService as IMemoryOptService,
 )
 

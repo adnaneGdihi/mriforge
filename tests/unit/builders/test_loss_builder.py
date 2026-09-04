@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch.nn as nn
 
-from mriforge.config.schemas.loss import GANLossesConfig, LossConfigSchema
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+from spectramr.config.schemas.loss import GANLossesConfig, LossConfigSchema
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
 
 class TestLossBuilder:
@@ -135,7 +135,7 @@ class TestLossBuilder:
         assert "ssim" in losses
         # Checking type might be tricky if it's from registry, but check it exists
 
-    @patch("mriforge.infrastructure.training.builders.loss_builder.create_loss")
+    @patch("spectramr.infrastructure.training.builders.loss_builder.create_loss")
     def test_build_gan_loss(self, mock_create_loss, mock_config):
         mock_config.losses.gan.enable_adversarial = True
         mock_config.losses.gan.gan_loss_type = "vanilla"
@@ -167,7 +167,7 @@ class TestLossBuilder:
         Previously ``adv_registry_map.get(..., "gan_standard")`` silently fell
         back to the standard GAN loss for any unrecognized type (NN#3 violation).
         """
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         gan_config = MagicMock()
         gan_config.gan_loss_type = "not_a_real_loss_type"
@@ -181,7 +181,7 @@ class TestLossBuilder:
         # The offending value is surfaced in the message.
         assert "not_a_real_loss_type" in str(exc_info.value)
 
-    @patch("mriforge.infrastructure.training.builders.loss_builder.create_loss")
+    @patch("spectramr.infrastructure.training.builders.loss_builder.create_loss")
     def test_build_composite_gan_known_type_does_not_raise(
         self, mock_create_loss, mock_config
     ):
@@ -230,7 +230,7 @@ class TestLossBuilder:
     def test_genuinely_unmigrated_key_still_raises(self, mock_config):
         """A key that is in NO computer path (not recon-managed, not in the
         declarative lists) must still be rejected — the guard's real purpose."""
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         mock_config.losses.get_enabled_losses.return_value = {"bogus_loss": 1.0}
         mock_config.losses.reconstruction_managed_losses.return_value = set()

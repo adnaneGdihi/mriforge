@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import run_summary_card
+from spectramr.infrastructure.reporting.plotters import run_summary_card
 
 
 def _frame() -> pd.DataFrame:

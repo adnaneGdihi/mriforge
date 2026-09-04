@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.infrastructure.physics.asset_preparation import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.infrastructure.physics.asset_preparation import (
     estimate_noise_covariance,
     prepare_metric_context,
 )

@@ -37,7 +37,7 @@ REPO = Path(__file__).resolve().parents[3]
 LOSS_BUILDER = (
     REPO
     / "src"
-    / "mriforge"
+    / "spectramr"
     / "infrastructure"
     / "training"
     / "builders"
@@ -62,7 +62,7 @@ def test_gradient_penalty_is_strategy_managed() -> None:
     inline literals, and that BOTH consumer paths (list-based + legacy flag)
     still resolve from it — so re-inlining one path is caught.
     """
-    from mriforge.infrastructure.training.builders.loss_builder import (
+    from spectramr.infrastructure.training.builders.loss_builder import (
         STRATEGY_MANAGED_LOSSES,
     )
 
@@ -83,7 +83,7 @@ def test_feature_matching_is_strategy_managed() -> None:
     same exemption. Pinned alongside gradient_penalty so a half-revert (one but
     not the other) is caught.
     """
-    from mriforge.infrastructure.training.builders.loss_builder import (
+    from spectramr.infrastructure.training.builders.loss_builder import (
         STRATEGY_MANAGED_LOSSES,
     )
 

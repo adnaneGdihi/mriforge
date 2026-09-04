@@ -18,8 +18,8 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.physics import coil_sensitivity as coil_sensitivity_mod
-from mriforge.infrastructure.physics.coil_sensitivity import (
+from spectramr.infrastructure.physics import coil_sensitivity as coil_sensitivity_mod
+from spectramr.infrastructure.physics.coil_sensitivity import (
     _robust_eigh,
     coil_combine_sense,
     espirit_min_acs_size,
@@ -31,7 +31,7 @@ from mriforge.infrastructure.physics.coil_sensitivity import (
     load_csm_from_file,
     sense_gfactor_map,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -553,7 +553,7 @@ class TestRobustEighCusolverFallback:
     def test_robust_eigh_falls_back_to_cpu_on_backend_error(self, monkeypatch) -> None:
         """A simulated cuSOLVER LinAlgError on the first eigh call must trigger
         exactly one CPU-LAPACK retry that returns the correct decomposition."""
-        from mriforge.infrastructure.physics import coil_sensitivity as cs
+        from spectramr.infrastructure.physics import coil_sensitivity as cs
 
         torch.manual_seed(0)
         g = torch.randn(128, 4, 6, dtype=torch.complex64)
@@ -588,7 +588,7 @@ class TestRobustEighCusolverFallback:
     def test_robust_eigh_happy_path_matches_eigh(self) -> None:
         """When the backend succeeds, ``_robust_eigh`` is a transparent
         pass-through with no extra cost (no spurious CPU retry)."""
-        from mriforge.infrastructure.physics import coil_sensitivity as cs
+        from spectramr.infrastructure.physics import coil_sensitivity as cs
 
         torch.manual_seed(1)
         g = torch.randn(64, 4, 5, dtype=torch.complex64)
@@ -761,7 +761,7 @@ class TestEspiritFiniteGuard:
     NaN/Inf coil map into a training loss (the silent-poison pattern, #9)."""
 
     def test_non_finite_eig_raises(self, monkeypatch) -> None:
-        from mriforge.infrastructure.physics import coil_sensitivity as cs
+        from spectramr.infrastructure.physics import coil_sensitivity as cs
 
         def nan_eigh(mat):
             n, c, _ = mat.shape
@@ -779,7 +779,7 @@ class TestEspiritFiniteGuard:
         """The device→host fallback must be LOUD (WARNING), not silent DEBUG."""
         import logging
 
-        from mriforge.infrastructure.physics import coil_sensitivity as cs
+        from spectramr.infrastructure.physics import coil_sensitivity as cs
 
         real_eigh = torch.linalg.eigh
         calls = {"n": 0}
@@ -943,7 +943,7 @@ def test_rank_deficient_espirit_names_the_viable_acs_size():
     """
     import torch
 
-    from mriforge.infrastructure.physics.coil_sensitivity import (
+    from spectramr.infrastructure.physics.coil_sensitivity import (
         espirit_min_acs_size,
         estimate_csm_espirit,
     )
@@ -1267,7 +1267,7 @@ class TestResolveEstimationSettings:
     """
 
     def _both_shapes(self, estimation: dict):
-        from mriforge.infrastructure.physics.coil_sensitivity import (
+        from spectramr.infrastructure.physics.coil_sensitivity import (
             resolve_estimation_settings,
         )
 
@@ -1286,7 +1286,7 @@ class TestResolveEstimationSettings:
         assert from_dict == ("espirit", {"kernel_size": 6, "acs_size": 24})
 
     def test_absent_block_falls_back_to_the_default_with_no_subknobs(self):
-        from mriforge.infrastructure.physics.coil_sensitivity import (
+        from spectramr.infrastructure.physics.coil_sensitivity import (
             resolve_estimation_settings,
         )
 
@@ -1321,7 +1321,7 @@ class TestResolveEstimationSettings:
         """Round-trip: whatever the resolver returns must be callable as-is."""
         import torch
 
-        from mriforge.infrastructure.physics.coil_sensitivity import (
+        from spectramr.infrastructure.physics.coil_sensitivity import (
             estimate_smaps,
             resolve_estimation_settings,
         )

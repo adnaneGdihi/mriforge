@@ -18,7 +18,7 @@ metadata:
   name: Failing — adversarial_strategy_requires_gan_loss (gan mode, no losses.gan)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy
   training_mode: gan            # <<< adversarial mode — losses.gan required
   max_iterations: 10
   device: cuda

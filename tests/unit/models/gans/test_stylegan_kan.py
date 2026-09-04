@@ -1,4 +1,4 @@
-"""Regression tests for ``mriforge.models.gans.stylegan_kan``.
+"""Regression tests for ``spectramr.models.gans.stylegan_kan``.
 
 The registered ``style_kan_gan`` headline mechanism is the KAN mapping
 network and the KAN AdaIN style transforms. Both used to be wrapped in
@@ -15,12 +15,12 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.gans.stylegan_kan import (  # noqa: E402
+from spectramr.models.gans.stylegan_kan import (  # noqa: E402
     AdaIN,
     MappingNetwork,
     StyleKANGAN,
 )
-from mriforge.models.layers.kan.kan_convs.kans.kan import KAN  # noqa: E402
+from spectramr.models.layers.kan.kan_convs.kans.kan import KAN  # noqa: E402
 
 
 class TestMappingNetworkMechanismFires:
@@ -80,7 +80,7 @@ class TestStyleKANGANMechanismFires:
             raise RuntimeError("KAN construction failed")
 
         monkeypatch.setattr(
-            "mriforge.models.gans.stylegan_kan.KAN",
+            "spectramr.models.gans.stylegan_kan.KAN",
             _boom,
         )
         with pytest.raises(RuntimeError, match="KAN construction failed"):

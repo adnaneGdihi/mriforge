@@ -9,13 +9,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.config.schemas.loss import (
+from spectramr.config.schemas.loss import (
     LatentLossesConfig,
     LossConfigSchema,
     ReconstructionLossesConfig,
 )
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 
@@ -40,7 +40,7 @@ def _patch_loss_builder_ssot():
         getattr(bi, _m).return_value = bi
     bi.build.return_value = {}
     with patch(
-        "mriforge.infrastructure.training.builders.loss_builder.LossBuilder", builder
+        "spectramr.infrastructure.training.builders.loss_builder.LossBuilder", builder
     ):
         yield
 
@@ -105,7 +105,7 @@ class TestGradientFlowIntegrity:
         state.optimizers = {"main": MagicMock()}
 
         with patch(
-            "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+            "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
         ):
             strategy = DisentangledTrainingStrategy(env=env, state=state)
 
@@ -255,9 +255,9 @@ class TestStrategyGradientIntegration:
     """Integration test: full strategy preserves gradients."""
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_loss_weights_property_does_not_break_gradients(
         self, mock_logger, mock_bloch
     ):

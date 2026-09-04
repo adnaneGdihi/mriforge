@@ -1,6 +1,6 @@
 """Tests for the block-interface ABCs.
 
-Targets ``mriforge.models.blocks.interfaces`` — ``IBlockStrategy`` and
+Targets ``spectramr.models.blocks.interfaces`` — ``IBlockStrategy`` and
 ``IFusionStrategy``.
 
 Categories:
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.interfaces import IBlockStrategy, IFusionStrategy
+from spectramr.models.blocks.interfaces import IBlockStrategy, IFusionStrategy
 
 
 # ---------------------------------------------------------------------------

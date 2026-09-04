@@ -14,7 +14,7 @@ import pytest
 
 def test_allowed_backends_match_advertised_set() -> None:
     """The class-level allow-list pins the contract surface."""
-    from mriforge.core.metrics.radiomic import RadiomicFeatureExtractor
+    from spectramr.core.metrics.radiomic import RadiomicFeatureExtractor
 
     assert RadiomicFeatureExtractor.ALLOWED_BACKENDS == (
         "pyradiomics",
@@ -25,7 +25,7 @@ def test_allowed_backends_match_advertised_set() -> None:
 
 def test_unknown_backend_raises_value_error() -> None:
     """Typos must raise -- no silent fallback to a default."""
-    from mriforge.core.metrics.radiomic import RadiomicFeatureExtractor
+    from spectramr.core.metrics.radiomic import RadiomicFeatureExtractor
 
     with pytest.raises(ValueError, match="backend="):
         RadiomicFeatureExtractor(backend="pyradimics")  # typo
@@ -39,14 +39,14 @@ def test_unknown_backend_raises_value_error() -> None:
 #: fail on the cluster, where something answering to that name IS importable --
 #: 3 of cluster job 8004252's failures. A test named "...when_fastrad_absent"
 #: should MAKE it absent.
-_AVAIL = "mriforge.core.metrics.radiomic.RadiomicFeatureExtractor._fastrad_available"
+_AVAIL = "spectramr.core.metrics.radiomic.RadiomicFeatureExtractor._fastrad_available"
 
 
 def test_explicit_fastrad_raises_not_implemented() -> None:
     """Selecting fastrad explicitly must fail loud while it is unwired."""
     from unittest.mock import patch
 
-    from mriforge.core.metrics.radiomic import RadiomicFeatureExtractor
+    from spectramr.core.metrics.radiomic import RadiomicFeatureExtractor
 
     with (
         patch(_AVAIL, return_value=False),
@@ -57,7 +57,7 @@ def test_explicit_fastrad_raises_not_implemented() -> None:
 
 def test_resolve_backend_priority_is_documented() -> None:
     """The auto-dispatch priority must put fastrad ahead of pyradiomics."""
-    from mriforge.core.metrics.radiomic import RadiomicFeatureExtractor
+    from spectramr.core.metrics.radiomic import RadiomicFeatureExtractor
 
     assert RadiomicFeatureExtractor.BACKEND_PRIORITY[0] == "fastrad"
     assert "pyradiomics" in RadiomicFeatureExtractor.BACKEND_PRIORITY
@@ -65,7 +65,7 @@ def test_resolve_backend_priority_is_documented() -> None:
 
 def test_resolve_backend_auto_falls_through_to_pyradiomics_when_fastrad_absent() -> None:
     """When fastrad is not installed (the current state), auto must resolve to pyradiomics."""
-    from mriforge.core.metrics.radiomic import (
+    from spectramr.core.metrics.radiomic import (
         RADIOMICS_AVAILABLE,
         RadiomicFeatureExtractor,
     )
@@ -94,7 +94,7 @@ def test_rfs_fallback_is_bounded_near_zero_features() -> None:
 
     import numpy as np
 
-    from mriforge.core.metrics.radiomic import RadiomicFeatureStability
+    from spectramr.core.metrics.radiomic import RadiomicFeatureStability
 
     gt_feat = np.array([1.0, 100.0, 1e-9])  # third feature ~ 0
     recon_feat = np.array([1.1, 101.0, 0.5])  # diffs: 0.1, 1.0, 0.5
@@ -125,7 +125,7 @@ def test_rfs_fallback_is_bounded_near_zero_features() -> None:
 
 def test_resolve_backend_raises_when_no_backend_available() -> None:
     """When neither backend is importable, auto-dispatch must fail loud."""
-    from mriforge.core.metrics.radiomic import (
+    from spectramr.core.metrics.radiomic import (
         RADIOMICS_AVAILABLE,
         RadiomicFeatureExtractor,
     )
@@ -144,7 +144,7 @@ def test_resolved_backend_is_stamped_on_instance() -> None:
     JSON will include this value so downstream tooling knows which
     backend produced the features.
     """
-    from mriforge.core.metrics.radiomic import (
+    from spectramr.core.metrics.radiomic import (
         RADIOMICS_AVAILABLE,
         RadiomicFeatureExtractor,
     )
@@ -169,7 +169,7 @@ def test_resolved_backend_is_stamped_on_instance() -> None:
 
 def test_module_exposes_simpleitk_and_scipy_flags() -> None:
     """The availability flags exist so audits can introspect the env."""
-    import mriforge.core.metrics.radiomic as r
+    import spectramr.core.metrics.radiomic as r
 
     assert isinstance(r.SIMPLEITK_AVAILABLE, bool)
     assert isinstance(r.SCIPY_AVAILABLE, bool)
@@ -178,7 +178,7 @@ def test_module_exposes_simpleitk_and_scipy_flags() -> None:
 def test_extractor_raises_clear_error_without_simpleitk(monkeypatch) -> None:
     """Constructing the extractor without SimpleITK raises a clear error
     naming the missing dependency, not an obscure ``NoneType`` crash."""
-    import mriforge.core.metrics.radiomic as r
+    import spectramr.core.metrics.radiomic as r
 
     monkeypatch.setattr(r, "SIMPLEITK_AVAILABLE", False)
     with pytest.raises(ImportError, match="SimpleITK"):
@@ -188,7 +188,7 @@ def test_extractor_raises_clear_error_without_simpleitk(monkeypatch) -> None:
 def test_frd_raises_clear_error_without_scipy(monkeypatch) -> None:
     """Constructing the Fréchet distance metric without scipy raises a clear
     error naming scipy (used for the covariance matrix square root)."""
-    import mriforge.core.metrics.radiomic as r
+    import spectramr.core.metrics.radiomic as r
 
     monkeypatch.setattr(r, "SCIPY_AVAILABLE", False)
     with pytest.raises(ImportError, match="scipy"):

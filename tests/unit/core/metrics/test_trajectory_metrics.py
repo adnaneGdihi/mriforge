@@ -12,13 +12,13 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.trajectory_metrics import (
+from spectramr.core.metrics.trajectory_metrics import (
     TrajectoryMonitor,
     calibrate_admissible_radius,
     hallucination_rate,
     severity,
 )
-from mriforge.infrastructure.calibration.chd import dkw_slack
+from spectramr.infrastructure.calibration.chd import dkw_slack
 
 
 def _y_and_mask() -> tuple[torch.Tensor, torch.Tensor]:

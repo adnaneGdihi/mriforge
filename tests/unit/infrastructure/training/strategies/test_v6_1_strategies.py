@@ -21,49 +21,49 @@ import importlib
 
 import pytest
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 # (alias, module path, class name)
 V6_1_STRATEGIES: list[tuple[str, str, str]] = [
     ("calibration",
-     "mriforge.infrastructure.training.strategies.conformal_calibration_strategy",
+     "spectramr.infrastructure.training.strategies.conformal_calibration_strategy",
      "ConformalCalibrationStrategy"),
     ("validation_badge",
-     "mriforge.infrastructure.training.strategies.validation_badge_strategy",
+     "spectramr.infrastructure.training.strategies.validation_badge_strategy",
      "ValidationBadgeStrategy"),
     ("loupe",
-     "mriforge.infrastructure.training.strategies.loupe_strategy",
+     "spectramr.infrastructure.training.strategies.loupe_strategy",
      "LOUPEStrategy"),
     ("pilot",
-     "mriforge.infrastructure.training.strategies.pilot_strategy",
+     "spectramr.infrastructure.training.strategies.pilot_strategy",
      "PILOTStrategy"),
     ("bald",
-     "mriforge.infrastructure.training.strategies.bald_acquisition_strategy",
+     "spectramr.infrastructure.training.strategies.bald_acquisition_strategy",
      "BALDAcquisitionStrategy"),
     ("multi_param_mapping",
-     "mriforge.infrastructure.training.strategies.multi_param_mapping_strategy",
+     "spectramr.infrastructure.training.strategies.multi_param_mapping_strategy",
      "OneShotMultiParameterStrategy"),
     ("multi_contrast_contrastive",
-     "mriforge.infrastructure.training.strategies.multi_contrast_contrastive_strategy",
+     "spectramr.infrastructure.training.strategies.multi_contrast_contrastive_strategy",
      "MultiContrastContrastiveStrategy"),
     ("edm",
-     "mriforge.infrastructure.training.strategies.edm_training_strategy",
+     "spectramr.infrastructure.training.strategies.edm_training_strategy",
      "EDMTrainingStrategy"),
     ("pnp",
-     "mriforge.infrastructure.training.strategies.pnp_strategy",
+     "spectramr.infrastructure.training.strategies.pnp_strategy",
      "PnPStrategy"),
     ("caur",
-     "mriforge.infrastructure.training.strategies.concomitant_aware_recon_strategy",
+     "spectramr.infrastructure.training.strategies.concomitant_aware_recon_strategy",
      "ConcomitantAwareReconStrategy"),
     ("xfield_fm",
-     "mriforge.infrastructure.training.strategies.xfield_fm_strategy",
+     "spectramr.infrastructure.training.strategies.xfield_fm_strategy",
      "XFieldFMStrategy"),
     ("scas",
-     "mriforge.infrastructure.training.strategies.scas_strategy",
+     "spectramr.infrastructure.training.strategies.scas_strategy",
      "SCASStrategy"),
     ("federated_dp_conformal",
-     "mriforge.infrastructure.training.strategies.federated_dp_conformal_strategy",
+     "spectramr.infrastructure.training.strategies.federated_dp_conformal_strategy",
      "FederatedDPConformalULFStrategy"),
 ]
 
@@ -84,7 +84,7 @@ def test_strategy_factory_resolves_alias(alias: str, module_path: str, cls_name:
     paths = TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert alias in paths, (
         f"Strategy alias {alias!r} missing from STRATEGY_CLASS_PATHS. "
-        f"Wire it in mriforge.infrastructure.training.strategy_factory."
+        f"Wire it in spectramr.infrastructure.training.strategy_factory."
     )
     expected = f"{module_path}.{cls_name}"
     assert paths[alias] == expected, (

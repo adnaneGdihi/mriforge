@@ -14,10 +14,10 @@ import logging
 
 import pytest
 
-from mriforge.infrastructure.training import strategy_factory
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training import strategy_factory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
-_LOGGER = "mriforge.infrastructure.training.strategy_factory"
+_LOGGER = "spectramr.infrastructure.training.strategy_factory"
 
 
 @pytest.fixture
@@ -76,7 +76,7 @@ def test_unknown_strategy_still_raises(forget_logged_paths) -> None:
     """The dedup path must not swallow a genuine resolution failure (#9)."""
     factory = TrainingStrategyFactory()
     with pytest.raises(ValueError, match="Failed to load strategy class"):
-        factory._load_strategy_class("mriforge.nonexistent.module.NoSuchStrategy")
+        factory._load_strategy_class("spectramr.nonexistent.module.NoSuchStrategy")
 
 
 def test_quality_matching_is_registered_and_loadable(forget_logged_paths) -> None:

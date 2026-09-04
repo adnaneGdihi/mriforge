@@ -1,13 +1,13 @@
 """Unit tests for Conjugate-Phase reconstruction (CPR).
 
-Covers :class:`mriforge.infrastructure.physics.conjugate_phase.ConjugatePhaseReconstructor`
+Covers :class:`spectramr.infrastructure.physics.conjugate_phase.ConjugatePhaseReconstructor`
 which implements the multifrequency-interpolation (MFI) variant of CPR
 from Koolstra et al. (2021) §2.4.
 
 Test strategy
 -------------
 With ``b0 = 0`` the CPR reconstructor must reduce to the centred adjoint
-DFT — i.e. :func:`mriforge.infrastructure.physics.fft_ops.ifft2c`. With a
+DFT — i.e. :func:`spectramr.infrastructure.physics.fft_ops.ifft2c`. With a
 non-zero, spatially-varying B0 map the MFI bins must be used: the
 reconstruction differs from a plain IFFT.
 
@@ -23,8 +23,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-cp_mod = pytest.importorskip("mriforge.infrastructure.physics.conjugate_phase")
-fft_mod = pytest.importorskip("mriforge.infrastructure.physics.fft_ops")
+cp_mod = pytest.importorskip("spectramr.infrastructure.physics.conjugate_phase")
+fft_mod = pytest.importorskip("spectramr.infrastructure.physics.fft_ops")
 ConjugatePhaseReconstructor = cp_mod.ConjugatePhaseReconstructor
 fft2c = fft_mod.fft2c
 ifft2c = fft_mod.ifft2c

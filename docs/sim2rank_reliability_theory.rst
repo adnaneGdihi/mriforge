@@ -144,7 +144,7 @@ K-RCPS --- entrywise conformal risk control
 The L5 selector above certifies a *single scalar* threshold. **K-RCPS**
 (Teneggi *et al.*, ICML 2023) extends this to *entrywise* (per-pixel /
 per-region) risk control for image reconstruction:
-``mriforge.core.metrics.meta_evaluation.krcps.krcps_calibrate`` calibrates the
+``spectramr.core.metrics.meta_evaluation.krcps.krcps_calibrate`` calibrates the
 smallest scale :math:`\hat\beta` over a supplied per-entry width profile
 :math:`w` (e.g. a heteroscedastic uncertainty map, or a K-group-constant
 profile) such that the marginal miscoverage loss
@@ -167,7 +167,7 @@ In-domain IQA recalibration (SOTA plan T5, exploratory)
 
 Zero-shot foundation IQA (CLIP-IQA / Q-Align) has no radiologist-anchored MRI
 validation (the REJECTed P4.4), so
-``mriforge.core.metrics.meta_evaluation.iqa_recalibration`` recalibrates an
+``spectramr.core.metrics.meta_evaluation.iqa_recalibration`` recalibrates an
 existing score (a foundation IQA value or one of the ~41 NR-battery metrics) onto
 MRIQC- / radiologist-anchored labels via a **monotone** map — ``platt`` (affine)
 or ``isotonic`` (pool-adjacent-violators) — and *accepts deployment only if* the
@@ -222,7 +222,7 @@ Theorems, by generation
 Running the layers (CLI + dispatcher)
 =====================================
 
-The modern entry point is ``mriforge meta-evaluate``. Two run-shape knobs select
+The modern entry point is ``spectramr meta-evaluate``. Two run-shape knobs select
 the cell of the {2d,3d} x {real,betting} matrix; each is read, validated, and
 stamped into ``summary.json`` (CLAUDE.md pitfall #15):
 
@@ -255,13 +255,13 @@ for the proof-correspondence of each run.
 .. code-block:: bash
 
    # one dimensionality, both certification variants, compared together:
-   mriforge meta-evaluate --input <m4raw_dir> --eval-mode 2d \
+   spectramr meta-evaluate --input <m4raw_dir> --eval-mode 2d \
        --out results/2d_real/summary.json                  # real (powered only)
-   mriforge meta-evaluate --input <m4raw_dir> --eval-mode 2d --betting \
+   spectramr meta-evaluate --input <m4raw_dir> --eval-mode 2d --betting \
        --out results/2d_betting/summary.json               # + anytime-valid betting
    # 3d is the same command with --eval-mode 3d; the two summary.json files are
    # directly comparable, since both carry per-metric scores under the same keys.
-   mriforge meta-evaluate --input <m4raw_dir> --eval-mode 3d \
+   spectramr meta-evaluate --input <m4raw_dir> --eval-mode 3d \
        --out results/3d_real/summary.json
 
 Comprehensive run, unified degradations, and generations
@@ -269,7 +269,7 @@ Comprehensive run, unified degradations, and generations
 
 .. note::
 
-   ``mriforge meta-evaluate`` is the entry point this distribution ships. The
+   ``spectramr meta-evaluate`` is the entry point this distribution ships. The
    maintainers additionally drive the framework from a SLURM batch pipeline
    configured through ``SIM2RANK_*`` environment variables; that pipeline is not
    distributed, and **the distribution reads only** ``SIM2RANK_MODE`` **of those
@@ -305,14 +305,14 @@ that comprehensive run, both consumed by the ``--novel-meta`` pipeline:
    # The distributed entry point is the CLI above. --betting turns on the
    # anytime-valid betting certification; --core-degradations restricts the
    # sweep to the core axes rather than the full bank.
-   mriforge meta-evaluate --input <m4raw_dir> --betting --core-degradations \
+   spectramr meta-evaluate --input <m4raw_dir> --betting --core-degradations \
        --out results/comprehensive/summary.json
 
 Unified ranking module
 ======================
 
 The rankers are now **one module, one contract, one registry**
-(``mriforge.core.metrics.meta_evaluation.rankers``): every ranker is a
+(``spectramr.core.metrics.meta_evaluation.rankers``): every ranker is a
 ``BaseRanker`` (``rank(metric_set, dataset) -> RankingResult``) registered via
 ``@register_ranker(name, generation, requires_likert, requires_task_net)``. The
 ``generation`` tag is lineage metadata, **not** a "legacy vs novel" pipeline
@@ -436,7 +436,7 @@ are grayscale→RGB adapted (``channel_adapter.adapt_to_rgb`` / a ``repeat(1, 3,
 .. code-block:: bash
 
    # the unified rankers + betting, on real M4Raw:
-   mriforge meta-evaluate --input databases/m4raw/data/multicoil_train \
+   spectramr meta-evaluate --input databases/m4raw/data/multicoil_train \
      --max-subjects 8 --device cuda --betting \
      --out results/m4raw_unified/summary.json
 

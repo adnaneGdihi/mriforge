@@ -7,7 +7,7 @@ non-positive dimension (e.g. ``(-1, 64, 64)``) wrongly passed; it now uses
 
 from __future__ import annotations
 
-from mriforge.domain.entities.entities_3d import SliceToVolumeRequest
+from spectramr.domain.entities.entities_3d import SliceToVolumeRequest
 
 
 def _req(conditioning_axis: int = 2, target_shape: tuple[int, ...] = (64, 64, 64)):

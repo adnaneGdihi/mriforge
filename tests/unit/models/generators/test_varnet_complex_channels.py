@@ -28,7 +28,7 @@ import torch
 
 def test_varnet_forward_backward_on_2real_channels() -> None:
     """[B, 2, H, W] in → [B, 2, H, W] out, gradient flows end-to-end."""
-    from mriforge.models.generators.unrolled_reconstruction_generator import (
+    from spectramr.models.generators.unrolled_reconstruction_generator import (
         VariationalNetworkGenerator,
     )
 
@@ -54,7 +54,7 @@ def test_varnet_rejects_odd_channel_count() -> None:
     """ComplexAwareBlock raises on odd in_c / out_c — the // 2 semantic
     is what makes the model real-channel-count compatible. Catching the
     odd case loudly is the contract that prevents silent regression."""
-    from mriforge.models.generators.unrolled_reconstruction_generator import (
+    from spectramr.models.generators.unrolled_reconstruction_generator import (
         VariationalNetworkGenerator,
     )
 

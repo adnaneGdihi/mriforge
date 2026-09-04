@@ -14,17 +14,17 @@ import torch
 import torch.nn as nn
 
 # Force-populate registries.
-import mriforge.models.generators  # noqa: F401
-import mriforge.models.diffusion  # noqa: F401
-import mriforge.models.losses  # noqa: F401
-import mriforge.core.metrics  # noqa: F401
+import spectramr.models.generators  # noqa: F401
+import spectramr.models.diffusion  # noqa: F401
+import spectramr.models.losses  # noqa: F401
+import spectramr.core.metrics  # noqa: F401
 
 
 # --- Shared physics smoke ---------------------------------------------------
 
 
 def test_beltrami_4d_solver_runs() -> None:
-    from mriforge.infrastructure.physics.manifolds.beltrami_4d import (
+    from spectramr.infrastructure.physics.manifolds.beltrami_4d import (
         SeparableBeltrami4DSolver,
     )
     s = SeparableBeltrami4DSolver(planar_max_iter=8, tol=1e-3)
@@ -37,7 +37,7 @@ def test_beltrami_4d_solver_runs() -> None:
 
 
 def test_spd_manifold_exp_log_roundtrip() -> None:
-    from mriforge.infrastructure.physics.manifolds.spd_manifold import SPDManifold
+    from spectramr.infrastructure.physics.manifolds.spd_manifold import SPDManifold
     M = SPDManifold(n=4)
     C0 = torch.eye(4).expand(2, 4, 4).contiguous()
     V = 0.1 * torch.randn(2, 4, 4)
@@ -48,7 +48,7 @@ def test_spd_manifold_exp_log_roundtrip() -> None:
 
 
 def test_srv_transform_roundtrip() -> None:
-    from mriforge.infrastructure.physics.manifolds.time_reparameterisation import (
+    from spectramr.infrastructure.physics.manifolds.time_reparameterisation import (
         inverse_srv_transform,
         srv_transform,
     )
@@ -59,7 +59,7 @@ def test_srv_transform_roundtrip() -> None:
 
 
 def test_cayley_hilbert_chart_roundtrip() -> None:
-    from mriforge.infrastructure.physics.manifolds.bloch_mrf_manifold import (
+    from spectramr.infrastructure.physics.manifolds.bloch_mrf_manifold import (
         cayley_hilbert_chart,
         inverse_cayley_hilbert_chart,
     )
@@ -70,7 +70,7 @@ def test_cayley_hilbert_chart_roundtrip() -> None:
 
 
 def test_epi_forward_warp_preserves_shape() -> None:
-    from mriforge.infrastructure.physics.epi_forward import (
+    from spectramr.infrastructure.physics.epi_forward import (
         apply_epi_distortion,
         beltrami_from_b0,
     )
@@ -86,7 +86,7 @@ def test_epi_forward_warp_preserves_shape() -> None:
 
 
 def test_6_fmri_mrf_models_registered() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
     for n in (
         "b0_beltrami_estimator", "hrf_diffusion_prior", "tangent_spd_diffusion",
         "mrf_tangent_score", "conformal_fp_embedding", "scanner_time_reparam",
@@ -95,14 +95,14 @@ def test_6_fmri_mrf_models_registered() -> None:
 
 
 def test_3_fmri_mrf_losses_registered() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
     names = set(LossRegistry.list_available()) | set(LossRegistry._custom_losses)
     for n in ("beltrami_epi_residual", "hrf_likelihood", "conformality_jacobian"):
         assert n in names
 
 
 def test_4_fmri_mrf_metrics_registered() -> None:
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
     names = set(MetricsRegistry.list_available())
     for n in (
         "geodesic_fc_error", "geodesic_mrf_parameter_error",
@@ -112,7 +112,7 @@ def test_4_fmri_mrf_metrics_registered() -> None:
 
 
 def test_10_fmri_mrf_strategies_registered() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
     sm = TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     for n in (
         "spatiotemporal_adaptive_sfc_recon", "beltrami_epi_distortion",
@@ -154,10 +154,10 @@ class _ScoreStub(nn.Module):
 
 
 def test_spatiotemporal_adaptive_sfc_recon_smoke() -> None:
-    from mriforge.infrastructure.physics.manifolds.beltrami_4d import (
+    from spectramr.infrastructure.physics.manifolds.beltrami_4d import (
         SeparableBeltrami4DSolver,
     )
-    from mriforge.infrastructure.training.strategies.fmri_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.fmri_kspace_strategies import (
         SpatiotemporalAdaptiveSFCReconStrategy,
     )
     s = _alloc(SpatiotemporalAdaptiveSFCReconStrategy, _Identity())
@@ -170,7 +170,7 @@ def test_spatiotemporal_adaptive_sfc_recon_smoke() -> None:
 
 
 def test_beltrami_epi_distortion_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.fmri_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.fmri_kspace_strategies import (
         BeltramiEPIDistortionStrategy,
     )
 
@@ -187,7 +187,7 @@ def test_beltrami_epi_distortion_smoke() -> None:
 
 
 def test_cortical_conformal_fmri_recon_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.fmri_surface_strategies import (
+    from spectramr.infrastructure.training.strategies.fmri_surface_strategies import (
         CorticalConformalFMRIReconStrategy,
     )
     s = _alloc(CorticalConformalFMRIReconStrategy, _Identity())
@@ -198,7 +198,7 @@ def test_cortical_conformal_fmri_recon_smoke() -> None:
 
 
 def test_riemannian_dfc_diffusion_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.fmri_surface_strategies import (
+    from spectramr.infrastructure.training.strategies.fmri_surface_strategies import (
         RiemannianDFCDiffusionStrategy,
     )
 
@@ -216,7 +216,7 @@ def test_riemannian_dfc_diffusion_smoke() -> None:
 
 
 def test_hrf_manifold_diffusion_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.fmri_surface_strategies import (
+    from spectramr.infrastructure.training.strategies.fmri_surface_strategies import (
         HRFManifoldDiffusionStrategy,
     )
     s = _alloc(HRFManifoldDiffusionStrategy, _ScoreStub())
@@ -228,10 +228,10 @@ def test_hrf_manifold_diffusion_smoke() -> None:
 
 
 def test_spatiotemporal_mrf_recon_smoke() -> None:
-    from mriforge.infrastructure.physics.manifolds.beltrami_4d import (
+    from spectramr.infrastructure.physics.manifolds.beltrami_4d import (
         SeparableBeltrami4DSolver,
     )
-    from mriforge.infrastructure.training.strategies.mrf_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_kspace_strategies import (
         SpatiotemporalMRFReconStrategy,
     )
     s = _alloc(SpatiotemporalMRFReconStrategy, _Identity())
@@ -243,10 +243,10 @@ def test_spatiotemporal_mrf_recon_smoke() -> None:
 
 
 def test_riemannian_mrf_diffusion_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.mrf_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_kspace_strategies import (
         RiemannianMRFDiffusionStrategy,
     )
-    from mriforge.infrastructure.physics.manifolds.bloch_mrf_manifold import (
+    from spectramr.infrastructure.physics.manifolds.bloch_mrf_manifold import (
         BlochMRFManifold,
     )
 
@@ -271,10 +271,10 @@ def test_riemannian_mrf_diffusion_without_a_fingerprint_raises() -> None:
     """#347: dropping the conditioning is a different model, not a fallback."""
     import pytest
 
-    from mriforge.infrastructure.physics.manifolds.bloch_mrf_manifold import (
+    from spectramr.infrastructure.physics.manifolds.bloch_mrf_manifold import (
         BlochMRFManifold,
     )
-    from mriforge.infrastructure.training.strategies.mrf_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_kspace_strategies import (
         RiemannianMRFDiffusionStrategy,
     )
 
@@ -296,7 +296,7 @@ def test_bloch_mrf_manifold_fisher_metric_is_well_formed() -> None:
     Regression: it previously reused the same summed gradient 5× and returned a
     meaningless [..., 5, 5, 5] tensor.
     """
-    from mriforge.infrastructure.physics.manifolds.bloch_mrf_manifold import (
+    from spectramr.infrastructure.physics.manifolds.bloch_mrf_manifold import (
         BlochMRFManifold,
     )
 
@@ -310,10 +310,10 @@ def test_bloch_mrf_manifold_fisher_metric_is_well_formed() -> None:
 
 
 def test_conformal_mrf_dictless_recon_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
         ConformalMRFDictlessReconStrategy,
     )
-    from mriforge.models.generators.mrf_models import ConformalFPEmbedding
+    from spectramr.models.generators.mrf_models import ConformalFPEmbedding
     model = ConformalFPEmbedding(fingerprint_length=32, embedding_dim=5, hidden=16, n_blocks=2)
     s = _alloc(ConformalMRFDictlessReconStrategy, model)
     s.lambda_c = 0.0  # disable jacobian computation to keep test fast
@@ -323,7 +323,7 @@ def test_conformal_mrf_dictless_recon_smoke() -> None:
 
 
 def test_crlb_mrf_pulse_design_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
         CRLBMRFPulseDesignStrategy,
     )
 
@@ -340,10 +340,10 @@ def test_crlb_mrf_pulse_design_smoke() -> None:
 
 
 def test_cross_scanner_mrf_harmonisation_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
         CrossScannerMRFHarmonisationStrategy,
     )
-    from mriforge.models.generators.mrf_models import ScannerTimeReparam
+    from spectramr.models.generators.mrf_models import ScannerTimeReparam
     model = ScannerTimeReparam(fingerprint_length=32, eps=0.1)
     s = _alloc(CrossScannerMRFHarmonisationStrategy, model)
     s.tau_eps = 0.1

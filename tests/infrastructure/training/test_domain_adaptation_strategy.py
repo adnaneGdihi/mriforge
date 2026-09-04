@@ -11,12 +11,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mriforge.config.schemas.loss import LossConfigSchema
+from spectramr.config.schemas.loss import LossConfigSchema
 from tests.utils.config_block_stub import block_stub
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.loss import (
+from spectramr.config.schemas.loss import (
     DiffusionLossesConfig,
     GANLossesConfig,
     LatentLossesConfig,
@@ -24,7 +24,7 @@ from mriforge.config.schemas.loss import (
     ReconstructionLossesConfig,
     SSLLossesConfig,
 )
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
 from tests.utils.mock_environment import create_mock_training_env
@@ -195,7 +195,7 @@ class TestDomainAdaptationTrainingStrategy:
     @pytest.fixture
     def strategy(self, mock_env):
         """Create domain adaptation strategy."""
-        from mriforge.infrastructure.training.strategies import (
+        from spectramr.infrastructure.training.strategies import (
             DomainAdaptationTrainingStrategy,
         )
 
@@ -290,7 +290,7 @@ class TestDisentangledTrainingStrategy:
     @pytest.fixture
     def strategy(self, mock_env):
         """Create disentangled strategy."""
-        from mriforge.infrastructure.training.strategies import DisentangledTrainingStrategy
+        from spectramr.infrastructure.training.strategies import DisentangledTrainingStrategy
 
         return DisentangledTrainingStrategy(env=mock_env)
 
@@ -311,7 +311,7 @@ class TestPaDNetTrainingStrategy:
     @pytest.fixture
     def strategy(self, diffusion_env):
         """Create PaDNet strategy."""
-        from mriforge.infrastructure.training.strategies import PaDNetTrainingStrategy
+        from spectramr.infrastructure.training.strategies import PaDNetTrainingStrategy
 
         return PaDNetTrainingStrategy(env=diffusion_env)
 
@@ -326,7 +326,7 @@ class TestMetaLearningTrainingStrategy:
     @pytest.fixture
     def strategy(self, mock_env):
         """Create meta-learning strategy."""
-        from mriforge.infrastructure.training.strategies import MetaLearningTrainingStrategy
+        from spectramr.infrastructure.training.strategies import MetaLearningTrainingStrategy
 
         return MetaLearningTrainingStrategy(env=mock_env)
 
@@ -347,7 +347,7 @@ class TestMaskedPretrainingStrategy:
     @pytest.fixture
     def strategy(self, mae_env):
         """Create masked pretraining strategy."""
-        from mriforge.infrastructure.training.strategies import MaskedPretrainingStrategy
+        from spectramr.infrastructure.training.strategies import MaskedPretrainingStrategy
 
         return MaskedPretrainingStrategy(env=mae_env)
 
@@ -368,7 +368,7 @@ class TestTRELLISTrainingStrategy:
     @pytest.fixture
     def strategy(self, volumetric_env):
         """Create TRELLIS strategy."""
-        from mriforge.infrastructure.training.strategies import TRELLISTrainingStrategy
+        from spectramr.infrastructure.training.strategies import TRELLISTrainingStrategy
 
         return TRELLISTrainingStrategy(env=volumetric_env)
 
@@ -383,7 +383,7 @@ class TestTttAdaptationStrategy:
     @pytest.fixture
     def strategy(self, mock_env):
         """Create TTT strategy."""
-        from mriforge.infrastructure.training.strategies import TttAdaptationStrategy
+        from spectramr.infrastructure.training.strategies import TttAdaptationStrategy
 
         return TttAdaptationStrategy(env=mock_env)
 

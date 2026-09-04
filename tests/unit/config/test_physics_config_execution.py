@@ -107,7 +107,7 @@ class TestPhysicsSubConfigAccessible:
 
     def test_physics_config_instantiates_with_defaults(self):
         """PhysicsConfigSchema must instantiate with defaults (no required fields missing)."""
-        from mriforge.config.schemas.physics import PhysicsConfigSchema
+        from spectramr.config.schemas.physics import PhysicsConfigSchema
 
         cfg = PhysicsConfigSchema()
         assert cfg is not None
@@ -121,7 +121,7 @@ class TestPhysicsSubConfigAccessible:
         self, field_name: str, enable_attr: str, status: str, note: str
     ):
         """getattr(config.physics.{field_name}, '{enable_attr}') must not raise."""
-        from mriforge.config.schemas.physics import PhysicsConfigSchema
+        from spectramr.config.schemas.physics import PhysicsConfigSchema
 
         cfg = PhysicsConfigSchema()
         sub = getattr(cfg, field_name, None)
@@ -210,7 +210,7 @@ class TestDataConsistencyFieldConsumption:
     @pytest.mark.parametrize("field", DATA_CONSISTENCY_FIELDS_TO_VERIFY)
     def test_field_exists_in_schema(self, field: str):
         """DataConsistencyConfig must declare each expected field."""
-        from mriforge.config.schemas.physics import DataConsistencyConfig
+        from spectramr.config.schemas.physics import DataConsistencyConfig
 
         assert field in DataConsistencyConfig.model_fields, (
             f"DataConsistencyConfig.{field} is missing from the schema.\n"
@@ -219,7 +219,7 @@ class TestDataConsistencyFieldConsumption:
 
     def test_data_consistency_enabled_flag_is_false_by_default(self):
         """DC should be opt-in (default disabled) to prevent silent physics constraints."""
-        from mriforge.config.schemas.physics import DataConsistencyConfig
+        from spectramr.config.schemas.physics import DataConsistencyConfig
 
         cfg = DataConsistencyConfig()
         assert cfg.enabled is False, (
@@ -238,16 +238,16 @@ class TestPhysicsBuilderConstruction:
     """PhysicsBuilder must not crash when given a physics-enabled config."""
 
     def _make_settings_with_physics(self, dc_enabled: bool = False):
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.logging import LoggingConfigSchema
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.config.schemas.physics import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.logging import LoggingConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.physics import (
             DataConsistencyConfig,
             PhysicsConfigSchema,
         )
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings(
             model=ModelConfigSchema(),
@@ -262,8 +262,8 @@ class TestPhysicsBuilderConstruction:
 
     def test_physics_builder_with_dc_disabled(self):
         """PhysicsBuilder should init without error when DC is disabled."""
-        pytest.importorskip("mriforge.infrastructure.training.builders.physics_builder")
-        from mriforge.infrastructure.training.builders.physics_builder import PhysicsBuilder
+        pytest.importorskip("spectramr.infrastructure.training.builders.physics_builder")
+        from spectramr.infrastructure.training.builders.physics_builder import PhysicsBuilder
 
         settings = self._make_settings_with_physics(dc_enabled=False)
         builder = PhysicsBuilder(config=settings, device="cpu")

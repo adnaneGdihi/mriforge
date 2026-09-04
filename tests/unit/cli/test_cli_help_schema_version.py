@@ -1,6 +1,6 @@
 """Every schema version the CLI *advertises* must be one the loader accepts.
 
-``mriforge audit --help`` told the user to write ``config_version: '6.0'``
+``spectramr audit --help`` told the user to write ``config_version: '6.0'``
 against a loader whose ``ACCEPTED_CONFIG_VERSIONS`` is ``{'1.0'}``. Following
 that help produced::
 
@@ -13,7 +13,7 @@ string is help text, so no import resolves it, no schema validates it, and
 
 Why the version is a literal in ``app.py`` and the pin lives here
 ----------------------------------------------------------------
-Interpolating :data:`~mriforge.config.schemas.base.CANONICAL_CONFIG_VERSION`
+Interpolating :data:`~spectramr.config.schemas.base.CANONICAL_CONFIG_VERSION`
 into the help string would be the obvious single-owner fix and is the wrong one:
 importing that module pulls **torch** (1366 modules, measured), and parser
 construction is deliberately torch-free -- that is the budget
@@ -49,7 +49,7 @@ from collections.abc import Iterator
 
 import pytest
 
-from mriforge.config.schemas.base import ACCEPTED_CONFIG_VERSIONS
+from spectramr.config.schemas.base import ACCEPTED_CONFIG_VERSIONS
 
 #: A version token adjacent to the word that makes it a claim about the config
 #: schema. Both orders occur in the wild: "the v6.0 schema" and "schema v6.0".
@@ -67,7 +67,7 @@ _MIN_ADVERTISED_STRINGS = 200
 
 
 def _advertised_strings(
-    parser: argparse.ArgumentParser, path: str = "mriforge"
+    parser: argparse.ArgumentParser, path: str = "spectramr"
 ) -> Iterator[tuple[str, str, str]]:
     """Every string ``--help`` can put in front of a user, as (where, what, text)."""
     for action in parser._actions:
@@ -88,7 +88,7 @@ def _advertised_strings(
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     return build_parser()
 

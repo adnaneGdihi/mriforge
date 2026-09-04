@@ -19,7 +19,7 @@ from tests.utils.optional_backends import requires_cuda_for_mamba
 
 @requires_cuda_for_mamba
 def test_bimamba_4d_real_mamba_mode_runs() -> None:
-    from mriforge.models.blocks.space_filling_curves import BiMamba4DBlock
+    from spectramr.models.blocks.space_filling_curves import BiMamba4DBlock
     blk = BiMamba4DBlock(channels=4, d_state=8, use_real_mamba=True)
     x = torch.randn(1, 4, 2, 4, 4)
     out = blk(x)
@@ -28,7 +28,7 @@ def test_bimamba_4d_real_mamba_mode_runs() -> None:
 
 
 def test_bimamba_4d_conv1d_fallback_runs() -> None:
-    from mriforge.models.blocks.space_filling_curves import BiMamba4DBlock
+    from spectramr.models.blocks.space_filling_curves import BiMamba4DBlock
     blk = BiMamba4DBlock(channels=4, kernel_size=3, use_real_mamba=False)
     x = torch.randn(1, 4, 2, 4, 4)
     assert blk(x).shape == x.shape
@@ -39,7 +39,7 @@ def test_bimamba_4d_conv1d_fallback_runs() -> None:
 
 @requires_cuda_for_mamba
 def test_mrf_tangent_score_consumes_sequence_fingerprint() -> None:
-    from mriforge.models.generators.mrf_models import MRFTangentScore
+    from spectramr.models.generators.mrf_models import MRFTangentScore
     m = MRFTangentScore(
         hidden=16, n_layers=2, fp_dim=8, time_dim=8, use_mamba_fp_encoder=True,
     )
@@ -51,7 +51,7 @@ def test_mrf_tangent_score_consumes_sequence_fingerprint() -> None:
 
 
 def test_mrf_tangent_score_falls_back_to_mlp_encoder() -> None:
-    from mriforge.models.generators.mrf_models import MRFTangentScore
+    from spectramr.models.generators.mrf_models import MRFTangentScore
     m = MRFTangentScore(hidden=16, n_layers=2, fp_dim=8, use_mamba_fp_encoder=False)
     theta = torch.tensor([[1.0, 0.1, 1.0, 0.0, 1.0]])
     t = torch.tensor([0.5])
@@ -63,10 +63,10 @@ def test_mrf_tangent_score_falls_back_to_mlp_encoder() -> None:
 
 
 def test_learned_epi_forward_operator_registered_and_runs() -> None:
-    import mriforge.models.generators  # noqa
-    from mriforge.models.registry import MODEL_REGISTRY
+    import spectramr.models.generators  # noqa
+    from spectramr.models.registry import MODEL_REGISTRY
     assert "learned_epi_forward_operator" in MODEL_REGISTRY
-    from mriforge.models.generators.fmri_models import LearnedEPIForwardOperator
+    from spectramr.models.generators.fmri_models import LearnedEPIForwardOperator
     m = LearnedEPIForwardOperator(in_channels=1, out_channels=2, base_width=4)
     out = m(torch.randn(2, 1, 8, 8))
     assert out.shape == (2, 2, 8, 8)
@@ -76,7 +76,7 @@ def test_learned_epi_forward_operator_registered_and_runs() -> None:
 
 
 def test_mask_generator_4d_shared_in_plane_mask() -> None:
-    from mriforge.infrastructure.physics.sampling import MaskGenerator
+    from spectramr.infrastructure.physics.sampling import MaskGenerator
     g = MaskGenerator(seed=0)
     mask = g.generate_mask_4d(
         mask_type="equispaced",
@@ -89,7 +89,7 @@ def test_mask_generator_4d_shared_in_plane_mask() -> None:
 
 
 def test_mask_generator_4d_per_timepoint_runs() -> None:
-    from mriforge.infrastructure.physics.sampling import MaskGenerator
+    from spectramr.infrastructure.physics.sampling import MaskGenerator
     g = MaskGenerator(seed=0)
     mask = g.generate_mask_4d(
         mask_type="random",
@@ -104,7 +104,7 @@ def test_mask_generator_4d_per_timepoint_runs() -> None:
 
 
 def test_cortical_surface_dataset_falls_back_when_no_companion(tmp_path: Path) -> None:
-    from mriforge.data.datasets.fmri_dataset import CorticalSurfaceDataset
+    from spectramr.data.datasets.fmri_dataset import CorticalSurfaceDataset
     np.save(tmp_path / "vol.npy", np.random.randn(4, 8, 8, 1).astype("float32"))
     ds = CorticalSurfaceDataset(tmp_path)
     sample = ds[0]
@@ -113,7 +113,7 @@ def test_cortical_surface_dataset_falls_back_when_no_companion(tmp_path: Path) -
 
 
 def test_cortical_surface_dataset_loads_npy_companion(tmp_path: Path) -> None:
-    from mriforge.data.datasets.fmri_dataset import CorticalSurfaceDataset
+    from spectramr.data.datasets.fmri_dataset import CorticalSurfaceDataset
     np.save(tmp_path / "vol.npy", np.random.randn(4, 8, 8, 1).astype("float32"))
     grid = np.random.randn(8, 8, 2).astype("float32")
     np.save(tmp_path / "vol_cortex_flatten.npy", grid)
@@ -127,7 +127,7 @@ def test_cortical_surface_dataset_loads_npy_companion(tmp_path: Path) -> None:
 
 
 def test_conformal_flattening_harmonic_keeps_uv_in_disk() -> None:
-    from mriforge.infrastructure.surfaces import ConformalFlattening, CorticalMesh
+    from spectramr.infrastructure.surfaces import ConformalFlattening, CorticalMesh
     v = np.random.randn(50, 3).astype("float32")
     # Simple closed mesh: connect each vertex to its 3 nearest neighbours.
     f = np.array(
@@ -145,7 +145,7 @@ def test_conformal_flattening_harmonic_keeps_uv_in_disk() -> None:
 
 
 def test_cross_scanner_metric_alias_resolves() -> None:
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
     instance = MetricsRegistry.get("cross_scanner_t1_t2_concordance")
     assert instance.name == "cross_scanner_t1t2_concordance"
 
@@ -154,7 +154,7 @@ def test_cross_scanner_metric_alias_resolves() -> None:
 
 
 def test_sfc_conformal_fmri_keys_wrapper_populates_jacobian() -> None:
-    from mriforge.data.builders.sfc_conformal_fmri_keys_wrapper import (
+    from spectramr.data.builders.sfc_conformal_fmri_keys_wrapper import (
         SFCConformalFMRIKeysWrapper,
     )
 
@@ -178,10 +178,10 @@ def test_sfc_conformal_fmri_keys_wrapper_populates_jacobian() -> None:
 
 
 def test_mrf_dictless_matcher_round_trip() -> None:
-    from mriforge.domain.services.mrf_dictless_matching import (
+    from spectramr.domain.services.mrf_dictless_matching import (
         MRFDictlessMatcher,
     )
-    from mriforge.models.generators.mrf_models import ConformalFPEmbedding
+    from spectramr.models.generators.mrf_models import ConformalFPEmbedding
     model = ConformalFPEmbedding(fingerprint_length=16, embedding_dim=5, hidden=16, n_blocks=2)
     matcher = MRFDictlessMatcher(model, device="cpu")
     dict_fp = torch.randn(8, 16)

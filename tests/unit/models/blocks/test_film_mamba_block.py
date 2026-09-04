@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.film_mamba_block import FiLMMambaBlock  # noqa: E402
+from spectramr.models.blocks.film_mamba_block import FiLMMambaBlock  # noqa: E402
 from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 
 

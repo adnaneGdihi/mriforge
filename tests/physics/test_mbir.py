@@ -6,9 +6,9 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.forward_operator import MultiCoilForwardOperator
-from mriforge.infrastructure.physics.mbir import (
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.forward_operator import MultiCoilForwardOperator
+from spectramr.infrastructure.physics.mbir import (
     FISTAMBIRSolver,
     positive_contrast_demodulation,
 )

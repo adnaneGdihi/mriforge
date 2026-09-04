@@ -14,7 +14,7 @@ properly rather than living as dead state.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_validation import ConfigValidator
+from spectramr.infrastructure.validation.config_validation import ConfigValidator
 
 
 def test_no_dead_class_attributes() -> None:

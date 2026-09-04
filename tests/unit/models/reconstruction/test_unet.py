@@ -9,7 +9,7 @@ from unittest.mock import patch
 import torch
 from torch import nn
 
-from mriforge.models.blocks.unet import Down, Down3D, OutConv, OutConv3D, Up, Up3D
+from spectramr.models.blocks.unet import Down, Down3D, OutConv, OutConv3D, Up, Up3D
 
 
 # @pytest.fixture(autouse=True)
@@ -437,7 +437,7 @@ class TestUNetIntegration:
         assert output.shape[3] == 32
 
 
-# --- Regression tests for mriforge.models.reconstruction.unet -----------------
+# --- Regression tests for spectramr.models.reconstruction.unet -----------------
 # These cover the configurable residual block's fail-loud contract:
 #   * unimplemented AttentionType members must raise (pitfall #9/#10), never
 #     silently degrade to nn.Identity.
@@ -447,7 +447,7 @@ class TestUNetIntegration:
 
 import pytest
 
-from mriforge.models.reconstruction.unet import (
+from spectramr.models.reconstruction.unet import (
     AttentionType,
     BlockType,
     ConfigurableResidualBlock,
@@ -525,7 +525,7 @@ class TestUNetPreservesInputSpatialSize:
         # downstream L1 raised "size of tensor a (432) must match b (436)". The
         # else-branch must interpolate back to (input_height, input_width) like
         # the deep-supervision branch already does.
-        from mriforge.models.reconstruction.unet import UNet
+        from spectramr.models.reconstruction.unet import UNet
 
         model = UNet(in_channels=1, out_channels=1)
         # Odd / non-2**N-divisible H and W guarantee an encoder floor.
@@ -539,7 +539,7 @@ class TestUNetPreservesInputSpatialSize:
 
     def test_divisible_input_size_unchanged(self):
         # The guard keeps the common (divisible) case an exact no-op path.
-        from mriforge.models.reconstruction.unet import UNet
+        from spectramr.models.reconstruction.unet import UNet
 
         model = UNet(in_channels=1, out_channels=1)
         x = torch.randn(1, 1, 64, 64)

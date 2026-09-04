@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.doob_marginal_score_unet import DoobMarginalScoreUNet
+from spectramr.models.generators.doob_marginal_score_unet import DoobMarginalScoreUNet
 
 
 def _net() -> DoobMarginalScoreUNet:
@@ -68,8 +68,8 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "doob_marginal_score_unet" in MODEL_REGISTRY

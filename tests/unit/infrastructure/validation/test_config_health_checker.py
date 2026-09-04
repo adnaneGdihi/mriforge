@@ -20,7 +20,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
     HealthCheckReport,
     HealthCheckResult,
@@ -87,7 +87,7 @@ def test_the_stand_in_mirrors_the_real_data_schema() -> None:
     schema: a stand-in is allowed to be minimal, it is not allowed to be a
     different shape.
     """
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
     from tests.unit.config.test_settings import _minimal_config
 
     real = TrainingSettings(**_minimal_config()).data
@@ -187,11 +187,11 @@ class TestVFComplexStackingDoubling:
     Reproduces the 2026-05-24 VF dispatch channel-mismatch failures."""
 
     VF_STRATEGY = (
-        "mriforge.infrastructure.training.strategies."
+        "spectramr.infrastructure.training.strategies."
         "virtual_fiducial_strategy.ConcreteVirtualFiducialStrategy"
     )
     MOTION_META_STRATEGY = (
-        "mriforge.infrastructure.training.strategies."
+        "spectramr.infrastructure.training.strategies."
         "motion_meta_strategy.ConcreteMotionMetaTrainingStrategy"
     )
 
@@ -261,7 +261,7 @@ class TestVFComplexStackingDoubling:
             in_channels=1,
             out_channels=1,
             target_channels=1,
-            strategy_class="mriforge.infrastructure.training.strategies."
+            strategy_class="spectramr.infrastructure.training.strategies."
             "tto_strategy.ConcreteTTOStrategy",
         )
         assert _errors(ConfigHealthChecker().check_domain_alignment(config)) == []
@@ -273,7 +273,7 @@ class TestVFComplexStackingDoubling:
     # It was missing from _COMPLEX_STACKING_STRATEGY_MARKERS, so the audit
     # expected in=1 and rejected the correct in=2 for eval_c2/c3/c7 + exp_c4.
     DISTILLATION_STRATEGY = (
-        "mriforge.infrastructure.training.strategies."
+        "spectramr.infrastructure.training.strategies."
         "distillation_strategy.ConcreteDistillationStrategy"
     )
 
@@ -472,7 +472,7 @@ class TestValidateConfigHealthReturnsReport:
         # adds a sub-block -- it broke on `data.coils` (phase 9a) and then
         # immediately on `optimization.precision` (phase 8). A real
         # TrainingSettings tracks the schema by construction.
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
         from tests.unit.config.test_settings import _minimal_config
 
         raw = _minimal_config()
@@ -566,9 +566,7 @@ class TestValidationImageDomainSafe:
             images=SimpleNamespace(save_validation=save_validation_images)
         )
         cfg.validation = SimpleNamespace(
-            scoring=SimpleNamespace(
-                enable_image_metrics=compute_image_metrics, compute=[]
-            )
+            scoring=SimpleNamespace(enable_image_metrics=compute_image_metrics, compute=[])
         )
         return cfg
 
@@ -955,8 +953,9 @@ class TestScientificMetadata:
     human label that often differs harmlessly from the precise emitted key
     (e.g. 'psnr' vs 'val_robust_mri_psnr'), so a hard warning would false-positive
     on ~34/148 existing configs and break --strict smoke. These tests pin that it
-    never emits an error or warning, reads both dict and object metadata, normalises
-    cascading suffixes, and skips prose values.
+    never emits an error or warning, normalises cascading suffixes, and skips prose
+    values. ``metadata`` is the mounted ``ExperimentMetadataSchema`` (2026-09-02);
+    the dict shape it used to carry is gone.
     """
 
     @staticmethod
@@ -964,41 +963,54 @@ class TestScientificMetadata:
         *,
         primary_metric: str | None = None,
         validation_metrics: list[str] | None = None,
-        metadata_as_dict: bool = False,
+        expected_outcome: str | None = None,
+        baseline: str | None = None,
     ) -> Any:
-        # TrainingSettings.metadata is a free-form dict in practice; cover both shapes.
-        if metadata_as_dict:
-            meta: Any = {"primary_metric": primary_metric} if primary_metric is not None else {}
-        else:
-            meta = SimpleNamespace(primary_metric=primary_metric)
+        meta = SimpleNamespace(
+            primary_metric=primary_metric, expected_outcome=expected_outcome, baseline=baseline
+        )
         return SimpleNamespace(
             metadata=meta,
-            validation=SimpleNamespace(
-                scoring=SimpleNamespace(compute=validation_metrics or [])
-            ),
+            validation=SimpleNamespace(scoring=SimpleNamespace(compute=validation_metrics or [])),
         )
 
     def test_inactive_when_primary_metric_unset(self) -> None:
         # Forward-looking: no field set => no results (existing configs unaffected).
         assert ConfigHealthChecker().check_scientific_metadata(self._cfg()) == []
-        assert (
-            ConfigHealthChecker().check_scientific_metadata(self._cfg(metadata_as_dict=True)) == []
-        )
 
     def test_advisory_never_errors_or_warns(self) -> None:
         # Even when the metric is NOT emitted, the check must stay advisory (info)
         # so it can never break the audit / smoke gate.
-        for as_dict in (False, True):
-            cfg = self._cfg(
-                primary_metric="val_bland_altman_bias",
-                validation_metrics=["psnr", "ssim"],
-                metadata_as_dict=as_dict,
-            )
-            results = ConfigHealthChecker().check_scientific_metadata(cfg)
-            assert _errors(results) == []
-            assert _warnings(results) == []
-            assert all(r.severity == "info" and r.passed for r in results)
-            assert any("not in validation.metrics" in r.message for r in results)
+        cfg = self._cfg(primary_metric="val_bland_altman_bias", validation_metrics=["psnr", "ssim"])
+        results = ConfigHealthChecker().check_scientific_metadata(cfg)
+        assert _errors(results) == []
+        assert _warnings(results) == []
+        assert all(r.severity == "info" and r.passed for r in results)
+        assert any("not in validation.metrics" in r.message for r in results)
+
+    def test_a_floor_without_a_baseline_is_flagged(self) -> None:
+        """Planted violation: a position relative to nothing."""
+        results = ConfigHealthChecker().check_scientific_metadata(
+            self._cfg(expected_outcome="floor")
+        )
+        assert [r.check_name for r in _warnings(results)] == [
+            "scientific_metadata_expected_outcome"
+        ]
+        assert "metadata.baseline is not declared" in _warnings(results)[0].message
+
+    def test_a_ceiling_against_a_baseline_passes(self) -> None:
+        results = ConfigHealthChecker().check_scientific_metadata(
+            self._cfg(expected_outcome="ceiling", baseline="control_arm")
+        )
+        assert _warnings(results) == [] and _errors(results) == []
+        assert any("against baseline 'control_arm'" in r.message for r in results)
+
+    def test_comparable_stands_on_its_own(self) -> None:
+        results = ConfigHealthChecker().check_scientific_metadata(
+            self._cfg(expected_outcome="comparable")
+        )
+        assert _warnings(results) == [] and _errors(results) == []
+        assert [r.check_name for r in results] == ["scientific_metadata_expected_outcome"]
 
     def test_computed_metric_is_clean(self) -> None:
         cfg = self._cfg(primary_metric="val_psnr", validation_metrics=["psnr", "ssim"])
@@ -1072,9 +1084,7 @@ class TestAccelerationConsistencyCenterFraction:
 
 def _cfg_with_metrics(metrics: list[str]) -> Any:
     # `validation.metrics` -> `validation.scoring.compute` (phase 10a).
-    return SimpleNamespace(
-        validation=SimpleNamespace(scoring=SimpleNamespace(compute=metrics))
-    )
+    return SimpleNamespace(validation=SimpleNamespace(scoring=SimpleNamespace(compute=metrics)))
 
 
 class TestMetricBackendAvailable:
@@ -1083,7 +1093,7 @@ class TestMetricBackendAvailable:
         assert all(r.passed for r in res)
 
     def test_torchmetrics_available_passes(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import mriforge.core.metrics.evaluation_metrics as em
+        import spectramr.core.metrics.evaluation_metrics as em
 
         monkeypatch.setattr(em, "TORCHMETRICS_AVAILABLE", True)
         res = ConfigHealthChecker().check_metric_backend_available(
@@ -1094,7 +1104,7 @@ class TestMetricBackendAvailable:
     def test_unbacked_metric_errors_when_torchmetrics_missing(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        import mriforge.core.metrics.evaluation_metrics as em
+        import spectramr.core.metrics.evaluation_metrics as em
 
         monkeypatch.setattr(em, "TORCHMETRICS_AVAILABLE", False)
         res = ConfigHealthChecker().check_metric_backend_available(_cfg_with_metrics(["ms_ssim"]))
@@ -1106,7 +1116,7 @@ class TestMetricBackendAvailable:
     def test_lpips_fallback_avoids_error(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # torchmetrics missing but the lpips package present -> LPIPS is backed, no error.
         pytest.importorskip("lpips")
-        import mriforge.core.metrics.evaluation_metrics as em
+        import spectramr.core.metrics.evaluation_metrics as em
 
         monkeypatch.setattr(em, "TORCHMETRICS_AVAILABLE", False)
         res = ConfigHealthChecker().check_metric_backend_available(
@@ -1585,9 +1595,7 @@ class TestCurriculumTargetsResolvable:
         return SimpleNamespace(
             loss_schedule=SimpleNamespace(
                 enabled=True,
-                rules=[
-                    SimpleNamespace(name=f"rule_{t}", target=t) for t in targets
-                ],
+                rules=[SimpleNamespace(name=f"rule_{t}", target=t) for t in targets],
             ),
             losses=SimpleNamespace(
                 image_losses=[{"name": n, "weight": w} for n, w in declared],
@@ -1641,7 +1649,7 @@ def _subvoxel_cfg(in_channels: int = 24, n_frames: int = 8, marker_channels: boo
 
     import yaml
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     src = pathlib.Path("experiments/inprogress/vf/exp_vf_01_subvoxel_superres_v2.yaml")
     raw = yaml.safe_load(src.read_text())
@@ -1665,7 +1673,7 @@ def test_synthesised_stack_width_is_checked_not_skipped() -> None:
     skipped. Moving them to an image dataset made it derive 1 channel and reject
     a correct ``in_channels`` of 24. Checking the RIGHT quantity beats skipping.
     """
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -1677,7 +1685,7 @@ def test_synthesised_stack_width_is_checked_not_skipped() -> None:
 
 def test_wrong_synthesised_stack_width_is_an_error() -> None:
     """The audit must catch at load time what the strategy raises on at setup."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -1688,7 +1696,7 @@ def test_wrong_synthesised_stack_width_is_an_error() -> None:
 
 def test_fiducial_channels_widen_the_expected_stack() -> None:
     """With the marker fed to the model the contract is n*4, not n*3."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -1703,7 +1711,7 @@ def test_fiducial_channels_widen_the_expected_stack() -> None:
 def _relax_cfg(t1_src: float, t1_tgt: float):
     from types import SimpleNamespace
 
-    from mriforge.config.schemas.physics import MultiAcquisitionConfig
+    from spectramr.config.schemas.physics import MultiAcquisitionConfig
 
     acq = {"tr_ms": 500.0, "te_ms": 15.0, "flip_deg": 90.0}
     macq = MultiAcquisitionConfig(
@@ -1726,13 +1734,11 @@ def test_marker_kappa_inside_the_tissue_range_passes() -> None:
     """A single-material marker pins ONE point on the transfer curve; the rest
     is the Bottomley model extrapolated. That is a limit either way, but it is
     only defensible while the measured point brackets the tissues."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
-    r = ConfigHealthChecker().check_marker_kappa_in_tissue_range(
-        _relax_cfg(500.0, 900.0)
-    )
+    r = ConfigHealthChecker().check_marker_kappa_in_tissue_range(_relax_cfg(500.0, 900.0))
     assert r.passed and r.severity == "info"
     assert "pins ONE point" in r.message
 
@@ -1742,13 +1748,11 @@ def test_marker_kappa_outside_the_tissue_range_is_an_error() -> None:
     [0.453, 0.865] — it calibrates by extrapolation, so a kappa verified on it
     says nothing about any tissue the network has to translate. Nothing
     rejected that before 2026-07-26."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
-    r = ConfigHealthChecker().check_marker_kappa_in_tissue_range(
-        _relax_cfg(50.0, 60.0)
-    )
+    r = ConfigHealthChecker().check_marker_kappa_in_tissue_range(_relax_cfg(50.0, 60.0))
     assert not r.passed and r.severity == "error"
     assert "OUTSIDE the range" in r.message
 
@@ -1756,8 +1760,8 @@ def test_marker_kappa_outside_the_tissue_range_is_an_error() -> None:
 def test_kappa_check_is_inert_when_calibration_is_off() -> None:
     from types import SimpleNamespace
 
-    from mriforge.config.schemas.physics import MultiAcquisitionConfig
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.schemas.physics import MultiAcquisitionConfig
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -1779,13 +1783,12 @@ def test_marker_kappa_check_is_invoked_by_run_all_checks():
 
     Found by `meta.health_checker_no_orphan_checks`.
     """
-    from mriforge.infrastructure.validation.witness.checks.meta_orphan_checks import (
+    from spectramr.infrastructure.validation.witness.checks.meta_orphan_checks import (
         invoked_check_methods,
     )
 
     assert "check_marker_kappa_in_tissue_range" in invoked_check_methods(), (
-        "the check is defined but run_all_checks does not call it, so it "
-        "protects nothing"
+        "the check is defined but run_all_checks does not call it, so it protects nothing"
     )
 
 
@@ -1804,8 +1807,8 @@ class TestLossDomainBlockMatch:
 
     @staticmethod
     def _settings(losses: dict[str, Any]) -> Any:
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings.settings_from_dict(
             {
@@ -1819,9 +1822,7 @@ class TestLossDomainBlockMatch:
         )
 
     def _verdicts(self, losses: dict[str, Any]) -> list[tuple[bool, str]]:
-        results = ConfigHealthChecker().check_loss_domain_block_match(
-            self._settings(losses)
-        )
+        results = ConfigHealthChecker().check_loss_domain_block_match(self._settings(losses))
         return [(r.passed, r.message) for r in results]
 
     def test_a_latent_loss_under_image_losses_is_rejected(self) -> None:
@@ -1869,7 +1870,7 @@ class TestLossDomainBlockMatch:
     def test_the_latent_list_is_actually_inspected(self) -> None:
         """``latent_losses`` is new; if the check's block map missed it, entries
         there would be graded against nothing."""
-        from mriforge.config.schemas.loss import LOSS_LIST_DOMAINS
+        from spectramr.config.schemas.loss import LOSS_LIST_DOMAINS
 
         assert "latent_losses" in LOSS_LIST_DOMAINS
         # `hermitian_symmetry` is registered domain='kspace'. Deliberately not
@@ -1895,8 +1896,8 @@ class TestMetricNamesAreRegistered:
 
     @staticmethod
     def _settings(metrics: dict[str, Any]) -> Any:
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings.settings_from_dict(
             {
@@ -1962,14 +1963,14 @@ class TestDeclaredKeysAreNotDiscarded:
 
     @staticmethod
     def _run(config):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
         return ConfigHealthChecker().check_declared_keys_are_not_discarded(config)
 
     def test_no_ledger_reports_not_measured_not_clean(self) -> None:
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.reset()
         assert ExecutionLedger.current() is None
@@ -1981,7 +1982,7 @@ class TestDeclaredKeysAreNotDiscarded:
         )
 
     def test_a_clean_load_says_so_distinctly(self) -> None:
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.begin_run(source="test")
         result = self._run(object())
@@ -1990,7 +1991,7 @@ class TestDeclaredKeysAreNotDiscarded:
         assert "NOT measured" not in result.message
 
     def test_a_dropped_key_is_reported_with_its_dotted_path(self) -> None:
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
         )
@@ -2001,7 +2002,7 @@ class TestDeclaredKeysAreNotDiscarded:
             site="test",
             stage="config_finalize",
             path="logging.project_name",
-            requested="mriforge_research",
+            requested="spectramr_research",
             resolved=None,
             reason="test fixture",
             severity="error",
@@ -2017,7 +2018,7 @@ class TestDeclaredKeysAreNotDiscarded:
         finding. Same polarity as ``check_workflow_declared``: report, then
         ratchet once the corpus is drained. Pinned so the ratchet is a decision
         rather than an accident."""
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
         )
@@ -2041,7 +2042,7 @@ class TestDeclaredKeysAreNotDiscarded:
         """Anti-vacuity. ``EXTRA_ALLOW_UNTYPED`` is a different finding (the key
         is carried, just unvalidated); counting it here would inflate the number
         and blur two distinct defects."""
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
         )
@@ -2073,7 +2074,7 @@ class TestPinMemoryCheckActuallyRuns:
 
     @staticmethod
     def _settings(device: str, pin_memory: bool):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings.settings_from_dict(
             {
@@ -2090,34 +2091,28 @@ class TestPinMemoryCheckActuallyRuns:
         )
 
     def test_cpu_plus_pin_memory_now_fires(self):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
-        result = ConfigHealthChecker().check_pin_memory_no_cuda(
-            self._settings("cpu", True)
-        )
+        result = ConfigHealthChecker().check_pin_memory_no_cuda(self._settings("cpu", True))
         assert result.passed is False
         assert "pin_memory" in result.message
 
     def test_cuda_is_genuinely_not_applicable(self):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
-        result = ConfigHealthChecker().check_pin_memory_no_cuda(
-            self._settings("cuda", True)
-        )
+        result = ConfigHealthChecker().check_pin_memory_no_cuda(self._settings("cuda", True))
         assert result.passed is True  # n/a -- pin_memory is correct on CUDA
 
     def test_cpu_without_pin_memory_passes(self):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
-        result = ConfigHealthChecker().check_pin_memory_no_cuda(
-            self._settings("cpu", False)
-        )
+        result = ConfigHealthChecker().check_pin_memory_no_cuda(self._settings("cpu", False))
         assert result.passed is True
 
 
@@ -2153,7 +2148,7 @@ class TestLegacyConfigVersionIsRefusedByTheLoader:
 
     @pytest.mark.parametrize("declared", ["6.0", "6.1"])
     def test_a_legacy_version_cannot_be_loaded_at_all(self, tmp_path, declared):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         with pytest.raises(ValueError, match="not supported"):
             TrainingSettings.from_yaml(self._write(tmp_path, declared))
@@ -2161,12 +2156,10 @@ class TestLegacyConfigVersionIsRefusedByTheLoader:
     def test_the_canonical_version_still_loads(self, tmp_path):
         """Anti-vacuity. Without this, a loader broken for EVERY version would
         satisfy the refusal test above and still look like a working ratchet."""
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.settings import TrainingSettings
 
-        settings = TrainingSettings.from_yaml(
-            self._write(tmp_path, CANONICAL_CONFIG_VERSION)
-        )
+        settings = TrainingSettings.from_yaml(self._write(tmp_path, CANONICAL_CONFIG_VERSION))
         assert settings.run.config_version == CANONICAL_CONFIG_VERSION
 
     def test_the_dead_check_is_gone(self):
@@ -2175,7 +2168,7 @@ class TestLegacyConfigVersionIsRefusedByTheLoader:
         The call site keeps a comment naming the deleted method, so a source
         scan would match the comment and pass whether or not the method exists.
         """
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2200,7 +2193,7 @@ class TestM4RawNexTargetModeDeclared:
     def _load(tmp_path, name: str, **data_overrides):
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         data = {"train_path": "/tmp/t", "val_path": "/tmp/v"}
         data.update(data_overrides)
@@ -2220,7 +2213,7 @@ class TestM4RawNexTargetModeDeclared:
 
     @staticmethod
     def _check(settings):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2255,9 +2248,7 @@ class TestM4RawNexTargetModeDeclared:
         identically would tell an owner triaging the 47 silent arms nothing about
         which ones were a deliberate legacy comparison.
         """
-        chosen = self._load(
-            tmp_path, "chosen", dataset_type="m4raw", target_mode="complex_mean"
-        )
+        chosen = self._load(tmp_path, "chosen", dataset_type="m4raw", target_mode="complex_mean")
         silent = self._load(tmp_path, "silent2", dataset_type="m4raw")
         assert chosen.data.target_mode == silent.data.target_mode == "complex_mean"
 
@@ -2277,7 +2268,7 @@ class TestM4RawNexTargetModeDeclared:
     def test_the_check_is_wired_into_run_all_checks(self):
         import inspect
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2301,14 +2292,14 @@ class TestComponentKwargsReachConstructor:
 
     @staticmethod
     def _run(config):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
         return ConfigHealthChecker().check_component_kwargs_reach_constructor(config)
 
     def test_no_ledger_reports_not_measured_not_clean(self) -> None:
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.reset()
         assert ExecutionLedger.current() is None
@@ -2317,7 +2308,7 @@ class TestComponentKwargsReachConstructor:
         assert "NOT measured" in result.message
 
     def test_a_clean_build_says_so_distinctly(self) -> None:
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.begin_run(source="test")
         result = self._run(object())
@@ -2325,7 +2316,7 @@ class TestComponentKwargsReachConstructor:
         assert "NOT measured" not in result.message
 
     def test_a_dropped_kwarg_is_advisory_and_names_the_consumer(self) -> None:
-        from mriforge.core.execution_ledger import ExecutionLedger, unconsumed_keys
+        from spectramr.core.execution_ledger import ExecutionLedger, unconsumed_keys
 
         ExecutionLedger.begin_run(source="test")
         unconsumed_keys(
@@ -2343,7 +2334,7 @@ class TestComponentKwargsReachConstructor:
 
     def test_var_kwargs_acceptance_is_reported_too(self) -> None:
         """Accepted-into-**kwargs is not consumption; it must not read clean."""
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
             unconsumed_keys,
@@ -2365,7 +2356,7 @@ class TestComponentKwargsReachConstructor:
     def test_unrelated_substitution_classes_are_ignored(self) -> None:
         """`EXTRA_IGNORE_DROPPED` belongs to the sibling check; counting it here
         would double-report every one of the corpus's ~1,279 hits."""
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         ledger = ExecutionLedger.begin_run(source="test")
         ledger.record(
@@ -2489,9 +2480,7 @@ class TestMetricDomainMatchesLossOutput:
         even when `output_transform` outranks it.
         """
         config = self._config(transform="ifft_mag_combine")
-        config.validation = block_stub(
-            "validation", output_transform="ifft_magnitude"
-        )
+        config.validation = block_stub("validation", output_transform="ifft_magnitude")
         result = ConfigHealthChecker().check_metric_domain_matches_loss_output(config)
         assert not result.passed
 
@@ -2504,16 +2493,12 @@ class TestMetricDomainMatchesLossOutput:
         Exactly the 112-arm shape that made aliasing unsafe.
         """
         config = self._config(loss_domain="image", metric_domain="image")
-        config.validation = block_stub(
-            "validation", output_transform="ifft_magnitude"
-        )
+        config.validation = block_stub("validation", output_transform="ifft_magnitude")
         result = ConfigHealthChecker().check_metric_domain_matches_loss_output(config)
         assert "already agree" in result.message
 
     def test_unbridged_mismatch_is_still_reported(self):
-        result = ConfigHealthChecker().check_metric_domain_matches_loss_output(
-            self._config()
-        )
+        result = ConfigHealthChecker().check_metric_domain_matches_loss_output(self._config())
         assert "may grade the wrong physical quantity" in result.message
         assert result.severity == "info"
 
@@ -2524,9 +2509,7 @@ class TestMetricDomainMatchesLossOutput:
         for a validation-domain mismatch is how 236 declarations accumulated
         against a key that could not fix the reported problem.
         """
-        result = ConfigHealthChecker().check_metric_domain_matches_loss_output(
-            self._config()
-        )
+        result = ConfigHealthChecker().check_metric_domain_matches_loss_output(self._config())
         assert "validation.scoring.output_transform" in (result.fix_hint or "")
 
     def test_the_none_sentinel_is_not_a_transform(self):
@@ -2539,9 +2522,7 @@ class TestMetricDomainMatchesLossOutput:
 
     def test_a_real_transform_still_counts_as_a_bridge(self):
         config = self._config(transform=None)
-        config.validation = block_stub(
-            "validation", output_transform="ifft_sense_adjoint"
-        )
+        config.validation = block_stub("validation", output_transform="ifft_sense_adjoint")
         result = ConfigHealthChecker().check_metric_domain_matches_loss_output(config)
         assert result.passed
         assert "bridged" in result.message
@@ -2580,9 +2561,7 @@ class TestMetricDomainMatchesLossOutput:
 # ---------------------------------------------------------------------------
 
 
-def _kspace_recon_settings(
-    *, data_consistency_enabled: bool, sampling_mask: str | None
-) -> Any:
+def _kspace_recon_settings(*, data_consistency_enabled: bool, sampling_mask: str | None) -> Any:
     """Minimal config-shaped object for check_physics_config.
 
     ``sampling_mask`` maps onto ``undersampling.sampling_pattern``
@@ -2594,7 +2573,7 @@ def _kspace_recon_settings(
     return SimpleNamespace(
         training=SimpleNamespace(
             strategy_class=(
-                "mriforge.infrastructure.training.strategies."
+                "spectramr.infrastructure.training.strategies."
                 "reconstruction.ReconstructionTrainingStrategy"
             )
         ),
@@ -2602,13 +2581,9 @@ def _kspace_recon_settings(
             dataset_type="kspace",
             coils=SimpleNamespace(processing_mode="rss"),
         ),
-        physics=SimpleNamespace(
-            data_consistency=SimpleNamespace(enabled=data_consistency_enabled)
-        ),
+        physics=SimpleNamespace(data_consistency=SimpleNamespace(enabled=data_consistency_enabled)),
         undersampling=(
-            None
-            if sampling_mask is None
-            else SimpleNamespace(sampling_pattern=sampling_mask)
+            None if sampling_mask is None else SimpleNamespace(sampling_pattern=sampling_mask)
         ),
     )
 
@@ -2648,9 +2623,7 @@ def test_physics_check_inert_finding_is_advisory_not_blocking() -> None:
 
 def test_physics_check_passes_and_says_so_when_physics_is_live() -> None:
     """The passed=True fallback: 'ran and found nothing' must be distinguishable."""
-    settings = _kspace_recon_settings(
-        data_consistency_enabled=True, sampling_mask="equispaced"
-    )
+    settings = _kspace_recon_settings(data_consistency_enabled=True, sampling_mask="equispaced")
     results = ConfigHealthChecker().check_physics_config(settings)
     assert results and all(r.passed for r in results)
 
@@ -2659,7 +2632,9 @@ def test_physics_check_is_a_noop_off_the_recon_diffusion_kspace_path() -> None:
     """Anti-vacuity: the applicability gate must still exclude non-k-space arms."""
     settings = SimpleNamespace(
         training=SimpleNamespace(strategy_class="some_other_strategy"),
-        data=SimpleNamespace(dataset_type="nifti_paired", coils=SimpleNamespace(processing_mode=None)),
+        data=SimpleNamespace(
+            dataset_type="nifti_paired", coils=SimpleNamespace(processing_mode=None)
+        ),
         physics=SimpleNamespace(data_consistency=SimpleNamespace(enabled=False)),
         undersampling=None,
     )
@@ -2682,7 +2657,7 @@ class TestDiffusionStepChecksReadTheCanonicalField:
         import importlib
         import pkgutil
 
-        import mriforge.config.schemas as schemas
+        import spectramr.config.schemas as schemas
 
         carriers = []
         for mod_info in pkgutil.walk_packages(schemas.__path__, schemas.__name__ + "."):
@@ -2699,7 +2674,7 @@ class TestDiffusionStepChecksReadTheCanonicalField:
     def test_the_acceleration_block_carries_schedule_steps(self) -> None:
         """Anti-vacuity for the sibling deletion: `accel` genuinely has this
         field, so reading it alone is not the same as reading nothing."""
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         assert "schedule_steps" in AccelerationConfigSchema.model_fields
 
@@ -2716,7 +2691,7 @@ class TestFatalHealthChecks:
 
     def test_the_deepspeed_extra_check_is_fatal(self):
         """It was not, and its own message described the resulting waste."""
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             FATAL_HEALTH_CHECKS,
         )
 
@@ -2729,7 +2704,7 @@ class TestFatalHealthChecks:
         This is a tripwire, not a style rule: if the set grows past a handful,
         someone is using it as a severity synonym rather than a certainty claim.
         """
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             FATAL_HEALTH_CHECKS,
         )
 
@@ -2750,7 +2725,7 @@ class TestFatalHealthChecks:
         import importlib.util
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2768,7 +2743,7 @@ class TestFatalHealthChecks:
         import importlib.util
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2808,7 +2783,7 @@ class TestZeroStageHasRanksToShard:
 
     @staticmethod
     def _run(cfg):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2830,9 +2805,7 @@ class TestZeroStageHasRanksToShard:
         ("num_devices", "num_nodes", "world"),
         [(2, 1, 2), (4, 1, 4), (1, 2, 2), (4, 2, 8)],
     )
-    def test_a_multi_rank_topology_has_something_to_shard(
-        self, num_devices, num_nodes, world
-    ):
+    def test_a_multi_rank_topology_has_something_to_shard(self, num_devices, num_nodes, world):
         """World size is the PRODUCT; a 1x2 arm shards as surely as a 2x1 one."""
         result = self._run(self._cfg(num_devices=num_devices, num_nodes=num_nodes))
         assert result.passed is True
@@ -2850,7 +2823,7 @@ class TestZeroStageHasRanksToShard:
         errors and ``.warnings`` only non-passing warnings, so an info result
         that passes contributes to neither -- which is what keeps a
         launcher-driven arm's audit exit code at 0."""
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckReport,
         )
 
@@ -2911,14 +2884,14 @@ class TestZeroStageHasRanksToShard:
         """
         import logging
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckReport,
         )
 
         report = HealthCheckReport(results=[self._run(self._cfg())])
         with caplog.at_level(
             logging.INFO,
-            logger="mriforge.infrastructure.validation.config_health_checker",
+            logger="spectramr.infrastructure.validation.config_health_checker",
         ):
             report.log_summary()
 
@@ -2935,7 +2908,7 @@ class TestZeroStageHasRanksToShard:
         import inspect
         import textwrap
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -2946,13 +2919,15 @@ class TestZeroStageHasRanksToShard:
             if isinstance(node, ast.Attribute) and node.attr.startswith("check_")
         }
         assert "check_deepspeed_zero_stage_has_ranks_to_shard" in invoked
+
+
 class TestAPassingAdvisoryReachesTheLog:
     """``info`` must mean "logged without gating", never "unloggable" (#1275).
 
     ``log_summary`` rendered a result only when it did NOT pass. A check that
     returns ``passed=True`` at ``info`` severity -- the polarity that keeps it
     from gating the audit -- was therefore counted in the denominator and
-    silently discarded, while ``mriforge audit`` printed the identical result in
+    silently discarded, while ``spectramr audit`` printed the identical result in
     full (``cli/app.py`` prints every result and ``__rich__`` gives a passing
     one a green icon). Legible on one surface, structurally unreachable on the
     other, and neither surface said so.
@@ -2963,7 +2938,7 @@ class TestAPassingAdvisoryReachesTheLog:
 
     @staticmethod
     def _result(**kwargs):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckResult,
         )
 
@@ -2978,7 +2953,7 @@ class TestAPassingAdvisoryReachesTheLog:
 
     @staticmethod
     def _report(*results):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckReport,
         )
 
@@ -2990,7 +2965,7 @@ class TestAPassingAdvisoryReachesTheLog:
 
         with caplog.at_level(
             logging.INFO,
-            logger="mriforge.infrastructure.validation.config_health_checker",
+            logger="spectramr.infrastructure.validation.config_health_checker",
         ):
             report.log_summary()
         # getMessage(), not .message: the latter is set by a Formatter, so it
@@ -3033,9 +3008,7 @@ class TestAPassingAdvisoryReachesTheLog:
         visible cannot change any surface's exit code, which is what keeps
         ``test_the_advisory_never_gates`` true.
         """
-        report = self._report(
-            self._result(always_report=True), self._result(always_report=False)
-        )
+        report = self._report(self._result(always_report=True), self._result(always_report=False))
         assert report.passed is True
         assert report.warnings == []
         assert report.errors == []
@@ -3067,7 +3040,7 @@ class TestDeclaredModelKwargsAreRead:
 
     @staticmethod
     def _run(cfg):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -3096,7 +3069,7 @@ class TestDeclaredModelKwargsAreRead:
 
     def test_the_advisory_never_gates(self):
         """90/647 inprogress arms are affected, so this must not exit 2 (pitfall #10)."""
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckReport,
         )
 
@@ -3120,7 +3093,7 @@ class TestDeclaredModelKwargsAreRead:
         import inspect
         import textwrap
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -3150,8 +3123,8 @@ class TestRepetitionCountIsAchievable:
         dataset_type: str = "m4raw",
         contrast_map: dict[str, int] | None = None,
     ) -> Any:
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.settings import TrainingSettings
 
         data: dict[str, Any] = {"dataset_type": dataset_type}
         if contrast_map is not None:
@@ -3226,9 +3199,7 @@ class TestRepetitionCountIsAchievable:
         """PLANT (shape 5): the low count is reachable too, so the check is not
         merely 'anything but 3 is wrong'."""
         r = ConfigHealthChecker().check_repetition_count_is_achievable(
-            self._settings(
-                model_kwargs={"num_repetitions": 2}, contrast_map={"FLAIR": 0}
-            )
+            self._settings(model_kwargs={"num_repetitions": 2}, contrast_map={"FLAIR": 0})
         )
         assert r.passed, r.message
 
@@ -3273,9 +3244,7 @@ class TestRepetitionCountIsAchievable:
         # gate stayed green against a by-value implementation.
         fn = ast.parse(
             textwrap.dedent(
-                inspect.getsource(
-                    ConfigHealthChecker.check_repetition_count_is_achievable
-                )
+                inspect.getsource(ConfigHealthChecker.check_repetition_count_is_achievable)
             )
         ).body[0]
         body = fn.body[1:] if ast.get_docstring(fn) else fn.body
@@ -3326,7 +3295,7 @@ class TestDCKnobsInertByMethod:
 
     @staticmethod
     def _run(config):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -3384,3 +3353,273 @@ class TestDCKnobsInertByMethod:
         hint = self._run(self._config(method="hard", weight=0.5)).fix_hint
         assert "Delete the key" in hint
         assert "replaces" in hint
+
+
+class TestAccelerationPresentIsScopedToReconstructionFamilies:
+    """Cohort review 2026-09-02: an undersampling block on a VAE / GAN / calibration
+    arm is the inert declaration ``undersampling_block_is_applied`` refuses, so this
+    check must not demand one there. One rule for both checks."""
+
+    @staticmethod
+    def _arm():
+        return SimpleNamespace(
+            data=SimpleNamespace(dataset_type="kspace"),
+            undersampling=None,
+            workflow=None,
+        )
+
+    def test_reconstruction_family_still_fails_without_a_block(self, monkeypatch):
+        """The planted violation this check has always caught."""
+        from spectramr.infrastructure.training import strategy_factory as sf
+        from spectramr.infrastructure.training.strategies.reconstruction import (
+            ReconstructionTrainingStrategy,
+        )
+
+        monkeypatch.setattr(
+            sf.TrainingStrategyFactory,
+            "get_strategy_class",
+            lambda self, c: ReconstructionTrainingStrategy,
+        )
+        result = ConfigHealthChecker().check_acceleration_present(self._arm())
+        assert result.passed is False
+
+    def test_generative_family_passes_without_a_block(self, monkeypatch):
+        from spectramr.infrastructure.training import strategy_factory as sf
+        from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
+
+        monkeypatch.setattr(
+            sf.TrainingStrategyFactory, "get_strategy_class", lambda self, c: VAETrainingStrategy
+        )
+        result = ConfigHealthChecker().check_acceleration_present(self._arm())
+        assert result.passed is True and "does not reconstruct" in result.message
+
+    def test_unresolvable_strategy_keeps_the_old_reach(self, monkeypatch):
+        from spectramr.infrastructure.training import strategy_factory as sf
+
+        def _boom(self, c):
+            raise ValueError("unknown training_mode")
+
+        monkeypatch.setattr(sf.TrainingStrategyFactory, "get_strategy_class", _boom)
+        assert ConfigHealthChecker().check_acceleration_present(self._arm()).passed is False
+
+
+class TestScheduleStepsOnAFullySampledArm:
+    """`acceleration_schedule_steps_match` has no schedule to match on a fully
+    sampled arm; a base of 1.0 alone is still a ladder to the default max."""
+
+    @staticmethod
+    def _cfg(**accel):
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+
+        diffusion = SimpleNamespace(timesteps=1000, model_fields_set={"timesteps"})
+        return SimpleNamespace(
+            undersampling=AccelerationConfigSchema(**accel),
+            training=SimpleNamespace(diffusion=diffusion),
+        )
+
+    def test_fully_sampled_declaration_is_skipped(self) -> None:
+        result = ConfigHealthChecker().check_acceleration_schedule_steps_match_diffusion(
+            self._cfg(base_acceleration=1.0, max_acceleration=1.0)
+        )
+        assert result.passed is True and "no mask schedule" in result.message
+
+    def test_base_one_alone_still_needs_a_matching_schedule(self) -> None:
+        """Planted violation: timesteps 1000 against the default 10000 steps."""
+        result = ConfigHealthChecker().check_acceleration_schedule_steps_match_diffusion(
+            self._cfg(base_acceleration=1.0)
+        )
+        assert result.passed is False and result.severity == "error"
+
+
+class TestConcomitantAtClinicalFieldIsAnAdvisory:
+    """A passed result with severity "warning" was invisible to the single-arm
+    audit and an ERROR(strict) in the bulk run; it is an info that is reported."""
+
+    @staticmethod
+    def _cfg(b0: float):
+        return SimpleNamespace(
+            physics=SimpleNamespace(field_strength=b0, concomitant=SimpleNamespace(enabled=True))
+        )
+
+    def test_three_tesla_is_reported_info(self) -> None:
+        result = ConfigHealthChecker().check_concomitant_requires_low_field(self._cfg(3.0))
+        assert result.passed is True and result.severity == "info"
+        assert getattr(result, "always_report", False) is True
+        assert "no-op" in result.message
+
+    def test_ulf_is_appropriate(self) -> None:
+        result = ConfigHealthChecker().check_concomitant_requires_low_field(self._cfg(0.064))
+        assert result.passed is True and result.severity == "info"
+
+
+class TestConditionOnInputDoublesTheInput:
+    """`condition_on_input: true` concatenates the measurement onto the noised
+    target, so the model reads twice the loaded width and emits the target width."""
+
+    @staticmethod
+    def _cfg(
+        in_channels: int, out_channels: int, *, condition: bool, model_type: str = "hdsf_hld_mamba"
+    ):
+        return SimpleNamespace(
+            model=SimpleNamespace(
+                model_type=model_type,
+                in_channels=in_channels,
+                out_channels=out_channels,
+                model_kwargs={},
+            ),
+            data=SimpleNamespace(
+                dataset_type="nifti_paired",
+                coils=SimpleNamespace(processing_mode="rss", num_virtual_coils=None),
+                pairing=SimpleNamespace(single_contrast=True),
+                multi_contrast=SimpleNamespace(enabled=False),
+                domain=SimpleNamespace(target_channels=None),
+            ),
+            training=SimpleNamespace(diffusion=SimpleNamespace(condition_on_input=condition)),
+            physics=None,
+        )
+
+    def test_two_input_channels_pass_when_the_measurement_is_concatenated(self) -> None:
+        results = ConfigHealthChecker().check_domain_alignment(self._cfg(2, 1, condition=True))
+        assert _errors(results) == []
+        assert any("condition_on_input" in r.message for r in results)
+
+    def test_the_same_widths_fail_without_the_concat(self) -> None:
+        """Planted violation: in_channels=2 on a 1-channel loader with no conditioning."""
+        results = ConfigHealthChecker().check_domain_alignment(self._cfg(2, 1, condition=False))
+        assert [r.check_name for r in _errors(results)] == ["domain_alignment"]
+
+    def test_cold_and_latent_arms_do_not_concatenate(self) -> None:
+        """The strategy's gate reads model.model_type, so the predicate does too.
+
+        Tested on the predicate: a ``kspace_cold_diffusion`` arm reaches the
+        relaxed input check first (the S-map concat rule), which hides it from
+        ``check_domain_alignment``'s verdict.
+        """
+        predicate = ConfigHealthChecker._conditions_on_input
+        assert predicate(self._cfg(2, 1, condition=True)) is True
+        assert (
+            predicate(self._cfg(2, 1, condition=True, model_type="kspace_cold_diffusion")) is False
+        )
+        assert (
+            predicate(self._cfg(2, 1, condition=True, model_type="latent_gaussian_diffusion"))
+            is False
+        )
+        assert predicate(self._cfg(2, 1, condition=True, model_type="ldm")) is False
+        assert predicate(self._cfg(2, 1, condition=False)) is False
+
+
+class TestNexTargetModeAcceptsThePair:
+    """``rep_pair`` is phase-aligned by construction, so it is a coherent NEX target."""
+
+    @staticmethod
+    def _cfg(mode: str):
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        data = DataConfigSchema(
+            dataset_type="m4raw",
+            target_mode=mode,
+            nex_target_exclude_input=(mode == "rep_pair"),
+        )
+        return SimpleNamespace(data=data)
+
+    def test_rep_pair_is_coherent(self) -> None:
+        result = ConfigHealthChecker().check_m4raw_nex_target_mode_declared(self._cfg("rep_pair"))
+        assert result.passed is True and "rep_pair" in result.message
+
+    def test_complex_mean_is_still_the_finding(self) -> None:
+        """Planted violation."""
+        result = ConfigHealthChecker().check_m4raw_nex_target_mode_declared(
+            self._cfg("complex_mean")
+        )
+        assert result.passed is False
+
+
+class TestSliceLevelRecordsQueueShape:
+    """``check_slice_level_records_queue_shape`` (#1757): a slice record is a
+    depth-1 subject that serves one sample, so the patch depth must be 1 and the
+    train queue must draw one sample per record, or be bypassed."""
+
+    @staticmethod
+    def _cfg(
+        *,
+        records: bool = True,
+        patch=(256, 256, 1),
+        spv: int = 1,
+        dataset_type: str = "m4raw",
+        train_sampler: dict | None = None,
+    ):
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        kwargs: dict = {
+            "dataset_type": dataset_type,
+            "slice_level_records": records,
+            "sampling": {"patch_size": patch, "samples_per_volume": spv},
+        }
+        if train_sampler is not None:
+            kwargs["modes"] = {"train": {"sampler": train_sampler}}
+        return SimpleNamespace(data=DataConfigSchema(**kwargs))
+
+    @staticmethod
+    def _check(cfg):
+        return ConfigHealthChecker().check_slice_level_records_queue_shape(cfg)
+
+    def test_depth_one_and_one_sample_per_record_pass(self) -> None:
+        result = self._check(self._cfg())
+        assert result.passed is True
+        assert "once per epoch" in result.message
+
+    def test_a_depth_three_patch_is_refused(self) -> None:
+        """Planted violation: the depth-3 arm."""
+        result = self._check(self._cfg(patch=(256, 256, 3)))
+        assert result.passed is False and result.severity == "error"
+        assert "depth 3" in result.message
+        assert "data.sampling.patch_size" in result.yaml_keys
+
+    def test_samples_per_volume_above_one_is_refused_via_the_legacy_field(self) -> None:
+        """Planted violation, legacy spelling: ``sampling.samples_per_volume``
+        is what ``derive_modes_from_legacy`` hands the train queue."""
+        result = self._check(self._cfg(spv=4))
+        assert result.passed is False and result.severity == "error"
+        assert "samples_per_volume=4" in result.message
+        assert "data.modes.train.sampler.samples_per_volume" in result.yaml_keys
+
+    def test_samples_per_volume_above_one_is_refused_via_the_mode_block(self) -> None:
+        """Planted violation, mode-block spelling."""
+        result = self._check(self._cfg(train_sampler={"type": "uniform", "samples_per_volume": 8}))
+        assert result.passed is False
+        assert "samples_per_volume=8" in result.message
+
+    def test_the_resolved_value_is_the_one_the_build_uses(self) -> None:
+        """A declared train block wins over the legacy field, exactly as
+        ``TorchIOQueueConfig.from_training_config`` resolves it at build time."""
+        result = self._check(
+            self._cfg(spv=4, train_sampler={"type": "uniform", "samples_per_volume": 1})
+        )
+        assert result.passed is True
+
+    def test_the_full_sampler_bypasses_the_queue(self) -> None:
+        result = self._check(self._cfg(train_sampler={"type": "full", "samples_per_volume": 4}))
+        assert result.passed is True
+        assert "bypasses" in result.message
+
+    def test_both_findings_are_reported_together(self) -> None:
+        result = self._check(self._cfg(patch=(128, 128, 3), spv=4))
+        assert result.passed is False
+        assert "depth 3" in result.message and "samples_per_volume=4" in result.message
+
+    def test_a_two_element_patch_is_depth_one(self) -> None:
+        assert self._check(self._cfg(patch=(256, 256))).passed is True
+
+    def test_knob_off_is_not_applicable(self) -> None:
+        result = self._check(self._cfg(records=False, patch=(256, 256, 3), spv=4))
+        assert result.passed is True and "n/a" in result.message
+
+    def test_a_non_m4raw_arm_is_not_applicable(self) -> None:
+        result = self._check(self._cfg(records=False, dataset_type="kspace"))
+        assert result.passed is True and "n/a" in result.message
+
+    def test_the_check_is_wired_into_run_all_checks(self) -> None:
+        import inspect
+
+        src = inspect.getsource(ConfigHealthChecker.run_all_checks)
+        assert "self.check_slice_level_records_queue_shape(config)" in src

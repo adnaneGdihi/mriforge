@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.inference import (
+from spectramr.infrastructure.validation.inference import (
     collect_all_recommendations,
     derive_tags,
     recommend_diffusion_visualization,
@@ -17,7 +17,7 @@ from mriforge.infrastructure.validation.inference import (
     recommend_multi_contrast_alignment,
     recommend_strategy_paradigm_consistency,
 )
-from mriforge.infrastructure.validation.recommendations import (
+from spectramr.infrastructure.validation.recommendations import (
     DIAGNOSTIC_CODES,
     Recommendation,
     RecommendationLevel,
@@ -55,7 +55,7 @@ def _make_config(
     image_losses=(),
     kspace_losses=(),
     training_mode="reconstruction",
-    strategy_class="mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+    strategy_class="spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
     save_validation_images=True,
     log_validation_images=True,
     adapters=None,
@@ -64,8 +64,8 @@ def _make_config(
     task="reconstruction",
 ):
     # Optionally register a fake model with capabilities.
-    from mriforge.models.capabilities import ModelCapabilities
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.capabilities import ModelCapabilities
+    from spectramr.models.registry import MODEL_REGISTRY
     if model_type and model_type.startswith("__test_"):
         MODEL_REGISTRY[model_type] = {
             "class": object,
@@ -168,7 +168,7 @@ class TestDeriveTags:
     def test_paradigm_inferred_from_strategy_class(self):
         cfg = _make_config(
             training_mode=None,
-            strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
         )
         tags = {t.name: t for t in derive_tags(cfg)}
         assert tags["paradigm"].value == "diffusion"
@@ -373,7 +373,7 @@ class TestDiffusionVisualization:
     def test_r005_fires_when_diffusion_without_image_save(self):
         cfg = _make_config(
             training_mode="diffusion",
-            strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
             save_validation_images=False,
             log_validation_images=False,
         )
@@ -411,7 +411,7 @@ class TestStrategyParadigmConsistency:
     def test_r008_fires_on_mismatch(self):
         cfg = _make_config(
             training_mode="diffusion",
-            strategy_class="mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy",
         )
         recs = recommend_strategy_paradigm_consistency(cfg)
         assert any(r.code == "AUDIT-R008" for r in recs)
@@ -419,7 +419,7 @@ class TestStrategyParadigmConsistency:
     def test_r008_silent_on_match(self):
         cfg = _make_config(
             training_mode="diffusion",
-            strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
         )
         assert recommend_strategy_paradigm_consistency(cfg) == []
 
@@ -427,7 +427,7 @@ class TestStrategyParadigmConsistency:
 class TestInverseAdapter:
     def test_r001_fires_when_pre_model_invertible_without_post(self):
         # Need real adapters registered.
-        import mriforge.data.adapters  # noqa: F401
+        import spectramr.data.adapters  # noqa: F401
         adapters = _NS(
             pre_model=[_NS(name="slice_3d_to_2d", enabled=True)],
             post_model=[],
@@ -440,7 +440,7 @@ class TestInverseAdapter:
         assert any(r.code == "AUDIT-R001" for r in recs)
 
     def test_r001_silent_when_inverse_present(self):
-        import mriforge.data.adapters  # noqa: F401
+        import spectramr.data.adapters  # noqa: F401
         adapters = _NS(
             pre_model=[_NS(name="slice_3d_to_2d", enabled=True)],
             post_model=[_NS(name="gather_2d_to_3d", enabled=True)],
@@ -455,7 +455,7 @@ class TestAggregator:
         # Configuration that triggers two recommendations: R005 + R010
         cfg = _make_config(
             training_mode="diffusion",
-            strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
             save_validation_images=False,
             log_validation_images=False,
             model_kwargs={"num_contrasts": 4, "use_contrast_guidance": True},

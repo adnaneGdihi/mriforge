@@ -1,6 +1,6 @@
 r"""Unit tests for the Field-Pushforward Score Prior (FPSP).
 
-Targets ``mriforge.models.generators.fpsp_score``.
+Targets ``spectramr.models.generators.fpsp_score``.
 
 FPSP trains a single score network :math:`s_\theta(\boldsymbol\xi,t)` on
 field-independent parameter maps; for any field/protocol the image prior is the
@@ -36,7 +36,7 @@ def _params(h: int = 8, w: int = 8) -> torch.Tensor:
 
 
 def test_score_net_operates_in_parameter_space() -> None:
-    from mriforge.models.generators.fpsp_score import FieldPushforwardScorePrior
+    from spectramr.models.generators.fpsp_score import FieldPushforwardScorePrior
 
     torch.manual_seed(0)
     model = FieldPushforwardScorePrior(param_channels=3, width=16)
@@ -48,7 +48,7 @@ def test_score_net_operates_in_parameter_space() -> None:
 
 def test_score_is_field_invariant_by_construction() -> None:
     """The score's forward must NOT take a field / acquisition argument."""
-    from mriforge.models.generators.fpsp_score import FieldPushforwardScorePrior
+    from spectramr.models.generators.fpsp_score import FieldPushforwardScorePrior
 
     sig = inspect.signature(FieldPushforwardScorePrior.forward)
     names = set(sig.parameters)
@@ -56,7 +56,7 @@ def test_score_is_field_invariant_by_construction() -> None:
 
 
 def test_pushforward_field_dependence_is_carried_by_physics() -> None:
-    from mriforge.models.generators.fpsp_score import field_pushforward
+    from spectramr.models.generators.fpsp_score import field_pushforward
 
     params = _params()
     img_t2 = field_pushforward(params, {"TR": 3000.0, "TE": 90.0, "TI": 0.0}, "spin_echo")
@@ -68,7 +68,7 @@ def test_pushforward_field_dependence_is_carried_by_physics() -> None:
 
 
 def test_pushforward_is_deterministic() -> None:
-    from mriforge.models.generators.fpsp_score import field_pushforward
+    from spectramr.models.generators.fpsp_score import field_pushforward
 
     params = _params()
     acq = {"TR": 3000.0, "TE": 90.0, "TI": 0.0}
@@ -78,8 +78,8 @@ def test_pushforward_is_deterministic() -> None:
 
 
 def test_model_is_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "fpsp_score" in MODEL_REGISTRY

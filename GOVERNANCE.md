@@ -1,6 +1,6 @@
 # Governance
 
-MRIForge is currently maintained by a single maintainer. Decisions are made by
+spectraMR is currently maintained by a single maintainer. Decisions are made by
 the maintainer; substantive proposals are accepted as GitHub Issues and
 resolved by lazy consensus (no objection within 14 days = accepted). This
 document will be revised when additional maintainers join.

@@ -6,7 +6,7 @@ from pathlib import Path
 import nibabel as nib
 import numpy as np
 
-from mriforge.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
+from spectramr.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
 
 
 class TestTargetFiltering(unittest.TestCase):

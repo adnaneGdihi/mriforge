@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.losses.levy_score_consistency_loss import (
+from spectramr.models.losses.levy_score_consistency_loss import (
     LevyScoreConsistencyLoss,
 )
 
@@ -13,14 +13,14 @@ class TestRegistration:
     """The loss must be discoverable through the loss registry."""
 
     def test_registered_under_canonical_name(self):
-        from mriforge.models.losses import create_loss, list_available
+        from spectramr.models.losses import create_loss, list_available
 
         assert "levy_score_consistency" in list_available()
         loss = create_loss("levy_score_consistency")
         assert isinstance(loss, LevyScoreConsistencyLoss)
 
     def test_registered_domain_is_image(self):
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         meta = LossRegistry._loss_domains["levy_score_consistency"]
         assert meta["domain"] == "image"
@@ -61,7 +61,7 @@ class TestPrimitiveExercised:
     """The loss MUST genuinely route through the alpha-stable primitive."""
 
     def test_fractional_score_matching_loss_is_called(self, monkeypatch):
-        import mriforge.models.losses.levy_score_consistency_loss as mod
+        import spectramr.models.losses.levy_score_consistency_loss as mod
 
         calls = {}
         real = mod.fractional_score_matching_loss

@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.tables import main_results
+from spectramr.infrastructure.reporting.tables import main_results
 
 
 def _df():

@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.orchestration.ablation_config_generator`.
+"""Unit tests for :mod:`spectramr.infrastructure.orchestration.ablation_config_generator`.
 
 Exercises the pure config-generation logic without touching SLURM or any
 real experiment YAML. A minimal nested dict written to a tmp YAML is
@@ -13,8 +13,8 @@ import pydantic
 import pytest
 import yaml
 
-from mriforge.config.schemas.campaign import AblationAxisSchema
-from mriforge.infrastructure.orchestration.ablation_config_generator import (
+from spectramr.config.schemas.campaign import AblationAxisSchema
+from spectramr.infrastructure.orchestration.ablation_config_generator import (
     AblationConfigGenerator,
 )
 

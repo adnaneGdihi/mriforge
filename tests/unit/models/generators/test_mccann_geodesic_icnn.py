@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.mccann_geodesic_icnn import McCannGeodesicICNN
+from spectramr.models.generators.mccann_geodesic_icnn import McCannGeodesicICNN
 
 
 def _net(**kw) -> McCannGeodesicICNN:
@@ -97,8 +97,8 @@ def test_synthetic_forward_probe_passes_for_both_arms() -> None:
     # correctly the identity (zero increment) -> trips identity-collapse; the model declares
     # synthetic_forward_probe_skip = {"identity_collapse"} so a healthy arm passes --probe
     # (the input-invariance #20 check stays active). Regression for both arms.
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.forward_probe import synthetic_forward_probe
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.forward_probe import synthetic_forward_probe
 
     for arm in ("b39_mccann_path", "b39_ablate_convexity"):
         cfg = TrainingSettings.from_yaml(
@@ -109,8 +109,8 @@ def test_synthetic_forward_probe_passes_for_both_arms() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "mccann_geodesic_icnn" in MODEL_REGISTRY

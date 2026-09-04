@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/infrastructure/physics/field_simulation.py.
+"""Unit tests for src/spectramr/infrastructure/physics/field_simulation.py.
 
 Focus (doc-contract regression):
   - ``B0MapSimulator.generate_concomitant_field`` longitudinal-gradient term.
@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.field_simulation import B0MapSimulator
+from spectramr.infrastructure.physics.field_simulation import B0MapSimulator
 
 
 @pytest.mark.physics

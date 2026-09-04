@@ -1,5 +1,5 @@
 """Unit tests for the pure-Python data layer of
-:mod:`mriforge.infrastructure.orchestration.campaign_evaluator`.
+:mod:`spectramr.infrastructure.orchestration.campaign_evaluator`.
 
 The evaluator's statistical paths (Wilcoxon, bootstrap CIs, multiple-
 comparisons correction) need a synthetic per-sample-metrics fixture
@@ -30,17 +30,17 @@ import pytest
 import torch as _torch
 import yaml as _yaml
 
-from mriforge.infrastructure.orchestration.campaign_evaluator import (
+from spectramr.infrastructure.orchestration.campaign_evaluator import (
     CampaignEvaluator,
     CampaignReport,
     PairwiseResult,
     UncertaintyReport,
 )
-from mriforge.infrastructure.orchestration.campaign_state import (
+from spectramr.infrastructure.orchestration.campaign_state import (
     CampaignState,
     ExperimentStatus,
 )
-from mriforge.models.registry import register_model as _register_model
+from spectramr.models.registry import register_model as _register_model
 
 # ── PairwiseResult ─────────────────────────────────────────────────
 
@@ -272,7 +272,7 @@ class TestCampaignEvaluatorShortCircuit:
     def test_evaluate_skips_inference_when_disabled(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
 
         # Disable per_sample_inference; verify _run_inference_all never fires.
         cfg = EvaluationConfigSchema(per_sample_inference=False)
@@ -311,7 +311,7 @@ class TestCampaignEvaluatorAcceleratedRunContract:
         src = (
             Path(__file__).resolve().parents[4]
             / "src"
-            / "mriforge"
+            / "spectramr"
             / "infrastructure"
             / "orchestration"
             / "campaign_evaluator.py"
@@ -475,7 +475,7 @@ class TestCampaignEvaluatorRebuildsTheTrainedModel:
 
     @staticmethod
     def _reconstruct(tmp_path: Path, payload: Any):
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 

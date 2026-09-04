@@ -6,7 +6,7 @@ Covers AsyncLogger, MetricsTracker, DeprecationLogger.
 import pytest
 
 try:
-    from mriforge.infrastructure.logging.async_logger import AsyncLogger
+    from spectramr.infrastructure.logging.async_logger import AsyncLogger
 except ImportError:
     AsyncLogger = None
 
@@ -30,7 +30,7 @@ class TestLogging:
     # @# pytest.mark.timeout(30)
     def test_metrics_tracker_aggregation(self):
         try:
-            from mriforge.infrastructure.logging.metrics_tracker import MetricsTracker
+            from spectramr.infrastructure.logging.metrics_tracker import MetricsTracker
         except ImportError:
             pytest.skip("MetricsTracker not available")
 

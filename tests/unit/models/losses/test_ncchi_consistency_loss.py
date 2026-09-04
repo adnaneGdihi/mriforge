@@ -11,9 +11,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.ncchi_data_consistency import ncchi_ml_magnitude
-from mriforge.models.losses.ncchi_consistency_loss import NcChiConsistencyLoss
-from mriforge.models.losses.registry import create_loss
+from spectramr.infrastructure.physics.ncchi_data_consistency import ncchi_ml_magnitude
+from spectramr.models.losses.ncchi_consistency_loss import NcChiConsistencyLoss
+from spectramr.models.losses.registry import create_loss
 
 
 def test_registered_and_alias():

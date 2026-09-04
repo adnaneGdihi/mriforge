@@ -19,7 +19,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.dynamics.neural_ode import NeuralODEDynamics
+from spectramr.infrastructure.physics.dynamics.neural_ode import NeuralODEDynamics
 
 
 def test_drift_net_invoked_as_state_time_order() -> None:

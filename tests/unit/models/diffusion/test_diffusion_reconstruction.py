@@ -4,7 +4,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.diffusion.diffusion_reconstruction import (
+from spectramr.models.diffusion.diffusion_reconstruction import (
     DataConsistency,
     DiffusionPosteriorSampling,
     DiffusionPrior,
@@ -40,7 +40,7 @@ class MockScheduler:
         return torch.ones_like(t, dtype=torch.float32) * 0.1
 
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 
 def mock_forward_operator(x):

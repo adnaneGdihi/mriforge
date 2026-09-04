@@ -6,7 +6,7 @@ import re
 
 import pytest
 
-from mriforge.data.annotations.manifest_qc import (
+from spectramr.data.annotations.manifest_qc import (
     ApprovalDigestMismatchError,
     approval_digest,
     verify_approval,

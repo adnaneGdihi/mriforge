@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fisher_rao_geometry import (
+from spectramr.infrastructure.physics.fisher_rao_geometry import (
     fisher_information_from_jacobian,
     fisher_norm,
     fisher_rao_velocity_loss,

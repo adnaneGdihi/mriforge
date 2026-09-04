@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     ArtifactConfig,
     BiophysicalFlowObjectiveConfig,
     DiffusionObjectiveConfig,
@@ -61,6 +61,50 @@ class TestBaseSchemas:
         assert schema.baseline == "experiment_baseline_unet_4x"
         assert schema.primary_metric == "val_psnr"
 
+    # --- metadata.status: closed vocabulary, one spelling (cohort review 2026-09-02, T0.4)
+
+    def test_experiment_status_defaults_to_none_and_accepts_the_vocabulary(self):
+        from spectramr.config.schemas.base import EXPERIMENT_STATUSES
+
+        assert ExperimentMetadataSchema(name="exp").status is None
+        for status in EXPERIMENT_STATUSES:
+            assert ExperimentMetadataSchema(name="exp", status=status).status == status
+
+    def test_experiment_status_free_text_is_refused(self):
+        """The planted violation: the corpus carried 21 free-text tokens nothing read."""
+        with pytest.raises(ValidationError):
+            ExperimentMetadataSchema(name="exp", status="testable_on_real_b0")
+
+    def test_experiment_status_reason_carries_the_free_text(self):
+        schema = ExperimentMetadataSchema(
+            name="exp", status="needs_data", status_reason="testable_on_real_b0"
+        )
+        assert schema.status_reason == "testable_on_real_b0"
+
+    def test_tags_status_spelling_is_retired(self):
+        """111 arms wrote the status where nothing typed could read it."""
+        with pytest.raises(ValidationError, match="tags.status is retired"):
+            ExperimentMetadataSchema(name="exp", tags={"status": "needs_implementation"})
+
+    def test_launch_refused_statuses_are_a_subset_of_the_vocabulary(self):
+        from spectramr.config.schemas.base import EXPERIMENT_STATUSES, LAUNCH_REFUSED_STATUSES
+
+        assert LAUNCH_REFUSED_STATUSES == {"needs_implementation", "inert", "blocked"}
+        assert LAUNCH_REFUSED_STATUSES <= set(EXPERIMENT_STATUSES)
+
+    def test_free_form_prose_keys_are_kept(self):
+        """``extra="allow"``: ~60 prose keys live in the corpus (note, group, ...)."""
+        schema = ExperimentMetadataSchema(name="exp", note="free text", group="g1")
+        assert schema.model_dump()["note"] == "free text"
+
+    def test_scalar_version_and_date_are_stringified(self):
+        import datetime
+
+        schema = ExperimentMetadataSchema(
+            name="exp", version=6.0, created_at=datetime.date(2026, 4, 10)
+        )
+        assert schema.version == "6.0" and schema.created_at == "2026-04-10"
+
     def test_r1_regularization_config(self):
         schema = R1RegularizationConfig(weight=5.0)
         assert schema.weight == 5.0
@@ -70,7 +114,7 @@ class TestBaseSchemas:
     def test_gan_objective_config(self):
         # Lambda fields have been moved to losses.gan (SSOT consolidation)
         # v6.0: objectives.gan is NO LONGER supported and raises ConfigurationError
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         with pytest.raises(ConfigurationError):
             GANObjectiveConfig()
@@ -78,7 +122,7 @@ class TestBaseSchemas:
     def test_reconstruction_objective_config(self):
         # Lambda fields have been moved to losses.reconstruction (SSOT consolidation)
         # v6.0: objectives.reconstruction is NO LONGER supported and raises ConfigurationError
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         with pytest.raises(ConfigurationError):
             ReconstructionObjectiveConfig()
@@ -96,7 +140,7 @@ class TestBaseSchemas:
     def test_latent_objective_config(self):
         # LatentObjectiveConfig.latent_dim is DEPRECATED (SSOT: training.latent_dim)
         # v6.0: objectives.latent is NO LONGER supported and raises ConfigurationError
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         with pytest.raises(ConfigurationError):
             LatentObjectiveConfig(n_embeddings=512)
@@ -142,9 +186,7 @@ class TestBaseSchemas:
             MultiContrastContrastiveConfigSchema(momentum=1.5)
 
     def test_ssl_config_mounts_multi_contrast_block(self):
-        ssl = SSLConfigSchema(
-            multi_contrast_contrastive={"temperature": 0.07, "symmetrize": False}
-        )
+        ssl = SSLConfigSchema(multi_contrast_contrastive={"temperature": 0.07, "symmetrize": False})
         assert ssl.multi_contrast_contrastive is not None
         assert ssl.multi_contrast_contrastive.temperature == 0.07
         # Defaults to None when omitted.
@@ -189,9 +231,7 @@ class TestBaseSchemas:
         typo'd sharding knob raises instead of being silently swallowed."""
         assert FSDPConfigSchema().model_config["extra"] == "forbid"
         # A known field still validates.
-        assert FSDPConfigSchema(sharding_strategy="no_shard").sharding_strategy == (
-            "no_shard"
-        )
+        assert FSDPConfigSchema(sharding_strategy="no_shard").sharding_strategy == ("no_shard")
         with pytest.raises(ValidationError):
             FSDPConfigSchema(shardng_strategy="full_shard")  # typo
 

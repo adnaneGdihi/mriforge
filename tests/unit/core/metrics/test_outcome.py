@@ -11,7 +11,7 @@ import math
 
 import pytest
 
-from mriforge.core.metrics.outcome import (
+from spectramr.core.metrics.outcome import (
     MetricNotApplicableError,
     MetricOutcome,
     MetricOutcomeReport,
@@ -151,7 +151,7 @@ def test_data_range_unresolved_is_a_declared_reason():
     exclusion table groupable — 'why is val_psnr NaN on this cohort' has to be
     answerable without reading a traceback.
     """
-    from mriforge.core.metrics.outcome import (
+    from spectramr.core.metrics.outcome import (
         MetricNotApplicableError,
         NotApplicableReason,
     )

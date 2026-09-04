@@ -20,7 +20,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.biophysics.bloch import BlochSimulator
+from spectramr.infrastructure.physics.biophysics.bloch import BlochSimulator
 
 
 @pytest.mark.physics

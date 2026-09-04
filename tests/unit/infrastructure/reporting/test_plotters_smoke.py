@@ -1,4 +1,4 @@
-"""Smoke sweep over every plotter under ``mriforge.infrastructure.reporting.plotters``.
+"""Smoke sweep over every plotter under ``spectramr.infrastructure.reporting.plotters``.
 
 This is the *first* test file targeting the plotter package. The intent is
 broad smoke coverage rather than deep correctness:
@@ -48,7 +48,7 @@ import pytest
 # Skip the whole module on branches that don't carry the plotter package
 # (e.g. ``main`` prior to the reporting-pipeline merge).
 plotters_pkg = pytest.importorskip(
-    "mriforge.infrastructure.reporting.plotters",
+    "spectramr.infrastructure.reporting.plotters",
     reason="reporting.plotters package not available on this branch",
 )
 
@@ -474,7 +474,7 @@ def _make_certificate_paths():
 
 
 def _make_acquisition_arms():
-    from mriforge.infrastructure.reporting.plotters.learnable_acquisition_pareto import (
+    from spectramr.infrastructure.reporting.plotters.learnable_acquisition_pareto import (
         ArmResult,
     )
     return [ArmResult("full", 0.5, 33.0, 0.92),
@@ -639,7 +639,7 @@ def _invoke_plotter(module: Any, out_path: Path) -> Path | None:
     if short == "contact_sheet":
         # Composites sibling PNGs — populate the dir, then build the index.
         siblings = importlib.import_module(
-            "mriforge.infrastructure.reporting.plotters"
+            "spectramr.infrastructure.reporting.plotters"
         )
         siblings.dispatch(
             _make_long_metrics_df(),
@@ -722,7 +722,7 @@ def test_plotter_registry_lists_all_phase1_ids() -> None:
     plotter module is added but ``register("fig_id", module.make)`` is
     forgotten in ``plotters/__init__.py``, the dispatcher won't see it.
     """
-    plotters_module = importlib.import_module("mriforge.infrastructure.reporting.plotters")
+    plotters_module = importlib.import_module("spectramr.infrastructure.reporting.plotters")
     registered = set(plotters_module.list_available())
     assert registered, "PLOTTERS registry is empty — expected at least one entry"
 
@@ -744,7 +744,7 @@ def test_plotter_dispatch_runs_against_synthetic_df(out_dir: Path) -> None:
     ``cases``, ``cohort``) are excluded from this batch — they are
     exercised individually by ``test_plotter_produces_nonempty_figure``.
     """
-    plotters_module = importlib.import_module("mriforge.infrastructure.reporting.plotters")
+    plotters_module = importlib.import_module("spectramr.infrastructure.reporting.plotters")
     df_long = _make_long_metrics_df()
 
     df_driven_ids = [
@@ -784,7 +784,7 @@ def test_registry_fixture_map_covers_every_registered_id() -> None:
     fires, so nobody notices when it silently renders nothing. If a new
     plotter is registered without a fixture here, this fails loudly.
     """
-    plotters_module = importlib.import_module("mriforge.infrastructure.reporting.plotters")
+    plotters_module = importlib.import_module("spectramr.infrastructure.reporting.plotters")
     registered = set(plotters_module.list_available())
     mapped = set(_REGISTRY_FIXTURES)
     missing = registered - mapped
@@ -807,7 +807,7 @@ def test_every_registered_plotter_renders(fig_id: str, out_dir: Path) -> None:
     ``contact_sheet`` is the one figure that composites *other* PNGs, so it
     is rendered after a batch of sibling figures populate its ``figure_dir``.
     """
-    plotters_module = importlib.import_module("mriforge.infrastructure.reporting.plotters")
+    plotters_module = importlib.import_module("spectramr.infrastructure.reporting.plotters")
     if fig_id not in set(plotters_module.list_available()):
         pytest.skip(f"{fig_id} not registered on this branch")
 

@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
 
 class TestMetricsTrackerImageSaving:

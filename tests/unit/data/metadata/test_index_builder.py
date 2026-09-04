@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.data.metadata.index_builder import IndexBuilder
+from spectramr.data.metadata.index_builder import IndexBuilder
 
 
 def _touch(dir_path: Path, n: int) -> None:
@@ -121,7 +121,7 @@ def _loso_cfg(**kw):
 
 
 def _load(path, split, **kw):
-    from mriforge.data.metadata.index_builder import IndexBuilder
+    from spectramr.data.metadata.index_builder import IndexBuilder
 
     return IndexBuilder.load_paired_bids_manifest(path, split, _loso_cfg(**kw))
 
@@ -176,7 +176,7 @@ def test_explicit_holdout_subject_is_honoured(tmp_path) -> None:
 def test_split_hint_still_drives_the_default_strategy(tmp_path) -> None:
     """loso_subject must not change behaviour for arms that do not ask for it."""
     path = _loso_manifest(tmp_path)
-    from mriforge.data.metadata.index_builder import IndexBuilder
+    from spectramr.data.metadata.index_builder import IndexBuilder
 
     cfg = _loso_cfg(split_strategy="manifest")
     assert IndexBuilder.load_paired_bids_manifest(path, "train", cfg)
@@ -381,3 +381,94 @@ def test_loadable_input_and_target_subject_is_returned(tmp_path) -> None:
     assert sorted(s["file_id"] for s in train) == ["subjA", "subjB"]
     for subject in train:
         assert "input" in subject and "target" in subject
+
+
+# ---------------------------------------------------------------------------
+# Subject-grouped directory splits (cohort review 2026-09-02, T0.2)
+#
+# Planted violation: with BIDS-style names, 3 subjects x 2 contrasts and a
+# 50 % hold-out, the old file-level split put sub-02's T1w in train and its
+# T2w in val. Each directory route must now keep a subject whole and stamp
+# ``subject_id`` on its records so ``split_leakage`` can see it.
+# ---------------------------------------------------------------------------
+
+
+def _bids_files(root: Path, subjects=(1, 2, 3), contrasts=("T1w", "T2w")) -> list[Path]:
+    made = []
+    for s in subjects:
+        for c in contrasts:
+            p = root / f"sub-{s:02d}_{c}.nii.gz"
+            p.write_bytes(b"")
+            made.append(p)
+    return made
+
+
+def _subjects(records: list[dict]) -> set[str]:
+    return {r["subject_id"] for r in records}
+
+
+def test_flat_nifti_split_keeps_a_subject_on_one_side(tmp_path):
+    _bids_files(tmp_path)
+    cfg = _config(tmp_path, 0.5)
+    train = IndexBuilder.build_nifti_index(cfg, split="train")
+    val = IndexBuilder.build_nifti_index(cfg, split="val")
+    assert all("subject_id" in r for r in train + val)
+    assert not (_subjects(train) & _subjects(val)), "a subject straddles train/val"
+    assert len(train) + len(val) == 6
+
+
+def test_flat_nifti_without_labels_is_the_file_level_split(tmp_path):
+    """No ``sub-`` label -> every file is its own group -> the pre-review split."""
+    _touch(tmp_path, 10)
+    cfg = _config(tmp_path, 0.2)
+    val = IndexBuilder.build_nifti_index(cfg, split="val")
+    assert len(val) == 2
+    assert all("subject_id" not in r for r in val)
+
+
+def test_bids_layout_split_keeps_a_subject_on_one_side(tmp_path):
+    for s in (1, 2, 3):
+        anat = tmp_path / f"sub-{s:02d}" / "anat"
+        anat.mkdir(parents=True)
+        for c in ("T1w", "T2w"):
+            (anat / f"sub-{s:02d}_{c}.nii.gz").write_bytes(b"")
+    cfg = DataConfigStub(
+        data_root=str(tmp_path),
+        data_layout="bids",
+        dataset_type="nifti",
+        holdout_site=None,
+        validation_split=0.5,
+        datasets=None,
+        contrasts=None,
+        target_contrasts=None,
+    )
+    train = IndexBuilder.build_nifti_index(cfg, split="train")
+    val = IndexBuilder.build_nifti_index(cfg, split="val")
+    assert len(train) + len(val) == 6
+    assert not (_subjects(train) & _subjects(val))
+    assert _subjects(val) == {"sub-02", "sub-03"} or _subjects(val) == {"sub-03"}
+
+
+def test_paired_nifti_split_keeps_a_subject_on_one_side(tmp_path):
+    src, tgt = tmp_path / "source", tmp_path / "target"
+    src.mkdir()
+    tgt.mkdir()
+    for s in (1, 2, 3):
+        for c in ("T1w", "T2w"):
+            (src / f"sub-{s:02d}_{c}.nii.gz").write_bytes(b"")
+            (tgt / f"sub-{s:02d}_{c}.nii.gz").write_bytes(b"")
+    cfg = DataConfigStub(
+        data_root=str(tmp_path),
+        data_layout="flat",
+        dataset_type="nifti_paired",
+        holdout_site=None,
+        validation_split=0.5,
+        datasets=None,
+        contrasts=None,
+        target_contrasts=None,
+    )
+    train = IndexBuilder.build_nifti_index(cfg, split="train")
+    val = IndexBuilder.build_nifti_index(cfg, split="val")
+    assert len(train) + len(val) == 6
+    assert all(r.get("target_path") for r in train + val)
+    assert not (_subjects(train) & _subjects(val))

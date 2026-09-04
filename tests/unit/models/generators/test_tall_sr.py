@@ -20,9 +20,9 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.models import generators  # noqa: F401, E402  triggers @register_model
-from mriforge.models.generators.tall_sr import TALLSuperResolution  # noqa: E402
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models import generators  # noqa: F401, E402  triggers @register_model
+from spectramr.models.generators.tall_sr import TALLSuperResolution  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 
 # order=4 -> 16x16 grid keeps the soft-permutation tensors tiny for CPU CI.

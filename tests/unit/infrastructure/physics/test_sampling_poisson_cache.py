@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.sampling import PoissonDiskKSpaceAccelerator
+from spectramr.infrastructure.physics.sampling import PoissonDiskKSpaceAccelerator
 
 CPU = torch.device("cpu")
 

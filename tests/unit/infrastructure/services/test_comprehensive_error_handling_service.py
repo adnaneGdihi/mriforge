@@ -19,14 +19,14 @@ import inspect
 
 import pytest
 
-from mriforge.infrastructure.services import comprehensive_error_handling_service as ehs
+from spectramr.infrastructure.services import comprehensive_error_handling_service as ehs
 
 
 class TestNoIncrementCounterCall:
     def test_increment_counter_is_defined_nowhere(self):
         """The premise. If someone later implements it, this test says so."""
-        from mriforge.domain.interfaces.service_interfaces import IMetricsService
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.domain.interfaces.service_interfaces import IMetricsService
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         assert not hasattr(MetricsTracker, "increment_counter")
         assert not hasattr(IMetricsService, "increment_counter")

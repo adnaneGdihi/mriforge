@@ -8,7 +8,7 @@ class TestFFTOperations:
 
     def test_fft2c_forward(self):
         """Test centered 2D FFT."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         # Create test image
         image = torch.randn(2, 1, 32, 32, dtype=torch.complex64)
@@ -21,7 +21,7 @@ class TestFFTOperations:
 
     def test_fft_inverse_identity(self):
         """Test that FFT followed by IFFT recovers original."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         image = torch.randn(2, 1, 32, 32, dtype=torch.complex64)
 
@@ -38,7 +38,7 @@ class TestDataConsistency:
 
     def test_dc_layer_preserves_sampled_kspace(self):
         """Test DC layer operates on k-space data."""
-        from mriforge.infrastructure.physics.data_consistency import SimpleDataConsistency
+        from spectramr.infrastructure.physics.data_consistency import SimpleDataConsistency
 
         # Create DC layer
         dc = SimpleDataConsistency(weight=0.1)
@@ -57,7 +57,7 @@ class TestSamplingPatterns:
 
     def test_uniform_cartesian_accelerator(self):
         """Test uniform Cartesian undersampling accelerator."""
-        from mriforge.infrastructure.physics.sampling import (
+        from spectramr.infrastructure.physics.sampling import (
             UniformCartesianKSpaceAccelerator,
         )
 
@@ -79,7 +79,7 @@ class TestSamplingPatterns:
 
     def test_acceleration_factor(self):
         """Test acceleration factor computation."""
-        from mriforge.infrastructure.physics.sampling import KSpaceAccelerator
+        from spectramr.infrastructure.physics.sampling import KSpaceAccelerator
 
         # Check base class method exists
         assert hasattr(KSpaceAccelerator, "get_acceleration_factor")
@@ -90,7 +90,7 @@ class TestCoilSensitivity:
 
     def test_coil_sensitivity_estimation(self):
         """Test coil sensitivity map estimation."""
-        from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+        from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
 
         # Multi-coil k-space data
         kspace = torch.randn(2, 8, 32, 32, dtype=torch.complex64)
@@ -105,7 +105,7 @@ class TestPhysicsIntegration:
 
     def test_forward_model_exists(self):
         """Test physics integration module exists."""
-        from mriforge.infrastructure.physics import integration
+        from spectramr.infrastructure.physics import integration
 
         # Integration module should exist
         assert integration is not None
@@ -116,7 +116,7 @@ class TestBlochSimulation:
 
     def test_bloch_simulation_import(self):
         """Test Bloch simulation module imports."""
-        from mriforge.infrastructure.physics.biophysics.bloch import BlochSimulator
+        from spectramr.infrastructure.physics.biophysics.bloch import BlochSimulator
 
         assert hasattr(BlochSimulator, "__init__")
 
@@ -126,7 +126,7 @@ class TestPINN:
 
     def test_pinn_module_exists(self):
         """Test PINN module function exists."""
-        from mriforge.infrastructure.physics.pinn import PDE, BlochEquation, PINNModule
+        from spectramr.infrastructure.physics.pinn import PDE, BlochEquation, PINNModule
 
         assert hasattr(PINNModule, "__init__")
         assert hasattr(PDE, "compute_residual")
@@ -138,7 +138,7 @@ class TestTrajectories:
 
     def test_trajectory_factory_exists(self):
         """Test trajectory factory exists."""
-        from mriforge.infrastructure.physics.trajectories import (
+        from spectramr.infrastructure.physics.trajectories import (
             TrajectoryFactory,
             get_trajectory,
         )
@@ -149,7 +149,7 @@ class TestTrajectories:
 
     def test_radial_trajectory_generation(self):
         """Test radial trajectory generation."""
-        from mriforge.infrastructure.physics.trajectories import TrajectoryFactory
+        from spectramr.infrastructure.physics.trajectories import TrajectoryFactory
 
         trajectory, dcf = TrajectoryFactory.get_radial_trajectory(
             im_size=(32, 32),

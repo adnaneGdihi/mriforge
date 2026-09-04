@@ -27,7 +27,7 @@ import pathlib
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 
@@ -47,7 +47,7 @@ def test_m4raw_dataset_publishes_federated_split_metadata():
     Without this metadata, the strategy can't recover the split and the
     visualization would RSS T1 + T2 anatomy into a single mixed render.
     """
-    src = (REPO_ROOT / "src/mriforge/data/datasets/m4raw_dataset.py").read_text(
+    src = (REPO_ROOT / "src/spectramr/data/datasets/m4raw_dataset.py").read_text(
         encoding="utf-8"
     )
     assert 'subject["federated_target_channel_start"]' in src, (
@@ -65,7 +65,7 @@ def test_diffusion_strategy_forwards_federated_marker():
     federated cross-contrast configs.
     """
     src = (
-        REPO_ROOT / "src/mriforge/infrastructure/training/strategies/diffusion.py"
+        REPO_ROOT / "src/spectramr/infrastructure/training/strategies/diffusion.py"
     ).read_text(encoding="utf-8")
     assert "federated_target_channel_start" in src, (
         "diffusion.py must read federated_target_channel_start from the batch "

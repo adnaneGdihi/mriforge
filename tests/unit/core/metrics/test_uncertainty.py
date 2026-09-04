@@ -1,6 +1,6 @@
 """Tests for ``UncertaintyMetrics``.
 
-Targets ``mriforge.core.metrics.uncertainty``. Three calibration / sharpness
+Targets ``spectramr.core.metrics.uncertainty``. Three calibration / sharpness
 helpers used by validation pipelines for evidential / MC-dropout
 uncertainty:
 
@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.uncertainty import UncertaintyMetrics
+from spectramr.core.metrics.uncertainty import UncertaintyMetrics
 
 # ---------------------------------------------------------------------------
 # expected_calibration_error

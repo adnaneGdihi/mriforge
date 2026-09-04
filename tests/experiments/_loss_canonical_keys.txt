@@ -9,7 +9,7 @@
 # filed under R1's key today, because `gradient_penalty` is an alias of R1 (issue #191).
 #
 # Regenerate deliberately, and co-edit the consumers, with:
-#   MRIFORGE_UPDATE_LOSS_KEY_GOLDEN=1 pytest tests/experiments/test_loss_weight_no_op_migration.py
+#   SPECTRAMR_UPDATE_LOSS_KEY_GOLDEN=1 pytest tests/experiments/test_loss_weight_no_op_migration.py
 beltrami_diagnostic -> beltrami_diagnostic
 beltrami_epi_residual -> beltrami_epi_residual
 bloch_equivariance_residual -> bloch_equivariance_residual

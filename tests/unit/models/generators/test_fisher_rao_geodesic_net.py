@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.fisher_rao_geodesic_net import FisherRaoGeodesicNet
+from spectramr.models.generators.fisher_rao_geodesic_net import FisherRaoGeodesicNet
 
 
 def _net(**kw) -> FisherRaoGeodesicNet:
@@ -82,8 +82,8 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "fisher_rao_geodesic_net" in MODEL_REGISTRY

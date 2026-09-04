@@ -1,6 +1,6 @@
 """Tests for activation modules.
 
-Targets ``mriforge.models.blocks.activation``:
+Targets ``spectramr.models.blocks.activation``:
 
 - ``swish_jit``, ``mish_jit`` — pure-function activations
 - ``Swish``, ``Mish`` — nn.Module wrappers
@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.activation import (
+from spectramr.models.blocks.activation import (
     ComplexActivation,
     Mish,
     Swish,

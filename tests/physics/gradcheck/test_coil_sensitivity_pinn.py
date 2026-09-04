@@ -1,6 +1,6 @@
 """Tier-1 gradcheck tests for the SIREN / PINN coil sensitivity estimator.
 
-``SirenSensNet`` (``mriforge.models.generators.siren_pinn``) is the coordinate
+``SirenSensNet`` (``spectramr.models.generators.siren_pinn``) is the coordinate
 network used inside ``estimate_csm_pinn``.  Its forward pass maps (N, 2)
 spatial coordinates to per-coil real and imaginary sensitivity values using a
 chain of sinusoidal layers (SIREN) followed by a linear output layer.
@@ -35,7 +35,7 @@ import pytest
 import torch
 from torch.autograd import gradcheck
 
-from mriforge.models.generators.siren_pinn import SirenSensNet
+from spectramr.models.generators.siren_pinn import SirenSensNet
 
 _EPS = 1e-6
 _ATOL = 1e-5
@@ -162,7 +162,7 @@ def test_siren_wrt_first_layer_weight():
 @pytest.mark.physics
 @pytest.mark.skip(
     reason=(
-        "estimate_csm_pinn (mriforge.infrastructure.physics.coil_sensitivity) runs "
+        "estimate_csm_pinn (spectramr.infrastructure.physics.coil_sensitivity) runs "
         "a full zero-shot PINN optimisation loop (default 1500 Adam steps per "
         "batch item).  The function is not a simple differentiable callable — it "
         "contains an inner training loop with optimizer.step() calls and is not "

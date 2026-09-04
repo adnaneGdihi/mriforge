@@ -2,9 +2,9 @@
 
 A how-to guide that names CLI verbs and cross-references other pages rots the
 moment a verb is renamed or a page moved. This test parses the guide as text
-(importing ``mriforge.cli.app`` is torch-free) and pins three invariants:
+(importing ``spectramr.cli.app`` is torch-free) and pins three invariants:
 
-* every ``mriforge <verb>`` / ``python -m mriforge.cli <verb>`` example names a verb
+* every ``spectramr <verb>`` / ``python -m spectramr.cli <verb>`` example names a verb
   the parser actually registers,
 * every ``:doc:`target``` cross-reference resolves to a real ``docs/<target>.rst``,
 * the guide is wired into the ``index.rst`` toctree.
@@ -22,8 +22,8 @@ import pytest
 DOCS = Path(__file__).resolve().parents[3] / "docs"
 GUIDE = DOCS / "running_pipelines.rst"
 
-# ``mriforge <verb>`` and ``python -m mriforge.cli <verb>``. Only these two forms
-# introduce a CLI verb; a Python import of the package (``from mriforge import
+# ``spectramr <verb>`` and ``python -m spectramr.cli <verb>``. Only these two forms
+# introduce a CLI verb; a Python import of the package (``from spectramr import
 # fit``) must NOT match. A literal ``<verb>`` placeholder or a ``--flag`` is
 # excluded by requiring the captured token to start with a letter.
 #
@@ -32,18 +32,18 @@ GUIDE = DOCS / "running_pipelines.rst"
 # spelled differently (one hyphenated, one underscored), so a pattern anchored
 # on the console-script spelling could not match an import line at all -- the
 # discrimination was a free consequence of the naming. The rename collapsed
-# both onto the single token ``mriforge`` and destroyed that channel:
-# ``from mriforge import fit`` began parsing as the CLI verb ``import``. The
+# both onto the single token ``spectramr`` and destroyed that channel:
+# ``from spectramr import fit`` began parsing as the CLI verb ``import``. The
 # lookbehinds now state explicitly what the old spelling encoded implicitly.
 # ``from `` and ``import `` are fixed width, so both are legal lookbehinds.
 _VERB_RE = re.compile(
-    r"(?<!from )(?<!import )\b(?:mriforge|mriforge\.cli)\s+([a-z][a-z0-9_-]*)"
+    r"(?<!from )(?<!import )\b(?:spectramr|spectramr\.cli)\s+([a-z][a-z0-9_-]*)"
 )
 _DOCREF_RE = re.compile(r":doc:`([^`]+)`")
 
 
 def _registered_subcommands() -> set[str]:
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     parser = build_parser()
     subact = next(
@@ -61,8 +61,8 @@ def test_guide_exists():
 def test_every_referenced_verb_is_registered():
     text = GUIDE.read_text()
     referenced = set(_VERB_RE.findall(text))
-    # ``torchrun`` / ``python`` are command prefixes, not mriforge verbs; the regex
-    # only matches the mriforge/mriforge.cli prefixes, so referenced holds verbs.
+    # ``torchrun`` / ``python`` are command prefixes, not spectramr verbs; the regex
+    # only matches the spectramr/spectramr.cli prefixes, so referenced holds verbs.
     registered = _registered_subcommands()
     unknown = referenced - registered
     assert not unknown, (
@@ -106,17 +106,17 @@ def test_guide_is_in_toctree():
 # guard rather than a decoration.
 
 _VERB_RE_MUST_MATCH = [
-    ("mriforge train --config a.yaml", "train"),
-    ("python -m mriforge.cli audit arm.yaml", "audit"),
-    ("$ mriforge infer-dataset x", "infer-dataset"),
+    ("spectramr train --config a.yaml", "train"),
+    ("python -m spectramr.cli audit arm.yaml", "audit"),
+    ("$ spectramr infer-dataset x", "infer-dataset"),
     # An unregistered verb must still be captured, or the guard cannot fail.
-    ("mriforge frobnicate --x", "frobnicate"),
+    ("spectramr frobnicate --x", "frobnicate"),
 ]
 
 _VERB_RE_MUST_NOT_MATCH = [
-    "from mriforge import fit, make_model",
-    "from mriforge.cli import app",
-    "import mriforge",
+    "from spectramr import fit, make_model",
+    "from spectramr.cli import app",
+    "import spectramr",
 ]
 
 
@@ -127,7 +127,7 @@ def test_verb_regex_captures_cli_invocations(line: str, expected: str) -> None:
 
 @pytest.mark.parametrize("line", _VERB_RE_MUST_NOT_MATCH)
 def test_verb_regex_ignores_python_imports_of_the_package(line: str) -> None:
-    """``from mriforge import fit`` is not the CLI verb ``import``.
+    """``from spectramr import fit`` is not the CLI verb ``import``.
 
     This is the exact regression the rename introduced: the pre-rename spelling
     made the two cases lexically distinct, so no lookbehind was needed.

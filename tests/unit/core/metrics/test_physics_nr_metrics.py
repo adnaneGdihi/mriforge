@@ -2,13 +2,13 @@ import math
 
 import torch
 
-from mriforge.core.metrics.physics_nr_metrics import (
+from spectramr.core.metrics.physics_nr_metrics import (
     AsymptoticGFactor,
     NEMACNR,
     NEMASNR,
     GFactor,
 )
-from mriforge.infrastructure.physics.coil_sensitivity import create_synthetic_csm
+from spectramr.infrastructure.physics.coil_sensitivity import create_synthetic_csm
 
 
 def test_nema_snr():
@@ -123,7 +123,7 @@ def test_g_factor_registered_as_no_reference():
     ``requires_reference=True`` default, disagreeing with its NO_REFERENCE type
     in the sim2rank ``METRIC_SPECS`` sweep. The correction is number-neutral
     because the reference target is ignored."""
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     assert MetricsRegistry.requires_reference("g_factor") is False
 

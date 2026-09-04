@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation import SimulatorConfig, run_simulator
+from spectramr.core.metrics.meta_evaluation import SimulatorConfig, run_simulator
 
 
 def test_simulator_produces_unique_samples_per_severity() -> None:
@@ -46,7 +46,7 @@ def test_simulator_reproducible_seed() -> None:
 
 def test_families_none_defaults_to_core_library() -> None:
     """families=None resolves to every core degradation family."""
-    from mriforge.core.metrics.meta_evaluation.simulator import DEGRADATION_LIBRARY
+    from spectramr.core.metrics.meta_evaluation.simulator import DEGRADATION_LIBRARY
 
     cfg = SimulatorConfig()
     assert cfg.families == list(DEGRADATION_LIBRARY.keys())
@@ -128,7 +128,7 @@ def test_parametric_families_are_severity_monotone(family: str) -> None:
 
 def test_parametric_family_draw_is_trajectory_stable() -> None:
     """The random parameter is constant across a (content, family) severity sweep."""
-    from mriforge.core.metrics.meta_evaluation.simulator import (
+    from spectramr.core.metrics.meta_evaluation.simulator import (
         TRAJECTORY_STABLE_FAMILIES,
     )
 
@@ -165,7 +165,7 @@ def test_parametric_family_draw_is_trajectory_stable() -> None:
 )
 def test_complex_degraders_preserve_phase(fn_name: str) -> None:
     """Magnitude-path degraders must not collapse a complex input to its real part."""
-    from mriforge.core.metrics.meta_evaluation import simulator as sim
+    from spectramr.core.metrics.meta_evaluation import simulator as sim
 
     fn = getattr(sim, fn_name)
     # A purely-imaginary signal: its real part is 0, so a ``.float()``-based
@@ -182,7 +182,7 @@ def test_complex_degraders_preserve_phase(fn_name: str) -> None:
 
 def test_noise_sigma_uses_magnitude_for_complex() -> None:
     """_noise_sigma reflects signal magnitude, not just the (zero) real part."""
-    from mriforge.core.metrics.meta_evaluation.simulator import _noise_sigma
+    from spectramr.core.metrics.meta_evaluation.simulator import _noise_sigma
 
     clean = torch.zeros(1, 16, 16, dtype=torch.complex64)
     clean.imag = torch.full((1, 16, 16), 3.0)  # |signal| = 3 everywhere
@@ -198,8 +198,8 @@ def test_noise_sigma_uses_magnitude_for_complex() -> None:
 
 
 def test_undersample_masks_phase_encode_not_readout() -> None:
-    from mriforge.core.metrics.meta_evaluation.simulator import degrade_kspace_undersample
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.core.metrics.meta_evaluation.simulator import degrade_kspace_undersample
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     # Non-square so the two axes are distinguishable. Complex in → complex out, so
     # fft2c(out) recovers exactly the masked k-space.
@@ -214,8 +214,8 @@ def test_undersample_masks_phase_encode_not_readout() -> None:
 
 
 def test_motion_corrupts_phase_encode_lines() -> None:
-    from mriforge.core.metrics.meta_evaluation.simulator import degrade_motion
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.core.metrics.meta_evaluation.simulator import degrade_motion
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     clean = torch.randn(1, 1, 16, 32, dtype=torch.complex64)
     gen = torch.Generator().manual_seed(1)

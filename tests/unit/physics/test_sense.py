@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/infrastructure/physics/sense.py.
+"""Unit tests for src/spectramr/infrastructure/physics/sense.py.
 
 Covers:
   - SENSESubspaceProjector (complex and real-stacked inputs)
@@ -59,7 +59,7 @@ def _real_stack(t: torch.Tensor) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_sense_imports() -> None:
     """Module-level imports succeed without error."""
-    from mriforge.infrastructure.physics.sense import (
+    from spectramr.infrastructure.physics.sense import (
         SENSESubspaceProjector,
         compute_sense_loss,
     )
@@ -71,7 +71,7 @@ def test_canary_sense_imports() -> None:
 @pytest.mark.physics
 def test_canary_projector_complex_tiny() -> None:
     """SENSESubspaceProjector runs forward on the smallest valid complex input."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     B, C, H, W = 1, 2, 8, 8
@@ -88,7 +88,7 @@ def test_canary_projector_complex_tiny() -> None:
 @pytest.mark.physics
 def test_canary_compute_sense_loss_tiny() -> None:
     """compute_sense_loss returns a scalar on minimal inputs."""
-    from mriforge.infrastructure.physics.sense import compute_sense_loss
+    from spectramr.infrastructure.physics.sense import compute_sense_loss
 
     B, C, H, W = 1, 2, 8, 8
     kspace_pred = _make_complex_kspace(B, C, H, W, seed=0)
@@ -121,7 +121,7 @@ _COIL_SHAPES: list[tuple[int, int, int, int]] = [
 )
 def test_projector_shape_preserved_complex(shape: tuple[int, int, int, int]) -> None:
     """SENSESubspaceProjector output has same shape as input (complex path)."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     B, C, H, W = shape
     proj = SENSESubspaceProjector()
@@ -141,7 +141,7 @@ def test_projector_shape_preserved_complex(shape: tuple[int, int, int, int]) -> 
 )
 def test_projector_shape_preserved_real_stacked(shape: tuple[int, int, int, int]) -> None:
     """SENSESubspaceProjector accepts real-stacked [B, 2C, H, W] inputs."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     B, C, H, W = shape
     proj = SENSESubspaceProjector()
@@ -164,7 +164,7 @@ def test_projector_shape_preserved_real_stacked(shape: tuple[int, int, int, int]
 )
 def test_sense_loss_nonneg(shape: tuple[int, int, int, int]) -> None:
     """compute_sense_loss is non-negative for all tested shapes."""
-    from mriforge.infrastructure.physics.sense import compute_sense_loss
+    from spectramr.infrastructure.physics.sense import compute_sense_loss
 
     B, C, H, W = shape
     kspace_pred = _make_complex_kspace(B, C, H, W, seed=7)
@@ -189,7 +189,7 @@ def test_sense_loss_nonneg(shape: tuple[int, int, int, int]) -> None:
 )
 def test_projector_sanity_shape_kspace(shape: tuple[int, int, int, int]) -> None:
     """SENSESubspaceProjector output shape matches k-space shape matrix."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     B, C, H, W = shape
     proj = SENSESubspaceProjector()
@@ -207,7 +207,7 @@ def test_projector_sanity_shape_kspace(shape: tuple[int, int, int, int]) -> None
 @pytest.mark.physics
 def test_projector_edge_single_coil() -> None:
     """SENSESubspaceProjector handles a single coil (C=1) without error."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     B, C, H, W = 1, 1, 16, 16
@@ -220,7 +220,7 @@ def test_projector_edge_single_coil() -> None:
 @pytest.mark.physics
 def test_projector_edge_batch_1() -> None:
     """SENSESubspaceProjector handles B=1 (smallest batch)."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     kspace = _make_complex_kspace(1, 4, 16, 16)
@@ -232,7 +232,7 @@ def test_projector_edge_batch_1() -> None:
 @pytest.mark.physics
 def test_projector_edge_zero_kspace() -> None:
     """Projecting zero k-space should return zero k-space."""
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     B, C, H, W = 1, 4, 16, 16
@@ -248,7 +248,7 @@ def test_projector_edge_zero_kspace() -> None:
 @pytest.mark.physics
 def test_sense_loss_edge_identical_inputs() -> None:
     """compute_sense_loss returns 0.0 when pred == target."""
-    from mriforge.infrastructure.physics.sense import compute_sense_loss
+    from spectramr.infrastructure.physics.sense import compute_sense_loss
 
     B, C, H, W = 1, 4, 16, 16
     kspace = _make_complex_kspace(B, C, H, W)
@@ -262,7 +262,7 @@ def test_sense_loss_edge_identical_inputs() -> None:
 @pytest.mark.physics
 def test_sense_loss_edge_real_stacked_smaps() -> None:
     """compute_sense_loss handles real-stacked smaps (non-complex path)."""
-    from mriforge.infrastructure.physics.sense import compute_sense_loss
+    from spectramr.infrastructure.physics.sense import compute_sense_loss
 
     B, C, H, W = 1, 4, 16, 16
     kspace_pred = _make_complex_kspace(B, C, H, W, seed=3)
@@ -291,7 +291,7 @@ def test_projector_raises_odd_channel_real_stacked() -> None:
     Real-stacked format requires C_real = 2 * C_complex; an odd channel
     count is ill-formed and should surface an error (not silently truncate).
     """
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     B, C_odd, H, W = 1, 3, 16, 16  # odd C → can't be real-stacked
@@ -313,7 +313,7 @@ def test_projector_idempotent() -> None:
 
     The SENSE subspace is an orthogonal projection; P(P(x)) = P(x).
     """
-    from mriforge.infrastructure.physics.sense import SENSESubspaceProjector
+    from spectramr.infrastructure.physics.sense import SENSESubspaceProjector
 
     proj = SENSESubspaceProjector()
     B, C, H, W = 1, 4, 32, 32
@@ -341,8 +341,8 @@ def test_sense_loss_is_componentwise_not_modulus_l1() -> None:
     """
     import torch.nn.functional as F
 
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
-    from mriforge.infrastructure.physics.sense import compute_sense_loss
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.sense import compute_sense_loss
 
     B, C, H, W = 1, 4, 16, 16
     pred = _make_complex_kspace(B, C, H, W, seed=1)

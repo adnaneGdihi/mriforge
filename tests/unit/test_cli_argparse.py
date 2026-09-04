@@ -1,4 +1,4 @@
-"""Argparse-validation tests for :mod:`mriforge.cli.app`.
+"""Argparse-validation tests for :mod:`spectramr.cli.app`.
 
 Per the test-suite roadmap Phase 6, every CLI subcommand needs at
 least one **argparse-validation** test: ``--help`` exits 0, missing
@@ -7,7 +7,7 @@ required arguments exit 2, invalid choice values exit 2.
 We don't actually run any training / inference / SLURM submission
 here — argparse's ``parse_args`` halts (via ``SystemExit``) before
 the action function fires. Tests just patch ``sys.argv``, call
-:func:`mriforge.cli.app.main`, and assert on the resulting ``SystemExit``
+:func:`spectramr.cli.app.main`, and assert on the resulting ``SystemExit``
 code.
 
 The "happy-path" tests (where every required arg is supplied) are
@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import pytest
 
-import mriforge.cli.app as cli_app
+import spectramr.cli.app as cli_app
 
 
 # ── Helpers ────────────────────────────────────────────────────────
@@ -52,19 +52,19 @@ def _run_main(monkeypatch: pytest.MonkeyPatch, argv: list[str]) -> int:
 
 class TestTopLevelParser:
     def test_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "--help"])
         assert rc == 0
 
     def test_no_subcommand_exits_two(self, monkeypatch: pytest.MonkeyPatch) -> None:
         # ``subparsers(..., required=True)`` makes argparse exit 2
         # when no subcommand is given.
-        rc = _run_main(monkeypatch, ["mriforge"])
+        rc = _run_main(monkeypatch, ["spectramr"])
         assert rc == 2
 
     def test_unknown_subcommand_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "definitely_not_a_command"])
+        rc = _run_main(monkeypatch, ["spectramr", "definitely_not_a_command"])
         assert rc == 2
 
 
@@ -73,14 +73,14 @@ class TestTopLevelParser:
 
 class TestTrainSubcommand:
     def test_train_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "train", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "train", "--help"])
         assert rc == 0
 
     def test_train_without_config_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # --config is required.
-        rc = _run_main(monkeypatch, ["mriforge", "train"])
+        rc = _run_main(monkeypatch, ["spectramr", "train"])
         assert rc == 2
 
 
@@ -91,13 +91,13 @@ class TestSanityCheckSubcommand:
     def test_sanity_check_help_exits_zero(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "sanity_check", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "sanity_check", "--help"])
         assert rc == 0
 
     def test_sanity_check_without_config_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "sanity_check"])
+        rc = _run_main(monkeypatch, ["spectramr", "sanity_check"])
         assert rc == 2
 
 
@@ -106,28 +106,28 @@ class TestSanityCheckSubcommand:
 
 class TestPredictSubcommand:
     def test_predict_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "predict", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "predict", "--help"])
         assert rc == 0
 
     def test_predict_without_model_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # --model and --input are required.
-        rc = _run_main(monkeypatch, ["mriforge", "predict", "--input", "/tmp/x"])
+        rc = _run_main(monkeypatch, ["spectramr", "predict", "--input", "/tmp/x"])
         assert rc == 2
 
     def test_predict_without_input_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         rc = _run_main(
-            monkeypatch, ["mriforge", "predict", "--model", "/tmp/ckpt.pt"]
+            monkeypatch, ["spectramr", "predict", "--model", "/tmp/ckpt.pt"]
         )
         assert rc == 2
 
 
 class TestExportSubcommand:
     def test_export_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "export", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "export", "--help"])
         assert rc == 0
 
     def test_export_invalid_format_exits_two(
@@ -136,7 +136,7 @@ class TestExportSubcommand:
         rc = _run_main(
             monkeypatch,
             [
-                "mriforge", "export",
+                "spectramr", "export",
                 "--model", "/tmp/m.pt",
                 "--config", "/tmp/c.yaml",
                 "--format", "definitely_not_a_format",
@@ -149,7 +149,7 @@ class TestBenchmarkSubcommand:
     def test_benchmark_help_exits_zero(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "benchmark", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "benchmark", "--help"])
         assert rc == 0
 
     def test_benchmark_invalid_suite_exits_two(
@@ -157,7 +157,7 @@ class TestBenchmarkSubcommand:
     ) -> None:
         rc = _run_main(
             monkeypatch,
-            ["mriforge", "benchmark", "--suite", "not_a_suite"],
+            ["spectramr", "benchmark", "--suite", "not_a_suite"],
         )
         assert rc == 2
 
@@ -166,7 +166,7 @@ class TestListFeaturesSubcommand:
     def test_list_features_help_exits_zero(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "list-features", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "list-features", "--help"])
         assert rc == 0
 
     def test_list_features_invalid_module_exits_two(
@@ -174,7 +174,7 @@ class TestListFeaturesSubcommand:
     ) -> None:
         rc = _run_main(
             monkeypatch,
-            ["mriforge", "list-features", "--module", "not_a_module"],
+            ["spectramr", "list-features", "--module", "not_a_module"],
         )
         assert rc == 2
 
@@ -183,7 +183,7 @@ class TestListFeaturesSubcommand:
     ) -> None:
         rc = _run_main(
             monkeypatch,
-            ["mriforge", "list-features", "--format", "xml"],  # not allowed
+            ["spectramr", "list-features", "--format", "xml"],  # not allowed
         )
         assert rc == 2
 
@@ -193,14 +193,14 @@ class TestListFeaturesSubcommand:
 
 class TestAuditSubcommand:
     def test_audit_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "audit", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "audit", "--help"])
         assert rc == 0
 
     def test_audit_without_config_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # The `config` positional arg is required.
-        rc = _run_main(monkeypatch, ["mriforge", "audit"])
+        rc = _run_main(monkeypatch, ["spectramr", "audit"])
         assert rc == 2
 
     def test_audit_invalid_device_exits_two(
@@ -208,7 +208,7 @@ class TestAuditSubcommand:
     ) -> None:
         rc = _run_main(
             monkeypatch,
-            ["mriforge", "audit", "/tmp/c.yaml", "--device", "tpu"],
+            ["spectramr", "audit", "/tmp/c.yaml", "--device", "tpu"],
         )
         assert rc == 2
 
@@ -220,14 +220,14 @@ class TestCampaignSubcommand:
     def test_campaign_help_exits_zero(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "campaign", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "campaign", "--help"])
         assert rc == 0
 
     def test_campaign_no_action_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         # ``campaign_sub.dest="campaign_action", required=True``.
-        rc = _run_main(monkeypatch, ["mriforge", "campaign"])
+        rc = _run_main(monkeypatch, ["spectramr", "campaign"])
         assert rc == 2
 
     @pytest.mark.parametrize(
@@ -238,7 +238,7 @@ class TestCampaignSubcommand:
         self, monkeypatch: pytest.MonkeyPatch, action: str
     ) -> None:
         rc = _run_main(
-            monkeypatch, ["mriforge", "campaign", action, "--help"]
+            monkeypatch, ["spectramr", "campaign", action, "--help"]
         )
         assert rc == 0
 
@@ -250,7 +250,7 @@ class TestCampaignSubcommand:
         self, monkeypatch: pytest.MonkeyPatch, action: str
     ) -> None:
         # Each sub-action takes a positional dir/config — missing → 2.
-        rc = _run_main(monkeypatch, ["mriforge", "campaign", action])
+        rc = _run_main(monkeypatch, ["spectramr", "campaign", action])
         assert rc == 2
 
 
@@ -259,13 +259,13 @@ class TestCampaignSubcommand:
 
 class TestHPOSubcommand:
     def test_hpo_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "hpo", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "hpo", "--help"])
         assert rc == 0
 
     def test_hpo_without_required_args_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "hpo"])
+        rc = _run_main(monkeypatch, ["spectramr", "hpo"])
         assert rc == 2
 
     def test_hpo_invalid_sampler_exits_two(
@@ -274,7 +274,7 @@ class TestHPOSubcommand:
         rc = _run_main(
             monkeypatch,
             [
-                "mriforge", "hpo",
+                "spectramr", "hpo",
                 "--config", "/tmp/c.yaml",
                 "--model-type", "unet",
                 "--sampler", "definitely_not_a_sampler",
@@ -288,7 +288,7 @@ class TestHPOSubcommand:
         rc = _run_main(
             monkeypatch,
             [
-                "mriforge", "hpo",
+                "spectramr", "hpo",
                 "--config", "/tmp/c.yaml",
                 "--model-type", "unet",
                 "--pruner", "garbage",
@@ -302,13 +302,13 @@ class TestHPOSubcommand:
 
 class TestReportSubcommand:
     def test_report_help_exits_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "report", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "report", "--help"])
         assert rc == 0
 
     def test_report_without_exp_dir_exits_two(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "report"])
+        rc = _run_main(monkeypatch, ["spectramr", "report"])
         assert rc == 2
 
     def test_report_invalid_task_exits_two(
@@ -316,7 +316,7 @@ class TestReportSubcommand:
     ) -> None:
         rc = _run_main(
             monkeypatch,
-            ["mriforge", "report", "--exp-dir", "/tmp/e", "--task", "not_a_task"],
+            ["spectramr", "report", "--exp-dir", "/tmp/e", "--task", "not_a_task"],
         )
         assert rc == 2
 
@@ -328,7 +328,7 @@ class TestMetaEvaluateSubcommand:
     def test_meta_evaluate_help_exits_zero(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        rc = _run_main(monkeypatch, ["mriforge", "meta-evaluate", "--help"])
+        rc = _run_main(monkeypatch, ["spectramr", "meta-evaluate", "--help"])
         assert rc == 0
 
     # No required positionals — invocation alone parses cleanly, so we

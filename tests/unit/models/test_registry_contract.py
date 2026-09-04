@@ -1,6 +1,6 @@
 """Registry-contract tests: every entry must satisfy the dispatch shape.
 
-Targets ``mriforge.models.registry``. We don't try to instantiate all 400+ models
+Targets ``spectramr.models.registry``. We don't try to instantiate all 400+ models
 here (that lives in a future ``@pytest.mark.slow`` exhaustive-instantiation
 test, see plan D.3 follow-up). Instead, we verify the structural contract that
 ``ModelBuilder`` / ``ModelFactory`` / config-audit relies on:
@@ -31,8 +31,8 @@ import pytest
 # ``parametrize(... MODEL_REGISTRY.keys())``. (Previously this relied on some
 # earlier test in the session having populated the global registry, so the
 # file failed when run in isolation.)
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 populate_model_registry()
 
@@ -41,7 +41,7 @@ def test_registry_is_non_empty_after_discovery() -> None:
     """Auto-discovery should have populated the registry with many models."""
     assert len(MODEL_REGISTRY) >= 50, (
         f"Expected ≥50 registered models post-discovery, got {len(MODEL_REGISTRY)}. "
-        "Likely cause: auto-discovery in mriforge.models.init_registry failed silently."
+        "Likely cause: auto-discovery in spectramr.models.init_registry failed silently."
     )
 
 

@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.mae.simae_generator import SiMAEGenerator
+from spectramr.models.mae.simae_generator import SiMAEGenerator
 
 
 def test_simae_initialization():

@@ -17,41 +17,41 @@ import importlib
 import pytest
 
 DELETED_MODULES = [
-    "mriforge.infrastructure.services.multi_stage_training_service",
-    "mriforge.infrastructure.services.unrolled_training_advisor",
-    "mriforge.infrastructure.services.training_orchestration",
-    "mriforge.infrastructure.services.training_orchestration.service",
-    "mriforge.infrastructure.services.training_orchestration.execution_engine",
-    "mriforge.infrastructure.services.training_orchestration.data_loader_manager",
-    "mriforge.application.use_cases.factory",
-    "mriforge.application.use_cases.training_use_case",
-    "mriforge.application.use_cases.transfer_learning_use_case",
-    "mriforge.application.use_cases.multi_stage_training_use_case",
-    "mriforge.application.use_cases.use_cases",
-    "mriforge.application.use_cases.use_cases_3d",
-    "mriforge.application.use_cases.requests",
-    "mriforge.application.use_cases.inference_use_case",
-    "mriforge.application.use_cases.export_model_use_case",
-    "mriforge.models.tuning.single_stage_hyperparameter_tuning",
-    "mriforge.models.tuning.staged_hyperparameter_tuning",
-    "mriforge.models.stability.model_stabilization",
-    "mriforge.domain.repositories",
+    "spectramr.infrastructure.services.multi_stage_training_service",
+    "spectramr.infrastructure.services.unrolled_training_advisor",
+    "spectramr.infrastructure.services.training_orchestration",
+    "spectramr.infrastructure.services.training_orchestration.service",
+    "spectramr.infrastructure.services.training_orchestration.execution_engine",
+    "spectramr.infrastructure.services.training_orchestration.data_loader_manager",
+    "spectramr.application.use_cases.factory",
+    "spectramr.application.use_cases.training_use_case",
+    "spectramr.application.use_cases.transfer_learning_use_case",
+    "spectramr.application.use_cases.multi_stage_training_use_case",
+    "spectramr.application.use_cases.use_cases",
+    "spectramr.application.use_cases.use_cases_3d",
+    "spectramr.application.use_cases.requests",
+    "spectramr.application.use_cases.inference_use_case",
+    "spectramr.application.use_cases.export_model_use_case",
+    "spectramr.models.tuning.single_stage_hyperparameter_tuning",
+    "spectramr.models.tuning.staged_hyperparameter_tuning",
+    "spectramr.models.stability.model_stabilization",
+    "spectramr.domain.repositories",
     # Dead parallel loss-config schema with zero production consumers and stale
     # Literal names (vanilla / wgan-gp / kspace_l2) that diverged from the loss
     # registry — a latent trap if ever wired. The live path is LossBuilder /
     # create_loss. Deleted 2026-07 (F1).
-    "mriforge.models.losses.schemas",
+    "spectramr.models.losses.schemas",
 ]
 
 LIVE_MODULES = [
-    "mriforge.application.use_cases.hpo_use_case",
-    "mriforge.application.use_cases.nr_metric_validation_use_case",
-    "mriforge.application.use_cases.mrf_dictless_matching_use_case",
-    "mriforge.models.tuning",
-    "mriforge.models.stability",
-    "mriforge.models.stability.manager",
-    "mriforge.infrastructure.services",
-    "mriforge.domain.services",
+    "spectramr.application.use_cases.hpo_use_case",
+    "spectramr.application.use_cases.nr_metric_validation_use_case",
+    "spectramr.application.use_cases.mrf_dictless_matching_use_case",
+    "spectramr.models.tuning",
+    "spectramr.models.stability",
+    "spectramr.models.stability.manager",
+    "spectramr.infrastructure.services",
+    "spectramr.domain.services",
 ]
 
 
@@ -67,8 +67,8 @@ def test_live_module_still_imports(mod):
 
 
 def test_orchestration_interfaces_gone():
-    import mriforge.domain.services as ds
-    import mriforge.infrastructure.services as infra
+    import spectramr.domain.services as ds
+    import spectramr.infrastructure.services as infra
 
     assert not hasattr(ds, "ITrainingOrchestrationService")
     assert not hasattr(ds, "TrainingOrchestrationService")

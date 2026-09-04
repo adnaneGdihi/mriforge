@@ -25,7 +25,7 @@ same-process unit test -- and cannot be resolved from a config.
 
 The two depths genuinely differ, so a clean result is not clean by construction:
 ``populate_model_registry()`` walks a HAND-CURATED list of 44 packages, while the warm
-probe walks all 64 subdirectories under ``mriforge/models/`` -- a package missing from the
+probe walks all 64 subdirectories under ``spectramr/models/`` -- a package missing from the
 curated list is exactly what shows up in the gap. Likewise ``data/transforms/__init__.py``
 curates 9 imports by hand out of everything in that directory.
 
@@ -70,35 +70,35 @@ class Registry:
 REGISTRIES: tuple[Registry, ...] = (
     Registry(
         kind="transform",
-        cold="import mriforge.data.transforms",
-        home="mriforge.data.transforms",
-        names="__import__('mriforge.data.transforms.registry', fromlist=['x']).list_transforms()",
+        cold="import spectramr.data.transforms",
+        home="spectramr.data.transforms",
+        names="__import__('spectramr.data.transforms.registry', fromlist=['x']).list_transforms()",
     ),
     Registry(
         kind="metric",
-        cold="import mriforge.core.metrics",
-        home="mriforge.core.metrics",
-        names="list(__import__('mriforge.core.metrics', fromlist=['x']).MetricsRegistry._metrics)",
+        cold="import spectramr.core.metrics",
+        home="spectramr.core.metrics",
+        names="list(__import__('spectramr.core.metrics', fromlist=['x']).MetricsRegistry._metrics)",
     ),
     Registry(
         kind="loss",
-        cold="import mriforge.models.losses",
-        home="mriforge.models.losses",
+        cold="import spectramr.models.losses",
+        home="spectramr.models.losses",
         names=(
-            "list(__import__('mriforge.models.losses.registry', fromlist=['x'])"
+            "list(__import__('spectramr.models.losses.registry', fromlist=['x'])"
             ".LossRegistry._custom_losses)"
         ),
     ),
     Registry(
         kind="model",
         # Models are the one registry with an explicit population step; a bare
-        # `import mriforge.models` is deliberately NOT the documented entry point.
+        # `import spectramr.models` is deliberately NOT the documented entry point.
         cold=(
-            "from mriforge.models.init_registry import populate_model_registry;"
+            "from spectramr.models.init_registry import populate_model_registry;"
             " populate_model_registry()"
         ),
-        home="mriforge.models",
-        names="list(__import__('mriforge.models.registry', fromlist=['x']).MODEL_REGISTRY)",
+        home="spectramr.models",
+        names="list(__import__('spectramr.models.registry', fromlist=['x']).MODEL_REGISTRY)",
     ),
 )
 

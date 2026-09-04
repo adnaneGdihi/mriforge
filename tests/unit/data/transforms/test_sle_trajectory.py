@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.data.transforms.sle_trajectory import (
+from spectramr.data.transforms.sle_trajectory import (
     build_sle_kspace_mask,
     kappa_to_dimension,
     sample_sle_trace,
@@ -81,7 +81,7 @@ def test_trace_reproducibility() -> None:
 
 def test_mask_type_sle_kappa_dispatch() -> None:
     """The canonical MaskGenerator.generate_mask should dispatch on SLE_KAPPA."""
-    from mriforge.infrastructure.physics.sampling import MaskGenerator, MaskType
+    from spectramr.infrastructure.physics.sampling import MaskGenerator, MaskType
 
     gen = MaskGenerator(seed=11)
     mask = gen.generate_mask(
@@ -98,7 +98,7 @@ def test_mask_type_sle_kappa_dispatch() -> None:
 
 def test_transforms_package_exposes_sle_api() -> None:
     """sle_trajectory module is mounted in src/data/transforms/__init__.py."""
-    from mriforge.data import transforms as t
+    from spectramr.data import transforms as t
 
     assert hasattr(t, "build_sle_kspace_mask")
     assert hasattr(t, "kappa_to_dimension")

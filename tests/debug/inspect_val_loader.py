@@ -37,9 +37,9 @@ from pathlib import Path
 
 import torch
 
-# The package lives at <repo>/src/mriforge, so putting the REPO ROOT on the path
+# The package lives at <repo>/src/spectramr, so putting the REPO ROOT on the path
 # -- which is what the original `sys.path.append(os.getcwd())` did -- never made
-# `mriforge` importable. It worked only when the venv already had the editable
+# `spectramr` importable. It worked only when the venv already had the editable
 # install, and it silently depended on being launched from the repo root.
 # Anchor on __file__ instead and add `src`, matching how every committed sbatch
 # script sets PYTHONPATH (submit_exp11_fpk_ablation.sbatch:111).
@@ -48,9 +48,9 @@ _SRC = _REPO_ROOT / "src"
 if _SRC.is_dir() and str(_SRC) not in sys.path:
     sys.path.insert(0, str(_SRC))
 
-from mriforge.config.settings import TrainingSettings  # noqa: E402
-from mriforge.infrastructure.builders.context import BuilderContext  # noqa: E402
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (  # noqa: E402
+from spectramr.config.settings import TrainingSettings  # noqa: E402
+from spectramr.infrastructure.builders.context import BuilderContext  # noqa: E402
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (  # noqa: E402
     DataPipelineDirector,
 )
 

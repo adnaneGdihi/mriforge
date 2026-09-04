@@ -33,18 +33,18 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.paired_synthesis_generator import (  # noqa: E402
+from spectramr.models.generators.paired_synthesis_generator import (  # noqa: E402
     PairedSynthesisGenerator,
 )
-from mriforge.models.generators.pmps_corruption_operators import (  # noqa: E402
+from spectramr.models.generators.pmps_corruption_operators import (  # noqa: E402
     HFCorruptionOperator,
     ULFCorruptionOperator,
     _hoult_snr_scale,
 )
-from mriforge.models.generators.tissue_parameter_diffusion import (  # noqa: E402
+from spectramr.models.generators.tissue_parameter_diffusion import (  # noqa: E402
     TissueParameterDiffusion,
 )
-from mriforge.models.losses.pmps_losses import (  # noqa: E402
+from spectramr.models.losses.pmps_losses import (  # noqa: E402
     MMDPairedDistributionMatch,
     PerPairConsistencyResidual,
     TissueParameterPhysicsConstraint,

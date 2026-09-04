@@ -20,8 +20,8 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.computer import ValidationMetricsComputer
-from mriforge.core.metrics.types import (
+from spectramr.core.metrics.computer import ValidationMetricsComputer
+from spectramr.core.metrics.types import (
     MetricMode,
     MetricSpec,
     ValidationMetricsConfig,
@@ -114,7 +114,7 @@ def test_repeated_metric_failure_warns_once(caplog: pytest.LogCaptureFixture) ->
     import logging
 
     comp = _computer_with("lpips", _FakeIncremental(RuntimeError("no backend")))
-    with caplog.at_level(logging.WARNING, logger="mriforge.core.metrics.computer"):
+    with caplog.at_level(logging.WARNING, logger="spectramr.core.metrics.computer"):
         for _ in range(5):
             out = comp.compute(_P, _T)
             assert math.isnan(out["lpips"])  # still NaN every batch
@@ -177,7 +177,7 @@ def test_get_direction_falls_back_to_default_table() -> None:
     # An unknown metric used to silently resolve to MAX. That default is what
     # inverted best-checkpoint selection for every unlisted lower-is-better
     # metric (#208) — it must now raise.
-    from mriforge.core.metrics.metric_directions import UnknownMetricDirectionError
+    from spectramr.core.metrics.metric_directions import UnknownMetricDirectionError
 
     with pytest.raises(UnknownMetricDirectionError):
         comp.get_direction("totally_unknown_metric")
@@ -267,7 +267,7 @@ def test_explicit_spec_direction_still_wins() -> None:
 
 def test_undeclared_monitor_key_raises() -> None:
     """An unresolvable monitor key must not silently default to MAX."""
-    from mriforge.core.metrics.metric_directions import UnknownMetricDirectionError
+    from spectramr.core.metrics.metric_directions import UnknownMetricDirectionError
 
     comp = ValidationMetricsComputer(
         ValidationMetricsConfig(metrics=[], primary_metric="psnr"), device="cpu"
@@ -290,8 +290,8 @@ def test_undeclared_monitor_key_raises() -> None:
 def test_unregistered_metric_raises_instead_of_being_skipped():
     import pytest
 
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     # Injected past the config surface: this models the WIRING defect the raise is
     # for, not a user typo (which the upstream gates now reject).
@@ -311,8 +311,8 @@ def test_unregistered_metric_raises_instead_of_being_skipped():
 
 def test_registered_metrics_still_compute_normally():
     """The raise must not disturb the happy path."""
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     computer = ValidationMetricsComputer(
         ValidationMetricsConfig(
@@ -344,9 +344,9 @@ def _unnormalized_pair():
 
 
 def test_not_applicable_records_a_reason_rather_than_reading_as_a_crash():
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.outcome import NotApplicableReason
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.outcome import NotApplicableReason
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     computer = ValidationMetricsComputer(
         ValidationMetricsConfig(
@@ -371,8 +371,8 @@ def test_the_warning_says_not_applicable_not_failed_to_compute(caplog):
     """The log line is the only place a reader learns which of the two it was."""
     import logging
 
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     computer = ValidationMetricsComputer(
         ValidationMetricsConfig(
@@ -391,8 +391,8 @@ def test_the_warning_says_not_applicable_not_failed_to_compute(caplog):
 
 def test_the_reason_map_is_per_call_not_cumulative():
     """A metric that recovers must stop being reported as excluded."""
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     computer = ValidationMetricsComputer(
         ValidationMetricsConfig(
@@ -413,8 +413,8 @@ def test_the_reason_dedupe_is_keyed_on_metric_and_reason(caplog):
     """Log-once per metric would hide the same metric failing a NEW way."""
     import logging
 
-    from mriforge.core.metrics.computer import ValidationMetricsComputer
-    from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
     computer = ValidationMetricsComputer(
         ValidationMetricsConfig(
@@ -470,7 +470,7 @@ def _multi_computer(**instances) -> ValidationMetricsComputer:
 def test_scalar_tensor_metrics_are_transferred_in_one_sync() -> None:
     from unittest import mock
 
-    from mriforge.core.metrics import scalar_transfer
+    from spectramr.core.metrics import scalar_transfer
 
     comp = _multi_computer(
         **{f"m{i}": _FakeReturning(torch.tensor(float(i))) for i in range(5)}
@@ -548,3 +548,80 @@ def test_a_failing_metric_does_not_strand_its_neighbours() -> None:
     assert out["good"] == 9.0
     assert out["alsogood"] == 4.0
     assert math.isnan(out["bad"])
+
+
+# ---------------------------------------------------------------------------
+# ``only=`` -- the metric subset used by the diffusion zero-filled baseline.
+#
+# The baseline grades a DIFFERENT tensor (the measurement the model was given)
+# against the SAME target, so it needs a second pass over the batch. Running
+# the arm's whole configured set twice would double every perceptual metric
+# per rung per batch on a paradigm whose validation already dominates wall
+# clock, so the second pass is restricted -- and restricted by INTERSECTION,
+# never by addition, so this parameter cannot become a second owner of "which
+# metrics does this arm grade on" (non-negotiable 17).
+# ---------------------------------------------------------------------------
+
+
+def test_only_restricts_the_call_to_the_named_subset() -> None:
+    comp = _multi_computer(
+        psnr=_FakeReturning(torch.tensor(30.0)),
+        hfen=_FakeReturning(torch.tensor(0.5)),
+        lpips=_FakeReturning(torch.tensor(0.1)),
+    )
+    out = comp.compute(_P, _T, only=("psnr", "hfen"))
+    assert set(out) == {"psnr", "hfen"}, "the unnamed spec still ran"
+
+
+def test_only_is_an_intersection_and_never_widens_the_set() -> None:
+    """A name absent from the config is NOT computed just because it was asked for.
+
+    The widening direction is the dangerous one: it would let a caller grade an
+    arm on a metric the arm never declared, under the same ``val_*`` prefix the
+    declared metrics use.
+    """
+    comp = _multi_computer(psnr=_FakeReturning(torch.tensor(30.0)))
+    out = comp.compute(_P, _T, only=("psnr", "hfen"))
+    assert set(out) == {"psnr"}
+
+
+def test_default_call_still_runs_every_configured_spec() -> None:
+    comp = _multi_computer(
+        psnr=_FakeReturning(torch.tensor(30.0)),
+        hfen=_FakeReturning(torch.tensor(0.5)),
+        lpips=_FakeReturning(torch.tensor(0.1)),
+    )
+    assert set(comp.compute(_P, _T)) == {"psnr", "hfen", "lpips"}
+
+
+def test_only_is_keyword_only() -> None:
+    """A third POSITIONAL argument must not be able to become the subset.
+
+    Every existing call site passes ``(predictions, targets)`` positionally;
+    a positional-or-keyword ``only`` would make any future third positional
+    argument silently narrow the metric set instead of raising.
+    """
+    import inspect
+
+    param = inspect.signature(ValidationMetricsComputer.compute).parameters["only"]
+    assert param.kind is inspect.Parameter.KEYWORD_ONLY
+
+
+def test_a_subset_call_narrows_last_not_applicable() -> None:
+    """The documented ordering hazard, executed rather than asserted in prose.
+
+    ``last_not_applicable`` is per-call by contract, and ``training_loop.py``
+    reads it after validation. A subset call therefore MUST run before the
+    full one; this test is what makes that requirement a fact on the record
+    rather than a comment.
+    """
+    comp = _multi_computer(
+        psnr=_FakeReturning(torch.tensor(30.0)),
+        lpips=_FakeReturning(torch.tensor(0.1)),
+    )
+    comp.last_not_applicable = {"lpips": "sentinel"}  # type: ignore[assignment]
+    comp.compute(_P, _T, only=("psnr",))
+    assert comp.last_not_applicable == {}, (
+        "a subset call left the previous call's N/A record in place; if it is "
+        "cleared (as here) it must run FIRST, not after the full compute"
+    )

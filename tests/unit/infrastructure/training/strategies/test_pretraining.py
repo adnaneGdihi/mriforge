@@ -18,7 +18,7 @@ import re
 
 
 def _source() -> str:
-    import mriforge.infrastructure.training.strategies.pretraining as pre
+    import spectramr.infrastructure.training.strategies.pretraining as pre
 
     return inspect.getsource(pre)
 

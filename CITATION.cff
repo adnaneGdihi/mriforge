@@ -1,17 +1,20 @@
 cff-version: 1.2.0
-message: "If you use MRIForge in your research, please cite the following."
-title: "MRIForge: A Multi-Paradigm Research Framework for MRI Reconstruction, Super-Resolution, and Generative Modelling"
+message: "If you use spectraMR in your research, please cite the following."
+title: "spectraMR: A Multi-Paradigm Research Framework for MRI Reconstruction, Super-Resolution, and Generative Modelling"
 type: software
 authors:
   - given-names: Adnane
     family-names: Gdihi
     email: adnane.gdihi@gmail.com
     orcid: "https://orcid.org/0009-0006-6266-7769"
+# `version` tracks src/spectramr/__init__.py, which hatch reads to build the wheel.
+# `date-released` is stamped when the tag is actually cut: it asserted 2026-08-01
+# while no tag, GitHub release or PyPI distribution existed, and a citation is the
+# one file whose whole job is to be verifiable.
 version: 0.1.0
-date-released: "2026-08-31"
 license: Apache-2.0
-repository-code: "https://github.com/adnaneGdihi/mriforge"
-url: "https://github.com/adnaneGdihi/mriforge"
+repository-code: "https://github.com/adnaneGdihi/spectramr"
+url: "https://github.com/adnaneGdihi/spectramr"
 keywords:
   - magnetic-resonance-imaging
   - image-reconstruction

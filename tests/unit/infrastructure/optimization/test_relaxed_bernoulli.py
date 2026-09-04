@@ -1,6 +1,6 @@
 """Tests for the relaxed-Bernoulli (Gumbel-Sigmoid) primitive.
 
-Targets ``mriforge.infrastructure.optimization.relaxed_bernoulli`` —
+Targets ``spectramr.infrastructure.optimization.relaxed_bernoulli`` —
 ``CC-2`` from ``TODO/backlog_paradigm_expansion_roadmap.md``. Used by
 M3 (LOUPE / PILOT), M4 (low-rank + sparse), and Part-I G (BALD).
 
@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.optimization.relaxed_bernoulli import (
+from spectramr.infrastructure.optimization.relaxed_bernoulli import (
     density_penalty,
     expected_density,
     gumbel_sigmoid,

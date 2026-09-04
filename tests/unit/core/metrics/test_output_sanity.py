@@ -1,6 +1,6 @@
 """Unit tests for the validation-output degeneracy guard.
 
-The thresholds in :mod:`mriforge.core.metrics.output_sanity` are calibrated
+The thresholds in :mod:`spectramr.core.metrics.output_sanity` are calibrated
 against the 2026-07 MRIxFields2026 cohort, so the tests below pin both the
 *mechanism* (each degeneracy shape is detected) and the *calibration* (the
 measured healthy/degenerate bands stay on their own sides of the limits). If a
@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.output_sanity import (  # noqa: E402
+from spectramr.core.metrics.output_sanity import (  # noqa: E402
     AIR_LEVEL_LIMIT,
     BLANK_EXCESS_LIMIT,
     MIN_REFERENCE_AIR,

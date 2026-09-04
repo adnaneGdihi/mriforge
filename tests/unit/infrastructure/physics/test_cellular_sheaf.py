@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.cellular_sheaf import (
+from spectramr.infrastructure.physics.cellular_sheaf import (
     global_sections_rank,
     mayer_vietoris_obstruction_norm,
     sheaf_coboundary,

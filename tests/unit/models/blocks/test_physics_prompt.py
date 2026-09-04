@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.physics_prompt import PhysicsPromptEmbedding
+from spectramr.models.blocks.physics_prompt import PhysicsPromptEmbedding
 
 
 @pytest.fixture

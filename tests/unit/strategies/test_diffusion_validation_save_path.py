@@ -30,10 +30,10 @@ from __future__ import annotations
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-# Path corrected 2026-05-24: src→mriforge refactor moved the package under
-# src/mriforge/; the stale src/infrastructure/ path FileNotFoundError'd and
+# Path corrected 2026-05-24: src→spectramr refactor moved the package under
+# src/spectramr/; the stale src/infrastructure/ path FileNotFoundError'd and
 # silently disabled the F13 dispatch checks. See smoke_audit_20260524.md.
-DIFFUSION_PY = REPO_ROOT / "src" / "mriforge" / "infrastructure" / "training" / "strategies" / "diffusion.py"
+DIFFUSION_PY = REPO_ROOT / "src" / "spectramr" / "infrastructure" / "training" / "strategies" / "diffusion.py"
 
 
 def _source() -> str:

@@ -19,7 +19,7 @@ import torch
 # Diffeomorphic registration: exp(0) should be the identity grid
 # ----------------------------------------------------------------------------
 def test_diffeomorphic_exp_zero_is_identity():
-    from mriforge.infrastructure.training.strategies.diffeomorphic_recon_strategy import (
+    from spectramr.infrastructure.training.strategies.diffeomorphic_recon_strategy import (
         DiffeomorphicReconStrategy,
     )
 
@@ -33,7 +33,7 @@ def test_diffeomorphic_exp_zero_is_identity():
 
 
 def test_diffeomorphic_smoothness_and_fold_penalty():
-    from mriforge.infrastructure.training.strategies.diffeomorphic_recon_strategy import (
+    from spectramr.infrastructure.training.strategies.diffeomorphic_recon_strategy import (
         DiffeomorphicReconStrategy,
     )
 
@@ -49,7 +49,7 @@ def test_diffeomorphic_smoothness_and_fold_penalty():
 # Spin-SDE Bloch integrator: deterministic limit recovers analytical decay
 # ----------------------------------------------------------------------------
 def test_spin_sde_zero_diffusion_t2_decay():
-    from mriforge.infrastructure.training.strategies.spin_sde_strategy import SpinSDEStrategy
+    from spectramr.infrastructure.training.strategies.spin_sde_strategy import SpinSDEStrategy
 
     s = SpinSDEStrategy.__new__(SpinSDEStrategy)
     s.n_steps = 200
@@ -68,7 +68,7 @@ def test_spin_sde_zero_diffusion_t2_decay():
 # SPGR signal models: identity for α=π/2, infinite T1
 # ----------------------------------------------------------------------------
 def test_spgr_signal_basic():
-    from mriforge.models.blocks.spgr_signal import spgr_signal, spin_echo_signal
+    from spectramr.models.blocks.spgr_signal import spgr_signal, spin_echo_signal
 
     M0 = torch.full((1, 1, 4, 4), 0.8)
     T1 = torch.full((1, 1, 4, 4), 1000.0)
@@ -83,7 +83,7 @@ def test_spgr_signal_basic():
 # SIREN INR: forward shape + gradient flow
 # ----------------------------------------------------------------------------
 def test_siren_forward_and_backward():
-    from mriforge.models.blocks.siren_inr import SIRENNetwork
+    from spectramr.models.blocks.siren_inr import SIRENNetwork
 
     net = SIRENNetwork(in_features=2, hidden_features=64, hidden_layers=2, out_features=2)
     coords = torch.randn(8, 100, 2, requires_grad=True)
@@ -98,7 +98,7 @@ def test_siren_forward_and_backward():
 # Cross-contrast cold diffusion: corruption schedule
 # ----------------------------------------------------------------------------
 def test_cross_contrast_corruption_schedule():
-    from mriforge.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
+    from spectramr.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
         CrossContrastKspaceDiffusionStrategy as Strat,
     )
 
@@ -120,7 +120,7 @@ def test_cross_contrast_corruption_schedule():
 # Synthetic pathology lesion sampler
 # ----------------------------------------------------------------------------
 def test_lesion_sampler_shapes_and_intensity():
-    from mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
+    from spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
         LesionSampler,
     )
 
@@ -136,7 +136,7 @@ def test_lesion_sampler_shapes_and_intensity():
 # Adversarial PGD attack: produces same shape, bounded perturbation in L∞
 # ----------------------------------------------------------------------------
 def test_pgd_attack_linf_bound():
-    from mriforge.infrastructure.training.strategies.adversarial_robustness_strategy import (
+    from spectramr.infrastructure.training.strategies.adversarial_robustness_strategy import (
         AdversarialRobustnessStrategy,
     )
 
@@ -162,7 +162,7 @@ def test_pgd_attack_linf_bound():
 # Low-rank + sparse decomposition: SVT thresholds singular values
 # ----------------------------------------------------------------------------
 def test_svt_zeros_small_singular_values():
-    from mriforge.infrastructure.training.strategies.low_rank_sparse_strategy import (
+    from spectramr.infrastructure.training.strategies.low_rank_sparse_strategy import (
         LowRankSparseStrategy,
     )
 
@@ -178,7 +178,7 @@ def test_svt_zeros_small_singular_values():
 # QSM pipeline: end-to-end pass through chains primitives
 # ----------------------------------------------------------------------------
 def test_qsm_pipeline_runs():
-    from mriforge.infrastructure.training.strategies.qsm_pipeline_strategy import QSMPipelineStrategy
+    from spectramr.infrastructure.training.strategies.qsm_pipeline_strategy import QSMPipelineStrategy
 
     s = QSMPipelineStrategy.__new__(QSMPipelineStrategy)
     field = torch.randn(1, 1, 8, 8, 8) * 0.01
@@ -192,7 +192,7 @@ def test_qsm_pipeline_runs():
 # QSpace SH basis: orthonormality (approx) of L=0 column
 # ----------------------------------------------------------------------------
 def test_qspace_sh_basis_constant_column():
-    from mriforge.infrastructure.training.strategies.qspace_diffusion_strategy import (
+    from spectramr.infrastructure.training.strategies.qspace_diffusion_strategy import (
         build_sh_basis_unit_sphere,
     )
 
@@ -208,7 +208,7 @@ def test_qspace_sh_basis_constant_column():
 # Stochastic interpolants: correct interpolant at endpoints
 # ----------------------------------------------------------------------------
 def test_stochastic_interpolant_endpoints():
-    from mriforge.infrastructure.training.strategies.stochastic_interpolants_strategy import (
+    from spectramr.infrastructure.training.strategies.stochastic_interpolants_strategy import (
         StochasticInterpolantsStrategy as S,
     )
 
@@ -227,7 +227,7 @@ def test_stochastic_interpolant_endpoints():
 # JEPA multi-block mask: context + targets disjoint
 # ----------------------------------------------------------------------------
 def test_jepa_multi_block_mask_disjoint():
-    from mriforge.infrastructure.training.strategies.jepa_strategy import multi_block_mask
+    from spectramr.infrastructure.training.strategies.jepa_strategy import multi_block_mask
 
     ctx, tgts = multi_block_mask(32, 32, n_targets=3, ctx_scale=0.85, tgt_scale=0.2)
     occupied = torch.zeros(32, 32, dtype=torch.bool)
@@ -243,7 +243,7 @@ def test_jepa_multi_block_mask_disjoint():
 # Field-probe demodulator: forward + inverse round-trip is identity
 # ----------------------------------------------------------------------------
 def test_field_probe_demod_round_trip():
-    from mriforge.infrastructure.training.strategies.field_probe_coupled_strategy import (
+    from spectramr.infrastructure.training.strategies.field_probe_coupled_strategy import (
         FieldProbeCoupledStrategy as Strat,
     )
 
@@ -260,7 +260,7 @@ def test_field_probe_demod_round_trip():
 # PnP-ADMM and RED: end-to-end on an identity forward operator
 # ----------------------------------------------------------------------------
 def test_pnp_admm_identity_problem():
-    from mriforge.models.diffusion.samplers.pnp_red import PnPADMMSampler
+    from spectramr.models.diffusion.samplers.pnp_red import PnPADMMSampler
 
     sampler = PnPADMMSampler(n_iters=40, rho=0.1, lambda_prior=0.0, cg_iters=8)
     y = torch.randn(1, 1, 8, 8)
@@ -282,7 +282,7 @@ def test_pnp_admm_identity_problem():
 
 
 def test_red_identity_problem():
-    from mriforge.models.diffusion.samplers.pnp_red import REDSampler
+    from spectramr.models.diffusion.samplers.pnp_red import REDSampler
 
     sampler = REDSampler(n_iters=20, step_size=0.5, lambda_prior=0.0)
     y = torch.randn(1, 1, 8, 8)
@@ -302,7 +302,7 @@ def test_red_identity_problem():
 # GIRF: delta kernel is identity
 # ----------------------------------------------------------------------------
 def test_girf_delta_identity():
-    from mriforge.infrastructure.physics.girf import GIRFKernel, apply_girf
+    from spectramr.infrastructure.physics.girf import GIRFKernel, apply_girf
 
     girf = GIRFKernel(n_axes=3, kernel_size=11)
     waveform = torch.randn(2, 3, 64)
@@ -319,7 +319,7 @@ def test_girf_cross_correlation_convention():
     one (doc-contract guard)."""
     import torch.nn.functional as F
 
-    from mriforge.infrastructure.physics.girf import apply_girf
+    from spectramr.infrastructure.physics.girf import apply_girf
 
     # Asymmetric kernel weighted on the first (left) tap, single axis.
     kernel = torch.zeros(1, 1, 3)
@@ -337,7 +337,7 @@ def test_girf_cross_correlation_convention():
 # PAC-Bayes bound: positive slack, monotonic in n
 # ----------------------------------------------------------------------------
 def test_pac_bayes_bound_monotone():
-    from mriforge.infrastructure.validation.pac_bayes_certificate import mcallester_bound
+    from spectramr.infrastructure.validation.pac_bayes_certificate import mcallester_bound
 
     bound_small = mcallester_bound(0.1, kl=10.0, n=100, delta=0.05)
     bound_large = mcallester_bound(0.1, kl=10.0, n=10_000, delta=0.05)
@@ -352,7 +352,7 @@ def _trainable_count(m):
 
 
 def test_peft_lora_freezes_base():
-    from mriforge.infrastructure.distributed.peft_inject import inject_peft
+    from spectramr.infrastructure.distributed.peft_inject import inject_peft
 
     class Cfg:
         enabled = True
@@ -375,7 +375,7 @@ def test_peft_lora_freezes_base():
 
 
 def test_peft_adapter_method_replaces_module():
-    from mriforge.infrastructure.distributed.peft_inject import inject_peft, AdapterModule
+    from spectramr.infrastructure.distributed.peft_inject import inject_peft, AdapterModule
 
     class Cfg:
         enabled = True
@@ -396,7 +396,7 @@ def test_peft_adapter_method_replaces_module():
 
 
 def test_peft_prefix_tuning_replaces_module():
-    from mriforge.infrastructure.distributed.peft_inject import inject_peft, PrefixModule
+    from spectramr.infrastructure.distributed.peft_inject import inject_peft, PrefixModule
 
     class Cfg:
         enabled = True
@@ -415,7 +415,7 @@ def test_peft_prefix_tuning_replaces_module():
 
 
 def test_peft_bitfit_only_biases():
-    from mriforge.infrastructure.distributed.peft_inject import inject_peft
+    from spectramr.infrastructure.distributed.peft_inject import inject_peft
 
     class Cfg:
         enabled = True

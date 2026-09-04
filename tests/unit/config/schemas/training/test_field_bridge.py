@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.field_bridge import FieldBridgeConfig
+from spectramr.config.schemas.training.field_bridge import FieldBridgeConfig
 
 
 def test_defaults() -> None:
@@ -28,6 +28,6 @@ def test_lambda_endpoint_l1_rejects_negative() -> None:
 
 
 def test_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "field_bridge" in TrainingStrategyConfigSchema.model_fields

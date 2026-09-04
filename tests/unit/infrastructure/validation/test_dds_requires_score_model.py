@@ -11,7 +11,7 @@ check rejects it at config time so the dead-knob never silently degrades
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 class _Diffusion:

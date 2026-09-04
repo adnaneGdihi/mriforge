@@ -18,8 +18,8 @@ from unittest.mock import Mock
 import pytest
 import torch
 
-from mriforge.config.schemas.physics import DataConsistencyConfig
-from mriforge.infrastructure.physics.data_consistency import (
+from spectramr.config.schemas.physics import DataConsistencyConfig
+from spectramr.infrastructure.physics.data_consistency import (
     DataConsistencyLayer,
     HardDataConsistency,
     SimpleDataConsistency,
@@ -180,7 +180,7 @@ class TestNormalizationIsolation:
 
     def test_normalization_is_per_sample_percentile(self):
         """Verify that normalization uses per-sample stats, not global stats."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationTransform
+        from spectramr.data.transforms.normalization import KSpaceNormalizationTransform
 
         transform = KSpaceNormalizationTransform(percentile=0.99)
 

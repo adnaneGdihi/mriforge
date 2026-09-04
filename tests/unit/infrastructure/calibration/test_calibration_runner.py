@@ -1,6 +1,6 @@
 """Unit tests for :class:`ConformalCalibrationRunner`.
 
-Targets ``mriforge.infrastructure.calibration.runner``. Part of the parallel
+Targets ``spectramr.infrastructure.calibration.runner``. Part of the parallel
 test-coverage push (Unit 14).
 
 The runner is a thin orchestration layer that:
@@ -30,8 +30,8 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.calibration.conformal import ConformalCalibrator
-from mriforge.infrastructure.calibration.runner import (
+from spectramr.infrastructure.calibration.conformal import ConformalCalibrator
+from spectramr.infrastructure.calibration.runner import (
     CalibrationReport,
     ConformalCalibrationRunner,
 )

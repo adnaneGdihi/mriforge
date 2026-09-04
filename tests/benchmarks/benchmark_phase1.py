@@ -14,11 +14,11 @@ from unittest.mock import MagicMock
 
 import torch
 import torch.nn as nn
-from mriforge.infrastructure.training.base_loss_computer import BaseLossComputer
-from mriforge.infrastructure.training.metric_dispatcher import MetricDispatcher
-from mriforge.infrastructure.training.utils.tensor_buffer_pool import TensorBufferPool
+from spectramr.infrastructure.training.base_loss_computer import BaseLossComputer
+from spectramr.infrastructure.training.metric_dispatcher import MetricDispatcher
+from spectramr.infrastructure.training.utils.tensor_buffer_pool import TensorBufferPool
 
-from mriforge.infrastructure.training.memory_context_managers import memory_efficient_context
+from spectramr.infrastructure.training.memory_context_managers import memory_efficient_context
 
 
 class BenchmarkResults:

@@ -14,8 +14,8 @@ import pytest
 
 @pytest.fixture(scope="module")
 def caps_for():
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import get_model_capabilities
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import get_model_capabilities
 
     populate_model_registry()
     return get_model_capabilities

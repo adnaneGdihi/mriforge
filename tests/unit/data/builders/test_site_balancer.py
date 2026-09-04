@@ -17,7 +17,7 @@ from collections import Counter
 
 import pytest
 
-from mriforge.data.builders.site_balancer import (
+from spectramr.data.builders.site_balancer import (
     RoundRobinBalancer,
     StratifiedBalancer,
     build_balancer,
@@ -98,7 +98,7 @@ def test_stratified_uniform_weights_ok() -> None:
 def test_module_imports_and_exposes_balancers():
     """Guards the WS8 import cleanup (dropped unused ``typing.Iterable``): the
     module must still import and expose its balancer surface."""
-    import mriforge.data.builders.site_balancer as sb
+    import spectramr.data.builders.site_balancer as sb
 
     assert hasattr(sb, "build_balancer")
     assert hasattr(sb, "RoundRobinBalancer")

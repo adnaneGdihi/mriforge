@@ -9,16 +9,16 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.init_registry import populate_model_registry
+from spectramr.models.init_registry import populate_model_registry
 
 populate_model_registry()
 
-from mriforge.infrastructure.physics.vf_physics_operators import (
+from spectramr.infrastructure.physics.vf_physics_operators import (
     LplusSOperator,
     T2StarDecayOperator,
     TGVConstraintOperator,
 )
-from mriforge.models.generators.pma_varnet import PMAVarNet
+from spectramr.models.generators.pma_varnet import PMAVarNet
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # PMA-VarNet Tests

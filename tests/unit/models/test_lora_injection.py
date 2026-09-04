@@ -9,7 +9,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.models.lora import LoRAConv2d, LoRALinear, inject_lora_adapters
+from spectramr.models.lora import LoRAConv2d, LoRALinear, inject_lora_adapters
 
 
 class SimpleModel(nn.Module):

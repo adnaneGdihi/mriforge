@@ -2,8 +2,8 @@
 import torch
 import torch.nn as nn
 
-from mriforge.models.interfaces import IDiscriminator, IGenerator
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class, register_model
+from spectramr.models.interfaces import IDiscriminator, IGenerator
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class, register_model
 
 
 # Create dummy models for testing
@@ -38,7 +38,7 @@ def test_model_registry_registration():
     assert MODEL_REGISTRY['test_gen']['mode'] == 'test_mode'
     assert get_model_class("test_gen") is TestGen
 
-from mriforge.models.losses.registry import create_loss, register_loss
+from spectramr.models.losses.registry import create_loss, register_loss
 
 
 def test_loss_registry_and_creation():
@@ -73,7 +73,7 @@ def test_model_creator_refuses_list_to_int_silent_coercion() -> None:
     to ignore.
     """
     import pytest
-    from mriforge.models.factories.model_factory import (
+    from spectramr.models.factories.model_factory import (
         ActivationManager,
         ModelCreator,
         ModelRegistry,
@@ -106,7 +106,7 @@ def test_model_creator_accepts_single_element_list_narrowing() -> None:
     """Single-element ``[X]`` → ``X`` remains allowed (no architecture
     loss); F-COERCE-LOUD only fires when ≥2 elements would be discarded.
     """
-    from mriforge.models.factories.model_factory import (
+    from spectramr.models.factories.model_factory import (
         ActivationManager,
         ModelCreator,
         ModelRegistry,

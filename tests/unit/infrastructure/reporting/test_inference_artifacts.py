@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.infrastructure.reporting.inference_artifacts import (
+from spectramr.infrastructure.reporting.inference_artifacts import (
     FINAL_EVAL_JSON,
     FINAL_EVAL_MANIFEST_JSON,
     METRICS_CSV,
@@ -94,7 +94,7 @@ class TestTheCohortIsTargetReadyNotUncomputable:
     def test_a_context_consuming_metric_is_distinguished_from_a_missing_target(self):
         # Two different causes must not collapse into one reason: supplying a
         # target fixes the first and does nothing for the second.
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         ctx = next(
             (
@@ -166,7 +166,7 @@ class TestComputeBranch:
         assert payload["mae"]["subj01"] == pytest.approx(pred.mean().item(), abs=1e-5)
 
     def test_a_raising_metric_is_recorded_not_swallowed(self, tmp_path, pred, monkeypatch):
-        from mriforge.core.metrics import registry as registry_mod
+        from spectramr.core.metrics import registry as registry_mod
 
         def _boom(name, **kwargs):
             raise RuntimeError("kaboom")
@@ -185,7 +185,7 @@ class TestArtifactsRoundTripThroughTheAggregator:
     """The artifacts are only worth writing if ``report`` can actually read them."""
 
     def _aggregate(self, run_dir: Path):
-        from mriforge.infrastructure.reporting.aggregator import aggregate
+        from spectramr.infrastructure.reporting.aggregator import aggregate
 
         return aggregate(run_dir)
 

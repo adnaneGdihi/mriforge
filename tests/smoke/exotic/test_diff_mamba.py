@@ -13,7 +13,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 # Import model
-from mriforge.models.mamba.diff_mamba import DiffMamba, DiffSSM, LinearInterpolation
+from spectramr.models.mamba.diff_mamba import DiffMamba, DiffSSM, LinearInterpolation
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

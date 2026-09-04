@@ -7,7 +7,7 @@ Every test here pins the difference between the two readings.
 
 import torch.nn as nn
 
-from mriforge.core.component_signature import (
+from spectramr.core.component_signature import (
     SignatureContract,
     owned_init,
     signature_contract,

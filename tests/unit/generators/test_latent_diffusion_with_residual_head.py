@@ -13,16 +13,16 @@ import torch
 
 def test_wrapper_is_registered() -> None:
     """The model must register under its canonical key."""
-    import mriforge.models.generators  # noqa: F401
-    from mriforge.models.registry import list_models
+    import spectramr.models.generators  # noqa: F401
+    from spectramr.models.registry import list_models
 
     assert "latent_diffusion_residual_head" in list_models()
 
 
 def test_wrapper_supports_contrast_conditioning_capability() -> None:
     """Registry must reflect ``supports_contrast_conditioning=True``."""
-    import mriforge.models.generators  # noqa: F401
-    from mriforge.models.registry import model_supports
+    import spectramr.models.generators  # noqa: F401
+    from spectramr.models.registry import model_supports
 
     assert model_supports(
         "latent_diffusion_residual_head", "supports_contrast_conditioning"
@@ -31,7 +31,7 @@ def test_wrapper_supports_contrast_conditioning_capability() -> None:
 
 def test_residual_head_param_ratio_under_10_percent() -> None:
     """Acceptance criterion: head must stay lightweight (< 10 % of backbone)."""
-    from mriforge.models.generators.latent_diffusion_with_residual_head import (
+    from spectramr.models.generators.latent_diffusion_with_residual_head import (
         LatentDiffusionWithResidualHead,
     )
 
@@ -59,7 +59,7 @@ def test_residual_head_is_initialised_as_identity() -> None:
     This avoids destabilising a pretrained backbone at the moment the
     head is attached -- the head only contributes once it has trained.
     """
-    from mriforge.models.generators.latent_diffusion_with_residual_head import (
+    from spectramr.models.generators.latent_diffusion_with_residual_head import (
         _ResidualHeadUNet,
     )
 
@@ -72,7 +72,7 @@ def test_residual_head_is_initialised_as_identity() -> None:
 
 def test_residual_head_unet_forward_shape() -> None:
     """The head must preserve the input spatial shape."""
-    from mriforge.models.generators.latent_diffusion_with_residual_head import (
+    from spectramr.models.generators.latent_diffusion_with_residual_head import (
         _ResidualHeadUNet,
     )
 
@@ -84,7 +84,7 @@ def test_residual_head_unet_forward_shape() -> None:
 
 def test_residual_head_unet_accepts_contrast_embedding() -> None:
     """FiLM modulation must accept and consume a contrast embedding."""
-    from mriforge.models.generators.latent_diffusion_with_residual_head import (
+    from spectramr.models.generators.latent_diffusion_with_residual_head import (
         _ResidualHeadUNet,
     )
 

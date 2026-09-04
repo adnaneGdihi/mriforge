@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.hermitian import enforce_hermitian, is_hermitian
+from spectramr.infrastructure.physics.hermitian import enforce_hermitian, is_hermitian
 
 
 def _centered_kspace(x: torch.Tensor) -> torch.Tensor:

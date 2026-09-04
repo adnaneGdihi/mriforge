@@ -18,7 +18,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.padnet_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.padnet_strategy import (  # noqa: E402
     PaDNetTrainingStrategy,
 )
 

@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.orchestration.slurm_backend`.
+"""Unit tests for :mod:`spectramr.infrastructure.orchestration.slurm_backend`.
 
 The real backend shells out to ``sbatch``/``sacct``/``squeue``; the tests
 here only exercise:
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.orchestration.slurm_backend import JobStatus, SLURMBackend
+from spectramr.infrastructure.orchestration.slurm_backend import JobStatus, SLURMBackend
 
 
 # ── JobStatus ───────────────────────────────────────────────────────
@@ -126,16 +126,16 @@ class TestGenerateJobScript:
         site-specific (#1146). Configure one the way a real user does, so the
         directive assertions below test rendering rather than a baked-in site.
         """
-        monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-        monkeypatch.delenv("MRIFORGE_SLURM_PARTITION", raising=False)
-        monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+        monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+        monkeypatch.delenv("SPECTRAMR_SLURM_PARTITION", raising=False)
+        monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
     def _script(self, **kwargs: object) -> str:
         return SLURMBackend.generate_job_script(
             experiment_name="exp_alpha",
             config_path="experiments/inprogress/exp.yaml",
             output_dir="/scratch/results/exp_alpha",
-            base_dir="/project/mriforge",
+            base_dir="/project/spectramr",
             **kwargs,  # type: ignore[arg-type]
         )
 
@@ -166,7 +166,7 @@ class TestGenerateJobScript:
 
     def test_account_comes_from_the_environment(self) -> None:
         """No site allocation is baked in: the account is whatever
-        ``$MRIFORGE_SLURM_ACCOUNT`` says (set to ``test_alloc`` by the fixture).
+        ``$SPECTRAMR_SLURM_ACCOUNT`` says (set to ``test_alloc`` by the fixture).
         """
         assert "#SBATCH --account=test_alloc" in self._script()
 
@@ -183,8 +183,8 @@ class TestGenerateJobScript:
         a message naming neither the knob nor the env var. Silent-fallback and
         silent-garbage are both forbidden (non-negotiable 3).
         """
-        monkeypatch.delenv("MRIFORGE_SLURM_ACCOUNT", raising=False)
-        with pytest.raises(ValueError, match="MRIFORGE_SLURM_ACCOUNT"):
+        monkeypatch.delenv("SPECTRAMR_SLURM_ACCOUNT", raising=False)
+        with pytest.raises(ValueError, match="SPECTRAMR_SLURM_ACCOUNT"):
             self._script()
 
     def test_mail_user_is_omitted_unless_configured(self) -> None:
@@ -192,7 +192,7 @@ class TestGenerateJobScript:
         assert "--mail-user" not in self._script()
 
     def test_mail_user_is_emitted_when_configured(self, monkeypatch) -> None:
-        monkeypatch.setenv("MRIFORGE_SLURM_MAIL_USER", "me@example.org")
+        monkeypatch.setenv("SPECTRAMR_SLURM_MAIL_USER", "me@example.org")
         assert "#SBATCH --mail-user=me@example.org" in self._script()
     def test_bytecode_cache_uses_node_local_prefix(self) -> None:
         # Regression guard: the per-arm script must NOT suppress the
@@ -239,9 +239,9 @@ class TestGenerateJobScript:
         out = self._script()
         # Single-GPU path must use the canonical module entrypoint. The
         # pre-refactor `python src/main.py` path was removed in the
-        # src→mriforge migration and no longer exists — emitting it would
+        # src→spectramr migration and no longer exists — emitting it would
         # crash every single-GPU campaign/orchestrator job on the cluster.
-        assert "python -m mriforge.cli train --config" in out
+        assert "python -m spectramr.cli train --config" in out
         assert "experiments/inprogress/exp.yaml" in out
 
     def test_no_dead_src_main_entrypoint(self) -> None:
@@ -254,7 +254,7 @@ class TestGenerateJobScript:
         """Auto-inference must call ``predict --model`` (the real CLI), not
         the non-existent ``infer --checkpoint``/``--config`` form."""
         out = self._script(test_manifest="/shared/test_manifest.txt")
-        assert "python -m mriforge.cli predict" in out
+        assert "python -m spectramr.cli predict" in out
         assert "--model " in out
         assert "infer --checkpoint" not in out
 
@@ -266,7 +266,7 @@ class TestGenerateJobScript:
     def test_venv_path_default_uses_base_dir(self) -> None:
         out = self._script()
         # default venv path = base_dir/.venv/bin/activate
-        assert "/project/mriforge/.venv/bin/activate" in out
+        assert "/project/spectramr/.venv/bin/activate" in out
 
     def test_custom_venv_path_is_respected(self) -> None:
         out = self._script(venv_path="/opt/custom/.venv/bin/activate")
@@ -278,7 +278,7 @@ class TestGenerateJobScript:
 
 class TestGenerateArrayJobScript:
     """The campaign 'array' backend submits ONE script whose body resolves the
-    config for THIS array task from a frozen manifest via mriforge.cli.manifest_dispatch.
+    config for THIS array task from a frozen manifest via spectramr.cli.manifest_dispatch.
     The header carries `#SBATCH --array=0-(N-1)%C`; the body routes output into
     the campaign tree via --output-base."""
 
@@ -288,9 +288,9 @@ class TestGenerateArrayJobScript:
         site-specific (#1146). Configure one the way a real user does, so the
         directive assertions below test rendering rather than a baked-in site.
         """
-        monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-        monkeypatch.delenv("MRIFORGE_SLURM_PARTITION", raising=False)
-        monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+        monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+        monkeypatch.delenv("SPECTRAMR_SLURM_PARTITION", raising=False)
+        monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
     def _script(self, **kwargs: object) -> str:
         params = {
@@ -298,7 +298,7 @@ class TestGenerateArrayJobScript:
             "n_tasks": 5,
             "concurrency": 8,
             "output_base": "/camp",
-            "base_dir": "/project/mriforge",
+            "base_dir": "/project/spectramr",
             "dispatch_dir": "/camp/dispatch",
         }
         params.update(kwargs)
@@ -328,7 +328,7 @@ class TestGenerateArrayJobScript:
 
     def test_body_invokes_manifest_dispatch_with_task_id(self) -> None:
         out = self._script()
-        assert "mriforge.cli.manifest_dispatch" in out
+        assert "spectramr.cli.manifest_dispatch" in out
         assert "--manifest /camp/array_manifest.txt" in out
         # the per-task index is the SLURM array task id
         assert "--index ${SLURM_ARRAY_TASK_ID}" in out
@@ -341,7 +341,7 @@ class TestGenerateArrayJobScript:
     def test_body_writes_bytecode_cache_to_node_local_scratch(self) -> None:
         # The array path runs one task per arm; disabling the bytecode cache
         # (the old PYTHONDONTWRITEBYTECODE=1) forced a full recompile of the
-        # ~1000 mriforge.* modules on EVERY task on the shared cluster FS.
+        # ~1000 spectramr.* modules on EVERY task on the shared cluster FS.
         # It must redirect the cache to node-local scratch instead, matching
         # generate_job_script (see the single-job counterpart test).
         out = self._script()
@@ -361,7 +361,7 @@ class TestGenerateArrayJobScript:
         out = self._script()
         assert "#SBATCH --account=test_alloc" in out
         assert "#SBATCH --gpus=1" in out
-        monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "my-alloc")
+        monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "my-alloc")
         assert "#SBATCH --account=my-alloc" in self._script()
 
     def test_custom_slurm_params_override_defaults(self) -> None:
@@ -383,8 +383,8 @@ class TestGenerateArrayJobScript:
 class TestClinicalDisclaimerSuppression:
     """The batch templates must set the knob the warning itself advertises.
 
-    ``mriforge/__init__.py`` emits a ``UserWarning`` at import telling the reader
-    to "Set MRIFORGE_SUPPRESS_CLINICAL_WARNING=1 to silence this message in batch
+    ``spectramr/__init__.py`` emits a ``UserWarning`` at import telling the reader
+    to "Set SPECTRAMR_SUPPRESS_CLINICAL_WARNING=1 to silence this message in batch
     jobs" — and no submitter ever did, so every cluster job log opened with the
     paragraph, once per process (audit and train are separate processes). An
     advertised knob that nothing sets is pitfall #15 from the other direction.
@@ -392,13 +392,13 @@ class TestClinicalDisclaimerSuppression:
 
     @pytest.fixture(autouse=True)
     def _account(self, monkeypatch):
-        monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
+        monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
 
     def test_single_arm_script_exports_the_knob(self) -> None:
         script = SLURMBackend.generate_job_script(
             experiment_name="exp_alpha",
             config_path="experiments/inprogress/exp.yaml",
             output_dir="/scratch/results/exp_alpha",
-            base_dir="/project/mriforge",
+            base_dir="/project/spectramr",
         )
-        assert "export MRIFORGE_SUPPRESS_CLINICAL_WARNING=1" in script
+        assert "export SPECTRAMR_SUPPRESS_CLINICAL_WARNING=1" in script

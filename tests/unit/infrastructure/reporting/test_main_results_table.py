@@ -23,7 +23,7 @@ matplotlib.use("Agg")
 
 import pytest
 
-from mriforge.infrastructure.reporting.advanced_reporting import (
+from spectramr.infrastructure.reporting.advanced_reporting import (
     ComparativeReport,
     create_comparative_report,
 )
@@ -192,6 +192,6 @@ def test_main_results_table_renders_NA_for_missing_metric(tmp_path):
 
 
 def test_optional_future_main_results_table_module():
-    mod = pytest.importorskip("mriforge.infrastructure.reporting.tables.main_results")
+    mod = pytest.importorskip("spectramr.infrastructure.reporting.tables.main_results")
     public = [a for a in dir(mod) if not a.startswith("_")]
     assert public, "tables.main_results must expose a public API"

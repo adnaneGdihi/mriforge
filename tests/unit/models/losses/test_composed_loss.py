@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.models.losses.composed_loss`.
+"""Tests for :mod:`spectramr.models.losses.composed_loss`.
 
 The contract under test is the ``want_metrics`` gate on ``WeightedLoss.compute``
 (production-plan row D07#8). Three properties have to hold together, and each is
@@ -21,12 +21,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.composed_loss import (
+from spectramr.models.losses.composed_loss import (
     ComposedLoss,
     ConditionalComposedLoss,
     WeightedLoss,
 )
-from mriforge.models.losses.standard_losses import L1Loss
+from spectramr.models.losses.standard_losses import L1Loss
 
 
 @pytest.fixture

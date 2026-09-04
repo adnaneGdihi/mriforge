@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 
-from mriforge.infrastructure.logging import banner, phase, smart_progress
+from spectramr.infrastructure.logging import banner, phase, smart_progress
 
 
 def test_banner_emits_three_lines(caplog) -> None:
@@ -37,7 +37,7 @@ def test_smart_progress_with_known_total() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Additional coverage for mriforge.infrastructure.logging.banners
+# Additional coverage for spectramr.infrastructure.logging.banners
 # (the module was listed as unreferenced; these tests wire it explicitly)
 # ---------------------------------------------------------------------------
 
@@ -56,7 +56,7 @@ import pytest  # noqa: E402
 )
 def test_banner_custom_width_and_char(width: int, char: str, caplog) -> None:
     """Banner borders should use the requested char and have the requested width."""
-    from mriforge.infrastructure.logging.banners import banner as _banner
+    from spectramr.infrastructure.logging.banners import banner as _banner
 
     log = logging.getLogger(f"testbanner_custom_{width}_{char}")
     caplog.set_level(logging.INFO, logger=log.name)
@@ -70,7 +70,7 @@ def test_banner_custom_width_and_char(width: int, char: str, caplog) -> None:
 @pytest.mark.unit
 def test_banner_debug_level(caplog) -> None:
     """Banner should be emittable at DEBUG level."""
-    from mriforge.infrastructure.logging.banners import banner as _banner
+    from spectramr.infrastructure.logging.banners import banner as _banner
 
     log = logging.getLogger("testbanner_debug")
     caplog.set_level(logging.DEBUG, logger=log.name)
@@ -84,7 +84,7 @@ def test_phase_elapsed_time_non_negative(caplog) -> None:
     """phase() elapsed-time message should report a non-negative float."""
     import re
 
-    from mriforge.infrastructure.logging.banners import phase as _phase
+    from spectramr.infrastructure.logging.banners import phase as _phase
 
     log = logging.getLogger("testphase_elapsed")
     caplog.set_level(logging.INFO, logger=log.name)
@@ -102,7 +102,7 @@ def test_phase_elapsed_time_non_negative(caplog) -> None:
 @pytest.mark.unit
 def test_phase_reraises_exception(caplog) -> None:
     """phase() context manager must propagate exceptions unchanged."""
-    from mriforge.infrastructure.logging.banners import phase as _phase
+    from spectramr.infrastructure.logging.banners import phase as _phase
 
     log = logging.getLogger("testphase_reraise")
     caplog.set_level(logging.INFO, logger=log.name)
@@ -114,7 +114,7 @@ def test_phase_reraises_exception(caplog) -> None:
 @pytest.mark.unit
 def test_banner_edge_empty_title(caplog) -> None:
     """banner() with an empty title should still emit 3 log lines."""
-    from mriforge.infrastructure.logging.banners import banner as _banner
+    from spectramr.infrastructure.logging.banners import banner as _banner
 
     log = logging.getLogger("testbanner_empty")
     caplog.set_level(logging.INFO, logger=log.name)

@@ -1,6 +1,6 @@
 r"""Unit tests for the LCAH acquisition hypernetwork encoder.
 
-Targets ``mriforge.models.encoders.lcah_encoder``.
+Targets ``spectramr.models.encoders.lcah_encoder``.
 
 LCAH conditions a target encoder on the acquisition vector through a
 hypernetwork, with both spectral-normalised so the extrapolation certificate
@@ -18,7 +18,7 @@ pytestmark = pytest.mark.unit
 
 
 def _encoder(**kw):
-    from mriforge.models.encoders.lcah_encoder import LCAHEncoder
+    from spectramr.models.encoders.lcah_encoder import LCAHEncoder
 
     torch.manual_seed(0)
     return LCAHEncoder(
@@ -50,7 +50,7 @@ def test_certified_radius_positive_for_unseen_acquisition() -> None:
 
 def test_spectral_norm_bounds_hypernetwork_lipschitz() -> None:
     """With spectral norm on, the hypernetwork's Lipschitz product is finite/small."""
-    from mriforge.models.blocks.spectral_lipschitz import spectral_norm_product
+    from spectramr.models.blocks.spectral_lipschitz import spectral_norm_product
 
     enc = _encoder(spectral_norm=True)
     lip_h = spectral_norm_product(enc.hypernet)
@@ -58,8 +58,8 @@ def test_spectral_norm_bounds_hypernetwork_lipschitz() -> None:
 
 
 def test_model_is_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "lcah_encoder" in MODEL_REGISTRY

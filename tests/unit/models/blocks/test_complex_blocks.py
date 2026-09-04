@@ -1,6 +1,6 @@
 """Tests for complex-valued residual / NAFNet blocks.
 
-Targets ``mriforge.models.blocks.complex_blocks``. ``ComplexResBlock`` and
+Targets ``spectramr.models.blocks.complex_blocks``. ``ComplexResBlock`` and
 ``ComplexNAFBlock`` operate on real-stacked complex tensors
 ``[B, 2C, H, W]`` (R/I interleaved).
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.complex_blocks import ComplexNAFBlock, ComplexResBlock
+from spectramr.models.blocks.complex_blocks import ComplexNAFBlock, ComplexResBlock
 
 
 # ---------------------------------------------------------------------------

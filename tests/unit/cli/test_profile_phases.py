@@ -10,8 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import mriforge
-from mriforge.cli.profile_phases import (
+import spectramr
+from spectramr.cli.profile_phases import (
     MAX_HOTSPOTS,
     PHASE_MARKERS,
     UNATTRIBUTED,
@@ -22,7 +22,7 @@ from mriforge.cli.profile_phases import (
     write_phase_reports,
 )
 
-SRC = "/repo/src/mriforge"
+SRC = "/repo/src/spectramr"
 TRAIN_FRAME = f"{SRC}/pipelines/training_loop.py _execute_training_loop:812;"
 VAL_FRAME = f"{SRC}/pipelines/train.py _run_validation:1955;"
 FORWARD_FRAME = f"{SRC}/models/generators/unet.py forward:214;"
@@ -213,14 +213,14 @@ def test_the_marked_functions_still_exist_where_the_markers_say():
     "validation never fired". Pin the markers to the source so the drift fails
     here — loudly, in CI — instead of silently in a report someone trusts.
     """
-    package_root = Path(mriforge.__file__).parent
+    package_root = Path(spectramr.__file__).parent
     for marker in PHASE_MARKERS:
         # file_suffix is already package-relative ("pipelines/train.py").
         source = (package_root / marker.file_suffix).read_text(encoding="utf-8")
         assert f"def {marker.function}(" in source, (
             f"{marker.function} is gone from {marker.file_suffix} — the "
             f"'{marker.phase}' phase would silently measure 0.0. Update "
-            f"PHASE_MARKERS in mriforge/cli/profile_phases.py."
+            f"PHASE_MARKERS in spectramr/cli/profile_phases.py."
         )
 
 

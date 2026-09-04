@@ -415,7 +415,7 @@ class AugmentationConfigSchema(MockBaseModel):
     pass
 
 
-# TrainingSettings for mriforge.config.settings
+# TrainingSettings for spectramr.config.settings
 class TrainingSettings(MockBaseModel):
     """Mock TrainingSettings class to support isinstance checks."""
 
@@ -545,7 +545,7 @@ class LazyMockModule(MagicMock):
 
 
 try:
-    from mriforge.shared.utils.metaclass import ModuleABCMeta
+    from spectramr.shared.utils.metaclass import ModuleABCMeta
 except ImportError:
 
     class ModuleABCMeta(abc.ABCMeta):
@@ -732,20 +732,20 @@ def setup_mock_torch_instance():
     setup_universal_mock(["pydantic", "pydantic_settings"])
 
     # Inject TrainingSettings into sys.modules to ensure isinstance works
-    if "mriforge.config.settings" not in sys.modules:
+    if "spectramr.config.settings" not in sys.modules:
         settings_module = LazyMockModule()
         settings_module.TrainingSettings = TrainingSettings
-        sys.modules["mriforge.config.settings"] = settings_module
-    elif not hasattr(sys.modules["mriforge.config.settings"], "TrainingSettings"):
-        sys.modules["mriforge.config.settings"].TrainingSettings = TrainingSettings
+        sys.modules["spectramr.config.settings"] = settings_module
+    elif not hasattr(sys.modules["spectramr.config.settings"], "TrainingSettings"):
+        sys.modules["spectramr.config.settings"].TrainingSettings = TrainingSettings
 
     # Inject ModuleABCMeta to resolve metaclass conflicts
-    if "mriforge.shared.utils.metaclass" not in sys.modules:
+    if "spectramr.shared.utils.metaclass" not in sys.modules:
         meta_module = LazyMockModule()
         meta_module.ModuleABCMeta = MockModuleMeta
-        sys.modules["mriforge.shared.utils.metaclass"] = meta_module
+        sys.modules["spectramr.shared.utils.metaclass"] = meta_module
     else:
-        sys.modules["mriforge.shared.utils.metaclass"].ModuleABCMeta = MockModuleMeta
+        sys.modules["spectramr.shared.utils.metaclass"].ModuleABCMeta = MockModuleMeta
 
     torch.nn.Linear = MockLayer
     torch.nn.Conv2d = MockLayer

@@ -27,13 +27,13 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.models.blocks.continuous_sfc_mamba import ContinuousSFCMamba  # noqa: E402
-from mriforge.models.blocks.cs_mno_layer import CSMNOLayer  # noqa: E402
-from mriforge.models.blocks.spectral_branch import (  # noqa: E402
+from spectramr.models.blocks.continuous_sfc_mamba import ContinuousSFCMamba  # noqa: E402
+from spectramr.models.blocks.cs_mno_layer import CSMNOLayer  # noqa: E402
+from spectramr.models.blocks.spectral_branch import (  # noqa: E402
     SpectralBranch2d,
     SpectralBranch3d,
 )
-from mriforge.models.blocks.topology_linearizer import ImageTopologyLinearizer  # noqa: E402
+from spectramr.models.blocks.topology_linearizer import ImageTopologyLinearizer  # noqa: E402
 
 # ── physical_arc_delta ─────────────────────────────────────────────
 

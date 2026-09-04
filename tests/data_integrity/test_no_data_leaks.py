@@ -190,7 +190,7 @@ class TestNormalizationIsolation:
     @pytest.mark.data_integrity
     def test_transform_uses_consistent_stats(self):
         """Verify transform applies same stats to all samples."""
-        from mriforge.data.transforms.transforms import NormalizeTransform
+        from spectramr.data.transforms.transforms import NormalizeTransform
 
         # Create transform with fixed stats
         transform = NormalizeTransform(mean=0.5, std=0.25)

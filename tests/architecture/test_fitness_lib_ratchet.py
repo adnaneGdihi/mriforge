@@ -149,7 +149,7 @@ class TestGrowthSlack:
 
 
 class TestAntiLaundering:
-    """`MRIFORGE_UPDATE_ARCH_BASELINE=1` must not raise a ceiling (NN20)."""
+    """`SPECTRAMR_UPDATE_ARCH_BASELINE=1` must not raise a ceiling (NN20)."""
 
     def test_with_measurement_rewrites_both_forms(self) -> None:
         assert with_measurement("a.py (400 loc)", 300) == "a.py (300 loc)"
@@ -187,8 +187,8 @@ class TestAntiLaundering:
         self, tmp_path, monkeypatch
     ) -> None:
         name = self._isolate(tmp_path, monkeypatch, "a.py  # 300 loc")
-        monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
-        monkeypatch.delenv("MRIFORGE_RAISE_ARCH_CEILING", raising=False)
+        monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
+        monkeypatch.delenv("SPECTRAMR_RAISE_ARCH_CEILING", raising=False)
         assert ratchet(name, {"a.py (900 loc)"}) == set()
         assert load_baseline(name) == {"a.py  # 300 loc"}
 
@@ -196,16 +196,16 @@ class TestAntiLaundering:
         """The escape hatch must exist and must be a SECOND, deliberate flag —
         otherwise the only way to record a justified growth is to hand-edit."""
         name = self._isolate(tmp_path, monkeypatch, "a.py  # 300 loc")
-        monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
-        monkeypatch.setenv("MRIFORGE_RAISE_ARCH_CEILING", "1")
+        monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
+        monkeypatch.setenv("SPECTRAMR_RAISE_ARCH_CEILING", "1")
         assert ratchet(name, {"a.py (900 loc)"}) == set()
         assert load_baseline(name) == {"a.py  # 900 loc"}
 
     def test_update_mode_still_records_new_offenders(self, tmp_path, monkeypatch) -> None:
         """Clamping must not break the thing update mode is FOR."""
         name = self._isolate(tmp_path, monkeypatch, "a.py  # 300 loc")
-        monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
-        monkeypatch.delenv("MRIFORGE_RAISE_ARCH_CEILING", raising=False)
+        monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
+        monkeypatch.delenv("SPECTRAMR_RAISE_ARCH_CEILING", raising=False)
         ratchet(name, {"a.py (900 loc)", "b.py (400 loc)"})
         assert load_baseline(name) == {"a.py  # 300 loc", "b.py  # 400 loc"}
 
@@ -213,6 +213,6 @@ class TestAntiLaundering:
         self, tmp_path, monkeypatch
     ) -> None:
         name = self._isolate(tmp_path, monkeypatch, "gone.py  # 300 loc")
-        monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
+        monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
         ratchet(name, set())
         assert load_baseline(name) == set()

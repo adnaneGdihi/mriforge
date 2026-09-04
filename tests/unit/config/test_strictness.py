@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.strictness import (
+from spectramr.config.schemas.strictness import (
     CompatSchema,
     StrategySchema,
     StrictSchema,

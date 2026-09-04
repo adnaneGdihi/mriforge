@@ -1,9 +1,9 @@
 """Tests for the pipeline-agnostic execution backends (WS-D).
 
-These backends answer only "run this ``mriforge <verb>`` invocation *here*"
+These backends answer only "run this ``spectramr <verb>`` invocation *here*"
 (local/docker/apptainer/slurm) — they know nothing about training. The
 shell-out backends (Docker/Apptainer/SLURM) build a command/script from a
-:class:`MRIForgeInvocation` + :class:`ResourceSpec`; ``build_*`` is pure and
+:class:`SpectraMRInvocation` + :class:`ResourceSpec`; ``build_*`` is pure and
 testable without spawning anything.
 """
 
@@ -13,11 +13,11 @@ import os
 
 import pytest
 
-import mriforge.infrastructure.execution.backends as backends_mod
-from mriforge.infrastructure.execution import (
+import spectramr.infrastructure.execution.backends as backends_mod
+from spectramr.infrastructure.execution import (
     ApptainerBackend,
     DockerBackend,
-    MRIForgeInvocation,
+    SpectraMRInvocation,
     ResourceSpec,
     SlurmBackend,
     export_launch_env,
@@ -33,34 +33,34 @@ def _slurm_account(monkeypatch):
     site-specific, so the tree carries none (#1146). Tests that render SLURM
     directives must therefore configure one, exactly as a user does.
     """
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
 
 @pytest.fixture(autouse=True)
 def _isolate_launch_env():
-    """Snapshot + clear MRIFORGE_LAUNCH_* around every test.
+    """Snapshot + clear SPECTRAMR_LAUNCH_* around every test.
 
     ``export_launch_env`` writes os.environ directly (it must, so the child run
     inherits it), and the container backends now forward those vars — so a leak
     would pollute unrelated build-command tests. This isolates each test.
     """
-    saved = {k: v for k, v in os.environ.items() if k.startswith("MRIFORGE_LAUNCH_")}
+    saved = {k: v for k, v in os.environ.items() if k.startswith("SPECTRAMR_LAUNCH_")}
     for k in saved:
         del os.environ[k]
     yield
-    for k in [k for k in os.environ if k.startswith("MRIFORGE_LAUNCH_")]:
+    for k in [k for k in os.environ if k.startswith("SPECTRAMR_LAUNCH_")]:
         del os.environ[k]
     os.environ.update(saved)
 
 
 def test_invocation_to_cli_args():
-    inv = MRIForgeInvocation(verb="train", config="exp.yaml", extra_args=("--resume", "auto"))
+    inv = SpectraMRInvocation(verb="train", config="exp.yaml", extra_args=("--resume", "auto"))
     assert inv.to_cli_args() == ["train", "--config", "exp.yaml", "--resume", "auto"]
 
 
 def test_invocation_without_config():
-    inv = MRIForgeInvocation(verb="doctor")
+    inv = SpectraMRInvocation(verb="doctor")
     assert inv.to_cli_args() == ["doctor"]
 
 
@@ -72,15 +72,15 @@ def test_resourcespec_account_env_fallback(monkeypatch):
     cluster. Unset stays ``None`` rather than becoming somebody's account, and
     it is ``render_directives`` that reports it (see the SLURM backend tests).
     """
-    monkeypatch.delenv("MRIFORGE_SLURM_ACCOUNT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_SLURM_ACCOUNT", raising=False)
     assert ResourceSpec().account is None  # no site default is shipped
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "myacct")
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "myacct")
     assert ResourceSpec().account == "myacct"  # env supplies it
     assert ResourceSpec(account="explicit").account == "explicit"  # arg wins
 
 
 def test_resourcespec_empty_env_reads_as_unset_not_as_empty(monkeypatch):
-    """``MRIFORGE_SLURM_ACCOUNT=""`` must land on *unset*, and be reported.
+    """``SPECTRAMR_SLURM_ACCOUNT=""`` must land on *unset*, and be reported.
 
     An empty value is how a ``.env`` disables a variable without deleting the
     line, so it has to reach the same behaviour as absent. Assigning it through
@@ -92,22 +92,22 @@ def test_resourcespec_empty_env_reads_as_unset_not_as_empty(monkeypatch):
     adjacent branches of one ``__post_init__``; pinning only one is what lets
     the other drift apart from it.
     """
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "")
-    monkeypatch.setenv("MRIFORGE_SLURM_PARTITION", "")
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "")
+    monkeypatch.setenv("SPECTRAMR_SLURM_PARTITION", "")
     spec = ResourceSpec()
     assert spec.account is None, "empty env became an empty account, not unset"
     assert spec.partition is None, "empty env became an empty partition, not unset"
 
-    with pytest.raises(ValueError, match="MRIFORGE_SLURM_ACCOUNT"):
+    with pytest.raises(ValueError, match="SPECTRAMR_SLURM_ACCOUNT"):
         SlurmBackend().render_directives(spec, job_name="gm_test")
 
 
 def test_docker_backend_builds_run_command():
-    inv = MRIForgeInvocation(verb="train", config="exp.yaml")
+    inv = SpectraMRInvocation(verb="train", config="exp.yaml")
     cmd = DockerBackend().build_command(inv, ResourceSpec())  # default gpus=1
     assert cmd[:3] == ["docker", "run", "--gpus"]
     assert "1" in cmd  # honors the COUNT (default 1), not "all"
-    # bind-mounts the workdir and ends with the mriforge invocation
+    # bind-mounts the workdir and ends with the spectramr invocation
     assert any(":/workspace" in c for c in cmd)
     assert cmd[-3:] == ["train", "--config", "exp.yaml"]
 
@@ -118,13 +118,13 @@ def test_docker_backend_builds_run_command():
 def test_docker_backend_honors_gpu_count(gpus, expected):
     """``--gpus N`` for a count; the ``0`` sentinel means all visible GPUs."""
     cmd = DockerBackend().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=gpus)
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=gpus)
     )
     assert cmd[cmd.index("--gpus") + 1] == expected
 
 
 def test_apptainer_backend_builds_run_command():
-    inv = MRIForgeInvocation(verb="infer", config="exp.yaml")
+    inv = SpectraMRInvocation(verb="infer", config="exp.yaml")
     cmd = ApptainerBackend().build_command(inv, ResourceSpec())  # default gpus=1
     assert cmd[:3] == ["apptainer", "run", "--nv"]
     assert "--bind" in cmd
@@ -138,7 +138,7 @@ def test_apptainer_backend_builds_run_command():
 )
 def test_apptainer_backend_restricts_to_gpu_count(gpus, visible):
     cmd = ApptainerBackend().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=gpus)
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=gpus)
     )
     assert "--nv" in cmd
     assert visible in cmd
@@ -147,7 +147,7 @@ def test_apptainer_backend_restricts_to_gpu_count(gpus, visible):
 def test_apptainer_backend_gpus_zero_is_unrestricted():
     """``gpus=0`` (all) → ``--nv`` with no CUDA_VISIBLE_DEVICES restriction."""
     cmd = ApptainerBackend().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=0)
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=0)
     )
     assert "--nv" in cmd
     assert not any(c.startswith("CUDA_VISIBLE_DEVICES") for c in cmd)
@@ -159,15 +159,15 @@ def test_resourcespec_rejects_negative_gpus():
 
 
 def test_docker_image_env_override(monkeypatch):
-    monkeypatch.setenv("MRIFORGE_DOCKER_IMAGE", "myrepo/mriforge:dev")
+    monkeypatch.setenv("SPECTRAMR_DOCKER_IMAGE", "myrepo/spectramr:dev")
     cmd = DockerBackend().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec()
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec()
     )
-    assert "myrepo/mriforge:dev" in cmd
+    assert "myrepo/spectramr:dev" in cmd
 
 
 def test_slurm_backend_builds_sbatch_script():
-    inv = MRIForgeInvocation(verb="train", config="exp.yaml")
+    inv = SpectraMRInvocation(verb="train", config="exp.yaml")
     res = ResourceSpec(account="test_alloc", gpus=2, mem="64G", time="08:00:00")
     script = SlurmBackend().build_script(inv, res)
     assert script.startswith("#!/")
@@ -175,12 +175,12 @@ def test_slurm_backend_builds_sbatch_script():
     assert "#SBATCH --gpus=2" in script
     assert "#SBATCH --mem=64G" in script
     assert "#SBATCH --time=08:00:00" in script
-    # the actual mriforge command is present
+    # the actual spectramr command is present
     assert "train --config exp.yaml" in script
 
 
 def test_slurm_partition_only_emitted_when_set():
-    inv = MRIForgeInvocation(verb="train", config="x.yaml")
+    inv = SpectraMRInvocation(verb="train", config="x.yaml")
     no_part = SlurmBackend().build_script(inv, ResourceSpec(partition=None))
     assert "--partition" not in no_part
     with_part = SlurmBackend().build_script(inv, ResourceSpec(partition="gpu"))
@@ -191,7 +191,7 @@ def test_slurm_array_only_emitted_when_set():
     """WS-4: ``--array`` is the SSOT replacement for the hand-written array
     .sbatch files. Default (None) must leave the directive block byte-identical
     (the campaign golden depends on this)."""
-    inv = MRIForgeInvocation(verb="train", config="x.yaml")
+    inv = SpectraMRInvocation(verb="train", config="x.yaml")
     no_array = SlurmBackend().build_script(inv, ResourceSpec())
     assert "--array" not in no_array
     with_array = SlurmBackend().build_script(inv, ResourceSpec(array="0-9"))
@@ -265,14 +265,14 @@ def test_slurm_run_delegates_to_submit_script(monkeypatch):
         "submit_script",
         lambda self, script, **k: captured.update(script=script) or 12345,
     )
-    handle = SlurmBackend().run(MRIForgeInvocation("train", "x.yaml"), ResourceSpec())
+    handle = SlurmBackend().run(SpectraMRInvocation("train", "x.yaml"), ResourceSpec())
     assert handle.id == "12345"
-    assert "#SBATCH --job-name=mriforge-train" in captured["script"]
+    assert "#SBATCH --job-name=spectramr-train" in captured["script"]
 
 
 # ---------------------------------------------------------------------------
-# Launch → provenance handoff (#9): MRIFORGE_LAUNCH_* env round-trip + container
-# forwarding, so a run started via `mriforge launch` records the backend +
+# Launch → provenance handoff (#9): SPECTRAMR_LAUNCH_* env round-trip + container
+# forwarding, so a run started via `spectramr launch` records the backend +
 # resolved resources in its run_summary.json (pitfall #15c).
 # ---------------------------------------------------------------------------
 
@@ -289,13 +289,13 @@ def test_export_and_resolve_launch_provenance_roundtrip():
 
 
 def test_resolve_launch_provenance_empty_when_not_launched():
-    # No MRIFORGE_LAUNCH_BACKEND (plain `mriforge train`) → strict no-op.
+    # No SPECTRAMR_LAUNCH_BACKEND (plain `spectramr train`) → strict no-op.
     assert resolve_launch_provenance() == {}
 
 
 def test_resolve_launch_provenance_raises_on_bad_int(monkeypatch):
-    monkeypatch.setenv("MRIFORGE_LAUNCH_BACKEND", "slurm")
-    monkeypatch.setenv("MRIFORGE_LAUNCH_GPUS", "not-an-int")
+    monkeypatch.setenv("SPECTRAMR_LAUNCH_BACKEND", "slurm")
+    monkeypatch.setenv("SPECTRAMR_LAUNCH_GPUS", "not-an-int")
     with pytest.raises(ValueError, match="not an integer"):
         resolve_launch_provenance()
 
@@ -304,17 +304,17 @@ def test_resolve_launch_provenance_raises_on_bad_int(monkeypatch):
 def test_container_forwards_launch_env(backend_cls):
     export_launch_env("docker", ResourceSpec(gpus=1))
     cmd = backend_cls().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=1)
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=1)
     )
-    # the MRIFORGE_LAUNCH_* vars are forwarded into the container as --env pairs
+    # the SPECTRAMR_LAUNCH_* vars are forwarded into the container as --env pairs
     assert "--env" in cmd
-    assert any(c == "MRIFORGE_LAUNCH_BACKEND=docker" for c in cmd)
+    assert any(c == "SPECTRAMR_LAUNCH_BACKEND=docker" for c in cmd)
 
 
 @pytest.mark.parametrize("backend_cls", [DockerBackend, ApptainerBackend])
 def test_container_no_launch_env_when_not_launched(backend_cls):
-    # Without MRIFORGE_LAUNCH_*, no launch --env pairs are injected.
+    # Without SPECTRAMR_LAUNCH_*, no launch --env pairs are injected.
     cmd = backend_cls().build_command(
-        MRIForgeInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=0)
+        SpectraMRInvocation(verb="train", config="x.yaml"), ResourceSpec(gpus=0)
     )
-    assert not any(c.startswith("MRIFORGE_LAUNCH_") for c in cmd)
+    assert not any(c.startswith("SPECTRAMR_LAUNCH_") for c in cmd)

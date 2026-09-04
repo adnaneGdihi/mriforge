@@ -13,13 +13,13 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.outcome import MetricStatus  # noqa: E402
-from mriforge.core.metrics.regions.scorer import (  # noqa: E402
+from spectramr.core.metrics.outcome import MetricStatus  # noqa: E402
+from spectramr.core.metrics.regions.scorer import (  # noqa: E402
     eligibility_table,
     score_region,
     score_region_set,
 )
-from mriforge.core.metrics.regions.types import (  # noqa: E402
+from spectramr.core.metrics.regions.types import (  # noqa: E402
     RegionMask,
     RegionSet,
     RegionSource,

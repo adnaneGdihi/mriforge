@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.regions.synthseg_labels import (  # noqa: E402
+from spectramr.data.regions.synthseg_labels import (  # noqa: E402
     DK_PARCELLATION_LABELS,
     LABEL_TO_TISSUE,
     TissueClass,

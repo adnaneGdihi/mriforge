@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 class MockStrategy:

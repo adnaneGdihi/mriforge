@@ -13,8 +13,8 @@ from collections.abc import Iterator
 import pytest
 import torch.nn as nn
 
-from mriforge.models.capabilities import LossCapabilities
-from mriforge.models.losses.registry import LossRegistry, get_loss_capabilities
+from spectramr.models.capabilities import LossCapabilities
+from spectramr.models.losses.registry import LossRegistry, get_loss_capabilities
 
 
 @pytest.fixture

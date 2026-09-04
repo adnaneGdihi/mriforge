@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.blocks.hermitian_equivariant import (
+from spectramr.models.blocks.hermitian_equivariant import (
     HermitianFNOBlock,
     HermitianSpectralConv2d,
 )
@@ -51,8 +51,8 @@ def test_gradient_flows() -> None:
 
 def test_models_register_in_registry() -> None:
     """Ensure the @register_model decorator fires at import time."""
-    import mriforge.models.generators.hermitian_fno_unet  # noqa: F401
-    from mriforge.models.registry import get_model_class
+    import spectramr.models.generators.hermitian_fno_unet  # noqa: F401
+    from spectramr.models.registry import get_model_class
 
     cls_fno = get_model_class("hermitian_fno")
     cls_unet = get_model_class("hermitian_kspace_unet")

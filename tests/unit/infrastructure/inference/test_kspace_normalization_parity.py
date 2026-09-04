@@ -20,12 +20,12 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.data.transforms.normalization import (
+from spectramr.data.transforms.normalization import (
     denormalize_kspace_robust,
     kspace_image_domain_scale,
     normalize_kspace_robust,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 # The exp_11 kspace_filling attention-shootout settings.
 ARM_DATA_CFG = {
@@ -66,7 +66,7 @@ class _IdentityModel(nn.Module):
 
 
 def _cold_strategy(cfg: dict):
-    from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
         ColdDiffusionInferenceStrategy,
     )
 
@@ -135,7 +135,7 @@ def test_no_normalization_when_flag_is_off():
 @pytest.mark.parametrize("domain", ["kspace", "image"])
 def test_diffusion_strategy_round_trip(domain):
     """The same parity contract holds for DiffusionInferenceStrategy."""
-    from mriforge.infrastructure.inference.diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.diffusion_inference_strategy import (
         DiffusionInferenceStrategy,
     )
 
@@ -153,7 +153,7 @@ def test_diffusion_strategy_round_trip(domain):
 
 def test_spec_reads_training_knobs_not_the_legacy_block():
     """The resolver must key off kspace_percentile, never normalization_kwargs."""
-    from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+    from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
     spec = KSpaceNormalizationSpec.from_data_config(ARM_DATA_CFG)
     assert spec.enabled is True
@@ -164,7 +164,7 @@ def test_spec_reads_training_knobs_not_the_legacy_block():
 
 def test_spec_rejects_unknown_scale_domain():
     """Closed set — a typo must raise, not silently pick a domain."""
-    from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+    from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
     with pytest.raises(ValueError, match="scale_domain"):
         KSpaceNormalizationSpec.from_data_config(

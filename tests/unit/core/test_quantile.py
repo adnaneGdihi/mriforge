@@ -13,7 +13,7 @@ import struct
 import pytest
 import torch
 
-from mriforge.core.quantile import (
+from spectramr.core.quantile import (
     QUANTILE_MAX_ELEMS,
     _fast_select_quantile,
     robust_quantile,
@@ -87,7 +87,7 @@ class TestTheDuplicatesDelegate:
     """One implementation, not three (#5: `data/` cannot import `infrastructure/`)."""
 
     def test_digital_twin_simulator_reexports_the_shared_helper(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             _QUANTILE_MAX_ELEMS,
             _robust_quantile,
         )
@@ -99,12 +99,12 @@ class TestTheDuplicatesDelegate:
         """The five data-layer sites were the unguarded ones."""
         import inspect
 
-        from mriforge.data.transforms import normalization
+        from spectramr.data.transforms import normalization
 
         source = inspect.getsource(normalization)
         assert "torch.quantile(" not in source, (
             "a raw torch.quantile reappeared in the normalization SSOT; route "
-            "it through mriforge.core.quantile.robust_quantile"
+            "it through spectramr.core.quantile.robust_quantile"
         )
 
 

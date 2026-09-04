@@ -8,7 +8,7 @@
 
 import pytest
 
-from mriforge.models.diffusion.noise_schedules import (
+from spectramr.models.diffusion.noise_schedules import (
     NoiseScheduleFactory,
     NoiseScheduleManager,
 )

@@ -7,8 +7,8 @@ timestep to prevent hallucination in sampled k-space bands.
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.physics.proximal_dc import ProximalDCStep
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.proximal_dc import ProximalDCStep
 
 
 class TestProximalDCStep:

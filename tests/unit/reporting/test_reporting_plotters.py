@@ -61,7 +61,7 @@ class TestHeadlinePareto:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import headline_pareto
+        from spectramr.infrastructure.reporting.plotters import headline_pareto
 
         df = _make_long_df(methods=["A", "B", "C"])
         # Add cost metric
@@ -77,14 +77,14 @@ class TestHeadlinePareto:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import headline_pareto
+        from spectramr.infrastructure.reporting.plotters import headline_pareto
 
         out = headline_pareto.make(pd.DataFrame(), tmp_path / "pareto_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_missing_metric_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import headline_pareto
+        from spectramr.infrastructure.reporting.plotters import headline_pareto
 
         # df has psnr but not the cost column
         df = _make_long_df()
@@ -101,7 +101,7 @@ class TestLearningCurves:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import learning_curves
+        from spectramr.infrastructure.reporting.plotters import learning_curves
 
         df = _make_long_df(metrics=["loss", "val_loss"])
         out = learning_curves.make(df, tmp_path / "lc.pdf")
@@ -111,21 +111,21 @@ class TestLearningCurves:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import learning_curves
+        from spectramr.infrastructure.reporting.plotters import learning_curves
 
         out = learning_curves.make(pd.DataFrame(), tmp_path / "lc_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_no_metric_column_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import learning_curves
+        from spectramr.infrastructure.reporting.plotters import learning_curves
 
         out = learning_curves.make(pd.DataFrame({"x": [1, 2]}), tmp_path / "lc_no_col.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_explicit_metrics_list(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import learning_curves
+        from spectramr.infrastructure.reporting.plotters import learning_curves
 
         df = _make_long_df(metrics=["loss", "psnr", "ssim"])
         out = learning_curves.make(df, tmp_path / "lc_explicit.pdf", metrics=["loss"])
@@ -133,7 +133,7 @@ class TestLearningCurves:
 
     @pytest.mark.unit
     def test_log_y_false(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import learning_curves
+        from spectramr.infrastructure.reporting.plotters import learning_curves
 
         df = _make_long_df(metrics=["loss"])
         out = learning_curves.make(df, tmp_path / "lc_linear.pdf",
@@ -149,7 +149,7 @@ class TestLossDecomposition:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import loss_decomposition
+        from spectramr.infrastructure.reporting.plotters import loss_decomposition
 
         df = _make_long_df(
             metrics=["g_loss", "d_loss", "perceptual_loss", "loss"],
@@ -161,14 +161,14 @@ class TestLossDecomposition:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import loss_decomposition
+        from spectramr.infrastructure.reporting.plotters import loss_decomposition
 
         out = loss_decomposition.make(pd.DataFrame(), tmp_path / "ld_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_no_component_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import loss_decomposition
+        from spectramr.infrastructure.reporting.plotters import loss_decomposition
 
         # Only has 'psnr' — no "loss" substring
         df = _make_long_df(metrics=["psnr", "ssim"])
@@ -184,7 +184,7 @@ class TestResidualDiagnostics:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import residual_diagnostics
+        from spectramr.infrastructure.reporting.plotters import residual_diagnostics
 
         pred_df = _make_predictions_df(50)
         out = residual_diagnostics.make(
@@ -198,14 +198,14 @@ class TestResidualDiagnostics:
 
     @pytest.mark.unit
     def test_none_predictions_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import residual_diagnostics
+        from spectramr.infrastructure.reporting.plotters import residual_diagnostics
 
         out = residual_diagnostics.make(pd.DataFrame(), tmp_path / "rd_none.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_empty_predictions_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import residual_diagnostics
+        from spectramr.infrastructure.reporting.plotters import residual_diagnostics
 
         out = residual_diagnostics.make(
             pd.DataFrame(), tmp_path / "rd_empty.pdf",
@@ -215,7 +215,7 @@ class TestResidualDiagnostics:
 
     @pytest.mark.unit
     def test_missing_columns_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import residual_diagnostics
+        from spectramr.infrastructure.reporting.plotters import residual_diagnostics
 
         bad_df = pd.DataFrame({"wrong_col": [1.0, 2.0]})
         out = residual_diagnostics.make(
@@ -233,7 +233,7 @@ class TestPredictedVsTrue:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import predicted_vs_true
+        from spectramr.infrastructure.reporting.plotters import predicted_vs_true
 
         pred_df = _make_predictions_df(60)
         out = predicted_vs_true.make(
@@ -245,14 +245,14 @@ class TestPredictedVsTrue:
 
     @pytest.mark.unit
     def test_none_predictions_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import predicted_vs_true
+        from spectramr.infrastructure.reporting.plotters import predicted_vs_true
 
         out = predicted_vs_true.make(pd.DataFrame(), tmp_path / "pvt_none.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_empty_predictions_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import predicted_vs_true
+        from spectramr.infrastructure.reporting.plotters import predicted_vs_true
 
         out = predicted_vs_true.make(
             pd.DataFrame(), tmp_path / "pvt_empty.pdf",
@@ -269,7 +269,7 @@ class TestAblationStrip:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import ablation_strip
+        from spectramr.infrastructure.reporting.plotters import ablation_strip
 
         df = _make_long_df(methods=["full", "no_perceptual", "no_adversarial"],
                            metrics=["psnr"])
@@ -280,7 +280,7 @@ class TestAblationStrip:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import ablation_strip
+        from spectramr.infrastructure.reporting.plotters import ablation_strip
 
         out = ablation_strip.make(pd.DataFrame(), tmp_path / "abl_empty.pdf",
                                   primary_metric="psnr", full_method="full")
@@ -288,7 +288,7 @@ class TestAblationStrip:
 
     @pytest.mark.unit
     def test_missing_full_method_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import ablation_strip
+        from spectramr.infrastructure.reporting.plotters import ablation_strip
 
         df = _make_long_df(methods=["A", "B"], metrics=["psnr"])
         out = ablation_strip.make(df, tmp_path / "abl_no_full.pdf",
@@ -304,7 +304,7 @@ class TestStratifiedPerformance:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import stratified_performance
+        from spectramr.infrastructure.reporting.plotters import stratified_performance
 
         rng = np.random.default_rng(7)
         strat_df = pd.DataFrame({
@@ -322,7 +322,7 @@ class TestStratifiedPerformance:
 
     @pytest.mark.unit
     def test_none_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import stratified_performance
+        from spectramr.infrastructure.reporting.plotters import stratified_performance
 
         out = stratified_performance.make(pd.DataFrame(), tmp_path / "strat_none.pdf")
         assert out is None
@@ -336,7 +336,7 @@ class TestFailureGallery:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import failure_gallery
+        from spectramr.infrastructure.reporting.plotters import failure_gallery
 
         rng = np.random.default_rng(3)
         cases = [
@@ -354,14 +354,14 @@ class TestFailureGallery:
 
     @pytest.mark.unit
     def test_empty_cases_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import failure_gallery
+        from spectramr.infrastructure.reporting.plotters import failure_gallery
 
         out = failure_gallery.make(pd.DataFrame(), tmp_path / "fg_empty.pdf", cases=[])
         assert out is None
 
     @pytest.mark.unit
     def test_none_cases_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import failure_gallery
+        from spectramr.infrastructure.reporting.plotters import failure_gallery
 
         out = failure_gallery.make(pd.DataFrame(), tmp_path / "fg_none.pdf")
         assert out is None
@@ -375,7 +375,7 @@ class TestComputationalProfile:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import computational_profile
+        from spectramr.infrastructure.reporting.plotters import computational_profile
 
         df = _make_long_df(
             methods=["methodA"],
@@ -388,7 +388,7 @@ class TestComputationalProfile:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import computational_profile
+        from spectramr.infrastructure.reporting.plotters import computational_profile
 
         out = computational_profile.make(pd.DataFrame(), tmp_path / "cp_empty.pdf")
         assert out is None
@@ -402,7 +402,7 @@ class TestGANDiagnostics:
 
     @pytest.mark.unit
     def test_produces_file_with_d_acc(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import gan_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import gan_diagnostics
 
         df = _make_long_df(
             methods=["gan"],
@@ -415,14 +415,14 @@ class TestGANDiagnostics:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import gan_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import gan_diagnostics
 
         out = gan_diagnostics.make(pd.DataFrame(), tmp_path / "gan_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_no_relevant_metrics_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import gan_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import gan_diagnostics
 
         df = _make_long_df(metrics=["psnr", "ssim"])  # no GAN-specific columns
         out = gan_diagnostics.make(df, tmp_path / "gan_no_metrics.pdf")
@@ -433,7 +433,7 @@ class TestVAEDiagnostics:
 
     @pytest.mark.unit
     def test_produces_file_with_rec_kl(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import vae_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import vae_diagnostics
 
         df = _make_long_df(
             methods=["vae"],
@@ -446,14 +446,14 @@ class TestVAEDiagnostics:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import vae_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import vae_diagnostics
 
         out = vae_diagnostics.make(pd.DataFrame(), tmp_path / "vae_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_no_vae_metrics_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import vae_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import vae_diagnostics
 
         df = _make_long_df(metrics=["psnr"])
         out = vae_diagnostics.make(df, tmp_path / "vae_no_metrics.pdf")
@@ -464,7 +464,7 @@ class TestDiffusionDiagnostics:
 
     @pytest.mark.unit
     def test_produces_file_with_loss_per_timestep(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import diffusion_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import diffusion_diagnostics
 
         df = _make_long_df(
             methods=["ddpm"],
@@ -477,14 +477,14 @@ class TestDiffusionDiagnostics:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import diffusion_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import diffusion_diagnostics
 
         out = diffusion_diagnostics.make(pd.DataFrame(), tmp_path / "diff_empty.pdf")
         assert out is None
 
     @pytest.mark.unit
     def test_no_diffusion_metrics_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.generative import diffusion_diagnostics
+        from spectramr.infrastructure.reporting.plotters.generative import diffusion_diagnostics
 
         df = _make_long_df(metrics=["psnr"])
         out = diffusion_diagnostics.make(df, tmp_path / "diff_no_m.pdf")
@@ -499,7 +499,7 @@ class TestSRTriptych:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.mri_specific import sr_triptych
+        from spectramr.infrastructure.reporting.plotters.mri_specific import sr_triptych
 
         rng = np.random.default_rng(5)
         h, w = 32, 32
@@ -517,7 +517,7 @@ class TestSRTriptych:
 
     @pytest.mark.unit
     def test_empty_cases_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.mri_specific import sr_triptych
+        from spectramr.infrastructure.reporting.plotters.mri_specific import sr_triptych
 
         out = sr_triptych.make(pd.DataFrame(), tmp_path / "sr_empty.pdf", cases=[])
         assert out is None
@@ -531,7 +531,7 @@ class TestKSpaceRecon:
 
     @pytest.mark.unit
     def test_produces_file(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.mri_specific import kspace_recon
+        from spectramr.infrastructure.reporting.plotters.mri_specific import kspace_recon
 
         rng = np.random.default_rng(6)
         h, w = 32, 32
@@ -549,7 +549,7 @@ class TestKSpaceRecon:
 
     @pytest.mark.unit
     def test_empty_cases_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters.mri_specific import kspace_recon
+        from spectramr.infrastructure.reporting.plotters.mri_specific import kspace_recon
 
         out = kspace_recon.make(pd.DataFrame(), tmp_path / "ksr_empty.pdf", cases=[])
         assert out is None
@@ -563,13 +563,13 @@ class TestPlotterRegistry:
 
     @pytest.mark.unit
     def test_registry_non_empty(self) -> None:
-        from mriforge.infrastructure.reporting.plotters import PLOTTERS
+        from spectramr.infrastructure.reporting.plotters import PLOTTERS
 
         assert len(PLOTTERS) > 0
 
     @pytest.mark.unit
     def test_list_available(self) -> None:
-        from mriforge.infrastructure.reporting.plotters import list_available
+        from spectramr.infrastructure.reporting.plotters import list_available
 
         keys = list_available()
         assert len(keys) > 0
@@ -577,21 +577,21 @@ class TestPlotterRegistry:
 
     @pytest.mark.unit
     def test_get_existing_key(self) -> None:
-        from mriforge.infrastructure.reporting.plotters import get
+        from spectramr.infrastructure.reporting.plotters import get
 
         fn = get("fig_1_2_learning_curves")
         assert callable(fn)
 
     @pytest.mark.unit
     def test_get_missing_key_raises(self) -> None:
-        from mriforge.infrastructure.reporting.plotters import get
+        from spectramr.infrastructure.reporting.plotters import get
 
         with pytest.raises(KeyError):
             get("nonexistent_plotter_xyz")
 
     @pytest.mark.unit
     def test_double_register_raises(self) -> None:
-        from mriforge.infrastructure.reporting.plotters import PLOTTERS, register
+        from spectramr.infrastructure.reporting.plotters import PLOTTERS, register
 
         existing = next(iter(PLOTTERS.keys()))
         fn = PLOTTERS[existing]
@@ -617,7 +617,7 @@ class TestPlotterRegistry:
     ])
     def test_plotters_return_none_on_empty_input(self, fig_id: str, tmp_path: Path) -> None:
         """Every registered plotter must return None (not raise) on empty DataFrame."""
-        from mriforge.infrastructure.reporting.plotters import get
+        from spectramr.infrastructure.reporting.plotters import get
 
         fn = get(fig_id)
         result = fn(pd.DataFrame(), tmp_path / f"{fig_id}.pdf")
@@ -632,7 +632,7 @@ class TestAblationTable:
 
     @pytest.mark.unit
     def test_produces_markdown_and_latex(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.ablation_table import make
+        from spectramr.infrastructure.reporting.tables.ablation_table import make
 
         rng = np.random.default_rng(99)
         rows = []
@@ -654,14 +654,14 @@ class TestAblationTable:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.ablation_table import make
+        from spectramr.infrastructure.reporting.tables.ablation_table import make
 
         result = make(pd.DataFrame(), tmp_path / "ablation_empty")
         assert result is None
 
     @pytest.mark.unit
     def test_missing_full_method_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.ablation_table import make
+        from spectramr.infrastructure.reporting.tables.ablation_table import make
 
         rows = [{"method": "A", "metric": "psnr", "value": 30.0,
                  "step": 0, "split": "test", "seed": 0}]
@@ -675,7 +675,7 @@ class TestMainResultsTable:
 
     @pytest.mark.unit
     def test_produces_markdown_and_latex(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.main_results import make
+        from spectramr.infrastructure.reporting.tables.main_results import make
 
         rng = np.random.default_rng(88)
         rows = []
@@ -697,7 +697,7 @@ class TestMainResultsTable:
 
     @pytest.mark.unit
     def test_empty_df_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.main_results import make
+        from spectramr.infrastructure.reporting.tables.main_results import make
 
         result = make(pd.DataFrame(), tmp_path / "main_empty")
         assert result is None
@@ -707,7 +707,7 @@ class TestHyperparameterTable:
 
     @pytest.mark.unit
     def test_produces_markdown_and_latex(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.hyperparameter_table import make
+        from spectramr.infrastructure.reporting.tables.hyperparameter_table import make
 
         hps = [
             {"name": "lr", "distribution": "log-uniform",
@@ -722,14 +722,14 @@ class TestHyperparameterTable:
 
     @pytest.mark.unit
     def test_none_hyperparameters_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.hyperparameter_table import make
+        from spectramr.infrastructure.reporting.tables.hyperparameter_table import make
 
         result = make(None, tmp_path / "hp_none")
         assert result is None
 
     @pytest.mark.unit
     def test_empty_list_returns_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.tables.hyperparameter_table import make
+        from spectramr.infrastructure.reporting.tables.hyperparameter_table import make
 
         result = make(None, tmp_path / "hp_empty", hyperparameters=[])
         assert result is None
@@ -743,7 +743,7 @@ class TestRunMetadata:
 
     @pytest.mark.unit
     def test_canary_construct(self) -> None:
-        from mriforge.infrastructure.reporting.metadata import RunMetadata
+        from spectramr.infrastructure.reporting.metadata import RunMetadata
 
         meta = RunMetadata(git_commit="abc1234", seed=42)
         assert meta.git_commit == "abc1234"
@@ -751,7 +751,7 @@ class TestRunMetadata:
 
     @pytest.mark.unit
     def test_to_dict_keys(self) -> None:
-        from mriforge.infrastructure.reporting.metadata import RunMetadata
+        from spectramr.infrastructure.reporting.metadata import RunMetadata
 
         meta = RunMetadata(seed=7)
         d = meta.to_dict()
@@ -760,7 +760,7 @@ class TestRunMetadata:
 
     @pytest.mark.unit
     def test_short_label_contains_commit(self) -> None:
-        from mriforge.infrastructure.reporting.metadata import RunMetadata
+        from spectramr.infrastructure.reporting.metadata import RunMetadata
 
         meta = RunMetadata(git_commit="abcdef123456", seed=0)
         label = meta.short_label()
@@ -770,7 +770,7 @@ class TestRunMetadata:
     def test_stamp_figure_does_not_raise(self) -> None:
         import matplotlib.pyplot as plt
 
-        from mriforge.infrastructure.reporting.metadata import RunMetadata, stamp_figure
+        from spectramr.infrastructure.reporting.metadata import RunMetadata, stamp_figure
 
         fig, _ = plt.subplots()
         meta = RunMetadata(git_commit="test1234", seed=1)
@@ -781,7 +781,7 @@ class TestRunMetadata:
     def test_write_sidecar(self, tmp_path: Path) -> None:
         import json
 
-        from mriforge.infrastructure.reporting.metadata import RunMetadata, write_sidecar
+        from spectramr.infrastructure.reporting.metadata import RunMetadata, write_sidecar
 
         meta = RunMetadata(git_commit="cafebabe", seed=99)
         artifact = tmp_path / "figure.pdf"
@@ -801,7 +801,7 @@ class TestDispatch:
 
     @pytest.mark.unit
     def test_dispatch_empty_df_all_none(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import dispatch
+        from spectramr.infrastructure.reporting.plotters import dispatch
 
         fig_ids = ["fig_1_2_learning_curves", "fig_1_4_residual_diagnostics"]
         results = dispatch(pd.DataFrame(), fig_ids, tmp_path / "dispatch")
@@ -811,7 +811,7 @@ class TestDispatch:
 
     @pytest.mark.unit
     def test_dispatch_unknown_id_handled_gracefully(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.reporting.plotters import dispatch
+        from spectramr.infrastructure.reporting.plotters import dispatch
 
         results = dispatch(pd.DataFrame(), ["nonexistent_fig_xyz"], tmp_path)
         assert results["nonexistent_fig_xyz"] is None

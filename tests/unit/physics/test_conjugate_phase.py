@@ -27,7 +27,7 @@ def _b0_map(n_pe: int, n_ro: int, hz: float = 0.0) -> torch.Tensor:
 
 def _cpr_small():
     """Return a CPR instance with a tiny frequency range for fast CPU tests."""
-    from mriforge.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
+    from spectramr.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
     return ConjugatePhaseReconstructor(
         freq_range_hz=(-100.0, 100.0),
         freq_step_hz=50.0,     # 5 bins only
@@ -43,7 +43,7 @@ def _cpr_small():
 @pytest.mark.physics
 def test_canary_cpr_import():
     """Module imports and ConjugatePhaseReconstructor can be instantiated."""
-    from mriforge.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
+    from spectramr.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
     cpr = ConjugatePhaseReconstructor()
     assert cpr is not None
 
@@ -77,7 +77,7 @@ def test_canary_cpr_reconstruct_trivial():
 )
 def test_cpr_reconstruct_shape(n_pe, n_ro):
     """Output shape equals [1, 1, H, W] = [1, 1, n_pe, n_ro]."""
-    from mriforge.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
+    from spectramr.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
     cpr = ConjugatePhaseReconstructor(
         freq_range_hz=(-100.0, 100.0),
         freq_step_hz=50.0,
@@ -129,8 +129,8 @@ def test_cpr_edge_zero_kspace():
 @pytest.mark.physics
 def test_cpr_edge_uniform_b0_zero():
     """With B0=0, CPR should match plain IFFT up to numeric tolerance."""
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
-    from mriforge.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
     # Very tight frequency grid around 0 Hz — minimal demodulation
     cpr = ConjugatePhaseReconstructor(
         freq_range_hz=(0.0, 0.0),
@@ -149,7 +149,7 @@ def test_cpr_edge_uniform_b0_zero():
 @pytest.mark.physics
 def test_cpr_edge_single_bin():
     """Single-bin frequency range (freq_step larger than range) still runs."""
-    from mriforge.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
+    from spectramr.infrastructure.physics.conjugate_phase import ConjugatePhaseReconstructor
     cpr = ConjugatePhaseReconstructor(
         freq_range_hz=(0.0, 0.0),
         freq_step_hz=10.0,

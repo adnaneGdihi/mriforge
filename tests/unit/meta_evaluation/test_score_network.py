@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.score_network import (
+from spectramr.core.metrics.meta_evaluation.score_network import (
     build_default_score_fn,
     empirical_score,
 )

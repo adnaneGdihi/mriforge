@@ -14,8 +14,8 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.config.schemas.data import BartConfigSchema
-from mriforge.data.datasets.bart_dataset import (
+from spectramr.config.schemas.data import BartConfigSchema
+from spectramr.data.datasets.bart_dataset import (
     BartKspaceDataset,
     build_bart_index,
     canonicalize_bart_array,
@@ -94,7 +94,7 @@ def test_build_bart_index_file_pattern_filters(tmp_path):
 def test_cartesian_getitem_returns_subject_with_recon_and_kspace(tmp_path):
     import torchio as tio
 
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
 
     # single-coil Cartesian k-space [readout=8, phase=8, coil=1]
     rng = np.random.default_rng(0)
@@ -294,7 +294,7 @@ def test_queue_filter_uses_fast_path_without_recon(tmp_path, monkeypatch):
     fast path reads only ``index``+``shape``, so a fitting patch keeps every
     record without touching the recon — the exact build-time OOM avoided.
     """
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     _write_bart(tmp_path, "scan", np.ones((64, 64, 1), dtype=np.complex64))
     cfg = BartConfigSchema(
@@ -314,7 +314,7 @@ def test_queue_filter_uses_fast_path_without_recon(tmp_path, monkeypatch):
 
 def test_queue_filter_drops_too_small_bart_via_header(tmp_path, monkeypatch):
     """A recon smaller than the patch is dropped from ``index`` with no recon."""
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     _write_bart(tmp_path, "scan", np.ones((16, 16, 1), dtype=np.complex64))
     cfg = BartConfigSchema(

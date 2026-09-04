@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 
@@ -35,7 +35,7 @@ def test_reconstruction_pipeline_execution():
     # Fix: Setup nested config for loss builder
     # loss_builder.py checks: if getattr(recon_config, "enable_l1", False) and recon_config.lambda_l1 > 0:
     # Spec with the real schema class so misspelled v6 paths fail loud.
-    from mriforge.config.schemas.loss import ReconstructionLossesConfig
+    from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
     recon_config = MagicMock(spec=ReconstructionLossesConfig)
     recon_config.enable_l1 = True

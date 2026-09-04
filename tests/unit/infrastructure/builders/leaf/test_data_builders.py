@@ -19,8 +19,8 @@ import pytest
 
 from tests.utils.data_config_stub import DataConfigStub
 
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.leaf.data_builders import (
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.leaf.data_builders import (
     DatasetBuilder,
 )
 
@@ -132,7 +132,7 @@ def _build_loader(num_workers: int):
     import torch
     from torch.utils.data import TensorDataset
 
-    from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+    from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
     ds = TensorDataset(torch.zeros(6, 1, 8, 8))
     return (
@@ -164,7 +164,7 @@ def test_persistent_workers_and_prefetch_propagate_to_dataloader() -> None:
     import torch
     from torch.utils.data import TensorDataset
 
-    from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+    from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
     ds = TensorDataset(torch.zeros(6, 1, 8, 8))
     loader = (
@@ -186,7 +186,7 @@ def test_persistent_workers_noop_when_no_workers() -> None:
     import torch
     from torch.utils.data import TensorDataset
 
-    from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+    from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
     ds = TensorDataset(torch.zeros(6, 1, 8, 8))
     loader = (
@@ -213,7 +213,7 @@ def test_seed_worker_seeds_numpy_and_random_from_torch_seed() -> None:
     import numpy as np
     import torch
 
-    from mriforge.infrastructure.builders.leaf.data_builders import seed_worker
+    from spectramr.infrastructure.builders.leaf.data_builders import seed_worker
 
     torch.manual_seed(1234)
     seed_worker(0)
@@ -243,7 +243,7 @@ class TestDataLoaderBuilderSampler:
     def test_sampler_reaches_the_dataloader(self) -> None:
         from torch.utils.data import SequentialSampler
 
-        from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+        from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
         dataset = self._dataset()
         sampler = SequentialSampler(dataset)
@@ -260,7 +260,7 @@ class TestDataLoaderBuilderSampler:
         rather than letting it surface as a constructor error two layers away."""
         from torch.utils.data import SequentialSampler
 
-        from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+        from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
         dataset = self._dataset()
         builder = (
@@ -275,7 +275,7 @@ class TestDataLoaderBuilderSampler:
     def test_no_sampler_keeps_shuffle_behaviour(self) -> None:
         from torch.utils.data import RandomSampler
 
-        from mriforge.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
+        from spectramr.infrastructure.builders.leaf.data_builders import DataLoaderBuilder
 
         loader = (
             DataLoaderBuilder(_LoaderConfigStub(), dataset=self._dataset())

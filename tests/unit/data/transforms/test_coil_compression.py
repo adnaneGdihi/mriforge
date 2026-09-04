@@ -1,6 +1,6 @@
 """Tests for ``SVDCoilCompression`` and ``SVDCoilCompressionTransform``.
 
-Targets ``mriforge.data.transforms.coil_compression``. SVD coil compression
+Targets ``spectramr.data.transforms.coil_compression``. SVD coil compression
 projects ``[B, C, H, W]`` complex k-space onto its top-N principal
 components — a hardware-equivalent of physical coil compression.
 
@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.coil_compression import (
+from spectramr.data.transforms.coil_compression import (
     SVDCoilCompression,
     SVDCoilCompressionTransform,
 )

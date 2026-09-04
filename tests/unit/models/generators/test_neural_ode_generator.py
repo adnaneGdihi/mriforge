@@ -25,8 +25,8 @@ import sys
 import pytest
 import torch
 
-from mriforge.models.generators import neural_ode_generator as mod
-from mriforge.models.generators.neural_ode_generator import NeuralODEGenerator
+from spectramr.models.generators import neural_ode_generator as mod
+from spectramr.models.generators.neural_ode_generator import NeuralODEGenerator
 
 # Ten RK4 steps, four derivative evaluations each. The dead loop made it 80.
 _STEPS = 10
@@ -163,8 +163,8 @@ def test_both_solvers_walk_the_same_grid(monkeypatch: pytest.MonkeyPatch) -> Non
 
 def test_the_registered_name_still_resolves_to_this_class() -> None:
     """Guards the fix against being applied to an unreachable class."""
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     entry = MODEL_REGISTRY.get("neural_ode")

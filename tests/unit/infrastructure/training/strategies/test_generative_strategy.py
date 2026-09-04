@@ -15,7 +15,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.generative import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.generative import (  # noqa: E402
     GenerativeTrainingStrategy,
 )
 

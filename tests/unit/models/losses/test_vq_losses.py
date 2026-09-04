@@ -1,6 +1,6 @@
 """Tests for VQ-VAE codebook/commitment losses.
 
-Targets ``mriforge.models.losses.vq_losses.VQLoss`` (simple API).
+Targets ``spectramr.models.losses.vq_losses.VQLoss`` (simple API).
 
 The regression guarded here is the stop-gradient placement (van den Oord
 et al. 2017). The *codebook* term ``‖sg[z_e] − e‖²`` must update the codebook
@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.vq_losses import VQLoss  # noqa: E402
+from spectramr.models.losses.vq_losses import VQLoss  # noqa: E402
 
 
 def _pair() -> tuple[torch.Tensor, torch.Tensor]:
@@ -60,7 +60,7 @@ def test_commitment_term_updates_encoder_only() -> None:
 
 def test_vq_registered() -> None:
     """``vq`` is resolvable from the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "vq" in list_available()
 
@@ -70,7 +70,7 @@ def test_vq_reconstruction_loss_is_registry_routed() -> None:
     and raises (never defaults) on unknown names."""
     import torch.nn.functional as F
 
-    from mriforge.models.losses.vq_losses import vq_reconstruction_loss
+    from spectramr.models.losses.vq_losses import vq_reconstruction_loss
 
     torch.manual_seed(0)
     recon = torch.randn(2, 1, 8, 8)

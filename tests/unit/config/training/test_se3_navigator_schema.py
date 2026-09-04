@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.se3_navigator import (
+from spectramr.config.schemas.training.se3_navigator import (
     SE3NavigatorConfig,
     TrainingConfigSE3Navigator,
 )

@@ -7,7 +7,7 @@ attention mechanism that combines frequency and spatial processing.
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.dual_domain_attention import (
+from spectramr.models.blocks.dual_domain_attention import (
     ComplexSignalAttention,
     DualDomainAttention,
 )
@@ -169,11 +169,11 @@ class TestDualDomainAttentionFeatureDomain:
 
     def test_kspace_mode_matches_legacy_algorithm(self):
         """kspace mode == the historical freq/spatial composition, bit-exact."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.models.blocks.attention_domains import (
             complex_to_interleaved as c2i,
         )
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 
@@ -190,11 +190,11 @@ class TestDualDomainAttentionFeatureDomain:
 
     def test_image_kspace_conjugacy(self):
         """out_kspace(fft2c(x)) == fft2c(out_image(x)) to FFT roundoff."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.models.blocks.attention_domains import (
             complex_to_interleaved as c2i,
         )
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 

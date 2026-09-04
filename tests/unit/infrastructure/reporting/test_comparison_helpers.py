@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from mriforge.infrastructure.reporting.plotters._comparison_helpers import (
+from spectramr.infrastructure.reporting.plotters._comparison_helpers import (
     add_image_panel,
     add_residual_histogram,
     add_residual_panel,
@@ -118,16 +118,16 @@ class TestPanelBuilders:
 
 class TestPlottersImportable:
     def test_sr_synthesis_kspace_failure_importable(self) -> None:
-        from mriforge.infrastructure.reporting.plotters.failure_gallery import make as fg
-        from mriforge.infrastructure.reporting.plotters.mri_specific.kspace_recon import make as ksp
-        from mriforge.infrastructure.reporting.plotters.mri_specific.sr_triptych import make as sr
-        from mriforge.infrastructure.reporting.plotters.mri_specific.synthesis_c2c import make as c2c
+        from spectramr.infrastructure.reporting.plotters.failure_gallery import make as fg
+        from spectramr.infrastructure.reporting.plotters.mri_specific.kspace_recon import make as ksp
+        from spectramr.infrastructure.reporting.plotters.mri_specific.sr_triptych import make as sr
+        from spectramr.infrastructure.reporting.plotters.mri_specific.synthesis_c2c import make as c2c
         for fn in (sr, c2c, ksp, fg):
             assert callable(fn)
 
     def test_sr_renders_on_synthetic(self, tmp_path) -> None:
         import pandas as pd
-        from mriforge.infrastructure.reporting.plotters.mri_specific.sr_triptych import make
+        from spectramr.infrastructure.reporting.plotters.mri_specific.sr_triptych import make
         rng = np.random.RandomState(0)
         cases = []
         for i in range(2):

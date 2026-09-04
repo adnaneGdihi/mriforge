@@ -12,9 +12,9 @@ import math
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.infrastructure.physics.signal_models.registry import get_signal_model
-from mriforge.infrastructure.physics.signal_models.spectroscopy import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.infrastructure.physics.signal_models.registry import get_signal_model
+from spectramr.infrastructure.physics.signal_models.spectroscopy import (
     GAMMA_H_MHZ_PER_T,
     MAGNITUDE_FWHM_FACTOR,
     fid_to_spectrum,

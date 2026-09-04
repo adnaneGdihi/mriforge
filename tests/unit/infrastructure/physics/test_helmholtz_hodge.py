@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.helmholtz_hodge import (
+from spectramr.infrastructure.physics.helmholtz_hodge import (
     curl,
     divergence,
     helmholtz_hodge_decompose,

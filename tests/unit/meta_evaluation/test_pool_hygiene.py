@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.pool_hygiene import screen_pool
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.pool_hygiene import screen_pool
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )

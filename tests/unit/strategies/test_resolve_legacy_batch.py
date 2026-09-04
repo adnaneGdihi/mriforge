@@ -40,13 +40,13 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-# Path corrected 2026-05-24: src→mriforge refactor moved the package under
-# src/mriforge/; the stale src/infrastructure/ path FileNotFoundError'd and
+# Path corrected 2026-05-24: src→spectramr refactor moved the package under
+# src/spectramr/; the stale src/infrastructure/ path FileNotFoundError'd and
 # silently disabled the F6 canonical-signature checks. See smoke_audit_20260524.md.
-STRATEGIES_DIR = REPO_ROOT / "src" / "mriforge" / "infrastructure" / "training" / "strategies"
+STRATEGIES_DIR = REPO_ROOT / "src" / "spectramr" / "infrastructure" / "training" / "strategies"
 
 F6_REFACTORED = [
     # Round 5 representatives

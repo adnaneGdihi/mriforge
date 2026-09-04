@@ -157,7 +157,7 @@ _registry_yamls = [p for p in _failing_yamls if _expectation(p).kind == "registr
 @pytest.mark.parametrize("yaml_path", _passing_yamls, ids=[p.stem for p in _passing_yamls])
 def test_passing_corpus_loads_without_schema_error(yaml_path: Path) -> None:
     """Each passing corpus YAML must load via ``TrainingSettings.from_yaml``."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.from_yaml(yaml_path)
     assert settings is not None
@@ -167,8 +167,8 @@ def test_passing_corpus_loads_without_schema_error(yaml_path: Path) -> None:
 @pytest.mark.parametrize("yaml_path", _passing_yamls, ids=[p.stem for p in _passing_yamls])
 def test_passing_corpus_health_checker_no_errors(yaml_path: Path) -> None:
     """Each passing corpus YAML must produce zero error-severity failures."""
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -196,8 +196,8 @@ def test_failing_corpus_trips_named_check(yaml_path: Path) -> None:
     meant to die at Tier 0, it declares ``# expect: tier0 <leaf>`` and is tested
     by :func:`test_failing_corpus_rejected_at_tier0` instead.
     """
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -230,7 +230,7 @@ def test_failing_corpus_rejected_at_tier0(yaml_path: Path) -> None:
     — the same trap a bare ``pytest.raises`` sets for a rename test. The declared
     leaf is what makes this an assertion about the named violation.
     """
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     expected = _expectation(yaml_path).leaf
     with pytest.raises((ValidationError, ValueError)) as excinfo:
@@ -256,7 +256,7 @@ def test_failing_corpus_rejected_at_tier0(yaml_path: Path) -> None:
 
 
 def _registry_rule_names() -> frozenset[str]:
-    from mriforge.config.schemas.validator_registry import get_validator_registry
+    from spectramr.config.schemas.validator_registry import get_validator_registry
 
     return frozenset(rule.name for rule in get_validator_registry().list_validators())
 
@@ -277,7 +277,7 @@ _registry_checked = _registry_backed(_failing_yamls)
 )
 def test_failing_corpus_validator_registry_also_fires(yaml_path: Path) -> None:
     """Every fixture naming a registered rule must trip it at the dict level."""
-    from mriforge.config.schemas.validator_registry import get_validator_registry
+    from spectramr.config.schemas.validator_registry import get_validator_registry
 
     check_name = _check_name_from_path(yaml_path)
     raw = _load_yaml_raw(yaml_path)
@@ -361,7 +361,7 @@ def test_no_failing_fixture_declares_a_refused_config_version() -> None:
     failure as a pass, so the corpus was uniformly unloadable and nobody could
     see it. The version is a ratchet here, not a migration.
     """
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
     stale = {}
     for p in _failing_yamls + _passing_yamls:

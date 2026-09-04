@@ -1,6 +1,6 @@
 r"""Physics tests for the BPP relaxation-dispersion module (DL-BAE core).
 
-Targets ``mriforge.infrastructure.physics.dispersion``.
+Targets ``spectramr.infrastructure.physics.dispersion``.
 
 The Bloembergen-Purcell-Pound spectral density :math:`J(\omega;\tau_c)=\tau_c/(1+
 \omega^2\tau_c^2)` generates the field dependence of relaxation:
@@ -26,7 +26,7 @@ pytestmark = pytest.mark.physics
 
 
 def test_bpp_spectral_density_zero_frequency_equals_tau() -> None:
-    from mriforge.infrastructure.physics.dispersion import bpp_spectral_density
+    from spectramr.infrastructure.physics.dispersion import bpp_spectral_density
 
     tau = torch.tensor([1e-9, 5e-9, 1e-8])
     j0 = bpp_spectral_density(torch.zeros_like(tau), tau)
@@ -34,7 +34,7 @@ def test_bpp_spectral_density_zero_frequency_equals_tau() -> None:
 
 
 def test_bpp_spectral_density_decreases_with_frequency() -> None:
-    from mriforge.infrastructure.physics.dispersion import bpp_spectral_density
+    from spectramr.infrastructure.physics.dispersion import bpp_spectral_density
 
     tau = torch.tensor(5e-9)
     omegas = torch.tensor([1e7, 1e8, 1e9, 1e10])
@@ -44,7 +44,7 @@ def test_bpp_spectral_density_decreases_with_frequency() -> None:
 
 def test_t1_increases_with_field_for_positive_pool() -> None:
     """The dispersion law reproduces the measured trend: T1 rises with B0."""
-    from mriforge.infrastructure.physics.dispersion import dispersion_t1
+    from spectramr.infrastructure.physics.dispersion import dispersion_t1
 
     b0 = torch.tensor([0.05, 0.5, 1.5, 3.0, 7.0])
     a0 = 0.3  # s^-1 baseline
@@ -56,7 +56,7 @@ def test_t1_increases_with_field_for_positive_pool() -> None:
 
 def test_extreme_narrowing_gives_field_independent_plateau() -> None:
     """tau_c -> 0 makes J -> tau_c (constant), so 1/T1 -> a0 + const: flat in B0."""
-    from mriforge.infrastructure.physics.dispersion import dispersion_r1
+    from spectramr.infrastructure.physics.dispersion import dispersion_r1
 
     b0 = torch.tensor([0.05, 3.0, 7.0])
     r1 = dispersion_r1(b0, a0=0.3, b=torch.tensor([1.0e8]), tau_c=torch.tensor([1e-13]))
@@ -65,7 +65,7 @@ def test_extreme_narrowing_gives_field_independent_plateau() -> None:
 
 def test_single_pool_identifiable_from_three_fields() -> None:
     """M >= 2P+1 = 3 fields recover a single-pool (a0, b, tau_c)."""
-    from mriforge.infrastructure.physics.dispersion import (
+    from spectramr.infrastructure.physics.dispersion import (
         dispersion_r1,
         fit_single_pool_dispersion,
     )
@@ -83,7 +83,7 @@ def test_single_pool_identifiable_from_three_fields() -> None:
 
 
 def test_fit_rejects_too_few_fields() -> None:
-    from mriforge.infrastructure.physics.dispersion import fit_single_pool_dispersion
+    from spectramr.infrastructure.physics.dispersion import fit_single_pool_dispersion
 
     b0 = torch.tensor([1.5, 3.0])  # only 2 fields < 2P+1 = 3
     r1 = torch.tensor([0.8, 0.7])
@@ -96,7 +96,7 @@ def test_fit_rejects_too_few_fields() -> None:
 
 def test_power_law_transport_identity_when_same_field() -> None:
     """b0_tgt == b0_src (ratio 1) reproduces T1_ref exactly (Prop 3 consistency)."""
-    from mriforge.infrastructure.physics.dispersion import power_law_t1_transport
+    from spectramr.infrastructure.physics.dispersion import power_law_t1_transport
 
     t1 = torch.tensor([1000.0, 800.0, 1400.0])
     out = power_law_t1_transport(t1, 3.0, 3.0, 0.35)
@@ -105,7 +105,7 @@ def test_power_law_transport_identity_when_same_field() -> None:
 
 def test_power_law_transport_field_invariant_when_beta_zero() -> None:
     """beta == 0 -> field-invariant T1 (the beta=0 baseline sibling)."""
-    from mriforge.infrastructure.physics.dispersion import power_law_t1_transport
+    from spectramr.infrastructure.physics.dispersion import power_law_t1_transport
 
     t1 = torch.tensor([1000.0, 800.0])
     out = power_law_t1_transport(t1, 0.1, 7.0, 0.0)
@@ -113,7 +113,7 @@ def test_power_law_transport_field_invariant_when_beta_zero() -> None:
 
 
 def test_power_law_transport_increases_with_field_for_positive_beta() -> None:
-    from mriforge.infrastructure.physics.dispersion import power_law_t1_transport
+    from spectramr.infrastructure.physics.dispersion import power_law_t1_transport
 
     t1 = torch.tensor([1000.0])
     out = power_law_t1_transport(t1, 3.0, 7.0, 0.34)
@@ -131,16 +131,95 @@ def test_power_law_transport_log_field_ratio_sensitivity() -> None:
 
 
 def test_power_law_transport_rejects_nonpositive_field() -> None:
-    from mriforge.infrastructure.physics.dispersion import power_law_t1_transport
+    from spectramr.infrastructure.physics.dispersion import power_law_t1_transport
 
     with pytest.raises(ValueError):
         power_law_t1_transport(torch.tensor([1000.0]), 0.0, 7.0, 0.34)
 
 
 def test_power_law_transport_is_differentiable_in_beta() -> None:
-    from mriforge.infrastructure.physics.dispersion import power_law_t1_transport
+    from spectramr.infrastructure.physics.dispersion import power_law_t1_transport
 
     beta = torch.tensor(0.34, requires_grad=True)
     t1 = torch.tensor([1000.0])
     power_law_t1_transport(t1, 3.0, 7.0, beta).sum().backward()
     assert beta.grad is not None and torch.isfinite(beta.grad).all()
+
+
+# --------------------------------------------------------------------------
+# power_law_t2_transport -- the transverse companion, and why it is not
+# dispersion_t2 (non-negotiable 17: a copy kept for a real difference is named
+# for that difference, and the difference is executed, not asserted in prose).
+# --------------------------------------------------------------------------
+
+
+def test_power_law_t2_transport_identity_when_same_field() -> None:
+    from spectramr.infrastructure.physics.dispersion import power_law_t2_transport
+
+    t2 = torch.tensor([80.0, 110.0])
+    out = power_law_t2_transport(t2, 3.0, 3.0, 0.05)
+    assert torch.allclose(out, t2)
+
+
+def test_power_law_t2_transport_field_invariant_when_gamma_zero() -> None:
+    from spectramr.infrastructure.physics.dispersion import power_law_t2_transport
+
+    t2 = torch.tensor([80.0])
+    out = power_law_t2_transport(t2, 0.1, 7.0, 0.0)
+    assert torch.allclose(out, t2)
+
+
+def test_power_law_t2_transport_shortens_toward_low_field() -> None:
+    from spectramr.infrastructure.physics.dispersion import power_law_t2_transport
+
+    t2 = torch.tensor([80.0])
+    out = power_law_t2_transport(t2, 7.0, 0.1, 0.05)
+    assert (out < t2).all()
+
+
+def test_power_law_t2_transport_rejects_nonpositive_field() -> None:
+    from spectramr.infrastructure.physics.dispersion import power_law_t2_transport
+
+    with pytest.raises(ValueError, match="positive field strengths"):
+        power_law_t2_transport(torch.tensor([80.0]), 0.0, 7.0, 0.05)
+
+
+def test_power_law_t2_transport_is_differentiable_in_gamma() -> None:
+    from spectramr.infrastructure.physics.dispersion import power_law_t2_transport
+
+    t2 = torch.tensor([80.0])
+    gamma = torch.tensor(0.05, requires_grad=True)
+    power_law_t2_transport(t2, 3.0, 7.0, gamma).sum().backward()
+    assert gamma.grad is not None and torch.isfinite(gamma.grad)
+
+
+def test_the_two_t2_laws_agree_in_sign_and_disagree_in_magnitude() -> None:
+    """The power law and the BPP form are different models, not two copies.
+
+    This is the assertion that keeps both functions in the module. If a future
+    change makes them agree numerically, one of them is redundant and should be
+    deleted -- so this test failing is informative in both directions.
+
+    Compared as *ratios*, which are unit-free: ``dispersion_t2`` returns seconds
+    while ``power_law_t2_transport`` preserves its input units.
+    """
+    from spectramr.infrastructure.physics.dispersion import (
+        dispersion_t2,
+        power_law_t2_transport,
+    )
+
+    b0 = torch.tensor([7.0, 0.1])
+    pool = {"c0": 0.0, "b": torch.tensor([1.0e9]), "tau_c": torch.tensor([1.0e-8])}
+    bpp = dispersion_t2(b0, **pool)
+    bpp_factor = (bpp[0] / bpp[1]).item()
+
+    t2 = torch.tensor([80.0])
+    pow_factor = (t2 / power_law_t2_transport(t2, 7.0, 0.1, 0.05)).item()
+
+    # Same sign: J(w;tau) is maximal at w = 0, so both shorten T2 toward low field.
+    assert bpp_factor > 1.0 and pow_factor > 1.0
+    # Different magnitude, by a wide margin at these pool parameters.
+    assert bpp_factor > 2.0 * pow_factor, (
+        f"BPP shortens by {bpp_factor:.3f}x, power law by {pow_factor:.3f}x -- "
+        "if these have converged, one of the two laws is now redundant"
+    )

@@ -1,4 +1,4 @@
-"""Regression tests for :mod:`mriforge.data.transforms.kspace_coil_transforms`.
+"""Regression tests for :mod:`spectramr.data.transforms.kspace_coil_transforms`.
 
 Audit anchor: 2026-05-14 F5 (centro_symmetric mosaic class).
 
@@ -31,8 +31,8 @@ import numpy as np
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.kspace_coil_transforms import CoilCombineTransform
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.data.transforms.kspace_coil_transforms import CoilCombineTransform
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def _make_asymmetric_coil_kspace(
@@ -172,7 +172,7 @@ def test_single_coil_real_passes_through_without_warning(caplog) -> None:
     subject = tio.Subject(input=tio.ScalarImage(tensor=data, affine=np.eye(4)))
     t = CoilCombineTransform(method="rss", keys=["input"])
 
-    with caplog.at_level(_logging.WARNING, logger="mriforge.data.transforms.kspace_coil_transforms"):
+    with caplog.at_level(_logging.WARNING, logger="spectramr.data.transforms.kspace_coil_transforms"):
         out = t(subject)
 
     # Data passes through unchanged.
@@ -197,7 +197,7 @@ def test_two_channel_real_already_combined_passes_through(caplog) -> None:
     subject = tio.Subject(input=tio.ScalarImage(tensor=data, affine=np.eye(4)))
     t = CoilCombineTransform(method="rss", keys=["input"])
 
-    with caplog.at_level(_logging.WARNING, logger="mriforge.data.transforms.kspace_coil_transforms"):
+    with caplog.at_level(_logging.WARNING, logger="spectramr.data.transforms.kspace_coil_transforms"):
         out = t(subject)
 
     assert torch.equal(out["input"].data, data)

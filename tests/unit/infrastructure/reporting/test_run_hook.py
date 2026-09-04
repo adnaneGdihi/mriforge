@@ -16,7 +16,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.reporting import run_hook
+from spectramr.infrastructure.reporting import run_hook
 
 
 @pytest.fixture
@@ -34,7 +34,7 @@ class TestTrainReExportsRatherThanCopies:
     """
 
     def test_train_hook_is_the_same_object(self):
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         assert train._maybe_run_reporting is run_hook.maybe_run_reporting
         assert train._run_unconfigured_report is run_hook.run_unconfigured_report
@@ -43,7 +43,7 @@ class TestTrainReExportsRatherThanCopies:
     def test_the_hook_does_not_live_in_the_training_pipeline_any_more(self):
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         src_file = inspect.getsourcefile(train._maybe_run_reporting)
         assert src_file is not None
@@ -85,7 +85,7 @@ class TestBranchSelection:
     def test_enabled_reporting_reaches_generate_report_with_the_run_dir(
         self, tmp_path, logger_, monkeypatch
     ):
-        import mriforge.infrastructure.reporting as reporting_pkg
+        import spectramr.infrastructure.reporting as reporting_pkg
 
         seen = {}
 
@@ -120,7 +120,7 @@ class TestFailurePolicy:
     def test_soft_fails_by_default_so_a_long_run_still_wraps_up(
         self, tmp_path, logger_, monkeypatch
     ):
-        import mriforge.infrastructure.reporting as reporting_pkg
+        import spectramr.infrastructure.reporting as reporting_pkg
 
         monkeypatch.setattr(reporting_pkg, "generate_report", self._boom, raising=False)
         run_hook.maybe_run_reporting(
@@ -128,10 +128,99 @@ class TestFailurePolicy:
         )  # must not raise
 
     def test_fail_on_error_propagates(self, tmp_path, logger_, monkeypatch):
-        import mriforge.infrastructure.reporting as reporting_pkg
+        import spectramr.infrastructure.reporting as reporting_pkg
 
         monkeypatch.setattr(reporting_pkg, "generate_report", self._boom, raising=False)
         with pytest.raises(RuntimeError, match="plot exploded"):
             run_hook.maybe_run_reporting(
                 self._cfg(fail_on_error=True), run_dir=tmp_path, logger_=logger_
             )
+
+
+class TestSoftFailedReportingIsStampedNotOnlyWarned:
+    """#1685 -- ``fail_on_error`` defaults False, so the hook can fail silently.
+
+    On the four-rank cluster run that motivated this, three ranks raced on
+    ``case_*.npz`` and the hook died on a ``Bad CRC-32``. The run exited 0 and
+    its ``run_summary.json`` looked exactly like a run that had simply not
+    configured a report -- absent inferred, not reported. The stamp makes the
+    two states distinguishable from the artifact alone.
+    """
+
+    @staticmethod
+    def _cfg(*, fail_on_error=False):
+        return SimpleNamespace(
+            reporting=SimpleNamespace(enabled=True, fail_on_error=fail_on_error),
+            run=SimpleNamespace(seed=0),
+        )
+
+    def test_a_failed_hook_stamps_run_summary_and_keeps_the_run_alive(
+        self, tmp_path, logger_, monkeypatch
+    ):
+        import json
+
+        from spectramr.infrastructure import reporting as reporting_pkg
+
+        (tmp_path / "run_summary.json").write_text(json.dumps({"final_psnr": 21.4}))
+
+        def _boom(*a, **k):
+            raise RuntimeError("Bad CRC-32 for file 'prediction.npy'")
+
+        monkeypatch.setattr(reporting_pkg, "generate_report", _boom, raising=False)
+        run_hook.maybe_run_reporting(self._cfg(), run_dir=tmp_path, logger_=logger_)
+
+        data = json.loads((tmp_path / "run_summary.json").read_text())
+        assert data["reporting"]["status"] == "failed"
+        assert data["reporting"]["error_type"] == "RuntimeError"
+        assert "Bad CRC-32" in data["reporting"]["error"]
+        # Read-modify-write: the keys two registered plotters read must survive.
+        assert data["final_psnr"] == 21.4
+
+    def test_the_stamp_leaves_no_temp_file_behind(self, tmp_path, logger_, monkeypatch):
+        from spectramr.infrastructure import reporting as reporting_pkg
+
+        monkeypatch.setattr(
+            reporting_pkg,
+            "generate_report",
+            lambda *a, **k: (_ for _ in ()).throw(RuntimeError("x")),
+            raising=False,
+        )
+        run_hook.maybe_run_reporting(self._cfg(), run_dir=tmp_path, logger_=logger_)
+        assert not (tmp_path / "run_summary.tmp.json").exists()
+
+    def test_a_non_object_run_summary_is_reported_not_overwritten(
+        self, tmp_path, logger_, monkeypatch, caplog
+    ):
+        """Never destroy an artifact you did not understand."""
+        from spectramr.infrastructure import reporting as reporting_pkg
+
+        (tmp_path / "run_summary.json").write_text("[1, 2, 3]")
+        monkeypatch.setattr(
+            reporting_pkg,
+            "generate_report",
+            lambda *a, **k: (_ for _ in ()).throw(RuntimeError("x")),
+            raising=False,
+        )
+        with caplog.at_level(logging.WARNING):
+            run_hook.maybe_run_reporting(self._cfg(), run_dir=tmp_path, logger_=logger_)
+
+        assert (tmp_path / "run_summary.json").read_text() == "[1, 2, 3]"
+        assert any("not an object" in r.getMessage() for r in caplog.records)
+
+    def test_fail_on_error_still_raises_rather_than_stamping(
+        self, tmp_path, logger_, monkeypatch
+    ):
+        """The stamp is for the SOFT path only; the hard path must stay hard."""
+        from spectramr.infrastructure import reporting as reporting_pkg
+
+        monkeypatch.setattr(
+            reporting_pkg,
+            "generate_report",
+            lambda *a, **k: (_ for _ in ()).throw(RuntimeError("x")),
+            raising=False,
+        )
+        with pytest.raises(RuntimeError):
+            run_hook.maybe_run_reporting(
+                self._cfg(fail_on_error=True), run_dir=tmp_path, logger_=logger_
+            )
+        assert not (tmp_path / "run_summary.json").exists()

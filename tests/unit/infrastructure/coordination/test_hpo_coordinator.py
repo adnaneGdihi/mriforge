@@ -12,7 +12,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.infrastructure.coordination.hpo_coordinator import HPOCoordinator
+from spectramr.infrastructure.coordination.hpo_coordinator import HPOCoordinator
 
 
 @pytest.fixture
@@ -41,8 +41,8 @@ class TestHPOCoordinator:
                 config_path="/does/not/exist.yaml",
             )
 
-    @patch("mriforge.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
-    @patch("mriforge.pipelines.hpo.subprocess_training_objective")
+    @patch("spectramr.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
+    @patch("spectramr.pipelines.hpo.subprocess_training_objective")
     def test_delegates_to_enhanced_optimizer(
         self, mock_obj_factory, mock_optimizer_cls, coord, tmp_path
     ):
@@ -83,8 +83,8 @@ class TestHPOCoordinator:
         # EnhancedHPOptimizer instantiated once per model type
         assert mock_optimizer_cls.call_count == 2
 
-    @patch("mriforge.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
-    @patch("mriforge.pipelines.hpo.subprocess_training_objective")
+    @patch("spectramr.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
+    @patch("spectramr.pipelines.hpo.subprocess_training_objective")
     def test_writes_best_config_yaml_at_completion(
         self, mock_obj_factory, mock_optimizer_cls, coord, tmp_path
     ):
@@ -162,8 +162,8 @@ class TestHPOCoordinator:
             "optimization.optimizer.weight_decay": 1e-5,
         }
 
-    @patch("mriforge.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
-    @patch("mriforge.pipelines.hpo.subprocess_training_objective")
+    @patch("spectramr.models.tuning.enhanced_hyperparameter_tuning.EnhancedHPOptimizer")
+    @patch("spectramr.pipelines.hpo.subprocess_training_objective")
     def test_per_model_failure_is_isolated(
         self, mock_obj_factory, mock_optimizer_cls, coord, tmp_path
     ):

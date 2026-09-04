@@ -63,7 +63,7 @@ class TestNormalizationTransforms:
     def test_normalize_transform_import(self):
         """NormalizeTransform can be imported."""
         try:
-            from mriforge.data.transforms.normalize import NormalizeTransform
+            from spectramr.data.transforms.normalize import NormalizeTransform
 
             assert NormalizeTransform is not None
         except ImportError:

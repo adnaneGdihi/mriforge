@@ -10,16 +10,16 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.vf_field_extraction import (
+from spectramr.infrastructure.physics.vf_field_extraction import (
     BlochSiegertB1Estimator,
     SSFPBandingB0Estimator,
     STEAMSpinEchoB1Estimator,
 )
-from mriforge.infrastructure.physics.vf_operators_extended import (
+from spectramr.infrastructure.physics.vf_operators_extended import (
     NUFFTTrajectoryCalibrator,
     RFModulationOperator,
 )
-from mriforge.models.blocks.vf_modules import (
+from spectramr.models.blocks.vf_modules import (
     MarkerDictionaryLearner,
     SpatiotemporalMarkerAttention,
 )

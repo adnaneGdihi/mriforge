@@ -28,7 +28,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.computers.unified_diffusion_reconstruction import (
+from spectramr.models.losses.computers.unified_diffusion_reconstruction import (
     _complex_safe_l1,
     _complex_safe_mse,
     _unwrap_tensor_arg,

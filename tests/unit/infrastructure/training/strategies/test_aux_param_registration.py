@@ -21,19 +21,19 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.cycle_bloch_strategy import (
+from spectramr.infrastructure.training.strategies.cycle_bloch_strategy import (
     CycleBlochStrategy,
 )
-from mriforge.infrastructure.training.strategies.field_probe_coupled_strategy import (
+from spectramr.infrastructure.training.strategies.field_probe_coupled_strategy import (
     FieldProbeCoupledStrategy,
 )
-from mriforge.infrastructure.training.strategies.girf_aware_strategy import (
+from spectramr.infrastructure.training.strategies.girf_aware_strategy import (
     GIRFAwareStrategy,
 )
-from mriforge.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
+from spectramr.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
     PhysicsEquivariantSSLStrategy,
 )
-from mriforge.infrastructure.training.strategies.universal_reconstruction_strategy import (
+from spectramr.infrastructure.training.strategies.universal_reconstruction_strategy import (
     UniversalReconstructionStrategy,
 )
 

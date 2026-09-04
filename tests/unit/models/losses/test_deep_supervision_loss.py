@@ -1,6 +1,6 @@
 """Tests for ``DeepSupervisionLoss``.
 
-Targets ``mriforge.models.losses.deep_supervision_loss``. Computes a base
+Targets ``spectramr.models.losses.deep_supervision_loss``. Computes a base
 loss at multiple intermediate layer outputs to improve gradient flow,
 auto-resizing target to match each intermediate's spatial dims.
 """
@@ -11,7 +11,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.deep_supervision_loss import DeepSupervisionLoss
+from spectramr.models.losses.deep_supervision_loss import DeepSupervisionLoss
 
 
 # ---------------------------------------------------------------------------
@@ -104,7 +104,7 @@ def test_loss_accumulates_across_levels() -> None:
 
 def test_deep_supervision_registered() -> None:
     """``deep_supervision`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "deep_supervision" in list_available()
 

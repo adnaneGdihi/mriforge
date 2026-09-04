@@ -16,8 +16,8 @@ import time
 
 # The SE3 block imports MambaBlock, which hard-requires mamba_ssm unless the
 # CPU wiring fallback is allowed; a timing harness is exactly that use case.
-os.environ.setdefault("MRIFORGE_ALLOW_MAMBA_FALLBACK", "1")
-os.environ.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+os.environ.setdefault("SPECTRAMR_ALLOW_MAMBA_FALLBACK", "1")
+os.environ.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
 
 import torch
 
@@ -37,7 +37,7 @@ def _time(fn, warmup: int = 3, iters: int = 10) -> float:
 
 
 def bench_radial_band_attention(device: torch.device) -> None:
-    from mriforge.models.blocks.dual_domain_attention_kan import RadialBandAttention
+    from spectramr.models.blocks.dual_domain_attention_kan import RadialBandAttention
 
     block = RadialBandAttention(channels=8, num_heads=2, num_bands=8).to(device)
     x = torch.randn(1, 8, 64, 64, dtype=torch.complex64, device=device)
@@ -47,8 +47,8 @@ def bench_radial_band_attention(device: torch.device) -> None:
 
 
 def bench_kan_bases(device: torch.device) -> None:
-    from mriforge.models.layers.kan.fourier_basis import FourierBasis
-    from mriforge.models.layers.kan.wavelet_basis import WaveletBasis
+    from spectramr.models.layers.kan.fourier_basis import FourierBasis
+    from spectramr.models.layers.kan.wavelet_basis import WaveletBasis
 
     wb = WaveletBasis(num_bases=8, wavelet_family="haar").to(device)
     fb = FourierBasis(num_bases=8).to(device)
@@ -61,7 +61,7 @@ def bench_kan_bases(device: torch.device) -> None:
 
 
 def bench_diff_ssm(device: torch.device) -> None:
-    from mriforge.models.mamba.diff_mamba import DiffSSM
+    from spectramr.models.mamba.diff_mamba import DiffSSM
 
     ssm = DiffSSM(d_model=32, d_state=16, dt_step=0.5).to(device)
     x = torch.randn(1, 256, 32, device=device)
@@ -71,7 +71,7 @@ def bench_diff_ssm(device: torch.device) -> None:
 
 
 def bench_d2_mamba_indices(device: torch.device) -> None:
-    from mriforge.models.mamba.d2_mamba import D2MambaBlock
+    from spectramr.models.mamba.d2_mamba import D2MambaBlock
 
     block = D2MambaBlock(d_model=8, d_state=4, d_conv=2).to(device)
 
@@ -90,7 +90,7 @@ def bench_d2_mamba_indices(device: torch.device) -> None:
 
 
 def bench_bloch_mamba(device: torch.device) -> None:
-    from mriforge.models.mamba.bloch_mamba import BlochMambaBlock
+    from spectramr.models.mamba.bloch_mamba import BlochMambaBlock
 
     block = BlochMambaBlock(d_model=32, d_state=16).to(device)
     x = torch.randn(1, 256, 32, device=device)
@@ -100,7 +100,7 @@ def bench_bloch_mamba(device: torch.device) -> None:
 
 
 def bench_se3_oscillator(device: torch.device) -> None:
-    from mriforge.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
+    from spectramr.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
 
     block = SE3LieAlgebraMambaBlock(d_state=8, group="SE3", sample_rate_hz=100.0)
     block = block.to(device).eval()

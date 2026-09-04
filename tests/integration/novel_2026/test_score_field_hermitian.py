@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.hermitian import (
+from spectramr.infrastructure.physics.hermitian import (
     enforce_hermitian,
     hermitian_gaussian_noise,
 )
@@ -74,7 +74,7 @@ def test_score_field_strategy_logs_hermitian_residual() -> None:
 
     import torch.nn as nn
 
-    from mriforge.infrastructure.training.strategies.score_field_tomography_strategy import (
+    from spectramr.infrastructure.training.strategies.score_field_tomography_strategy import (
         ScoreFieldTomographyStrategy,
     )
 

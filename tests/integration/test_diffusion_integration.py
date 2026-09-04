@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
 
 
 @pytest.mark.integration
@@ -42,7 +42,7 @@ def test_diffusion_pipeline_execution():
     # Patch dependencies
     # DiffusionScheduler is used in DiffusionStrategyMixin
     with patch(
-        "mriforge.infrastructure.training.utils.diffusion_mixin.DiffusionScheduler"
+        "spectramr.infrastructure.training.utils.diffusion_mixin.DiffusionScheduler"
     ) as MockSched:
         # Setup scheduler mock
         scheduler = MockSched.return_value

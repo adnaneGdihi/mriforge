@@ -4,7 +4,7 @@ taking precedence."""
 
 from __future__ import annotations
 
-from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
 
 def test_rate_aliases_base_acceleration() -> None:

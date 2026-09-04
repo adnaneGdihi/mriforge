@@ -8,7 +8,7 @@ from tests.utils.config_block_stub import block_stub
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.b0_mapping_strategy import B0MappingStrategy
+from spectramr.infrastructure.training.strategies.b0_mapping_strategy import B0MappingStrategy
 
 
 class MockConfig:
@@ -126,7 +126,7 @@ def mock_env():
 @pytest.fixture
 def strategy(mock_env):
     """Instantiate B0MappingStrategy (NEW API - env only)."""
-    with patch("mriforge.infrastructure.di.di_container.resolve_service") as mock_resolve:
+    with patch("spectramr.infrastructure.di.di_container.resolve_service") as mock_resolve:
         mock_resolve.return_value = MagicMock()
         return B0MappingStrategy(env=mock_env)
 

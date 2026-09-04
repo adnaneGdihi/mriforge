@@ -13,11 +13,11 @@ pytest.importorskip("torch")
 
 import torch
 
-from mriforge.models.analysis.operator_id_report import (
+from spectramr.models.analysis.operator_id_report import (
     commutator_interaction_matrix,
     severity_field,
 )
-from mriforge.models.operator_id.bch_conditioner import BCHOperatorConditioner
+from spectramr.models.operator_id.bch_conditioner import BCHOperatorConditioner
 
 _MODES = ("motion_rigid", "bias_field_multiplicative", "b0_phase", "gibbs_truncation")
 

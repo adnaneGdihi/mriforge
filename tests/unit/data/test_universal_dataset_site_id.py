@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 
-from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
 
 def _write_manifest(tmp_path, records) -> str:

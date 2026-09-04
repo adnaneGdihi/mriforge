@@ -4,7 +4,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
+from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
 
 
 class MockModule(nn.Module):
@@ -85,7 +85,7 @@ class TestColdDiffusion:
         assert sym_z.shape == z.shape
         # Check symmetry property:
         # If we IFFT sym_z, imaginary part should be 0.
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
 
         z_c = torch.complex(sym_z[:, 0], sym_z[:, 1])
         img = ifft2c(z_c)
@@ -189,7 +189,7 @@ class TestPLossesRegistryRouting:
         assert torch.allclose(got, expected)
 
     def test_log_spectral_routes_through_registry(self):
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
 
         cd, model, x_start, mask, t, predicted = self._setup()
         expected = create_loss("log_spectral_phase", phase_weight=0.1)(predicted, x_start)
@@ -213,7 +213,7 @@ class TestProgressiveMaskDirection:
     def _process(num_timesteps: int = 10):
         import torch
 
-        from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
+        from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
 
         torch.manual_seed(0)
         proc = ColdDiffusion(

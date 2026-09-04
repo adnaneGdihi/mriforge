@@ -15,7 +15,7 @@ class TestResampleToReferenceTransform:
 
     @pytest.fixture
     def transform(self):
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             _ResampleToReferenceTransform,
         )
         return _ResampleToReferenceTransform()
@@ -122,7 +122,7 @@ class TestEnsureMinimumSpatialSize:
 
     @pytest.fixture
     def transform_256(self):
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             _EnsureMinimumSpatialSize,
         )
         return _EnsureMinimumSpatialSize((256, 256, 1))
@@ -186,7 +186,7 @@ class TestEnsureMinimumSpatialSize:
 
     def test_2d_patch_size(self):
         """Test with 2-element patch_size (auto-expand to 3D)."""
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             _EnsureMinimumSpatialSize,
         )
         transform = _EnsureMinimumSpatialSize((128, 128))

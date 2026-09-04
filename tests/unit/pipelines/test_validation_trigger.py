@@ -239,7 +239,7 @@ class TestValidationCSVSingleWrite:
         """The duplicate CSV write with sorted keys must not exist in train.py."""
         from pathlib import Path
 
-        source = Path("src/mriforge/pipelines/train.py").read_text()
+        source = Path("src/spectramr/pipelines/train.py").read_text()
 
         # The old duplicate write used sorted(data.keys()) — must be gone
         assert "fieldnames=sorted(data.keys())" not in source, (
@@ -258,7 +258,7 @@ class TestValidationCSVSingleWrite:
         """
         from pathlib import Path
 
-        source = Path("src/mriforge/pipelines/train.py").read_text()
+        source = Path("src/spectramr/pipelines/train.py").read_text()
 
         inline_form = "fieldnames=list(val_row.keys())" in source
         variable_form = "list(val_row.keys())" in source and "fieldnames=all_fieldnames" in source
@@ -337,6 +337,6 @@ class TestExperiment11Config:
         next to the prose depending on it, rather than leaving the prose quietly
         wrong.
         """
-        from mriforge.config.schemas.validation import ValidationScheduleConfigSchema
+        from spectramr.config.schemas.validation import ValidationScheduleConfigSchema
 
         assert ValidationScheduleConfigSchema().on_epoch is False

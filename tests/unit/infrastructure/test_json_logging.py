@@ -2,7 +2,7 @@ import io
 import json
 import logging
 
-from mriforge.infrastructure.services.logging_service import JSONFormatter, LoggingService
+from spectramr.infrastructure.services.logging_service import JSONFormatter, LoggingService
 
 
 def test_json_formatter():

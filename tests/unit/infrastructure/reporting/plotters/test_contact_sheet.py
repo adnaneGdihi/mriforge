@@ -3,8 +3,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import get
-from mriforge.infrastructure.reporting.plotters import contact_sheet  # noqa: F401
+from spectramr.infrastructure.reporting.plotters import get
+from spectramr.infrastructure.reporting.plotters import contact_sheet  # noqa: F401
 
 
 def test_contact_sheet_montages_pngs(tmp_path):

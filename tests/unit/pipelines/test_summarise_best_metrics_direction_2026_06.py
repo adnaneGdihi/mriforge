@@ -11,7 +11,7 @@ so the error propagates into which arm "wins". Direction now comes from
 
 from __future__ import annotations
 
-from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
 
 def test_summarise_best_respects_metric_registry_direction(tmp_path):

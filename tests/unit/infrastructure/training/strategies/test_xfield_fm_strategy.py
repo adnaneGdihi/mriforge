@@ -27,13 +27,13 @@ from typing import Any
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.reconstruction import (
+from spectramr.infrastructure.training.strategies.mixins.reconstruction import (
     ReconstructionMixin,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.xfield_fm_strategy import (
+from spectramr.infrastructure.training.strategies.xfield_fm_strategy import (
     XFieldFMStrategy,
 )
 

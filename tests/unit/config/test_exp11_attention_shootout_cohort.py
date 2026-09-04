@@ -41,7 +41,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.settings import TrainingSettings  # noqa: E402
+from spectramr.config.settings import TrainingSettings  # noqa: E402
 from tests.utils.corpus import tracked_yamls  # noqa: E402
 
 COHORT = (

@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.models.losses.storm_loss import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.models.losses.storm_loss import (
     SToRMRegularizer,
     _uniform_temporal_laplacian,
 )
@@ -136,7 +136,7 @@ def test_constant_sequence_is_the_smoothest_possible() -> None:
 
 def test_storm_is_tagged_for_the_dynamic_regime() -> None:
     """It backs mri_dynamic's LIVE claim; a lost tag must fail here."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     meta = LossRegistry._loss_domains["storm"]
     assert meta["workflows"] == frozenset({Regime.DYNAMIC})

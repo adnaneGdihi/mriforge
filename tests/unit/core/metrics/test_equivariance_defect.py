@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.equivariance_defect import (
+from spectramr.core.metrics.equivariance_defect import (
     SUPPORTED_GROUPS,
     EquivarianceDefectMetric,
     conformal_quantile,

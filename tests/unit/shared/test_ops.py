@@ -6,7 +6,7 @@ import pytest
 import torch
 
 try:
-    from mriforge.shared.ops import complex_abs
+    from spectramr.shared.ops import complex_abs
 except ImportError:
     complex_abs = None
 

@@ -29,7 +29,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
 logger = logging.getLogger(__name__)
 
@@ -254,7 +254,7 @@ def minimal_settings_for(key: str) -> "TrainingSettings":
             f"Expected at tests/_fixtures/minimal_settings/{family}.yaml."
         )
 
-    from mriforge.config.settings import TrainingSettings  # noqa: PLC0415
+    from spectramr.config.settings import TrainingSettings  # noqa: PLC0415
 
     logger.debug("Loading minimal settings for key=%r from %s", key, yaml_path)
     return TrainingSettings.from_yaml(str(yaml_path))

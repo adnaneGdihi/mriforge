@@ -20,7 +20,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.severity import severity_grid
+from spectramr.infrastructure.physics.severity import severity_grid
 
 
 def test_severity_grid_default_anchor_is_one_over_t() -> None:

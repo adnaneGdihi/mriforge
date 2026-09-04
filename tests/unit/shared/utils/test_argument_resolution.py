@@ -1,6 +1,6 @@
 """Tests for argument-resolution helpers.
 
-Targets ``mriforge.shared.utils.argument_resolution``. Provides the canonical
+Targets ``spectramr.shared.utils.argument_resolution``. Provides the canonical
 "CLI > config > default" precedence pattern used everywhere CLI flags
 override YAML.
 
@@ -19,7 +19,7 @@ import argparse
 
 import pytest
 
-from mriforge.shared.utils.argument_resolution import (
+from spectramr.shared.utils.argument_resolution import (
     ArgumentResolver,
     resolve_argument,
     resolve_argument_pair,

@@ -7,7 +7,7 @@ for all 6 missing blocks plus the 2 enhancement operators.
 import pytest
 import torch
 
-from mriforge.models.generators.vf_architecture_blocks import (
+from spectramr.models.generators.vf_architecture_blocks import (
     DirichletESPIRiTBlock,
     EKFPhaseTracker,
     MoDLSuperResBlock,
@@ -222,7 +222,7 @@ class TestMarkerKSpaceDCProjection:
 
     def test_output_shape(self, device, img_size):
         """Output shape matches input."""
-        from mriforge.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
 
         H, W = img_size
         mask = torch.zeros(1, 1, H, W)
@@ -244,7 +244,7 @@ class TestVarianceWeightedTGV:
 
     def test_output_shape(self, device, img_size):
         """Output shape matches input."""
-        from mriforge.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
+        from spectramr.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
 
         H, W = img_size
         tgv = VarianceWeightedTGV(num_iters=2).to(device)
@@ -255,7 +255,7 @@ class TestVarianceWeightedTGV:
 
     def test_fallback_without_variance(self, device, img_size):
         """Falls back to base TGV when variance_map is None."""
-        from mriforge.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
+        from spectramr.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
 
         H, W = img_size
         tgv = VarianceWeightedTGV(num_iters=2).to(device)

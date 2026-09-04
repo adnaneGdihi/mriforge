@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.data.datasets.m4raw_repetition_groups import discover_repetition_groups
+from spectramr.data.datasets.m4raw_repetition_groups import discover_repetition_groups
 
 
 def _touch(p: Path) -> Path:

@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from mriforge.data.synthesis.vlf_simulator import VLFSimulator
+from spectramr.data.synthesis.vlf_simulator import VLFSimulator
 
 
 class TestVLFSimulator:

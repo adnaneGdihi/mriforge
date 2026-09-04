@@ -4,10 +4,30 @@
 Training Strategies — Architectural Reference
 ================================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
-The MRIForge framework provides **34 training strategies** implementing the
-**Template Method** design pattern through ``BaseTrainingStrategy``. Each
+spectraMR's training strategies implement the **Template Method** design pattern
+through ``BaseTrainingStrategy``. Each
+
+.. note::
+
+   **This page is hand-written and not exhaustive.** It documents a subset of of the
+   153 strategy classes the registry holds, so a name's absence here is **not** evidence
+   that it does not exist -- check the registry before concluding one is
+   unavailable. Counts are deliberately not restated in the prose above: a frozen
+   number in a hand-maintained page drifts silently, and this one had -- it read 34.
+
+   .. code-block:: python
+
+      from spectramr.infrastructure.training.strategy_factory import (
+          TrainingStrategyFactory,
+      )
+
+      paths = TrainingStrategyFactory.STRATEGY_CLASS_PATHS  # a CLASS attribute
+      len(paths), len(set(paths.values()))   # 206 keys -> 153 classes
+
+   Tracked as issue #1643 -- these pages should be generated from the
+   registries, the way ``docs/config_key_reference.rst`` already is.
 strategy encapsulates paradigm-specific training logic while inheriting
 common infrastructure (checkpointing, EMA, gradient clipping, AMP, metrics).
 
@@ -47,13 +67,13 @@ The lifecycle contract
 ``BaseTrainingStrategy`` declares four lifecycle hooks — ``on_epoch_start``,
 ``on_epoch_end``, ``on_validation_start`` and ``on_validation_end``. They are
 driven by
-:class:`~mriforge.infrastructure.training.strategies.lifecycle.StrategyLifecycleDriver`,
+:class:`~spectramr.infrastructure.training.strategies.lifecycle.StrategyLifecycleDriver`,
 which the training loop constructs once above the iteration loop and polls at
 each boundary.
 
 .. warning::
 
-   Until #1353 **nothing under** ``src/mriforge`` **called any of the four**
+   Until #1353 **nothing under** ``src/spectramr`` **called any of the four**
    (audit dossier D12 §3.1). Every override — and both of the schema-declared
    YAML features implemented inside one — was inert on every arm. If you are
    reading a run log from before that change, ``end_to_end_finetune_epoch`` and
@@ -122,7 +142,7 @@ per-stage ``early_stopping``
    ``patience`` epochs. Implemented in ``on_epoch_end``.
 
 The per-stage monitor resolves through
-:func:`~mriforge.infrastructure.services.metric_keys.resolve_metric_key`, the
+:func:`~spectramr.infrastructure.services.metric_keys.resolve_metric_key`, the
 framework's single owner of monitor-key aliasing (the training loop's own early
 stopping already routes through it). Its default is ``val_<stage>_l1`` — the key
 ``MultiTrainingStrategy.validation_step`` actually emits, and only when
@@ -189,14 +209,14 @@ All strategies compose shared behavior via ISP-compliant mixins:
      - Extracts inputs/targets from TorchIO batches, handles k-space vs image
    * - ``EMAMixin``
      - Empty marker class. The actual EMA shadow update runs once per
-       training step in ``src/pipelines/train.py``
+       training step in ``src/spectramr/pipelines/train.py``
        (``pipeline.ema.update(pipeline.generator)``). The historical
        ``_update_ema`` method had a ``pass`` body and was never called —
        see ``TODO/audit/05_strategies_core_mixins_builders.md`` F3.
    * - ``KspaceMixin``
      - FFT/IFFT transforms, k-space mask generation, data consistency
    * - ``MetricsMixin``
-     - Delegates metric computation to ``mriforge.core.metrics`` (SSOT)
+     - Delegates metric computation to ``spectramr.core.metrics`` (SSOT)
    * - ``OptimizerMixin``
      - Builds the optimizer stepper (``_build_optimizer_stepper``). Runtime
        gradient ops (``_zero_gradients`` / ``_clip_and_log_gradients`` /
@@ -258,7 +278,7 @@ Strategy selection is performed by ``TrainingStrategyFactory``:
 
    # Method 1: Explicit strategy class
    training:
-     strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy
 
    # Method 2: Training mode dispatch
    training:
@@ -370,7 +390,7 @@ skip discriminator or generator steps to prevent mode collapse.
            loss_type: hinge      # vanilla | lsgan | hinge | wgan
      gan:
        disc_updates: 2           # canonical home for "D updates per G step"
-       gan_loss_type: wgan-gp    # see GANLossesConfig in src/config/schemas/loss.py
+       gan_loss_type: wgan-gp    # see GANLossesConfig in src/spectramr/config/schemas/loss.py
 
 
 DiffusionTrainingStrategy
@@ -1429,8 +1449,8 @@ and complex low-rank covariance gains.
 
 **Audit (Tier-2 probe):** because the conditioner returns a *parameter
 dictionary* (not an image), the generic ``synthetic_forward_probe`` does not
-apply; ``python -m mriforge.cli audit <yaml> --probe`` dispatches instead to
-:func:`mriforge.infrastructure.validation.operator_id_probe.operator_id_forward_probe`.
+apply; ``python -m spectramr.cli audit <yaml> --probe`` dispatches instead to
+:func:`spectramr.infrastructure.validation.operator_id_probe.operator_id_forward_probe`.
 On a Shepp-Logan phantom with the configured ``mode_dictionary`` it asserts,
 at config-load time, the four correctness properties from the design: (i)
 :math:`\exp(\Omega(s))x` has matching shape and only finite values; (ii) the
@@ -1469,12 +1489,12 @@ contrasts and field, alongside a commutator-interaction heatmap
 :math:`\|[L_j, L_k]\|_F` showing which mode pairs interact most strongly (i.e.
 where the Baker-Campbell-Hausdorff correction beyond first order actually
 matters). Both are produced by
-:mod:`mriforge.models.analysis.operator_id_report`:
+:mod:`spectramr.models.analysis.operator_id_report`:
 
-* :func:`~mriforge.models.analysis.operator_id_report.commutator_interaction_matrix`
+* :func:`~spectramr.models.analysis.operator_id_report.commutator_interaction_matrix`
   -- pure physics, reproducible from the ``mode_dictionary`` with no trained
   model (a static diagnostic of how non-commutative a catalog is).
-* :func:`~mriforge.models.analysis.operator_id_report.severity_field` -- reads
+* :func:`~spectramr.models.analysis.operator_id_report.severity_field` -- reads
   a trained conditioner on a ``(contrast, field)`` grid.
 
 **Calibrated operator posterior (SOTA plan T3).** Setting
@@ -1482,7 +1502,7 @@ matters). Both are produced by
 with a Laplace uncertainty posterior over the per-mode severities,
 :math:`\Sigma = (H + \lambda_0 I)^{-1}` with ``H`` the Hessian of the
 structured-Gaussian NLL at the MAP
-(:mod:`mriforge.models.operator_id.operator_posterior`). The strategy stamps the
+(:mod:`spectramr.models.operator_id.operator_posterior`). The strategy stamps the
 mean posterior std into the metrics (``operator_posterior_std``) — the
 uncertainty that distinguishes T3 from the REJECTed blind operator-image
 diffusion (JSMoCo), whose image prior silently absorbs operator error. **Corner
@@ -1497,12 +1517,12 @@ driver that calls them is not distributed, so build the report from the module:
 
 .. code-block:: python
 
-   from mriforge.models.analysis.operator_id_report import (
+   from spectramr.models.analysis.operator_id_report import (
        commutator_interaction_matrix,
        severity_field,
    )
 
-.. automodule:: mriforge.models.analysis.operator_id_report
+.. automodule:: spectramr.models.analysis.operator_id_report
    :members: commutator_interaction_matrix, severity_field
    :no-index:
 
@@ -1517,7 +1537,7 @@ AcquisitionHypernetworkStrategy (LCAH)
 **Short name:** ``acq_hypernetwork`` — **Bases:**
 ``ReconstructionTrainingStrategy``
 
-**Purpose:** Train :class:`~mriforge.models.encoders.lcah_encoder.LCAHEncoder`, a
+**Purpose:** Train :class:`~spectramr.models.encoders.lcah_encoder.LCAHEncoder`, a
 spectral-normalised hypernetwork :math:`h_\psi` that maps the continuous
 acquisition vector :math:`\varphi=(\mathrm{TE},\mathrm{TR},\mathrm{TI},\alpha,B_0)`
 to FiLM modulation for a target :math:`f_\theta` (M3 of the 2026-06-29
@@ -1609,7 +1629,7 @@ splat, normal-path regression).
 JEPA fail-loud raises (E3)
 --------------------------
 
-:py:class:`mriforge.infrastructure.training.strategies.jepa_strategy.JEPAStrategy`
+:py:class:`spectramr.infrastructure.training.strategies.jepa_strategy.JEPAStrategy`
 previously emitted ``{"loss_total": torch.tensor(0.0, device=...)}`` as
 a silent fallback whenever the generator, the batch dict, or
 ``_ensure_modules`` was unavailable. The orchestrator then called
@@ -1627,17 +1647,17 @@ by :py:mod:`tests.unit.strategies.test_jepa_fail_loud` (4 tests).
 TTO schema field + dict-coercion (E19)
 --------------------------------------
 
-:py:class:`mriforge.infrastructure.training.strategies.tto_strategy.ConcreteTTOStrategy`
+:py:class:`spectramr.infrastructure.training.strategies.tto_strategy.ConcreteTTOStrategy`
 reads ``config.training.tto.lambda_tv`` and ``.lambda_dc``. Before the
 round-2 fix the base
-:py:class:`mriforge.config.schemas.training.base.TrainingStrategyConfigSchema`
+:py:class:`spectramr.config.schemas.training.base.TrainingStrategyConfigSchema`
 did not declare a ``tto`` attribute, so strategy setup raised
 ``AttributeError: 'TrainingStrategyConfigSchema' object has no
 attribute 'tto'``.
 
 The fix declares ``tto: Any = Field(default=None)`` on the base schema
 — typed as ``Any`` deliberately, to avoid a circular import with
-:py:mod:`mriforge.config.schemas.training.tto`. The strategy's ``setup``
+:py:mod:`spectramr.config.schemas.training.tto`. The strategy's ``setup``
 then coerces the raw value (``dict`` / ``None`` / ``TTOConfig``) into
 a strongly-typed ``TTOConfig`` before float access. Pinned by
 :py:mod:`tests.unit.config.test_tto_schema_field` (8 tests).
@@ -1645,7 +1665,7 @@ a strongly-typed ``TTOConfig`` before float access. Pinned by
 PINN losses null-guard (E21)
 ----------------------------
 
-:py:class:`mriforge.infrastructure.training.strategies.pinn_strategy.ConcretePINNSensitivityStrategy`
+:py:class:`spectramr.infrastructure.training.strategies.pinn_strategy.ConcretePINNSensitivityStrategy`
 reads ``self.config.losses.pinn.lambda_unit_norm_coil``. The schema
 defines ``losses.pinn: PINNLossesConfig | None`` with
 ``default=None`` — a YAML that omits ``losses.pinn`` produced the
@@ -1661,7 +1681,7 @@ lambda_pinn_dc}``). Pinned by
 CycleBlochStrategy missing-discriminator message (E2)
 -----------------------------------------------------
 
-:py:class:`mriforge.infrastructure.training.strategies.cycle_bloch_strategy.CycleBlochStrategy`
+:py:class:`spectramr.infrastructure.training.strategies.cycle_bloch_strategy.CycleBlochStrategy`
 hard-requires a discriminator. The pre-fix ``raise ValueError("CycleBlochStrategy
 requires a discriminator")`` left users without a concrete YAML pointer.
 The round-2 fix replaces the message with a 6-line explanation that
@@ -1676,7 +1696,7 @@ Pipeline Execution Flow
 =======================
 
 The training pipeline orchestrates all strategies through a shared execution
-flow in ``src/pipelines/train.py``.
+flow in ``src/spectramr/pipelines/train.py``.
 
 **High-Level Stages:**
 
@@ -1853,7 +1873,7 @@ Configure via the ``training.ssdu`` sub-block (``theta_fraction``,
 list. The strategy raises if no ``ssdu`` / ``multi_mask_ssdu`` loss is wired
 (no silent fallback).
 
-.. automodule:: mriforge.infrastructure.training.strategies.ssdu_strategy
+.. automodule:: spectramr.infrastructure.training.strategies.ssdu_strategy
    :members:
    :undoc-members:
    :show-inheritance:
@@ -1922,7 +1942,7 @@ Configure via the ``training.equivariant_imaging`` sub-block (``group``,
 ``alpha_equivariance: 0`` reduces EI to a measurement-consistency
 reconstruction.
 
-.. automodule:: mriforge.infrastructure.training.strategies.equivariant_imaging_strategy
+.. automodule:: spectramr.infrastructure.training.strategies.equivariant_imaging_strategy
    :members:
    :undoc-members:
    :show-inheritance:
@@ -1969,7 +1989,7 @@ redundant sampler. The score prior's forward is intentionally unconditional, so
 ``ScoreBasedDiffusionGenerator`` opts out of the Tier-2 ``input_invariant`` probe
 (measurement-dependence lives in the sampler + the held-out consistency).
 
-.. automodule:: mriforge.infrastructure.training.strategies.ambient_diffusion_strategy
+.. automodule:: spectramr.infrastructure.training.strategies.ambient_diffusion_strategy
    :members:
    :undoc-members:
    :show-inheritance:
@@ -2057,7 +2077,7 @@ Also move the module to ``self.device`` before its first forward.
 4. Never silently coalesce tensors or swallow failures
 ------------------------------------------------------
 
-Use :func:`mriforge.infrastructure.training.strategies.mixins.utils.pick_present`
+Use :func:`spectramr.infrastructure.training.strategies.mixins.utils.pick_present`
 instead of ``a or b`` whenever an operand may be a tensor — ``bool()`` on a
 multi-element tensor raises *"Boolean value of Tensor … is ambiguous"*
 (``a or b`` semantics are fine only for dict/int operands such as

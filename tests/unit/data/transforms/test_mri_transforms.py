@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.data.transforms.mri_transforms.ComplexNormalization``.
+"""Tests for ``spectramr.data.transforms.mri_transforms.ComplexNormalization``.
 
 Regression coverage for TM-003: the GPU-syncing sanity-check block (which
 materialised ``magnitude.abs().max()`` into a Python bool / formatted string
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.data.transforms.mri_transforms import ComplexNormalization
+from spectramr.data.transforms.mri_transforms import ComplexNormalization
 
 
 class TestComplexNormalization:
@@ -56,7 +56,7 @@ class TestComplexNormalization:
 
 # ── WS3b: flip/rotation draw from torch's (per-worker seeded) RNG ──────────────
 
-from mriforge.data.transforms.mri_transforms import (  # noqa: E402
+from spectramr.data.transforms.mri_transforms import (  # noqa: E402
     RandomMRIFlip,
     RandomMRIRotation,
 )

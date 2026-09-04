@@ -1,6 +1,6 @@
 """Tests for ``SegmentationDiceLoss``.
 
-Targets ``mriforge.models.losses.dice_anatomy_loss``. Anti-hallucination
+Targets ``spectramr.models.losses.dice_anatomy_loss``. Anti-hallucination
 loss that runs a frozen segmenter on both prediction and target and
 penalises class-wise Dice disagreement.
 
@@ -18,7 +18,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.dice_anatomy_loss import (
+from spectramr.models.losses.dice_anatomy_loss import (
     SegmentationDiceLoss,
     _soft_dice_per_class,
 )
@@ -165,6 +165,6 @@ def test_ignore_background_reduces_average() -> None:
 
 def test_segmentation_dice_registered() -> None:
     """``segmentation_dice`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "segmentation_dice" in list_available()

@@ -2,11 +2,11 @@
 
 Covers two registered metrics:
 
-* :class:`mriforge.core.metrics.quantitative.geodesic_qmap_error.GeodesicQMapErrorMetric`
+* :class:`spectramr.core.metrics.quantitative.geodesic_qmap_error.GeodesicQMapErrorMetric`
   — the Fisher-geodesic analogue of MAE on ``(M0, T1, T2)`` maps. Asserts
   identity-zero, strict monotonicity under a scaled displacement about a
   fixed midpoint, and a shape-mismatch ``ValueError``.
-* :class:`mriforge.core.metrics.quantitative.cohomology_certificate.GaloisH1Certificate`
+* :class:`spectramr.core.metrics.quantitative.cohomology_certificate.GaloisH1Certificate`
   — the Galois-cohomological ``H^1`` defensibility certificate for phase
   unwrapping. Asserts zero on a globally consistent (smooth, unwrapped)
   phase, a strictly positive value when a winding residue (vortex) is
@@ -20,13 +20,13 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative.cohomology_certificate import (
+from spectramr.core.metrics.quantitative.cohomology_certificate import (
     GaloisH1Certificate,
 )
-from mriforge.core.metrics.quantitative.geodesic_qmap_error import (
+from spectramr.core.metrics.quantitative.geodesic_qmap_error import (
     GeodesicQMapErrorMetric,
 )
-from mriforge.infrastructure.physics.galois_unwrap import wrap_to_principal
+from spectramr.infrastructure.physics.galois_unwrap import wrap_to_principal
 
 pytestmark = pytest.mark.unit
 

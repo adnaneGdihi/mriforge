@@ -1,6 +1,6 @@
 """Quickstart: reconstruct a tiny synthetic phantom with a registered U-Net.
 
-This script demonstrates the *forward-pass* path through MRIForge without
+This script demonstrates the *forward-pass* path through spectraMR without
 training. It pulls a model class from the registry, instantiates it, and runs
 a single inference. Designed to complete in under 30 seconds on CPU.
 
@@ -9,16 +9,16 @@ Run:
     python examples/quickstart_reconstruction.py
 
 The clinical-use warning fires on first import; silence it in batch jobs with
-``MRIFORGE_SUPPRESS_CLINICAL_WARNING=1``.
+``SPECTRAMR_SUPPRESS_CLINICAL_WARNING=1``.
 """
 
 from __future__ import annotations
 
 import torch
 
-import mriforge  # noqa: F401  (registers the clinical-use warning)
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+import spectramr  # noqa: F401  (registers the clinical-use warning)
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def _synthetic_phantom(side: int = 64, n_channels: int = 2) -> torch.Tensor:
@@ -40,7 +40,7 @@ def _synthetic_phantom(side: int = 64, n_channels: int = 2) -> torch.Tensor:
 
 def main() -> None:
     # Load-bearing, and deliberately spelled out rather than hidden in a helper:
-    # MODEL_REGISTRY is EMPTY on a plain ``import mriforge``. The decorators only
+    # MODEL_REGISTRY is EMPTY on a plain ``import spectramr``. The decorators only
     # fire once this walks the curated package list, so a lookup before it
     # returns None for every name in the framework. It is idempotent.
     populate_model_registry()

@@ -10,7 +10,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.blocks.residual import (
+from spectramr.models.blocks.residual import (
     PreActResidualBlock,
     ResidualBlock,
     UnifiedResidualBlock,

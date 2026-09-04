@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.mrf import MRFConfigSchema
+from spectramr.config.schemas.mrf import MRFConfigSchema
 
 
 def test_defaults_construct() -> None:

@@ -15,7 +15,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.temporal_coherence_4d import (  # noqa: E402
+from spectramr.models.generators.temporal_coherence_4d import (  # noqa: E402
     _TemporalAttention,
 )
 

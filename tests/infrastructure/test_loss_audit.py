@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.loss_audit import (
+from spectramr.infrastructure.loss_audit import (
     LossAuditResult,
     LossRegistration,
     _test_loss_forward,
@@ -78,7 +78,7 @@ def test_audit_losses_reports_when_loss_build_fails(monkeypatch):
     name contract is covered separately by
     ``test_verify_startup_losses_raises_for_unregistered`` /
     ``test_verify_startup_losses_does_not_build_losses``."""
-    import mriforge.infrastructure.loss_audit as la
+    import spectramr.infrastructure.loss_audit as la
 
     class _ExplodingBuilder:
         def __init__(self, *a, **k):
@@ -174,7 +174,7 @@ def test_loss_forward_audits_real_sense_adjoint_l1():
     """The real SENSEAdjointL1Loss — whose train-time smaps guard raised and
     broke experiment_11 smoke — now audits cleanly (the guard's eval/no-coil
     zero is the legitimate wiring-check result)."""
-    from mriforge.models.losses.complex_losses import SENSEAdjointL1Loss
+    from spectramr.models.losses.complex_losses import SENSEAdjointL1Loss
 
     loss = SENSEAdjointL1Loss()
     loss.train()
@@ -197,7 +197,7 @@ def test_test_metrics_computation():
     assert error is None
 
 
-@patch("mriforge.infrastructure.loss_audit.LossBuilder")
+@patch("spectramr.infrastructure.loss_audit.LossBuilder")
 def test_audit_losses(mock_builder_class):
     mock_builder = MagicMock()
     mock_builder_class.return_value = mock_builder
@@ -249,7 +249,7 @@ def _loss_config_stub(*, kspace=(), image=(), complex_=()):
 
 def test_verify_startup_losses_passes_for_registered(monkeypatch):
     """Registry-only check: passes (and constructs nothing) for known names."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     monkeypatch.setattr(LossRegistry, "is_registered", lambda name: True)
     cfg = _loss_config_stub(image=("l1", "perceptual"), kspace=("ssim",))
@@ -258,7 +258,7 @@ def test_verify_startup_losses_passes_for_registered(monkeypatch):
 
 def test_verify_startup_losses_raises_for_unregistered(monkeypatch):
     """A list-based loss name that is not registered fails fast."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     monkeypatch.setattr(
         LossRegistry, "is_registered", lambda name: name != "not_a_loss"
@@ -271,8 +271,8 @@ def test_verify_startup_losses_raises_for_unregistered(monkeypatch):
 
 def test_verify_startup_losses_does_not_build_losses(monkeypatch):
     """Regression: the startup check must not invoke the full audit build."""
-    import mriforge.infrastructure.loss_audit as la
-    from mriforge.models.losses.registry import LossRegistry
+    import spectramr.infrastructure.loss_audit as la
+    from spectramr.models.losses.registry import LossRegistry
 
     def _boom(*_a, **_k):  # pragma: no cover - must never be called
         raise AssertionError("verify_startup_losses must not build losses")
@@ -282,7 +282,7 @@ def test_verify_startup_losses_does_not_build_losses(monkeypatch):
     assert verify_startup_losses(_loss_config_stub(image=("perceptual",))) is True
 
 
-@patch("mriforge.infrastructure.loss_audit.audit_losses")
+@patch("spectramr.infrastructure.loss_audit.audit_losses")
 def test_get_loss_metrics_capability(mock_audit):
     result = LossAuditResult()
     result.losses = {
@@ -332,7 +332,7 @@ class _MockBlochConsistency(nn.Module):
         "feature_matching",  # F41a: bundled into 'adversarial' composite
     ],
 )
-@patch("mriforge.infrastructure.loss_audit.LossBuilder")
+@patch("spectramr.infrastructure.loss_audit.LossBuilder")
 def test_audit_losses_skips_composite_bundled(mock_builder_class, loss_name):
     """Composite-bundled GAN regularizers (gradient_penalty, feature_matching)
     are absent from ``built_losses`` by design — the builder folds them into
@@ -371,7 +371,7 @@ def test_audit_losses_skips_composite_bundled(mock_builder_class, loss_name):
     assert reg.is_healthy(), f"{loss_name} should be healthy (composite-bundled)"
 
 
-@patch("mriforge.infrastructure.loss_audit.LossBuilder")
+@patch("spectramr.infrastructure.loss_audit.LossBuilder")
 def test_audit_losses_skips_context_requiring_bloch_consistency(mock_builder_class):
     """``bloch_consistency`` is created by LossBuilder, but its forward()
     requires ``context={tissue_params, acquisition_params}`` populated by the
@@ -419,8 +419,8 @@ def test_loss_forward_audits_bridged_losses_without_reshape_warning(caplog):
     """
     import logging
 
-    from mriforge.models.losses.physics_losses import DifferentiableFourierBridge
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.physics_losses import DifferentiableFourierBridge
+    from spectramr.models.losses.registry import create_loss
 
     for name in ("complex_spatial_gradient", "sense_adjoint_l1"):
         bridged = DifferentiableFourierBridge(

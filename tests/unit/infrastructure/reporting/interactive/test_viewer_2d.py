@@ -1,6 +1,6 @@
 """Tests for the interactive 2-D per-subject viewer.
 
-Targets ``mriforge.infrastructure.reporting.interactive.viewer_2d``: builds a
+Targets ``spectramr.infrastructure.reporting.interactive.viewer_2d``: builds a
 scrubbable div from 2-D cases, soft-skips on empty input, and (with plotly) is
 self-contained (no CDN fetch).
 """
@@ -11,7 +11,7 @@ import importlib.util
 
 import numpy as np
 
-from mriforge.infrastructure.reporting.interactive import viewer_2d as v2d
+from spectramr.infrastructure.reporting.interactive import viewer_2d as v2d
 
 _HAS_PLOTLY = importlib.util.find_spec("plotly") is not None
 

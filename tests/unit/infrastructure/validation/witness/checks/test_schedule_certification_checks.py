@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.validation.witness.checks.schedule_certification_checks import (
+from spectramr.infrastructure.validation.witness.checks.schedule_certification_checks import (
     build_process_from_config,
     schedule_line_allocation,
     schedule_nesting_leakfree,
@@ -21,13 +21,13 @@ from mriforge.infrastructure.validation.witness.checks.schedule_certification_ch
     schedule_tangential_defect_margin,
     synthetic_spectral_prior,
 )
-from mriforge.infrastructure.validation.witness.registry import (
+from spectramr.infrastructure.validation.witness.registry import (
     Severity,
     Stage,
     Subject,
     get_witness_registry,
 )
-from mriforge.infrastructure.validation.witness.subject import WitnessSubject
+from spectramr.infrastructure.validation.witness.subject import WitnessSubject
 
 _WITNESS_NAMES = (
     "schedule.nesting_leakfree",

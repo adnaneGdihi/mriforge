@@ -10,12 +10,12 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.annotations.fastmri_plus import ESTABLISHED_Y_ORIGIN  # noqa: E402
-from mriforge.data.annotations.manifest_qc import (  # noqa: E402
+from spectramr.data.annotations.fastmri_plus import ESTABLISHED_Y_ORIGIN  # noqa: E402
+from spectramr.data.annotations.manifest_qc import (  # noqa: E402
     ApprovalDigestMismatchError,
     approval_digest,
 )
-from mriforge.data.sources.fastmri_brain_source import (  # noqa: E402
+from spectramr.data.sources.fastmri_brain_source import (  # noqa: E402
     ALLOWED_ACQUISITIONS,
     MIN_LESION_BRAIN_COVERAGE,
     CohortDropError,
@@ -402,7 +402,7 @@ class TestCachedMasksMustBeOnTheImageGrid:
     ) -> None:
         import torch
 
-        from mriforge.data.sources.fastmri_brain_source import (
+        from spectramr.data.sources.fastmri_brain_source import (
             MaskGridMismatchError,
             _check_mask_grid,
         )
@@ -421,7 +421,7 @@ class TestCachedMasksMustBeOnTheImageGrid:
     def test_a_matching_grid_passes(self) -> None:
         import torch
 
-        from mriforge.data.sources.fastmri_brain_source import _check_mask_grid
+        from spectramr.data.sources.fastmri_brain_source import _check_mask_grid
 
         _check_mask_grid("f", torch.zeros(384, 384, dtype=torch.bool).shape, (384, 384))
 
@@ -429,7 +429,7 @@ class TestCachedMasksMustBeOnTheImageGrid:
         """Masks arrive as [H, W]; a [1, H, W] must not read as a mismatch."""
         import torch
 
-        from mriforge.data.sources.fastmri_brain_source import _check_mask_grid
+        from spectramr.data.sources.fastmri_brain_source import _check_mask_grid
 
         _check_mask_grid("f", torch.zeros(1, 320, 320).shape, (320, 320))
 
@@ -441,7 +441,7 @@ class TestCachedMasksMustBeOnTheImageGrid:
         """
         import torch
 
-        from mriforge.data.sources.fastmri_brain_source import _check_mask_grid
+        from spectramr.data.sources.fastmri_brain_source import _check_mask_grid
 
         _check_mask_grid("a", torch.zeros(320, 320).shape, (320, 320))
         _check_mask_grid("b", torch.zeros(384, 384).shape, (384, 384))

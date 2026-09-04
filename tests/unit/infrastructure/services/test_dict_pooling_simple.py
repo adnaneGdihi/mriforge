@@ -17,7 +17,7 @@ def test_base_strategy_has_pools():
     print("TEST 1: BaseTrainingStrategy Dict Pool Initialization")
     print("=" * 70)
 
-    from mriforge.infrastructure.training.strategies import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies import BaseTrainingStrategy
 
     # Get the __init__ method source code
     source = inspect.getsource(BaseTrainingStrategy.__init__)
@@ -45,7 +45,7 @@ def test_strategies_use_pooling():
     print("TEST 2: Strategy Classes Use Dict Pooling")
     print("=" * 70)
 
-    from mriforge.infrastructure.training.strategies import (
+    from spectramr.infrastructure.training.strategies import (
         DiffusionTrainingStrategy,
         DomainAdaptationTrainingStrategy,
         GANTrainingStrategy,

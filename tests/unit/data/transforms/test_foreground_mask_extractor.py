@@ -1,6 +1,6 @@
 """Tests for ``ForegroundMaskExtractor``.
 
-Targets ``mriforge.data.transforms.foreground_mask_extractor``. Attaches a
+Targets ``spectramr.data.transforms.foreground_mask_extractor``. Attaches a
 brain foreground mask to a TorchIO Subject — either by reading a
 sidecar file or by lazy in-memory thresholding.
 
@@ -22,7 +22,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.foreground_mask_extractor import (
+from spectramr.data.transforms.foreground_mask_extractor import (
     ForegroundMaskExtractor,
     _find_sidecar_mask,
     _strip_nifti_suffix,
@@ -162,7 +162,7 @@ def test_foreground_mask_is_registered_under_its_config_name() -> None:
     Before the registry it existed on disk with no way to be constructed from
     any config, so the consumer chain that reads its output was dead at link 0.
     """
-    from mriforge.data.transforms.registry import get_transform
+    from spectramr.data.transforms.registry import get_transform
 
     entry = get_transform("foreground_mask")
     assert entry.cls is ForegroundMaskExtractor

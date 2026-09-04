@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.tto_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.tto_strategy import (  # noqa: E402
     ConcreteTTOStrategy,
 )
 
@@ -107,10 +107,10 @@ def _make_tto_strategy(img_size: tuple[int, int] = (16, 16)) -> ConcreteTTOStrat
     property returning ``self.env.generator`` (base.py:154/167), so a fake
     ``env`` exposing ``.generator`` and ``.device`` is installed.
     """
-    from mriforge.infrastructure.physics.kinematic_forward import (
+    from spectramr.infrastructure.physics.kinematic_forward import (
         KinematicForwardOperator,
     )
-    from mriforge.infrastructure.physics.virtual_fiducial import (
+    from spectramr.infrastructure.physics.virtual_fiducial import (
         MotionTrajectory,
         VirtualFiducial,
     )

@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.physics.bloch_manifold_projector import BlochManifoldProjector
+from spectramr.models.physics.bloch_manifold_projector import BlochManifoldProjector
 
 pytestmark = pytest.mark.physics
 

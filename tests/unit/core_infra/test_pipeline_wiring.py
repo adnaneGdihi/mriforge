@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.pipelines.train import run_training_pipeline
+from spectramr.config.settings import TrainingSettings
+from spectramr.pipelines.train import run_training_pipeline
 
 
 class TestPipelineWiring:
@@ -36,12 +36,12 @@ class TestPipelineWiring:
         config.losses.get_enabled_losses.return_value = {"l1": 1.0}
         return config
 
-    @patch("mriforge.pipelines.train.set_global_seed")
-    @patch("mriforge.pipelines.train.validate_config_health")
-    @patch("mriforge.pipelines.train.bootstrap")
-    @patch("mriforge.pipelines.train.TrainingEnvironmentDirector")
-    @patch("mriforge.pipelines.train.TrainingStrategyFactory")
-    @patch("mriforge.pipelines.training_loop._execute_training_loop")
+    @patch("spectramr.pipelines.train.set_global_seed")
+    @patch("spectramr.pipelines.train.validate_config_health")
+    @patch("spectramr.pipelines.train.bootstrap")
+    @patch("spectramr.pipelines.train.TrainingEnvironmentDirector")
+    @patch("spectramr.pipelines.train.TrainingStrategyFactory")
+    @patch("spectramr.pipelines.training_loop._execute_training_loop")
     def test_run_training_pipeline_wiring(
         self,
         mock_execute_loop,

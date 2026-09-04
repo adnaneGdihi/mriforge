@@ -4,7 +4,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.physics.vf_operators import (
+from spectramr.infrastructure.physics.vf_operators import (
     ADMMSolver,
     B0PhaseOperator,
     GeometricWarpOperator,
@@ -137,7 +137,7 @@ class TestRigidKinematicOperator:
         commanded shift was applied as dx*W/(W-1) and off-center (roll-match
         error ~O(1)); the fftshift(fftfreq) grid makes it exact.
         """
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         op = RigidKinematicOperator(im_size=(16, 16))
         torch.manual_seed(0)
@@ -315,3 +315,45 @@ class TestADMMSolver:
         y = torch.randn(1, 1, 16, 16)
         out = solver(y)
         assert out.shape == (1, 1, 16, 16)
+
+
+class TestNUFFTTrajectoryCalibratorFrame:
+    """The marker image must live in the frame the marker mask is drawn in."""
+
+    @staticmethod
+    def _delta_kspace(h: int = 16, w: int = 16):
+        import torch
+
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+
+        img = torch.zeros(1, 1, h, w, dtype=torch.complex64)
+        img[0, 0, h // 2, w // 2] = 1.0  # a marker at the centre of the FOV
+        return img, fft2c(img)
+
+    def test_a_centred_marker_stays_at_the_centre(self):
+        """Planted violation: a raw ``torch.fft.ifft2`` puts it at the corner."""
+        import torch
+
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+
+        img, kspace = self._delta_kspace()
+        cal = NUFFTTrajectoryCalibrator(im_size=(16, 16))
+        mag = cal.marker_image(kspace, torch.zeros(2))
+        assert divmod(int(mag[0, 0].flatten().argmax()), 16) == (8, 8)
+        assert mag.max().item() == pytest.approx(1.0)
+        raw = torch.fft.ifft2(kspace, dim=(-2, -1)).abs()
+        assert divmod(int(raw[0, 0].flatten().argmax()), 16) == (0, 0)
+
+    def test_calibrate_sees_the_marker_through_its_mask(self):
+        """With zero delays the objective on a centred marker is already at its floor,
+        so the optimiser must not move the delays away from zero."""
+        import torch
+
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+
+        img, kspace = self._delta_kspace()
+        mask = torch.zeros(1, 1, 16, 16)
+        mask[0, 0, 6:11, 6:11] = 1.0
+        cal = NUFFTTrajectoryCalibrator(im_size=(16, 16))
+        delays = cal.calibrate(kspace, mask, img.abs(), num_iters=5, lr=0.05)
+        assert torch.all(delays.abs() < 1e-3)

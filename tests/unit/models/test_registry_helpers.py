@@ -1,4 +1,4 @@
-"""Unit tests for the registry helpers in :mod:`mriforge.models.registry`.
+"""Unit tests for the registry helpers in :mod:`spectramr.models.registry`.
 
 The integrity / contract tests in
 :mod:`tests.unit.models.test_registry_integrity` exercise the full
@@ -20,9 +20,9 @@ from __future__ import annotations
 
 import pytest
 
-import mriforge.models.registry as reg_mod
-from mriforge.models.capabilities import ModelCapabilities
-from mriforge.models.registry import (
+import spectramr.models.registry as reg_mod
+from spectramr.models.capabilities import ModelCapabilities
+from spectramr.models.registry import (
     MODEL_REGISTRY,
     get_model_capabilities,
     get_model_class,
@@ -54,7 +54,7 @@ def clean_registry() -> dict:
     # up. The import is a no-op on subsequent calls thanks to
     # ``sys.modules`` caching, so this only pays the discovery cost
     # on the first invocation.
-    import mriforge.models.init_registry  # noqa: F401
+    import spectramr.models.init_registry  # noqa: F401
     backup = dict(MODEL_REGISTRY)
     MODEL_REGISTRY.clear()
     try:

@@ -19,12 +19,12 @@ import torch.optim as optim
 from tests.utils.corpus import tracked_yamls
 
 try:
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 except ImportError:
     TrainingSettings = Mock
 
 try:
-    from mriforge.infrastructure.builders.leaf import (
+    from spectramr.infrastructure.builders.leaf import (
         DataConsistencyBuilder,
         DataLoaderBuilder,
         DatasetBuilder,
@@ -61,7 +61,7 @@ def config():
     # a Mock auto-creates every one of them as a truthy non-None object -- so
     # `betas` looks declared, `model_fields_set` is not iterable, and each fix
     # reveals the next. A frozen schema instance gives correct defaults for free.
-    from mriforge.config.schemas.optimization import OptimizationConfigSchema
+    from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
     mock_config.optimization = OptimizationConfigSchema(
         optimizer={"type": "Adam", "learning_rate": 1e-3}
@@ -131,8 +131,8 @@ class TestGeneratorBuilder:
         VF/mrixfields smoke 2026-06-16). It must be filtered by ``_SKIP`` alongside
         ``target_domain`` / ``conditioning``.
         """
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.models.factories import model_factory
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.models.factories import model_factory
 
         captured: dict = {}
 
@@ -392,8 +392,8 @@ class TestFFTBuilder:
     # ``with_centering(False)`` raising is enforced ONCE, by the paired test
     # ``tests/unit/infrastructure/builders/leaf/test_physics_builders.py::
     # test_fftbuilder_with_centering_rejects_false`` (non-negotiable 10 puts the
-    # owner beside ``src/mriforge/infrastructure/builders/leaf/physics_builders.py``;
-    # this directory pairs with no source tree -- ``src/mriforge/builders/`` does not
+    # owner beside ``src/spectramr/infrastructure/builders/leaf/physics_builders.py``;
+    # this directory pairs with no source tree -- ``src/spectramr/builders/`` does not
     # exist). A second copy lived here and pinned the raise by its prose
     # (``match="always centers"``); PR #1442 reworded the message without touching
     # it and the duplicate went red while the owner stayed green (#1462). Per
@@ -587,7 +587,7 @@ class TestGeneratorBuilderMetadataKwargFilter:
     )
 
     def test_skip_set_filters_domain_metadata_fields(self) -> None:
-        from mriforge.infrastructure.builders.generator_kwargs import (
+        from spectramr.infrastructure.builders.generator_kwargs import (
             _SKIP_MODEL_FIELDS,
         )
 
@@ -602,7 +602,7 @@ class TestGeneratorBuilderMetadataKwargFilter:
         """The behavioural half: the sweep actually drops them."""
         import pydantic
 
-        from mriforge.infrastructure.builders.generator_kwargs import (
+        from spectramr.infrastructure.builders.generator_kwargs import (
             apply_model_field_sweep,
         )
 
@@ -651,7 +651,7 @@ class TestCanonicalPathDoesNotTripTheDeprecation:
     def test_generator_builder_emits_no_deprecation(self) -> None:
         import warnings
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config = TrainingSettings(
             model={"model_type": "standard_unet", "in_channels": 1, "out_channels": 1},
@@ -693,7 +693,7 @@ class TestCanonicalPathDoesNotTripTheDeprecation:
         """
         import inspect
 
-        from mriforge.infrastructure.builders.leaf import model_builders
+        from spectramr.infrastructure.builders.leaf import model_builders
 
         source = inspect.getsource(model_builders)
         assert "catch_warnings" not in source, (

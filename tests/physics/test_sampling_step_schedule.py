@@ -3,7 +3,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import UniformCartesianKSpaceAccelerator
+from spectramr.infrastructure.physics.sampling import UniformCartesianKSpaceAccelerator
 
 
 def test_linear_schedule_acceleration_factors():

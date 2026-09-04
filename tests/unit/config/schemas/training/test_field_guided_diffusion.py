@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.field_guided_diffusion import (
+from spectramr.config.schemas.training.field_guided_diffusion import (
     FieldGuidedDiffusionConfig,
 )
 

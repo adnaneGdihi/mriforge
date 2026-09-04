@@ -14,11 +14,12 @@ Two distinct failure modes are covered, because they are genuinely different:
 
 2. **Installed-but-unimportable** — the distribution is present at a satisfying
    version yet ``import`` raises, usually from a transitive-dependency conflict.
-   This is the live ``torchmetrics`` case: ``torchmetrics>=1.0,<2.0`` is
-   installed and satisfied, but it fails to import when the environment has
-   ``huggingface-hub>=1.0`` (torchmetrics needs ``<1.0``), so every
-   torchmetrics-backed metric raises at runtime. Only an actual ``import``
-   catches this — enable it with ``--import-check``.
+   The motivating case was ``torchmetrics``: it was satisfied by metadata yet
+   failed to import against ``huggingface-hub>=1.0``. That specific conflict is
+   RESOLVED — re-measured 2026-08-29 with torchmetrics 1.9.0 against
+   huggingface-hub 1.27.0, the import succeeds — but the failure *mode* is not,
+   which is the whole reason this leg exists. Only an actual ``import`` catches
+   it; enable with ``--import-check``.
 
 Design constraint: this module imports **only the standard library** at top
 level (``tomllib``, ``importlib.metadata``). ``packaging`` is used when present
@@ -172,7 +173,7 @@ def load_dependency_groups(pyproject: Path = PYPROJECT) -> dict[str, list[str]]:
 
 def _project_name(pyproject: Path = PYPROJECT) -> str:
     data = tomllib.loads(pyproject.read_text(encoding="utf-8"))
-    return _canon(data.get("project", {}).get("name", "mriforge"))
+    return _canon(data.get("project", {}).get("name", "spectramr"))
 
 
 # --------------------------------------------------------------------------- #

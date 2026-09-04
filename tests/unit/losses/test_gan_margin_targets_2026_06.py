@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.losses.gan_loss_library import HingeLoss, RALSGANLoss
+from spectramr.models.losses.gan_loss_library import HingeLoss, RALSGANLoss
 
 
 def test_hinge_discriminator_fake_margin_is_one():

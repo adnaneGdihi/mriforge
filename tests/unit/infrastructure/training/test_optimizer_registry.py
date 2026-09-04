@@ -7,7 +7,7 @@ from collections.abc import Iterator
 import pytest
 import torch
 
-from mriforge.infrastructure.training.optimizer_registry import (
+from spectramr.infrastructure.training.optimizer_registry import (
     SCHEDULER_REGISTRY,
     OptimizerRegistry,
     create_optimizer,
@@ -69,7 +69,7 @@ def test_duplicate_registration_conflict_raises(_isolated_registry: None) -> Non
 
 def test_scheduler_registry_is_reexported() -> None:
     # Single SSOT: this is the SAME dict object as scheduler_system's.
-    from mriforge.infrastructure.training import scheduler_system
+    from spectramr.infrastructure.training import scheduler_system
 
     assert SCHEDULER_REGISTRY is scheduler_system.SCHEDULER_REGISTRY
 
@@ -91,13 +91,13 @@ def test_get_returns_the_class_without_instantiating():
     """``get`` exists so callers can validate kwargs against the signature."""
     import torch
 
-    from mriforge.infrastructure.training.optimizer_registry import OptimizerRegistry
+    from spectramr.infrastructure.training.optimizer_registry import OptimizerRegistry
 
     assert OptimizerRegistry.get("adamw") is torch.optim.AdamW
     assert OptimizerRegistry.get("AdamW") is torch.optim.AdamW
 
 
 def test_get_returns_none_for_unregistered_name():
-    from mriforge.infrastructure.training.optimizer_registry import OptimizerRegistry
+    from spectramr.infrastructure.training.optimizer_registry import OptimizerRegistry
 
     assert OptimizerRegistry.get("no_such_optimizer") is None

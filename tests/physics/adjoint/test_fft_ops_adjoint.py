@@ -25,7 +25,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 from tests.utils.phantoms import random_complex
 from tests.utils.tolerances import tol_for
 

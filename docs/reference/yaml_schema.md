@@ -1,7 +1,7 @@
 # YAML schema reference
 
 The authoritative schema is the Pydantic v2 model tree under
-`src/mriforge/config/schemas/`. This page is the human-readable summary
+`src/spectramr/config/schemas/`. This page is the human-readable summary
 of the v6.0 layout — every top-level block, every required field, every
 common enum.
 
@@ -58,7 +58,7 @@ the convention above keeps the smoke-mosaic plotter happy.
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `dataset_type` | enum | yes | `kspace`, `nifti`, `nifti_paired`, `npy_slice`, `m4raw`, `preprocessed`, `dicom`, `pde_synthetic`, … |
-| `data_root` | path | yes | Use `${MRIFORGE_DATA_ROOT}/...` |
+| `data_root` | path | yes | Use `${SPECTRAMR_DATA_ROOT}/...` |
 | `patch_size` | `list[int, int, int]` | yes | (H, W, D); D=1 for 2D |
 | `batch_size` | int | yes | per-GPU |
 | `coil_processing_mode` | enum | yes | `rss`, `sense`, `as_is` |
@@ -127,7 +127,7 @@ escape hatches documented in
 | `device` | str | yes | `cuda`, `cpu`, `cuda:0` |
 | `seed` | int | yes | Reproducibility |
 | `output_dir` | path | yes | Conventional: `experiments/results/<name>` |
-| `diffusion` | object | conditional | Required for `*Diffusion*` strategies — see [gotcha #1](../how_to/write_experiment_yaml.md#1-diffusion-paradigms-need-trainingdiffusion--num_timesteps) |
+| `diffusion` | object | conditional | Required for `*Diffusion*` strategies — see [gotcha 1](../how_to/write_experiment_yaml.md#1-diffusion-paradigms-need-trainingdiffusion--num_timesteps) |
 | `num_timesteps` | int | conditional | Required alongside `diffusion` |
 
 ## `validation`
@@ -193,7 +193,7 @@ Some paradigms require additional top-level blocks. The audit's
 | Continual learning | `cl` | `memory_size`, `replay_strategy` |
 | HPO | `hpo` | `search_space`, `n_trials`, `study_name` |
 
-See `src/mriforge/config/schemas/training/` for the per-paradigm sub-schemas.
+See `src/spectramr/config/schemas/training/` for the per-paradigm sub-schemas.
 
 ## Adapters (optional)
 
@@ -235,7 +235,7 @@ reporting:
 ## Generating the JSON schema
 
 ```bash
-python -m mriforge.cli audit --json-schema > schema.json
+python -m spectramr.cli audit --json-schema > schema.json
 ```
 
 Useful for IDE auto-completion (VS Code, JetBrains) — point the YAML
@@ -244,7 +244,7 @@ schema extension at the generated file.
 ## Reference template
 
 The canonical empty-but-complete template lives at
-`src/mriforge/config/schemas/templates/v1.0_reference.yaml`. Copy it
+`src/spectramr/config/schemas/templates/v1.0_reference.yaml`. Copy it
 when starting a new experiment from scratch.
 
 ## Related

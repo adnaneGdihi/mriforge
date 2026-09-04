@@ -8,7 +8,7 @@ Tests verify that:
 
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
 
 class TestDCCrossContrastChannelAlignment:

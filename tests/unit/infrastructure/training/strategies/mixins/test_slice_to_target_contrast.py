@@ -19,7 +19,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
+from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
 
 
 def _make_strategy(target_channels: int | None) -> MetricsMixin:
@@ -109,7 +109,7 @@ class TestSliceToTargetContrastSingle:
         img[:, :, 4:8, 4:8] = 1.0
         img_complex = torch.complex(img, torch.zeros_like(img))
         # FFT to k-space (centred)
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
         ksp_complex = fft2c(img_complex)
         # Real-stacked layout [R0, I0, R1, I1, R2, I2, R3, I3] (8 channels)
         ksp_real = torch.zeros(1, 8, H, W)

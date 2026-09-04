@@ -22,7 +22,7 @@ import pytest
 import yaml
 from pydantic import ValidationError
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 class TestRequiredTrainingFields:
@@ -221,7 +221,7 @@ class TestNoGetattrFallbacks:
         This is a code inspection test - ensures implementation follows rules.
         """
         # Read train.py and check for problematic patterns
-        train_py_path = Path("src/mriforge/pipelines/train.py")
+        train_py_path = Path("src/spectramr/pipelines/train.py")
         with open(train_py_path) as f:
             train_py_content = f.read()
 
@@ -340,9 +340,9 @@ class TestExplicitDefaults:
         Bad:  gradient_clip_val = getattr(config.training, "gradient_clip_val", 1.0)
         """
         try:
-            from mriforge.config.schemas.training import TrainingModeConfig as _Config
+            from spectramr.config.schemas.training import TrainingModeConfig as _Config
         except ImportError:
-            from mriforge.config.schemas.training.base import (
+            from spectramr.config.schemas.training.base import (
                 BaseTrainingConfigSchema as _Config,
             )
 

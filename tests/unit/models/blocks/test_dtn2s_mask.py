@@ -1,6 +1,6 @@
 """Tests for ``build_dtn2s_mask`` and ``dual_traversal_pair``.
 
-Targets ``mriforge.models.blocks.dtn2s_mask`` (DTN2S J-invariance mask).
+Targets ``spectramr.models.blocks.dtn2s_mask`` (DTN2S J-invariance mask).
 
 Categories:
 
@@ -17,8 +17,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.dtn2s_mask import build_dtn2s_mask, dual_traversal_pair
-from mriforge.models.blocks.hilbert_order import HilbertOrder
+from spectramr.models.blocks.dtn2s_mask import build_dtn2s_mask, dual_traversal_pair
+from spectramr.models.blocks.hilbert_order import HilbertOrder
 
 
 # ---------------------------------------------------------------------------

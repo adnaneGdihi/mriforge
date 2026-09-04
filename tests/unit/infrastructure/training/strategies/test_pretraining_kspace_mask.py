@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import torch
 
-import mriforge.infrastructure.training.strategies.pretraining  # noqa: F401  (import must resolve)
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+import spectramr.infrastructure.training.strategies.pretraining  # noqa: F401  (import must resolve)
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def test_kspace_roundtrip_handles_4d_mae_batch():

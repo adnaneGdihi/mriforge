@@ -17,8 +17,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.conformal_geometry import ConformalModulusLoss  # noqa: E402
-from mriforge.models.losses.registry import list_available  # noqa: E402
+from spectramr.models.losses.conformal_geometry import ConformalModulusLoss  # noqa: E402
+from spectramr.models.losses.registry import list_available  # noqa: E402
 
 
 def _loss() -> ConformalModulusLoss:
@@ -90,7 +90,7 @@ def test_teichmuller_raises_without_r_schedule() -> None:
     """The registered Teichmüller loss must RAISE when ``r_schedule`` is absent
     or too short, not silently return a zero dict (an inert loss no-op is a
     facade — pitfall #16)."""
-    from mriforge.models.losses.conformal_geometry import (
+    from spectramr.models.losses.conformal_geometry import (
         TeichmullerGeodesicRegularisation,
     )
 
@@ -103,7 +103,7 @@ def test_teichmuller_raises_without_r_schedule() -> None:
 
 
 def test_teichmuller_computes_with_valid_schedule() -> None:
-    from mriforge.models.losses.conformal_geometry import (
+    from spectramr.models.losses.conformal_geometry import (
         TeichmullerGeodesicRegularisation,
     )
 

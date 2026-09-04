@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.field_cold_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.field_cold_diffusion_strategy import (
     cold_diffusion_sample,
     compute_field_cold_diffusion_loss,
     field_degrade,
@@ -34,7 +34,7 @@ class _RecordingRestorer(nn.Module):
 
 
 def test_degradation_is_progressive_lowpass() -> None:
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     x = torch.rand(1, 1, 16, 16)
     d0 = field_degrade(x, 0, 10, 0.25, 5.0)
@@ -78,7 +78,7 @@ def test_geometric_schedule_per_step_increments_are_balanced() -> None:
 
 
 def test_loss_reduces_with_a_real_restorer() -> None:
-    from mriforge.models.generators.field_velocity_unet import FieldVelocityUNet
+    from spectramr.models.generators.field_velocity_unet import FieldVelocityUNet
 
     torch.manual_seed(0)
     net = FieldVelocityUNet(width=16)
@@ -98,13 +98,13 @@ def test_loss_reduces_with_a_real_restorer() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_cold_diffusion" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
 
 
 def test_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "field_cold_diffusion" in TrainingStrategyConfigSchema.model_fields
 
@@ -117,11 +117,11 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.infrastructure.training.strategies.field_cold_diffusion_strategy import (
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.infrastructure.training.strategies.field_cold_diffusion_strategy import (
         FieldColdDiffusionStrategy,
     )
-    from mriforge.models.generators.field_velocity_unet import FieldVelocityUNet
+    from spectramr.models.generators.field_velocity_unet import FieldVelocityUNet
 
     tb = BatchAdapter.from_dict(
         {
@@ -173,8 +173,8 @@ def test_compute_losses_forwards_batch_contrast_id() -> None:
     # restorer, so a contrast-conditioned FieldVelocityUNet actually sees it (#15).
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.infrastructure.training.strategies.field_cold_diffusion_strategy import (
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.infrastructure.training.strategies.field_cold_diffusion_strategy import (
         FieldColdDiffusionStrategy,
     )
 
@@ -200,7 +200,7 @@ def test_compute_losses_forwards_batch_contrast_id() -> None:
 def test_validation_forward_threads_contrast_id() -> None:
     import types
 
-    from mriforge.infrastructure.training.strategies.field_cold_diffusion_strategy import (
+    from spectramr.infrastructure.training.strategies.field_cold_diffusion_strategy import (
         FieldColdDiffusionStrategy,
     )
 

@@ -13,17 +13,17 @@ import torch
 import torch.nn as nn
 
 # Import directly to avoid circular imports
-from mriforge.models.losses.computers.base import LossOutput
-from mriforge.models.losses.computers.unified_diffusion_reconstruction import (
+from spectramr.models.losses.computers.base import LossOutput
+from spectramr.models.losses.computers.unified_diffusion_reconstruction import (
     UnifiedDiffusionLossComputer,
     UnifiedReconstructionLossComputer,
 )
-from mriforge.models.losses.computers.unified_gan import UnifiedGANLossComputer
-from mriforge.models.losses.computers.unified_vae import (
+from spectramr.models.losses.computers.unified_gan import UnifiedGANLossComputer
+from spectramr.models.losses.computers.unified_vae import (
     UnifiedVAELossComputer,
     UnifiedVQVAELossComputer,
 )
-from mriforge.models.losses.loss_key_registry import LossKeyRegistry, LossKeyValidator
+from spectramr.models.losses.loss_key_registry import LossKeyRegistry, LossKeyValidator
 
 
 def real_settings(**losses_reconstruction):
@@ -52,8 +52,8 @@ def real_settings(**losses_reconstruction):
 
     import yaml
 
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.settings import TrainingSettings
 
     doc = {
         "config_version": CANONICAL_CONFIG_VERSION,
@@ -250,7 +250,7 @@ class TestBaseLossComputer:
             "mse": torch.tensor(float("nan")),
             "l1": torch.tensor(float("inf")),
         }
-        with caplog.at_level(logging.ERROR, logger="mriforge.models.losses.computers.base"):
+        with caplog.at_level(logging.ERROR, logger="spectramr.models.losses.computers.base"):
             total = computer._stack_components(comps, weights={"mse": 1.0, "l1": 1.0})
         # total is exactly 0.0 (no contribution) — the dangerous case.
         assert float(total.detach()) == 0.0
@@ -266,7 +266,7 @@ class TestBaseLossComputer:
         computer = UnifiedReconstructionLossComputer(
             config=MockConfig(), device=torch.device("cpu")
         )
-        with caplog.at_level(logging.ERROR, logger="mriforge.models.losses.computers.base"):
+        with caplog.at_level(logging.ERROR, logger="spectramr.models.losses.computers.base"):
             total = computer._stack_components({})
         assert float(total.detach()) == 0.0
         assert not any("SILENT NaN COLLAPSE" in rec.message for rec in caplog.records)
@@ -286,7 +286,7 @@ class TestBaseLossComputer:
             config=MockConfig(), device=torch.device("cpu")
         )
         comps = {"l1": torch.tensor(2.0, requires_grad=True)}
-        with caplog.at_level(logging.ERROR, logger="mriforge.models.losses.computers.base"):
+        with caplog.at_level(logging.ERROR, logger="spectramr.models.losses.computers.base"):
             total = computer._stack_components(comps, weights={"l1": 0.0})
         assert float(total.detach()) == 0.0
         assert any("DEAD LOSS" in rec.message for rec in caplog.records), (
@@ -306,7 +306,7 @@ class TestBaseLossComputer:
             "l1": torch.tensor(2.0, requires_grad=True),  # weight 0 (warmup)
             "l2": torch.tensor(1.0, requires_grad=True),  # weight 1.0 — carries it
         }
-        with caplog.at_level(logging.ERROR, logger="mriforge.models.losses.computers.base"):
+        with caplog.at_level(logging.ERROR, logger="spectramr.models.losses.computers.base"):
             total = computer._stack_components(comps, weights={"l1": 0.0, "l2": 1.0})
         assert float(total.detach()) == pytest.approx(1.0)
         assert not any("DEAD LOSS" in rec.message for rec in caplog.records)

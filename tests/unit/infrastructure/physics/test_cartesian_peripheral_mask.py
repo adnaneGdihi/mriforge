@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     MaskType,
     create_mask_generator,
 )

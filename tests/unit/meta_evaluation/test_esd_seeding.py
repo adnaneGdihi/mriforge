@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.esd import ESDConfig, ESDRanker
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.rankers.esd import ESDConfig, ESDRanker
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
     MetricSet,

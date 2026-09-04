@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from mriforge.infrastructure.services.logging_service import LoggingService
+from spectramr.infrastructure.services.logging_service import LoggingService
 
 
 def _service_with_mock_logger():
@@ -63,7 +63,7 @@ class TestThereIsExactlyOneTensorBoardWriter:
     def test_the_service_module_constructs_no_summary_writer(self) -> None:
         import inspect
 
-        from mriforge.infrastructure.services import logging_service
+        from spectramr.infrastructure.services import logging_service
 
         source = inspect.getsource(logging_service)
         assert "SummaryWriter(" not in source, (
@@ -76,6 +76,6 @@ class TestThereIsExactlyOneTensorBoardWriter:
         feature was deleted."""
         import inspect
 
-        from mriforge.infrastructure.services import tensorboard_writer
+        from spectramr.infrastructure.services import tensorboard_writer
 
         assert "SummaryWriter(" in inspect.getsource(tensorboard_writer)

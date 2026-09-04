@@ -11,7 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.infrastructure.optimization.tto.optimizer import TestTimeOptimizer
+from spectramr.infrastructure.optimization.tto.optimizer import TestTimeOptimizer
 
 
 def _make_optimizer_with_fakes(num_steps: int) -> TestTimeOptimizer:
@@ -53,7 +53,7 @@ def test_kspace_coords_built_once_not_per_step() -> None:
     kspace = torch.zeros(1, 1, 8, 8)
 
     with patch(
-        "mriforge.infrastructure.optimization.tto.optimizer.GaussianUpdater.update",
+        "spectramr.infrastructure.optimization.tto.optimizer.GaussianUpdater.update",
         return_value="refined",
     ):
         _refined, history = opt.refine(MagicMock(), kspace)

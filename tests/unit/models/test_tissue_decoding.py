@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.disentangled_mri import DisentangledMRI, Generator
+from spectramr.models.generators.disentangled_mri import DisentangledMRI, Generator
 
 
 class TestTissueParameterDecoding:

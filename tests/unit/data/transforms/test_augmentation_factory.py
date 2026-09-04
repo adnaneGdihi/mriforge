@@ -1,6 +1,6 @@
 """Unit tests for ``TorchIOAugmentationFactory``.
 
-Pairs ``src/mriforge/data/transforms/augmentation_factory.py``, which had **no**
+Pairs ``src/spectramr/data/transforms/augmentation_factory.py``, which had **no**
 paired test until this file — which is how the defect below survived.
 
 Until this commit, lines 133-141 of the factory read::
@@ -33,9 +33,9 @@ import inspect
 
 import pytest
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-from mriforge.data.transforms import augmentation_factory
-from mriforge.data.transforms.augmentation_factory import TorchIOAugmentationFactory
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.data.transforms import augmentation_factory
+from spectramr.data.transforms.augmentation_factory import TorchIOAugmentationFactory
 from tests.utils.augmentation_coverage import (
     NOT_PER_SAMPLE,
     build_ignoring,

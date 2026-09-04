@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.heteroscedastic_ulf import HeteroscedasticULFConfig
+from spectramr.config.schemas.training.heteroscedastic_ulf import HeteroscedasticULFConfig
 
 
 def test_defaults_and_frozen() -> None:
@@ -32,6 +32,6 @@ def test_guard_knobs_accepted() -> None:
 
 
 def test_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "heteroscedastic_ulf" in TrainingStrategyConfigSchema.model_fields

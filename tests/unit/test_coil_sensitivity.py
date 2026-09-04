@@ -8,12 +8,12 @@ and SNR estimation against synthetic Biot-Savart-style coil data.
 import pytest
 import torch
 
-from mriforge.infrastructure.services.coil_sensitivity_service import (
+from spectramr.infrastructure.services.coil_sensitivity_service import (
     CoilSensitivityEstimationService,
 )
 
 # CoilSensitivityEstimationService is deprecated (superseded by estimate_smaps).
-# Ignore the (mriforge.*-promoted-to-error) DeprecationWarning module-wide during
+# Ignore the (spectramr.*-promoted-to-error) DeprecationWarning module-wide during
 # the deprecation window; one test asserts it fires explicitly.
 pytestmark = pytest.mark.filterwarnings("ignore::DeprecationWarning")
 

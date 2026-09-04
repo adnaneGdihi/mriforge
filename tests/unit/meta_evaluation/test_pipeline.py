@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     AggregatorConfig,
     MetaEvaluationPipeline,
     MetricSet,
     SimulatorConfig,
     aggregate,
 )
-from mriforge.core.metrics.meta_evaluation.rankers import CDSCRRanker, FSPDRanker
+from spectramr.core.metrics.meta_evaluation.rankers import CDSCRRanker, FSPDRanker
 
 
 def _mse(p, t):
@@ -23,7 +23,7 @@ def _const(p, t):
 
 
 def test_aggregator_combines_z_scores() -> None:
-    from mriforge.core.metrics.meta_evaluation.types import RankingResult
+    from spectramr.core.metrics.meta_evaluation.types import RankingResult
 
     r1 = RankingResult(
         method="CDSCR",

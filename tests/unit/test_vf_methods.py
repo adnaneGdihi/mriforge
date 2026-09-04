@@ -20,7 +20,7 @@ class TestPhaseSteganography:
 
     @pytest.fixture
     def marker(self):
-        from mriforge.infrastructure.physics.phase_steganography import (
+        from spectramr.infrastructure.physics.phase_steganography import (
             PhaseSteganographicMarker,
         )
 
@@ -75,7 +75,7 @@ class TestDCNavigator:
 
     @pytest.fixture
     def nav(self):
-        from mriforge.infrastructure.physics.dc_navigator import DCNavigatorExtractor
+        from spectramr.infrastructure.physics.dc_navigator import DCNavigatorExtractor
 
         return DCNavigatorExtractor(
             sample_rate=100.0, resp_band=(0.1, 0.5), card_band=(0.8, 2.0)
@@ -129,7 +129,7 @@ class TestHyperelasticJacobianLoss:
 
     @pytest.fixture
     def loss_fn(self):
-        from mriforge.models.losses.hyperelastic_jacobian_loss import (
+        from spectramr.models.losses.hyperelastic_jacobian_loss import (
             HyperelasticJacobianLoss,
         )
 
@@ -155,7 +155,7 @@ class TestHyperelasticJacobianLoss:
 
     def test_folding_penalty(self):
         """Negative det(J) triggers extra folding penalty."""
-        from mriforge.models.losses.hyperelastic_jacobian_loss import (
+        from spectramr.models.losses.hyperelastic_jacobian_loss import (
             HyperelasticJacobianLoss,
         )
 
@@ -175,7 +175,7 @@ class TestHyperelasticJacobianLoss:
 
     def test_registered_in_loss_registry(self):
         """Loss is accessible via create_loss."""
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
 
         loss = create_loss("hyperelastic_jacobian")
         assert loss is not None
@@ -191,7 +191,7 @@ class TestNullSpaceErasure:
 
     def test_orthogonal_projection_removes_marker(self):
         """Projection onto null-space zeroes marker energy."""
-        from mriforge.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
+        from spectramr.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
 
         # Simple marker: single Gaussian peak
         marker = torch.zeros(1, 1, 16, 16)
@@ -213,7 +213,7 @@ class TestNullSpaceErasure:
 
     def test_preserves_orthogonal_signal(self):
         """Signal orthogonal to marker is preserved exactly."""
-        from mriforge.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
+        from spectramr.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
 
         # Marker in one pixel
         marker = torch.zeros(1, 1, 4, 4)
@@ -241,7 +241,7 @@ class TestBioHarmonicTransition:
 
     @pytest.fixture
     def transition(self):
-        from mriforge.models.mamba.bloch_mamba import BioHarmonicTransition
+        from spectramr.models.mamba.bloch_mamba import BioHarmonicTransition
 
         return BioHarmonicTransition(d_model=16, f_resp=0.3, f_card=1.2)
 
@@ -288,7 +288,7 @@ class TestKoopmanOperator:
 
     @pytest.fixture
     def koopman(self):
-        from mriforge.models.temporal.koopman_operator import KoopmanMotionFilter
+        from spectramr.models.temporal.koopman_operator import KoopmanMotionFilter
 
         return KoopmanMotionFilter(
             input_dim=2, latent_dim=16, hidden_dim=32, num_layers=2
@@ -348,7 +348,7 @@ class TestContinuousBlochODE:
 
     @pytest.fixture
     def ode(self):
-        from mriforge.infrastructure.physics.bloch_simulation import ContinuousBlochODE
+        from spectramr.infrastructure.physics.bloch_simulation import ContinuousBlochODE
 
         return ContinuousBlochODE(dt=5.0, slice_thickness=5.0)
 
@@ -411,7 +411,7 @@ class TestDynamicMRNeRF:
 
     @pytest.fixture
     def nerf(self):
-        from mriforge.models.generators.dynamic_mr_nerf import DynamicMRNeRF
+        from spectramr.models.generators.dynamic_mr_nerf import DynamicMRNeRF
 
         return DynamicMRNeRF(
             in_channels=2,

@@ -1,6 +1,6 @@
 """Property tests for SVD-based coil compression.
 
-Targets ``mriforge.infrastructure.physics.coil_compression``. The compression matrix
+Targets ``spectramr.infrastructure.physics.coil_compression``. The compression matrix
 is built from the dominant eigenvectors of the coil-channel Gram matrix, so:
 
 - For a *low-rank* synthetic k-space (signal lives in a small coil subspace),
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.coil_compression import (
+from spectramr.infrastructure.physics.coil_compression import (
     SVDCoilCompressor,
     apply_compression_matrix,
     apply_svd_compression,

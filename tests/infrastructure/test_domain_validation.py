@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mriforge.infrastructure.domain_validation import (
+from spectramr.infrastructure.domain_validation import (
     DomainMismatchWarning,
     DomainValidationResult,
     _get_loss_domain,
@@ -35,7 +35,7 @@ def test_get_loss_domain(loss_name, expected_domain):
         assert meta["domain"] == expected_domain
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_validate_loss_domains_valid(mock_builder):
     mock_instance = mock_builder.return_value
     mock_instance.get_enabled_losses.return_value = {"complex_l1": 1.0, "l1": 0.5}
@@ -46,7 +46,7 @@ def test_validate_loss_domains_valid(mock_builder):
     assert len(result.warnings) == 0
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_validate_loss_domains_warning(mock_builder):
     mock_instance = mock_builder.return_value
     mock_instance.get_enabled_losses.return_value = {"hfen": 1.0}
@@ -66,7 +66,7 @@ def test_validate_loss_domains_warning(mock_builder):
     assert result.warnings[0].severity == "warning"
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_validate_loss_domains_unknown_loss(mock_builder):
     mock_instance = mock_builder.return_value
     mock_instance.get_enabled_losses.return_value = {"custom_unknown_loss": 1.0}
@@ -83,7 +83,7 @@ def test_validate_loss_domains_invalid_input_domain():
         validate_loss_domains({}, "invalid_domain")
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_validate_loss_domains_builder_error(mock_builder):
     mock_builder.side_effect = Exception("Builder failed")
     result = validate_loss_domains({}, "kspace")
@@ -92,7 +92,7 @@ def test_validate_loss_domains_builder_error(mock_builder):
     assert "Builder failed" in result.errors[0]
 
 
-@patch("mriforge.infrastructure.domain_validation.validate_loss_domains")
+@patch("spectramr.infrastructure.domain_validation.validate_loss_domains")
 def test_verify_startup_loss_domains_success(mock_validate):
     mock_validate.return_value = DomainValidationResult(
         is_valid=True, errors=[], warnings=[]
@@ -100,7 +100,7 @@ def test_verify_startup_loss_domains_success(mock_validate):
     assert verify_startup_loss_domains({}, "kspace") is True
 
 
-@patch("mriforge.infrastructure.domain_validation.validate_loss_domains")
+@patch("spectramr.infrastructure.domain_validation.validate_loss_domains")
 def test_verify_startup_loss_domains_failure(mock_validate):
     mock_validate.return_value = DomainValidationResult(
         is_valid=False,
@@ -125,7 +125,7 @@ def test_register_loss_domain():
         register_loss_domain("bad_loss", "invalid_domain")
 
 
-@patch("mriforge.infrastructure.domain_validation.validate_loss_domains")
+@patch("spectramr.infrastructure.domain_validation.validate_loss_domains")
 def test_get_domain_report(mock_validate):
     mock_validate.return_value = DomainValidationResult(
         is_valid=False,
@@ -144,7 +144,7 @@ def test_get_domain_report(mock_validate):
     assert "loss1: msg" in report
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_image_losses_block_is_bridged_not_critical(mock_builder):
     """F35 — hfen/ssim declared under losses.image_losses are auto-bridged to
     image domain by LossBuilder, so they are NOT a critical error on a k-space
@@ -169,7 +169,7 @@ def test_image_losses_block_is_bridged_not_critical(mock_builder):
     assert result.errors == []
 
 
-@patch("mriforge.infrastructure.domain_validation.LossBuilder")
+@patch("spectramr.infrastructure.domain_validation.LossBuilder")
 def test_image_loss_outside_image_block_still_critical(mock_builder):
     """An image-domain loss NOT declared under image_losses (no bridge) on a
     k-space model is still a critical error — the F35 demotion is scoped to

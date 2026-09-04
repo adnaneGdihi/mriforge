@@ -9,8 +9,8 @@ import types
 
 import pytest
 
-import mriforge.models.blocks.attention_domains as ad
-from mriforge.infrastructure.validation.config_health_checker import (
+import spectramr.models.blocks.attention_domains as ad
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
     HealthCheckResult,
 )

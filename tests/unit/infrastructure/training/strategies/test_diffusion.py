@@ -13,25 +13,25 @@ import inspect
 import math
 import textwrap
 from types import MethodType, SimpleNamespace
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import PredictionType
-from mriforge.data.transforms.normalization import (
+from spectramr.config.schemas.enums import PredictionType
+from spectramr.data.transforms.normalization import (
     DECOMPRESS_MAGNITUDE_CEILING,
     decompress_kspace_log,
 )
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.training.schedulers.diffusion_scheduler import (
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.training.schedulers.diffusion_scheduler import (
     DiffusionScheduler,
 )
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
-from mriforge.infrastructure.training.utils.kspace_view import decompress_for_view
+from spectramr.infrastructure.training.utils.kspace_view import decompress_for_view
 
 
 def _gen(conditional: bool):
@@ -142,7 +142,7 @@ def test_forward_through_model_latent_forwards_condition_and_context() -> None:
 
 
 def _real_ldm(**kw):
-    from mriforge.models.generators.latent_diffusion_generator import (
+    from spectramr.models.generators.latent_diffusion_generator import (
         LatentDiffusionGenerator,
     )
 
@@ -221,7 +221,7 @@ def test_diffusion_reads_config_directly_not_via_getattr_fallback() -> None:
     import ast
     import inspect
 
-    import mriforge.infrastructure.training.strategies.diffusion as diff
+    import spectramr.infrastructure.training.strategies.diffusion as diff
 
     tree = ast.parse(inspect.getsource(diff))
     offenders: list[tuple[int, str]] = []
@@ -256,7 +256,7 @@ class TestSamplerStepParamNames:
     """
 
     def test_probe_order_puts_the_diffusers_name_first(self):
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             _SAMPLER_STEP_PARAM_NAMES,
         )
 
@@ -268,10 +268,10 @@ class TestSamplerStepParamNames:
         # regression guard for the silent-drop bug.
         import inspect
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             _SAMPLER_STEP_PARAM_NAMES,
         )
-        from mriforge.models.generators.latent_diffusion_generator import (
+        from spectramr.models.generators.latent_diffusion_generator import (
             LatentDiffusionGenerator,
         )
 
@@ -415,7 +415,7 @@ def test_balanced_high_t_still_tilts_toward_high_t() -> None:
 
 
 def test_unknown_sampler_raises() -> None:
-    from mriforge.domain.exceptions import ConfigurationError
+    from spectramr.domain.exceptions import ConfigurationError
 
     strategy = _timestep_strategy("no_such_sampler", floor=0)
     with pytest.raises(ConfigurationError, match="no_such_sampler"):
@@ -623,9 +623,9 @@ def test_mask_coverage_check_reads_the_real_acceleration_field() -> None:
     `acceleration.base_acceleration`, so the check can actually run."""
     import inspect
 
-    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.infrastructure.training.strategies import diffusion
+    from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.infrastructure.training.strategies import diffusion
 
     assert "acceleration" not in DataConfigSchema.model_fields
     assert "base_acceleration" in AccelerationConfigSchema.model_fields
@@ -647,11 +647,11 @@ def test_validation_mask_fallback_reads_the_real_seed_field() -> None:
     """
     import inspect
 
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.schemas.renames import RENAMES
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.training.strategies import diffusion
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.renames import RENAMES
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.training.strategies import diffusion
 
     assert "seed" not in TrainingStrategyConfigSchema.model_fields
     assert RENAMES["training.seed"].canonical == "run.seed"
@@ -769,7 +769,7 @@ def test_the_derivation_the_strategy_now_uses_rejects_a_noop_transform() -> None
     ``_compute_validation_metrics`` passes ``(hr_fakes_for_metrics,
     pred_transformed)``; a no-op returns the first object as the second.
     """
-    from mriforge.infrastructure.training.utils.domain_inference import (
+    from spectramr.infrastructure.training.utils.domain_inference import (
         metric_transform_produced_image,
     )
 
@@ -796,7 +796,7 @@ class TestNonFiniteSamplerOutputIsReported:
 
     @pytest.mark.unit
     def test_a_finite_prediction_reports_nothing(self) -> None:
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             describe_nonfinite_prediction,
         )
 
@@ -808,7 +808,7 @@ class TestNonFiniteSamplerOutputIsReported:
         """One entry in half a million is the real ratio, and it must not be
         rounded away — on a k-space arm that single value blacks out the whole
         batch through the IFFT."""
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             describe_nonfinite_prediction,
         )
 
@@ -824,7 +824,7 @@ class TestNonFiniteSamplerOutputIsReported:
     def test_a_fully_diverged_prediction_says_so_instead_of_dividing(self) -> None:
         """With no finite values there is no range to quote; the message must
         still be produced rather than raising on an empty reduction."""
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             describe_nonfinite_prediction,
         )
 
@@ -836,7 +836,7 @@ class TestNonFiniteSamplerOutputIsReported:
     def test_a_complex_kspace_prediction_is_checked_on_both_parts(self) -> None:
         """Cold-diffusion samplers may return complex k-space; a NaN in the
         imaginary part alone is just as fatal after the IFFT."""
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             describe_nonfinite_prediction,
         )
 
@@ -1289,8 +1289,8 @@ def _call_with_flattened_batch(mock, published_scale, batch=36):
 
 def _spy_on_alignment(monkeypatch):
     """Record every ``align_scale_to_batch`` call the strategy makes."""
-    from mriforge.data.batch_types import align_scale_to_batch as real
-    from mriforge.infrastructure.training.strategies import diffusion as diffusion_mod
+    from spectramr.data.batch_types import align_scale_to_batch as real
+    from spectramr.infrastructure.training.strategies import diffusion as diffusion_mod
 
     calls: list[dict] = []
 
@@ -1390,7 +1390,7 @@ def test_the_model_input_key_follows_whether_smaps_were_concatenated() -> None:
     `kspace_cold_diffusion`, and what the attention arms run -- the network is
     fed the 16-channel concat and `noisy_kspace` is merely its first half.
     """
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         cold_model_input_key,
     )
 
@@ -1410,7 +1410,7 @@ def test_both_cold_emitters_answer_through_the_same_rule() -> None:
     """
     import inspect
 
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
 
@@ -1788,7 +1788,7 @@ class TestFiveDimensionalCapabilityProbe:
         import ast
         import inspect
 
-        from mriforge.infrastructure.training.strategies import diffusion as mod
+        from spectramr.infrastructure.training.strategies import diffusion as mod
 
         tree = ast.parse(inspect.getsource(mod))
         offenders = [
@@ -1811,7 +1811,7 @@ class TestFiveDimensionalCapabilityProbe:
         both sites."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies import diffusion as mod
+        from spectramr.infrastructure.training.strategies import diffusion as mod
 
         src = inspect.getsource(mod)
         assert src.count('getattr(gen, "supports_5d_input", False)') == 2
@@ -1946,7 +1946,7 @@ def test_hard_dc_discards_the_network_where_the_mask_is_one() -> None:
     This is asserted rather than reasoned about, because it is the premise the
     whole identity-rung change rests on.
     """
-    from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
     torch.manual_seed(0)
     dc = HardDataConsistency()
@@ -1990,3 +1990,1141 @@ def test_sample_timesteps_draws_the_fully_sampled_rung_at_floor_zero() -> None:
             )
     assert 0 in drawn_at_zero
     assert 0 not in drawn_at_one, "the floor of 1 must still exclude t=0"
+
+
+# ---------------------------------------------------------------------------
+# #1684 -- ``inputs`` must cross the SAME render seam as predictions/targets
+# ---------------------------------------------------------------------------
+#
+# ``val/inputs`` and the report-case recorder's ``inputs`` array were built from
+# the raw ``input_batch``: no ``decompress_for_view`` (undo ``log1p``), no
+# ``denom_scale`` (undo the k-space percentile normalisation) and no domain
+# flag. Measured on experiment_11_attention_none, that put the input panel
+# ~65-100x off its own predictions/targets and made every saved case's
+# ``inputs`` array incomparable with the two arrays beside it.
+#
+# The domain flag is the subtle half. ``inputs`` comes off the DATALOADER, so
+# its domain is the *targets* element of ``needs_ifft_for_visualization`` --
+# NOT ``is_preds_image``, which describes the MODEL OUTPUT and is recomputed
+# after ``_apply_metric_transforms``, a transform ``inputs`` never undergoes.
+# Reusing the predictions flag would skip a needed IFFT.
+
+
+def _seam_mock(*, log_input=True, recorder=True, difference=False):
+    """A logger mock with the three panel switches pinned to real booleans.
+
+    ``_image_logger_mock`` leaves them as ``MagicMock`` (always truthy), which
+    is fine for the #927 tests but cannot express "the consumer is OFF" -- the
+    exact state the render gate below is about.
+    """
+    mock = _image_logger_mock()
+    imgs = mock.config.logging.images
+    imgs.log_validation = True
+    imgs.log_input = log_input
+    imgs.log_difference = difference
+    imgs.max_per_batch = 4
+    if recorder:
+        rec = MagicMock()
+        rec.enabled = True
+        mock._report_case_recorder = rec
+    else:
+        mock._report_case_recorder = None
+    mock._per_case_metric_sink = None
+    return mock
+
+
+def _panels(mock) -> dict:
+    call = mock.logging_service.log_images_batch.call_args
+    assert call is not None, "log_images_batch was never reached"
+    return call.args[0]
+
+
+class TestInputPanelCrossesTheRenderSeam:
+    """#1684 -- the ``val/inputs`` render, its domain flag, and its gate."""
+
+    @pytest.mark.unit
+    def test_kspace_inputs_are_ifft_rendered_not_read_as_an_image(self) -> None:
+        """A centred k-space delta images to a FLAT magnitude.
+
+        This is the discriminating shape: read as k-space it IFFTs to a
+        constant; read as an image (the pre-fix behaviour, and what reusing
+        ``is_preds_image`` would still do on a k-space-target arm) it stays a
+        single bright pixel on black. ``std`` separates the two by orders of
+        magnitude, so no arrangement of the wrong branch can pass.
+        """
+        mock = _seam_mock()
+        inputs = torch.zeros(1, 2, 16, 16)
+        inputs[0, 0, 8, 8] = 1.0
+        blank = torch.zeros(1, 2, 16, 16)
+
+        DiffusionTrainingStrategy._log_validation_images_to_tensorboard(
+            mock,
+            blank,
+            blank.clone(),
+            inputs,
+            {},
+            batch_idx=0,
+            is_image_domain=False,
+            inputs_are_image=False,
+        )
+
+        panel = _panels(mock)["val/inputs"]
+        assert panel.shape == (1, 1, 16, 16)
+        assert panel.mean().item() > 0.0
+        # Flat to within float noise; the un-IFFT'd reading has std ~0.06.
+        assert panel.std().item() < 1e-5
+
+    @pytest.mark.unit
+    def test_image_domain_inputs_render_as_rss_and_are_not_refused(self) -> None:
+        """The exp_hm_09_hld_mamba shape: 2-channel real-stacked IMAGE.
+
+        ``kspace_to_image``'s F14 guard cannot tell this from k-space -- it
+        keys on ``shape[1] % 2 == 0`` -- so routing the input through the
+        ``already_image=True`` branch would raise on a mathematically correct
+        rendering, and the method-wide ``except`` would turn that into "no
+        validation images at all". The pin therefore asserts BOTH that the
+        input panel is the channel-RSS and that the other panels survive.
+        """
+        mock = _seam_mock()
+        inputs = torch.rand(1, 2, 16, 16) + 0.5
+        blank = torch.zeros(1, 1, 16, 16)
+
+        DiffusionTrainingStrategy._log_validation_images_to_tensorboard(
+            mock,
+            blank,
+            blank.clone(),
+            inputs,
+            {},
+            batch_idx=0,
+            is_image_domain=True,
+            inputs_are_image=True,
+        )
+
+        assert not _warned_about_already_image(mock)
+        panels = _panels(mock)
+        expected = torch.sqrt((inputs**2).sum(dim=1, keepdim=True) + 1e-8)
+        assert torch.allclose(panels["val/inputs"], expected)
+        # The blast radius half: an inputs-only failure must not take these out.
+        assert "val/predictions" in panels
+        assert "val/targets" in panels
+        mock.metrics_service.save_images_batch.assert_called_once()
+
+    @pytest.mark.unit
+    def test_panel_and_recorder_read_one_rendering(self) -> None:
+        """One owner (non-negotiable 17): both consumers get the same values.
+
+        They used to convert ``inputs`` independently, which is why both were
+        wrong the same two ways -- and why fixing one would have left the other.
+        """
+        import spectramr.infrastructure.training.strategies.mixins.metrics_mixin as mm
+
+        mock = _seam_mock()
+        inputs = torch.rand(1, 2, 16, 16)
+        blank = torch.zeros(1, 1, 16, 16)
+
+        with patch.object(mm, "feed_report_case_recorder") as feed:
+            DiffusionTrainingStrategy._log_validation_images_to_tensorboard(
+                mock,
+                blank,
+                blank.clone(),
+                inputs,
+                {},
+                batch_idx=0,
+                is_image_domain=True,
+                inputs_are_image=True,
+            )
+
+        feed.assert_called_once()
+        fed = feed.call_args.kwargs["inputs"]
+        panel = _panels(mock)["val/inputs"]
+        assert torch.equal(fed[: panel.shape[0]], panel)
+
+    @pytest.mark.unit
+    def test_input_is_not_rendered_when_no_consumer_wants_it(self) -> None:
+        """The gate. ``inputs`` is TOUCHED only if a consumer will read it.
+
+        Hoisting the render out of ``if log_input:`` made it unconditional,
+        which put an inputs-only failure inside the method-wide ``except`` for
+        every arm -- including the ones that never asked for an input panel.
+        The sentinel raises on any tensor operation, so if the gate is removed
+        this test loses the predictions and targets panels too.
+        """
+
+        class _Explodes:
+            def __getattr__(self, name):
+                raise AssertionError(f"inputs was touched (.{name}) with no consumer")
+
+        mock = _seam_mock(log_input=False, recorder=False)
+        blank = torch.zeros(1, 1, 16, 16)
+
+        DiffusionTrainingStrategy._log_validation_images_to_tensorboard(
+            mock,
+            blank,
+            blank.clone(),
+            _Explodes(),
+            {},
+            batch_idx=0,
+            is_image_domain=True,
+            inputs_are_image=True,
+        )
+
+        panels = _panels(mock)
+        assert "val/inputs" not in panels
+        assert "val/predictions" in panels
+        mock.metrics_service.save_images_batch.assert_called_once()
+
+
+class TestValidationCallSitePassesTheScaledInputs:
+    """Structural pins on the producer side of the seam.
+
+    ``getsource`` substring checks are prose-satisfiable -- a comment naming
+    ``log_inputs`` would score them green (and this file's #927 block relies on
+    exactly that property in the opposite direction). These parse the AST, so
+    only the real argument and the real assignment can satisfy them.
+    """
+
+    @staticmethod
+    def _tree():
+        from spectramr.infrastructure.training.strategies import diffusion as mod
+
+        with open(inspect.getfile(mod), encoding="utf-8") as fh:
+            return ast.parse(fh.read())
+
+    @classmethod
+    def _call_node(cls):
+        tree = cls._tree()
+        calls = [
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.Call)
+            and isinstance(n.func, ast.Attribute)
+            and n.func.attr == "_log_validation_images_to_tensorboard"
+        ]
+        assert len(calls) == 1, f"expected one call site, found {len(calls)}"
+        return calls[0]
+
+    @pytest.mark.unit
+    def test_third_positional_argument_is_the_scaled_inputs(self) -> None:
+        node = self._call_node()
+        third = node.args[2]
+        assert isinstance(third, ast.Name), ast.dump(third)
+        assert third.id == "log_inputs", (
+            "the inputs argument must be the seam-crossed ``log_inputs``; "
+            f"got {third.id!r} (``input_batch`` is the pre-seam raw tensor)"
+        )
+
+    @pytest.mark.unit
+    def test_inputs_domain_flag_is_the_targets_element_not_the_preds_one(self) -> None:
+        node = self._call_node()
+        kw = {k.arg: k.value for k in node.keywords}
+        assert "inputs_are_image" in kw, "the inputs domain flag is not passed at all"
+        assert isinstance(kw["inputs_are_image"], ast.Name)
+        assert kw["inputs_are_image"].id == "inputs_are_image", (
+            "``inputs`` comes off the dataloader: its flag is the *targets* "
+            "element of needs_ifft_for_visualization, never ``is_preds_image``"
+        )
+        # ...and the two must not be the same variable.
+        assert kw["is_image_domain"].id == "is_preds_image"
+
+    @pytest.mark.unit
+    def test_log_inputs_is_denom_scaled_like_predictions_and_targets(self) -> None:
+        """``log_inputs = input_batch * denom_scale`` -- structurally.
+
+        The three tensors are rendered side by side, so they must share one
+        scale. A ``log_inputs = input_batch`` regression is the original #1684.
+        """
+        tree = self._tree()
+        assigns = [
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.Assign)
+            and len(n.targets) == 1
+            and isinstance(n.targets[0], ast.Name)
+            and n.targets[0].id == "log_inputs"
+        ]
+        assert len(assigns) == 1, f"expected one ``log_inputs`` assignment, found {len(assigns)}"
+        value = assigns[0].value
+        assert isinstance(value, ast.BinOp) and isinstance(value.op, ast.Mult), ast.dump(value)
+        operands = {n.id for n in (value.left, value.right) if isinstance(n, ast.Name)}
+        assert operands == {"input_batch", "denom_scale"}, operands
+
+    @pytest.mark.unit
+    def test_input_batch_is_decompressed_for_view(self) -> None:
+        """The other half of the seam: undo ``log1p`` before scaling."""
+        tree = self._tree()
+        found = [
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.Assign)
+            and len(n.targets) == 1
+            and isinstance(n.targets[0], ast.Name)
+            and n.targets[0].id == "input_batch"
+            and isinstance(n.value, ast.Call)
+            and isinstance(n.value.func, ast.Name)
+            and n.value.func.id == "decompress_for_view"
+        ]
+        assert found, "``input_batch`` never passes through ``decompress_for_view``"
+
+
+class TestNonNegotiableThreeAndSeventeenInValidation:
+    """Two structural pins on the same method, both in the #1684 change set.
+
+    Neither is reachable behaviourally without standing up a real generator and
+    a real metrics computer inside a ~400-line method, so both parse the AST.
+    Prose cannot satisfy them, and a substring grep for ``_unscaled`` would be
+    satisfied by the comment documenting its removal -- the exact trap this
+    file's #927 block calls out in the opposite direction.
+    """
+
+    @staticmethod
+    def _tree():
+        from spectramr.infrastructure.training.strategies import diffusion as mod
+
+        with open(inspect.getfile(mod), encoding="utf-8") as fh:
+            return ast.parse(fh.read())
+
+    def test_declared_multistep_sampling_raises_rather_than_degrading(self) -> None:
+        """Non-negotiable 3.
+
+        The arm DECLARED ``validation.sampling.enable_multistep_cold``. Falling
+        through to the single-step forward measures a different quantity and is
+        indistinguishable in the logs from the declared path working. Census
+        2026-09-01: all 55 arms setting the flag resolve to
+        ``KSpaceColdDiffusionGenerator``, which defines ``sample()`` -- so the
+        raise fires on none of them.
+        """
+        guards = [
+            n
+            for n in ast.walk(self._tree())
+            if isinstance(n, ast.If)
+            and isinstance(n.test, ast.BoolOp)
+            and isinstance(n.test.op, ast.And)
+            and any(isinstance(v, ast.Name) and v.id == "_multistep" for v in n.test.values)
+            and any(
+                isinstance(v, ast.UnaryOp)
+                and isinstance(v.op, ast.Not)
+                and isinstance(v.operand, ast.Call)
+                and isinstance(v.operand.func, ast.Name)
+                and v.operand.func.id == "hasattr"
+                for v in n.test.values
+            )
+        ]
+        assert len(guards) == 1, "the multistep capability guard moved or was removed"
+        assert any(isinstance(s, ast.Raise) for s in guards[0].body), (
+            "a missing ``sample()`` on a declared multistep arm must RAISE, "
+            "never fall through to the single-step forward"
+        )
+        assert guards[0].orelse == [], "the guard must have no fallback branch"
+
+    def test_no_validation_metric_key_is_minted_twice(self) -> None:
+        """Non-negotiable 17.
+
+        ``val_{k}_unscaled`` was a byte-for-byte alias of ``val_{k}`` -- same
+        ``v``, same loop -- and the DDP all-reduce packs ``sorted(keys)``
+        positionally, so every duplicate was a real collective payload.
+        """
+        suffixed = []
+        for node in ast.walk(self._tree()):
+            if not isinstance(node, ast.Assign):
+                continue
+            for tgt in node.targets:
+                if not (
+                    isinstance(tgt, ast.Subscript)
+                    and isinstance(tgt.value, ast.Name)
+                    and tgt.value.id == "metrics"
+                    and isinstance(tgt.slice, ast.JoinedStr)
+                ):
+                    continue
+                literal = "".join(p.value for p in tgt.slice.values if isinstance(p, ast.Constant))
+                if literal.endswith("_unscaled"):
+                    suffixed.append((node.lineno, literal))
+        assert suffixed == [], f"duplicate metric keys re-introduced: {suffixed}"
+
+
+# ---------------------------------------------------------------------------
+# Zero-filled baseline (Item C of the experiment_11_attention_none fix plan).
+#
+# ``experiment_11_attention_none`` scored BELOW a zero-filled reconstruction at
+# every acceleration rung, on two independent clusters, with every dashboard
+# green -- because nothing in the framework computed the zero-filled number.
+# The baseline closes that: ``val_zf_<k>`` is the measurement the model was
+# actually handed, graded against the SAME target, through the SAME transform,
+# on the SAME data range, and ``val_zf_delta_<k>`` is the signed
+# ``model - baseline``.
+#
+# Every leg below is a way the number can come out plausible and wrong, so each
+# is pinned rather than reasoned about.
+# ---------------------------------------------------------------------------
+
+
+def _zf_mock(
+    *,
+    log_scaled: bool = False,
+    measurement: torch.Tensor | None = None,
+    metrics: tuple[str, ...] = ("psnr",),
+) -> MagicMock:
+    """A ``self`` complete enough to run ``_compute_validation_metrics`` to return.
+
+    ``output_transform="none"`` makes ``_apply_metric_transforms`` the identity,
+    which is the honest choice here: it isolates the seam under test (the
+    decompress / denormalise / data-range legs) from the transform's own
+    behaviour, and it is a real configuration the corpus uses.
+    """
+    from spectramr.core.metrics.computer import ValidationMetricsComputer
+    from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
+
+    mock = MagicMock()
+    mock.config = SimpleNamespace(
+        data=SimpleNamespace(
+            processing=SimpleNamespace(
+                enable_kspace_normalization=False,
+                enable_log_scaling=log_scaled,
+            )
+        ),
+        model=SimpleNamespace(input_type="image", model_type="kspace_cold_diffusion"),
+        validation=SimpleNamespace(
+            scoring=SimpleNamespace(
+                enable_image_metrics=True, domain="image", output_transform="none"
+            )
+        ),
+    )
+    mock._is_cold_diffusion = MagicMock(return_value=True)
+    mock._apply_metric_transforms = lambda pred, target, cfg: (pred, target)
+    mock._measure_prediction_scale = lambda pred, target: {
+        "pred_above_target_fraction": 0.0,
+        "target_abs_max": 1.0,
+        "pred_target_scale_ratio": 1.0,
+    }
+    mock._convert_metrics_to_floats = lambda d: d
+    mock._PRED_SCALE_WARN_FRACTION = DiffusionTrainingStrategy._PRED_SCALE_WARN_FRACTION
+    mock._ZF_BASELINE_METRICS = DiffusionTrainingStrategy._ZF_BASELINE_METRICS
+    mock.validation_metrics_computer = ValidationMetricsComputer(
+        ValidationMetricsConfig(
+            metrics=[MetricSpec(name=n) for n in metrics], primary_metric=metrics[0]
+        ),
+        device="cpu",
+    )
+    mock._zf_measurement = measurement
+    return mock
+
+
+def _run_validation_metrics(mock, pred, target, inputs) -> dict:
+    return DiffusionTrainingStrategy._compute_validation_metrics(
+        mock,
+        pred,
+        target,
+        inputs,
+        torch.zeros(pred.shape[0], dtype=torch.long),
+        None,
+        torch.ones(pred.shape[0]),
+    )
+
+
+def _reference_psnr(pred: torch.Tensor, target: torch.Tensor) -> float:
+    """PSNR through the same registry entry the production path resolves.
+
+    Hand-rolling ``20*log10(...)`` here would make this test a second owner of
+    the metric definition (non-negotiable 17): it would keep passing while the
+    registered metric drifted away from it.
+    """
+    from spectramr.core.metrics.registry import MetricsRegistry
+
+    metric = MetricsRegistry.get("psnr", device="cpu")
+    data_range = target.abs().max().item()
+    return float(metric(pred, target, data_range=data_range))
+
+
+class TestZeroFilledBaselineIsEmittedAndComparable:
+    def test_the_baseline_keys_are_emitted_through_the_production_path(self) -> None:
+        """Observed firing, not inferred from the wiring (non-negotiable 16)."""
+        torch.manual_seed(0)
+        mock = _zf_mock(measurement=torch.rand(2, 1, 8, 8))
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+        assert "val_zf_psnr" in out
+        assert "val_zf_delta_psnr" in out
+        assert math.isfinite(out["val_zf_psnr"])
+
+    def test_the_baseline_grades_the_measurement_not_the_target(self) -> None:
+        """The idealised-baseline defect, stated as a number.
+
+        A target-derived ZF is noise-free and unreachable: it would score
+        ABOVE the model on a healthy run and hide the very "worse than
+        zero-filled" verdict this baseline exists to surface. Here the
+        measurement, the input and the target are three distinct tensors, so
+        only the right source reproduces the reported value.
+        """
+        torch.manual_seed(1)
+        measurement = torch.rand(2, 1, 8, 8)
+        target = torch.rand(2, 1, 8, 8)
+        mock = _zf_mock(measurement=measurement)
+        out = _run_validation_metrics(mock, torch.rand(2, 1, 8, 8), target, torch.rand(2, 1, 8, 8))
+
+        assert out["val_zf_psnr"] == pytest.approx(_reference_psnr(measurement, target), abs=1e-4)
+        assert out["val_zf_psnr"] != pytest.approx(_reference_psnr(target, target), abs=1e-4)
+
+    def test_the_delta_is_the_signed_model_minus_baseline(self) -> None:
+        """Signed, not oriented: ``metric_higher_is_better`` resolves
+        ``val_zf_delta_hfen`` through ``hfen`` to "lower is better", which is
+        correct for a raw difference and backwards for an oriented gain.
+        """
+        torch.manual_seed(2)
+        mock = _zf_mock(measurement=torch.rand(2, 1, 8, 8))
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+        assert out["val_zf_delta_psnr"] == pytest.approx(
+            out["val_psnr"] - out["val_zf_psnr"], abs=1e-6
+        )
+
+    def test_the_delta_direction_resolves_correctly_for_both_metrics(self) -> None:
+        """The naming choice, executed against the real direction resolver."""
+        from spectramr.core.metrics.metric_directions import metric_higher_is_better
+
+        assert metric_higher_is_better("val_zf_delta_psnr") is True
+        assert metric_higher_is_better("val_zf_delta_hfen") is False
+        assert metric_higher_is_better("val_zf_psnr") is True
+        assert metric_higher_is_better("val_zf_hfen") is False
+
+    def test_the_baseline_crosses_the_log_decompression_seam(self) -> None:
+        """``log1p`` is non-linear, so grading compressed k-space grades a
+        different signal. This is #1684's lesson applied to a number.
+
+        TWO channels, not one, and the non-vacuity assertion below is why.
+        ``decompress_for_view`` gates on ``shape[channel_dim] % 2 == 0`` (it
+        only ever undoes compression of real-stacked complex k-space), so on a
+        1-channel tensor it returns its input untouched -- and BOTH sides of
+        the comparison would then be the compressed tensor, agreeing perfectly
+        while the seam under test never ran. That is the shape this very test
+        had until a planted "skip the decompression" violation failed to turn
+        it red.
+        """
+        torch.manual_seed(3)
+        compressed = torch.log1p(torch.rand(2, 2, 8, 8) * 50.0)
+        target = torch.rand(2, 2, 8, 8) * 50.0
+        decompressed = decompress_for_view(compressed, log_scaled=True, channel_dim=1)
+        assert not torch.allclose(decompressed, compressed), (
+            "decompression was a no-op on this fixture, so the assertion below "
+            "would hold whether or not the production path decompresses"
+        )
+
+        mock = _zf_mock(log_scaled=True, measurement=compressed)
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 2, 8, 8) * 50.0, target, torch.rand(2, 2, 8, 8) * 50.0
+        )
+        assert out["val_zf_psnr"] == pytest.approx(_reference_psnr(decompressed, target), abs=1e-3)
+
+    def test_no_baseline_keys_when_no_measurement_was_recorded(self) -> None:
+        """A non-cold arm never records one, so it emits none -- on EVERY batch
+        and rank, which is what the DDP all-reduce's sorted-key packing needs
+        (#1690). An absent baseline must never become a defaulted one.
+        """
+        torch.manual_seed(4)
+        mock = _zf_mock(measurement=None)
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+        assert [k for k in out if k.startswith("val_zf")] == []
+
+    def test_the_measurement_is_popped_so_a_later_rung_cannot_inherit_it(self) -> None:
+        """Read-and-clear. The cascade runs rung after rung on one strategy
+        instance, so a stash that survived its consumer would report rung N-1's
+        measurement under rung N's acceleration -- plausible, and wrong.
+        """
+        torch.manual_seed(5)
+        mock = _zf_mock(measurement=torch.rand(2, 1, 8, 8))
+        _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+        assert mock._zf_measurement is None
+
+    def test_the_baseline_is_restricted_to_the_cheap_pair(self) -> None:
+        """An arm grading on a perceptual metric must not pay for it twice."""
+        torch.manual_seed(6)
+        mock = _zf_mock(measurement=torch.rand(2, 1, 8, 8), metrics=("psnr", "mse"))
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+        assert "val_mse" in out, "the arm's own metric set must be unaffected"
+        assert "val_zf_mse" not in out
+        assert "val_zf_psnr" in out
+
+
+def _method_tree(method) -> ast.FunctionDef:
+    return ast.parse(textwrap.dedent(inspect.getsource(method))).body[0]
+
+
+def _compute_calls(tree: ast.AST) -> list[ast.Call]:
+    """Every ``<something>.compute(...)`` call in the tree, in source order."""
+    return sorted(
+        (
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "compute"
+        ),
+        key=lambda n: n.lineno,
+    )
+
+
+def _kw(call: ast.Call, name: str) -> ast.expr | None:
+    for keyword in call.keywords:
+        if keyword.arg == name:
+            return keyword.value
+    return None
+
+
+class TestZeroFilledBaselineWiring:
+    """Structural pins for the legs that fail SILENTLY.
+
+    A behavioural test can catch a baseline computed from the wrong tensor,
+    because the number changes. It cannot catch a ``denom_scale`` that was
+    dropped -- PSNR normalises by the target's own peak, so a common scale
+    factor cancels exactly, and ``val_zf_psnr`` stays right up to the moment
+    an arm grades on a scale-sensitive metric. Those legs are pinned here.
+    """
+
+    def test_the_stash_is_the_masked_input_not_the_target(self) -> None:
+        tree = _method_tree(DiffusionTrainingStrategy._generate_validation_prediction)
+        sources = [
+            node.value.id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Name)
+            and any(
+                isinstance(t, ast.Attribute) and t.attr == "_zf_measurement"
+                for t in node.targets
+            )
+        ]
+        assert sources == ["masked_input"], (
+            f"the zero-filled baseline is sourced from {sources}; anything but "
+            "`masked_input` grades an idealised measurement the model never saw"
+        )
+
+    def test_the_producer_clears_the_stash_unconditionally(self) -> None:
+        """At the FUNCTION body's top level, not inside the ``try`` or the cold
+        branch -- a clear that a failing generation can skip is how rung N-1's
+        measurement reaches rung N.
+        """
+        tree = _method_tree(DiffusionTrainingStrategy._generate_validation_prediction)
+        top_level_clears = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Constant)
+            and node.value.value is None
+            and any(
+                isinstance(t, ast.Attribute) and t.attr == "_zf_measurement"
+                for t in node.targets
+            )
+        ]
+        assert len(top_level_clears) == 1
+
+    def test_the_consumer_pops_rather_than_reads(self) -> None:
+        tree = _method_tree(DiffusionTrainingStrategy._compute_validation_metrics)
+        clears = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Assign)
+            and isinstance(node.value, ast.Constant)
+            and node.value.value is None
+            and any(
+                isinstance(t, ast.Attribute) and t.attr == "_zf_measurement"
+                for t in node.targets
+            )
+        ]
+        assert len(clears) == 1, "the consumer must clear what it read"
+
+    def test_the_baseline_is_decompressed_before_it_is_graded(self) -> None:
+        tree = _method_tree(DiffusionTrainingStrategy._compute_validation_metrics)
+        decompressed = [
+            node.args[0].id
+            for node in ast.walk(tree)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "decompress_for_view"
+            and node.args
+            and isinstance(node.args[0], ast.Name)
+        ]
+        assert "_zf_measurement" in decompressed, (
+            "the baseline skipped the log-decompression seam; an inverse FFT of "
+            "compressed k-space reconstructs a different signal (#1684)"
+        )
+
+    def test_the_baseline_is_denormalised_by_the_shared_scale(self) -> None:
+        tree = _method_tree(DiffusionTrainingStrategy._compute_validation_metrics)
+        for node in ast.walk(tree):
+            if (
+                isinstance(node, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == "zf_for_metrics" for t in node.targets)
+                and isinstance(node.value, ast.BinOp)
+            ):
+                assert isinstance(node.value.op, ast.Mult)
+                operands = {
+                    n.id for n in (node.value.left, node.value.right) if isinstance(n, ast.Name)
+                }
+                assert operands == {"_zf_measurement", "denom_scale"}
+                return
+        raise AssertionError("`zf_for_metrics` is not built by scaling the measurement")
+
+    def test_the_subset_compute_runs_before_the_full_one(self) -> None:
+        """``compute`` clears ``last_not_applicable`` per call and
+        ``training_loop.py`` reads it afterwards, so a subset call placed second
+        would narrow the N/A report to psnr/hfen.
+        """
+        calls = _compute_calls(_method_tree(DiffusionTrainingStrategy._compute_validation_metrics))
+        subset = [c for c in calls if _kw(c, "only") is not None]
+        full = [c for c in calls if _kw(c, "only") is None]
+        assert len(subset) == 1 and len(full) == 1
+        assert subset[0].lineno < full[0].lineno
+
+    def test_the_subset_is_the_declared_constant(self) -> None:
+        calls = _compute_calls(_method_tree(DiffusionTrainingStrategy._compute_validation_metrics))
+        only = _kw(next(c for c in calls if _kw(c, "only") is not None), "only")
+        assert isinstance(only, ast.Attribute) and only.attr == "_ZF_BASELINE_METRICS"
+
+    def test_both_computes_share_one_target_and_one_data_range(self) -> None:
+        """A baseline re-measured against its own peak, or transformed into its
+        own target, is a PSNR on a different axis wearing the same name.
+        """
+        calls = _compute_calls(_method_tree(DiffusionTrainingStrategy._compute_validation_metrics))
+        zf = next(c for c in calls if _kw(c, "only") is not None)
+        primary = next(c for c in calls if _kw(c, "only") is None)
+
+        for call in (zf, primary):
+            assert isinstance(call.args[1], ast.Name) and call.args[1].id == "target_transformed"
+            data_range = _kw(call, "data_range")
+            assert isinstance(data_range, ast.Name) and data_range.id == "dynamic_data_range"
+
+
+def _clears_the_stash(node: ast.AST) -> bool:
+    """True if ``self._zf_measurement = None`` appears anywhere in ``node``."""
+    for assign in ast.walk(node):
+        if not isinstance(assign, ast.Assign):
+            continue
+        if not (isinstance(assign.value, ast.Constant) and assign.value.value is None):
+            continue
+        for tgt in assign.targets:
+            if (
+                isinstance(tgt, ast.Attribute)
+                and tgt.attr == "_zf_measurement"
+                and isinstance(tgt.value, ast.Name)
+                and tgt.value.id == "self"
+            ):
+                return True
+    return False
+
+
+def _calls_self(node: ast.AST, name: str) -> bool:
+    return any(
+        isinstance(c, ast.Call)
+        and isinstance(c.func, ast.Attribute)
+        and c.func.attr == name
+        and isinstance(c.func.value, ast.Name)
+        and c.func.value.id == "self"
+        for c in ast.walk(node)
+    )
+
+
+class TestEveryProducerCallSiteHasAConsumerOrADiscard:
+    """The stash is a *retention* hazard, not a correctness one.
+
+    ``_generate_validation_prediction`` clears unconditionally on entry, so a
+    stale measurement can never be read as another rung's baseline. What it can
+    do is stay referenced on the strategy instance for hours of training --
+    ``get_validation_images`` and ``_maybe_hallucination_metrics`` both drive
+    the producer and neither calls the consumer, so the last masked k-space
+    batch of a validation pass survives until the *next* validation's first
+    generate. That is a full batch of complex k-space on a 16 GB V100 with a
+    documented val-time-OOM history.
+
+    Pinning the two known sites by name would go blind the moment a third
+    caller appears, so this walks the class instead: every method that reaches
+    the producer must either reach the consumer (which pops) or discard.
+    """
+
+    @staticmethod
+    def _producer_callers() -> dict[str, ast.FunctionDef]:
+        tree = ast.parse(textwrap.dedent(inspect.getsource(DiffusionTrainingStrategy))).body[0]
+        assert isinstance(tree, ast.ClassDef)
+        return {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+            and node.name != "_generate_validation_prediction"
+            and _calls_self(node, "_generate_validation_prediction")
+        }
+
+    def test_the_walk_actually_reaches_the_known_callers(self) -> None:
+        """Non-vacuity: an empty set would make every assertion below pass."""
+        callers = self._producer_callers()
+        assert {"get_validation_images", "_maybe_hallucination_metrics"} <= set(callers)
+
+    def test_every_producer_caller_pops_or_discards(self) -> None:
+        offenders = [
+            name
+            for name, node in self._producer_callers().items()
+            if not (_calls_self(node, "_compute_validation_metrics") or _clears_the_stash(node))
+        ]
+        assert offenders == [], (
+            f"{offenders} drive _generate_validation_prediction without popping the "
+            "zero-filled stash; add `self._zf_measurement = None` before returning."
+        )
+
+    def test_the_image_path_discards_before_its_early_return(self) -> None:
+        """``get_validation_images`` returns ``None`` when generation failed; a
+        discard placed only before the final ``return`` misses that path.
+        """
+        node = self._producer_callers()["get_validation_images"]
+        last_generate = max(
+            c.lineno
+            for c in ast.walk(node)
+            if isinstance(c, ast.Call)
+            and isinstance(c.func, ast.Attribute)
+            and c.func.attr == "_generate_validation_prediction"
+        )
+        returns = [
+            r.lineno
+            for r in ast.walk(node)
+            if isinstance(r, ast.Return) and r.lineno > last_generate
+        ]
+        clears = [
+            a.lineno
+            for a in ast.walk(node)
+            if isinstance(a, ast.Assign) and _clears_the_stash(a) and a.lineno > last_generate
+        ]
+        assert returns, "no return follows the generate block -- the pin is vacuous"
+        assert clears, "no discard follows the generate block in get_validation_images"
+        assert min(clears) < min(returns), (
+            "the discard sits below an earlier return; that path leaks the stash"
+        )
+
+    def test_the_diagnostic_discards_on_every_exit_path(self) -> None:
+        """``_maybe_hallucination_metrics`` swallows exceptions and returns from
+        three places; only a ``finally`` covers all of them.
+        """
+        node = self._producer_callers()["_maybe_hallucination_metrics"]
+        tries = [t for t in ast.walk(node) if isinstance(t, ast.Try)]
+        assert any(any(_clears_the_stash(stmt) for stmt in t.finalbody) for t in tries), (
+            "the discard is not in a finally: block"
+        )
+class TestDiffusionDeclaredMetricKeys:
+    """#1682 -- ``pre_dc_kspace_l1`` gets a column exactly when it is stamped.
+
+    ``_add_pre_dc_fidelity`` stamps the key on BOTH of its ``lam > 0`` paths
+    (the active term, and the INACTIVE sentinel that fires when the generator
+    exposed no pre-DC tuple) and on neither when ``lam <= 0``. The declaration
+    must track that gate exactly: declaring more promises an always-empty
+    column, declaring less resumes discarding the only observable of the
+    terminal rung's only gradient.
+    """
+
+    @staticmethod
+    def _stub(lam):
+        from types import SimpleNamespace
+
+        return SimpleNamespace(
+            config=SimpleNamespace(
+                losses=SimpleNamespace(reconstruction=SimpleNamespace(lambda_pre_dc_kspace=lam))
+            )
+        )
+
+    def test_declared_when_weight_is_positive(self):
+        from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+
+        assert DiffusionTrainingStrategy.declared_metric_keys(self._stub(0.3)) == {
+            "pre_dc_kspace_l1"
+        }
+
+    def test_not_declared_when_weight_is_zero_or_absent(self):
+        from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+
+        assert DiffusionTrainingStrategy.declared_metric_keys(self._stub(0.0)) == frozenset()
+        assert DiffusionTrainingStrategy.declared_metric_keys(self._stub(None)) == frozenset()
+
+    def test_absent_losses_block_raises_rather_than_defaulting(self):
+        """A missing SSOT block must NOT quietly resolve to "no column".
+
+        `config.losses` is required; reading it through a `getattr` fallback
+        would turn a malformed config into a silently-absent column, which is
+        the same class of defect as the discard this change fixes. The producer
+        raises there, so the declaration raises there too.
+        """
+        from types import SimpleNamespace
+
+        import pytest
+
+        from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+
+        bare = SimpleNamespace(config=SimpleNamespace(losses=None))
+        with pytest.raises(AttributeError):
+            DiffusionTrainingStrategy.declared_metric_keys(bare)
+
+    def test_declaration_gate_matches_the_producer_gate(self):
+        """Pin the two ends of one condition together.
+
+        The producer's gate is ``if lam <= 0.0: return total_loss`` inside
+        ``_add_pre_dc_fidelity``. If that threshold moves without this
+        declaration moving, the column and the value disagree again -- silently,
+        and in whichever direction the drift happened to go.
+        """
+        from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+
+        assert DiffusionTrainingStrategy.declared_metric_keys(self._stub(1e-12)) == {
+            "pre_dc_kspace_l1"
+        }
+        assert DiffusionTrainingStrategy.declared_metric_keys(self._stub(0.0)) == frozenset()
+
+
+# ---------------------------------------------------------------------------
+# Multi-sample cold-diffusion validation ensemble (review follow-up item 2, 2026-09).
+#
+# ``validation.sampling.ensemble_samples > 1`` draws N reverse samples of the
+# same input through ``_sample_multistep_chunked``, one C6 seed offset each,
+# grades their k-space mean, and scores the spread in the metric domain as
+# ``val_ensemble_std_mean`` and ``val_empirical_coverage``. Every leg is a way
+# the numbers can come out plausible and wrong, so each is pinned: the members
+# must actually differ, the keys must come out of the production consumer, the
+# computer's own N/A must not overwrite them, and the names must resolve.
+# ---------------------------------------------------------------------------
+
+
+class _StochasticGen:
+    """``sample()`` adds ``sampler_sigma``-scaled noise from the member's own stream."""
+
+    def __init__(self, sigma: float = 0.3, seed: int = 7) -> None:
+        self.sampler_sigma = sigma
+        self.sampler_seed = seed
+        self.calls: list[dict] = []
+
+    def sample(self, measurement, mask, inference_timesteps, smaps, start_timestep, seed_offset=0):
+        self.calls.append({"seed_offset": seed_offset, "n": measurement.shape[0]})
+        g = torch.Generator().manual_seed(self.sampler_seed + seed_offset)
+        return measurement + self.sampler_sigma * torch.randn(measurement.shape, generator=g)
+
+
+class _LegacyGen:
+    """The pre-ensemble ``sample()`` signature: no ``seed_offset``, no ``**kwargs``."""
+
+    def sample(self, measurement, mask, inference_timesteps, smaps, start_timestep):
+        return measurement
+
+
+def _ensemble_host(
+    n: int = 4, chunk: int = 8, image_metrics: bool = True
+) -> DiffusionTrainingStrategy:
+    host = DiffusionTrainingStrategy.__new__(DiffusionTrainingStrategy)
+    host.config = SimpleNamespace(
+        validation=SimpleNamespace(
+            loader=SimpleNamespace(chunk_size=chunk),
+            sampling=SimpleNamespace(
+                ensemble_samples=n, coverage_k=2.0, enable_multistep_cold=True
+            ),
+            scoring=SimpleNamespace(enable_image_metrics=image_metrics),
+        )
+    )
+    host.logging_service = MagicMock()
+    return host
+
+
+def _bind_ensemble_helpers(mock: MagicMock) -> None:
+    """A MagicMock host auto-mocks the helpers; bind the real ones."""
+    for name in ("_ensemble_std_in_metric_domain", "_ensemble_metrics"):
+        setattr(mock, name, MethodType(getattr(DiffusionTrainingStrategy, name), mock))
+
+
+class TestValidationEnsemble:
+    def test_members_differ_and_member_zero_is_the_single_sample_call(self) -> None:
+        gen = _StochasticGen()
+        host = _ensemble_host()
+        measurement = torch.randn(2, 4, 8, 8)
+
+        members = host._sample_ensemble_chunked(gen, measurement, None, 3, 4)
+
+        assert members.shape == (4, 2, 4, 8, 8)
+        assert [c["seed_offset"] for c in gen.calls] == [0, 1, 2, 3]
+        single = host._sample_multistep_chunked(gen, measurement, None, 3)
+        assert torch.equal(members[0], single)
+        assert not torch.equal(members[0], members[1])
+        assert float(members.std(dim=0).mean()) > 0.0
+
+    def test_a_zero_offset_is_never_forwarded(self) -> None:
+        """Generators without the kwarg keep working; only a real member asks for it."""
+        host = _ensemble_host()
+        measurement = torch.randn(2, 4, 8, 8)
+        host._sample_multistep_chunked(_LegacyGen(), measurement, None, 3)
+        host._sample_multistep_chunked(_LegacyGen(), measurement, None, 3, seed_offset=0)
+        with pytest.raises(TypeError, match="seed_offset"):
+            host._sample_multistep_chunked(_LegacyGen(), measurement, None, 3, seed_offset=1)
+
+    def test_the_ensemble_is_chunked_like_the_sampler(self) -> None:
+        """Outer loop over members, inner ``val_chunk_size`` loop -- peak stays one chunk."""
+        gen = _StochasticGen()
+        host = _ensemble_host(chunk=1)
+
+        members = host._sample_ensemble_chunked(gen, torch.randn(3, 2, 8, 8), None, 3, 2)
+
+        assert [c["n"] for c in gen.calls] == [1, 1, 1, 1, 1, 1]
+        assert [c["seed_offset"] for c in gen.calls] == [0, 0, 0, 1, 1, 1]
+        assert members.shape == (2, 3, 2, 8, 8)
+
+    def test_resolver_returns_one_and_says_the_ensemble_is_off(self) -> None:
+        host = _ensemble_host(n=1)
+        assert host._resolve_validation_ensemble(_StochasticGen()) == 1
+        assert "ensemble is off" in host.logging_service.log_info.call_args.args[0]
+        assert host.ensemble_provenance == {"ensemble_samples": 1}
+
+    def test_resolver_stamps_provenance_and_logs_once(self) -> None:
+        host = _ensemble_host(n=4)
+        gen = _StochasticGen(sigma=0.3, seed=7)
+        assert host._resolve_validation_ensemble(gen) == 4
+        assert host._resolve_validation_ensemble(gen) == 4
+        assert host.logging_service.log_info.call_count == 1
+        assert host.ensemble_provenance == {
+            "ensemble_samples": 4,
+            "coverage_k": 2.0,
+            "sampler_sigma": 0.3,
+            "sampler_seed": 7,
+            "seed_offsets": [0, 1, 2, 3],
+        }
+
+    def test_resolver_refuses_a_deterministic_sampler(self) -> None:
+        """The planted facade: sigma 0 means N identical members."""
+        with pytest.raises(ConfigurationError, match="sampler_sigma"):
+            _ensemble_host(n=4)._resolve_validation_ensemble(_StochasticGen(sigma=0.0))
+
+    def test_resolver_refuses_a_generator_that_cannot_prove_it_is_stochastic(self) -> None:
+        with pytest.raises(ConfigurationError, match="sampler_sigma"):
+            _ensemble_host(n=2)._resolve_validation_ensemble(SimpleNamespace())
+
+    def test_resolver_refuses_an_ensemble_nothing_reads(self) -> None:
+        with pytest.raises(ConfigurationError, match="enable_image_metrics"):
+            _ensemble_host(n=2, image_metrics=False)._resolve_validation_ensemble(_StochasticGen())
+
+    def test_the_keys_are_emitted_through_the_production_path(self) -> None:
+        """The fires-test (non-negotiable 16): observed out of ``_compute_validation_metrics``."""
+        from spectramr.core.metrics.context import MetricContext
+        from spectramr.core.metrics.quantitative.conformal_risk import EmpiricalCoverageMetric
+
+        torch.manual_seed(0)
+        mock = _zf_mock()
+        mock.config.validation.sampling = SimpleNamespace(coverage_k=2.0, ensemble_samples=4)
+        _bind_ensemble_helpers(mock)
+        target = torch.rand(2, 1, 8, 8)
+        members = target.unsqueeze(0) + 0.1 * torch.randn(4, 2, 1, 8, 8)
+        mock._ensemble_members = members
+
+        out = _run_validation_metrics(mock, members.mean(0), target, torch.rand(2, 1, 8, 8))
+
+        assert out["val_ensemble_std_mean"] > 0.0
+        assert 0.0 < out["val_empirical_coverage"] <= 1.0
+        assert mock._ensemble_members is None, "the stack must be popped, never inherited"
+        # The number IS the registered metric on the same tensors (one owner).
+        expected = EmpiricalCoverageMetric(k=2.0)(
+            members.mean(0), target, context=MetricContext(ensemble_std=members.std(0))
+        )
+        assert out["val_empirical_coverage"] == pytest.approx(expected)
+        assert out["val_ensemble_std_mean"] == pytest.approx(float(members.std(0).mean()))
+
+    def test_no_keys_when_the_ensemble_is_off(self) -> None:
+        mock = _zf_mock()
+        mock.config.validation.sampling = SimpleNamespace(coverage_k=2.0, ensemble_samples=1)
+        _bind_ensemble_helpers(mock)
+        mock._ensemble_members = None
+
+        out = _run_validation_metrics(
+            mock, torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8), torch.rand(2, 1, 8, 8)
+        )
+
+        assert "val_ensemble_std_mean" not in out
+        assert "val_empirical_coverage" not in out
+
+    def test_the_ensemble_value_wins_over_the_computers_not_applicable(self) -> None:
+        """An arm that ALSO lists ``empirical_coverage`` in ``metrics.compute`` gets the
+        computer's declared N/A (NaN) for it; the write-back loop must not overwrite
+        the ensemble's value with that NaN."""
+        torch.manual_seed(1)
+        mock = _zf_mock(metrics=("psnr", "empirical_coverage"))
+        mock.config.validation.sampling = SimpleNamespace(coverage_k=2.0, ensemble_samples=4)
+        _bind_ensemble_helpers(mock)
+        target = torch.rand(2, 1, 8, 8)
+        members = target.unsqueeze(0) + 0.1 * torch.randn(4, 2, 1, 8, 8)
+        mock._ensemble_members = members
+
+        out = _run_validation_metrics(mock, members.mean(0), target, torch.rand(2, 1, 8, 8))
+
+        assert not math.isnan(out["val_empirical_coverage"])
+        assert 0.0 < out["val_empirical_coverage"] <= 1.0
+
+    def test_the_std_crosses_the_log_decompression_seam(self) -> None:
+        """Spread is measured where the residual is: decompressed, like the prediction."""
+        torch.manual_seed(2)
+        mock = _zf_mock(log_scaled=True)
+        _bind_ensemble_helpers(mock)
+        members = torch.log1p(torch.rand(3, 2, 2, 8, 8) * 50.0)
+        target = torch.rand(2, 2, 8, 8) * 50.0
+
+        std = mock._ensemble_std_in_metric_domain(
+            members, torch.ones(2, 1, 1, 1), True, target, mock.config.validation, True
+        )
+
+        decompressed = torch.stack(
+            [decompress_for_view(m, log_scaled=True, channel_dim=1) for m in members.unbind(0)]
+        )
+        assert not torch.allclose(decompressed, members), "fixture must exercise the seam"
+        torch.testing.assert_close(std, decompressed.std(dim=0))
+
+    def test_the_cascade_mean_covers_the_ensemble_keys(self) -> None:
+        all_metrics = {
+            "val_empirical_coverage_2x": 1.0,
+            "val_empirical_coverage_8x": 0.5,
+            "val_ensemble_std_mean_2x": 0.1,
+            "val_ensemble_std_mean_8x": 0.3,
+        }
+        DiffusionTrainingStrategy._stamp_accel_mean(
+            all_metrics, [2, 8], list(DiffusionTrainingStrategy._ENSEMBLE_METRICS)
+        )
+        assert all_metrics["val_empirical_coverage_mean"] == pytest.approx(0.75)
+        assert all_metrics["val_ensemble_std_mean_mean"] == pytest.approx(0.2)
+        # ...and the production call site hands them over.
+        src = inspect.getsource(DiffusionTrainingStrategy.validation_step)
+        assert "*self._ENSEMBLE_METRICS" in src
+
+    def test_the_multistep_branch_is_wired_to_the_ensemble(self) -> None:
+        """Wiring pin (the behaviour is above): the cold branch resolves N, samples the
+        stack, and the producer clears the stash before every prediction."""
+        src = inspect.getsource(DiffusionTrainingStrategy._generate_validation_prediction)
+        assert "self._resolve_validation_ensemble(gen)" in src
+        assert "self._sample_ensemble_chunked(" in src
+        assert "self._ensemble_members = None" in src
+        consumer = inspect.getsource(DiffusionTrainingStrategy._compute_validation_metrics)
+        assert consumer.index("self._ensemble_members = None") < consumer.index(
+            "self._ensemble_metrics("
+        )
+
+    def test_the_emitted_keys_resolve_through_the_witness_and_the_mixin(self) -> None:
+        import spectramr.core.metrics  # noqa: F401  -- populate the registry
+        from spectramr.core.metrics.registry import MetricsRegistry
+        from spectramr.infrastructure.validation.witness.checks.validation_metric_checks import (
+            unresolved_metric_names,
+        )
+
+        emitted = DiffusionTrainingStrategy.capabilities.emitted_metrics
+        names = [
+            "empirical_coverage",
+            "ensemble_std_mean",
+            "val_empirical_coverage_8x",
+            "val_empirical_coverage_mean",
+            "val_ensemble_std_mean_32x",
+            "val_ensemble_std_mean_mean",
+        ]
+        assert unresolved_metric_names(names, MetricsRegistry.is_registered, emitted) == []
+        # The mixin's exact-match rule, which the declaration flipped to strict.
+        host = DiffusionTrainingStrategy.__new__(DiffusionTrainingStrategy)
+        assert host._registry_backed_validation_metrics(
+            ["psnr", "ensemble_std_mean", "val_empirical_coverage_mean"]
+        ) == ["psnr"]
+        with pytest.raises(ValueError, match="neither registered nor emitted"):
+            host._registry_backed_validation_metrics(["val_nmse"])

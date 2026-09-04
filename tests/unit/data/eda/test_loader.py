@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from mriforge.data.eda.catalog import discover, discover_physical
-from mriforge.data.eda.loader import DatasetSample, sample
+from spectramr.data.eda.catalog import discover, discover_physical
+from spectramr.data.eda.loader import DatasetSample, sample
 
 
 def _entry(manifest_path: Path, tmp_path: Path, dataset_id: str):
@@ -65,7 +65,7 @@ def test_h5_mid_slice_index_is_header_only(tmp_path):
     slice lazily instead of the full multi-slice volume."""
     import h5py
 
-    from mriforge.data.eda.loader import _h5_mid_slice
+    from spectramr.data.eda.loader import _h5_mid_slice
 
     p = tmp_path / "vol.h5"
     with h5py.File(p, "w") as f:
@@ -85,7 +85,7 @@ def test_large_h5_with_slice_axis_is_lazily_loaded(tmp_path, monkeypatch):
     produce only a card and no figures."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "big.h5"
     with h5py.File(p, "w") as f:
@@ -99,7 +99,7 @@ def test_large_h5_with_slice_axis_is_lazily_loaded(tmp_path, monkeypatch):
 
 def test_large_non_sliceable_file_is_skipped(tmp_path, monkeypatch):
     """A format we must read wholesale (npy) stays size-gated — the guard still protects RAM."""
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "big.npy"
     np.save(p, np.zeros((16, 16), np.float32))
@@ -115,7 +115,7 @@ def test_load_one_noncartesian_skips_cartesian_recon(tmp_path):
     (for the logmag view); no recon image is emitted."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "spokes.h5"
     rng = np.random.default_rng(0)
@@ -132,7 +132,7 @@ def test_load_one_cartesian_still_recons(tmp_path):
     """Cartesian k-space keeps the ifft2c recon (default behavior is unchanged)."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "cart.h5"
     rng = np.random.default_rng(0)
@@ -151,7 +151,7 @@ def _write_cfl(base: Path, arr: np.ndarray) -> None:
 
 
 def test_cfl_central_slice_picks_two_largest_dims(tmp_path):
-    from mriforge.data.eda.loader import _cfl_central_slice
+    from spectramr.data.eda.loader import _cfl_central_slice
 
     base = tmp_path / "vol0001_vis1"
     rng = np.random.default_rng(0)
@@ -166,7 +166,7 @@ def test_large_cfl_is_lazily_loaded_as_kspace(tmp_path, monkeypatch):
     """A multi-GB BART .cfl is memmap-sliced (its column-major central plane is contiguous),
     so the size guard must NOT skip it — radial datasets (cardiac_radial_realtime_bssfp,
     multiecho_radial_b0_r2star) otherwise produced only a card despite data on disk."""
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     base = tmp_path / "vol0002_vis1"
     rng = np.random.default_rng(1)
@@ -216,7 +216,7 @@ def test_load_one_skips_degenerate_1d_read_without_crashing(tmp_path):
     keeps the EDA producing a card instead of crashing the figure suite."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "osi2one.h5"
     with h5py.File(p, "w") as f:
@@ -264,7 +264,7 @@ def test_load_one_squeezes_singleton_coil_dim_to_a_plane(tmp_path, monkeypatch):
     path (``_h5_mid_slice`` → None) to model that ISMRMRD case."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     monkeypatch.setattr(loader, "_h5_mid_slice", lambda _p: None)  # no slice axis → read whole
     p = tmp_path / "raw_acq.h5"
@@ -284,7 +284,7 @@ def test_load_one_guards_1d_npy_image_from_montage_crash(tmp_path):
     be dropped with a note — never appended as an 'image' where render_montage(imshow) crashes
     with 'Invalid shape (N,)'. The .pt/.npy/.png image-append paths need the same _is_plane guard
     as the k-space path."""
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "fingerprint.npy"
     np.save(p, np.zeros((4096,), np.float32))  # 1-D dictionary vector, not an image
@@ -301,7 +301,7 @@ def test_load_one_extracts_main_array_from_mat_variables_dict(tmp_path):
     loader must pull the largest ≥2-D array out of the variables dict and render it."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "CropSax1.mat"  # v7.3 .mat is HDF5 → MatStrategy reads via h5py
     with h5py.File(p, "w") as f:
@@ -318,7 +318,7 @@ def test_largest_array_picks_biggest_2d_in_nested_mat_dict():
     skipping scalars/1-D metadata (the .mat container's 'main array')."""
     import torch
 
-    from mriforge.data.eda.loader import _largest_array
+    from spectramr.data.eda.loader import _largest_array
 
     blob = {"meta": {"scale": torch.tensor([2.0])},        # 1-D → skipped
             "struct": {"img": torch.zeros(8, 8), "vol": torch.zeros(4, 16, 16)}}
@@ -331,7 +331,7 @@ def test_mat_v73_large_file_is_lazily_mid_sliced(tmp_path, monkeypatch):
     of being size-skipped to a card — bssfp_qsm_7t vol*.mat, osu_4dflow 4D cine .mat."""
     import h5py
 
-    from mriforge.data.eda import loader
+    from spectramr.data.eda import loader
 
     p = tmp_path / "vol1.mat"
     with h5py.File(p, "w") as f:
@@ -348,7 +348,7 @@ def test_to_time_frames_samples_along_the_time_axis(tmp_path):
     non-spatial (time) axis — the two largest axes are spatial."""
     import torch
 
-    from mriforge.data.eda.loader import _to_time_frames
+    from spectramr.data.eda.loader import _to_time_frames
 
     vol = torch.arange(10 * 16 * 20, dtype=torch.float32).reshape(10, 16, 20)  # (T, H, W)
     frames = _to_time_frames(vol, k=4)
@@ -467,7 +467,7 @@ def test_archive_image_reads_dicom_from_zip(tmp_path):
     must read a slice straight out of the zip (no extraction to disk)."""
     import zipfile
 
-    from mriforge.data.eda.loader import _archive_image
+    from spectramr.data.eda.loader import _archive_image
 
     dcm = tmp_path / "slice.dcm"
     _write_min_dicom(dcm, np.random.default_rng(0).standard_normal((20, 18)) * 80 + 400)
@@ -521,7 +521,7 @@ def _tar_gz_with_nifti(tar_path: Path, n: int = 2) -> None:
 def test_archive_image_reads_nifti_from_tar_gz(tmp_path):
     """kirby_kki_multimodal ships its images inside MMRR-*.tar.gz — read a slice straight out of
     the archive (no full extraction to disk)."""
-    from mriforge.data.eda.loader import _archive_image
+    from spectramr.data.eda.loader import _archive_image
 
     tarp = tmp_path / "MMRR-3T7T-2-1_multimodal.tar.gz"
     _tar_gz_with_nifti(tarp)
@@ -584,8 +584,8 @@ def test_radial_nufft_recon_round_trips_a_disk(tmp_path):
     whose centre is brighter than its corners."""
     import torchkbnufft as tkbn
 
-    from mriforge.data.eda.loader import _radial_nufft_recon
-    from mriforge.infrastructure.physics.trajectories import TrajectoryFactory
+    from spectramr.data.eda.loader import _radial_nufft_recon
+    from spectramr.infrastructure.physics.trajectories import TrajectoryFactory
 
     n, spokes = 48, 64
     yy, xx = np.mgrid[0:n, 0:n]

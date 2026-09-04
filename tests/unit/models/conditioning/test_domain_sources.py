@@ -11,9 +11,9 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.config.schemas.conditioning import ConditioningConfig
-from mriforge.models.conditioning.context import ConditioningContext
-from mriforge.models.conditioning.encoders import (
+from spectramr.config.schemas.conditioning import ConditioningConfig
+from spectramr.models.conditioning.context import ConditioningContext
+from spectramr.models.conditioning.encoders import (
     ConditioningEncoderBank,
     get_conditioner,
 )

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.validation import ValidationConfigSchema
+from spectramr.config.schemas.validation import ValidationConfigSchema
 
 
 class TestValidationConfigSchema:

@@ -13,17 +13,17 @@ import math
 import pytest
 import torch
 
-from mriforge.application.use_cases.nr_validation.aggregator import (
+from spectramr.application.use_cases.nr_validation.aggregator import (
     NRQualityIndexModel,
     fit_nr_quality_index,
     register_nr_quality_index,
 )
-from mriforge.core.metrics import get_metric
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics import get_metric
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 @pytest.fixture(autouse=True)

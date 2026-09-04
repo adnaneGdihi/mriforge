@@ -11,10 +11,8 @@ Covers:
 
 from __future__ import annotations
 
-import pytest
-
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
-from mriforge.infrastructure.validation.inference import (
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.inference import (
     derive_tags,
     recommend_bloch_acquisition_params,
     recommend_dc_without_acceleration,
@@ -49,8 +47,10 @@ def _cfg(
     coil_enable_estimation=False,
 ):
     mk = {}
-    if scan_mode is not None: mk["scan_mode"] = scan_mode
-    if spatial_shape is not None: mk["spatial_shape"] = spatial_shape
+    if scan_mode is not None:
+        mk["scan_mode"] = scan_mode
+    if spatial_shape is not None:
+        mk["spatial_shape"] = spatial_shape
     mc = _NS(
         enabled=multi_contrast_enabled,
         n_contrasts=n_contrasts,
@@ -67,9 +67,11 @@ def _cfg(
     )
     model = _NS(
         model_type=model_type,
-        in_channels=1, out_channels=1,
+        in_channels=1,
+        out_channels=1,
         spatial_dims=len([d for d in patch_size if d > 1]),
-        input_type="image", model_kwargs=mk,
+        input_type="image",
+        model_kwargs=mk,
     )
     losses = _NS(
         output_domain="image",
@@ -91,17 +93,23 @@ def _cfg(
         )
     training = _NS(
         training_mode="reconstruction",
-        strategy_class="mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+        strategy_class="spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
         task="reconstruction",
     )
     logging_cfg = _NS(save_validation_images=True, log_validation_images=True)
     return _NS(
-        data=data, model=model, losses=losses, training=training,
+        data=data,
+        model=model,
+        losses=losses,
+        training=training,
         # Phase 11 renamed the top-level block `acceleration:` -> `undersampling:`.
         # The checks were migrated; this stand-in was not, so every one of them
         # reported "No acceleration section." and PASSED vacuously.
-        logging=logging_cfg, physics=physics, undersampling=accel,
-        adapters=None, metadata=None,
+        logging=logging_cfg,
+        physics=physics,
+        undersampling=accel,
+        adapters=None,
+        metadata=None,
     )
 
 
@@ -298,6 +306,20 @@ class TestDcWithoutAcceleration:
     def test_r023_silent_when_accel_present(self):
         cfg = _cfg(dc_enabled=True, accel_base=2.0, accel_max=4.0, center_fraction=0.08)
         assert recommend_dc_without_acceleration(cfg) == []
+
+    def test_r023_silent_when_the_digital_twin_undersamples(self):
+        """VF review 2026-09-03: the twin masks inside the step and hands its mask
+        to the DC layers, so a twin arm has no top-level block to declare."""
+        cfg = _cfg(dc_enabled=True)  # no acceleration block
+        cfg.physics.digital_twin = _NS(enabled=True, enable_undersampling=True, acceleration=4.0)
+        assert recommend_dc_without_acceleration(cfg) == []
+
+    def test_r023_fires_when_the_twin_is_present_but_does_not_undersample(self):
+        """Planted violation: eleven VF arms declared DC with a twin that never masks."""
+        cfg = _cfg(dc_enabled=True)
+        cfg.physics.digital_twin = _NS(enabled=True, enable_undersampling=False, acceleration=4.0)
+        recs = recommend_dc_without_acceleration(cfg)
+        assert any(r.code == "AUDIT-R023" for r in recs)
 
     def test_r023_silent_when_dc_disabled(self):
         cfg = _cfg(dc_enabled=False)

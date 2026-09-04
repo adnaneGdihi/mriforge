@@ -13,8 +13,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.operator_id.bch_conditioner import BCHOperatorConditioner
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.operator_id.bch_conditioner import BCHOperatorConditioner
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def _make(num_modes=4, rank=8, bins=16, c=1, h=8, w=8, contrasts=3):

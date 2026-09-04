@@ -18,8 +18,8 @@ from pathlib import Path
 import pytest
 import torch
 
-import mriforge.infrastructure.physics.coil_sensitivity as csm_mod
-import mriforge.infrastructure.physics.m4raw_pseudo_gt as pgt
+import spectramr.infrastructure.physics.coil_sensitivity as csm_mod
+import spectramr.infrastructure.physics.m4raw_pseudo_gt as pgt
 
 
 @pytest.fixture()

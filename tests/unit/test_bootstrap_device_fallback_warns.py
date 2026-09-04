@@ -8,7 +8,7 @@ reporting success, because nobody reads a warning in a 40-hour sbatch log.
 The accelerated-run contract replaces the warning with a raise: heavy pipelines
 (train / infer / validate / hpo / ablation / probe) get an accelerator or they
 stop. ``bootstrap.py`` now delegates every device decision to the SSOT policy in
-:mod:`mriforge.core.compute_device`.
+:mod:`spectramr.core.compute_device`.
 
 The two fallbacks removed here are what made ``DeviceManager``'s own (correct)
 CUDA guard unreachable: bootstrap flattened ``"auto"`` to ``"cpu"`` *before*
@@ -22,7 +22,7 @@ from pathlib import Path
 import pytest
 
 BOOTSTRAP_SRC = (
-    Path(__file__).resolve().parents[2] / "src" / "mriforge" / "bootstrap.py"
+    Path(__file__).resolve().parents[2] / "src" / "spectramr" / "bootstrap.py"
 ).read_text()
 
 
@@ -30,7 +30,7 @@ def test_bootstrap_no_longer_silently_falls_back_to_cpu() -> None:
     """The literal fallback assignments must be gone from the live path."""
     assert 'device_arg = "cpu"' not in BOOTSTRAP_SRC, (
         "bootstrap.py still hard-assigns CPU. Heavy pipelines must raise "
-        "AcceleratorRequiredError instead — see mriforge.core.compute_device."
+        "AcceleratorRequiredError instead — see spectramr.core.compute_device."
     )
     assert '"cuda" if torch.cuda.is_available() else "cpu"' not in BOOTSTRAP_SRC, (
         "bootstrap.py still flattens 'auto' to CPU itself. That is what made "
@@ -51,7 +51,7 @@ def test_no_accelerator_raises_for_heavy_pipeline(
     """'auto' + no GPU + heavy pipeline → raise, not a silent CPU run."""
     import torch
 
-    from mriforge.core.compute_device import (
+    from spectramr.core.compute_device import (
         AcceleratorRequiredError,
         resolve_torch_device,
     )
@@ -67,7 +67,7 @@ def test_explicit_cpu_still_permitted(monkeypatch: pytest.MonkeyPatch) -> None:
     """The user-dictated escape hatch survives: ``device: cpu`` is honoured."""
     import torch
 
-    from mriforge.core.compute_device import resolve_torch_device
+    from spectramr.core.compute_device import resolve_torch_device
 
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     decision = resolve_torch_device("cpu", pipeline="train")

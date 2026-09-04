@@ -1,6 +1,6 @@
 """Logging package exports — a single ``__all__`` (2026-06-19 audit #6).
 
-``mriforge.infrastructure.logging.__init__`` used to declare ``__all__`` TWICE.
+``spectramr.infrastructure.logging.__init__`` used to declare ``__all__`` TWICE.
 Module bodies execute top-to-bottom, so the second assignment silently
 *replaced* the first — dropping the eagerly re-exported names (``banner``,
 ``phase``, ``smart_progress``, the provenance helpers) from
@@ -13,12 +13,12 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-import mriforge.infrastructure.logging as pkg
+import spectramr.infrastructure.logging as pkg
 
 _INIT = (
     Path(__file__).resolve().parents[4]
     / "src"
-    / "mriforge"
+    / "spectramr"
     / "infrastructure"
     / "logging"
     / "__init__.py"

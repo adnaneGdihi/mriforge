@@ -12,7 +12,7 @@ class TestSetupDistributed:
 
     def test_missing_env_vars_raises(self):
         """Should raise RuntimeError if RANK/WORLD_SIZE env vars are missing."""
-        from mriforge.pipelines.distributed import setup_distributed
+        from spectramr.pipelines.distributed import setup_distributed
 
         with patch.dict("os.environ", {}, clear=True):
             with pytest.raises(RuntimeError, match="RANK"):
@@ -22,13 +22,53 @@ class TestSetupDistributed:
     @patch("torch.cuda.set_device")
     def test_setup_returns_rank_world(self, _mock_set, _mock_init):
         """Should return (rank, world_size) from env vars."""
-        from mriforge.pipelines.distributed import setup_distributed
+        from spectramr.pipelines.distributed import setup_distributed
 
         env = {"RANK": "1", "WORLD_SIZE": "4", "LOCAL_RANK": "1"}
         with patch.dict("os.environ", env, clear=True):
             rank, world_size = setup_distributed(backend="gloo")
             assert rank == 1
             assert world_size == 4
+
+    @patch("torch.cuda.is_available", return_value=True)
+    @patch("torch.distributed.init_process_group")
+    @patch("torch.cuda.set_device")
+    def test_nccl_binds_the_group_to_this_ranks_device(
+        self, _mock_set, mock_init, _mock_avail
+    ):
+        """The planted shape (CLAUDE.md #15).
+
+        Without ``device_id`` every device-taking collective infers a device
+        from the current context, which emits "barrier(): using the device
+        under current context" and, worse, lets a rank barrier on a device its
+        peers did not pick.
+        """
+        from spectramr.pipelines.distributed import setup_distributed
+
+        env = {"RANK": "3", "WORLD_SIZE": "4", "LOCAL_RANK": "2"}
+        with patch.dict("os.environ", env, clear=True):
+            setup_distributed(backend="nccl")
+
+        device = mock_init.call_args.kwargs["device_id"]
+        assert device.type == "cuda"
+        # The NODE-LOCAL index, not the global rank: on a multi-node run
+        # ``device_id=rank`` names a GPU that does not exist on this node.
+        assert device.index == 2
+
+    @patch("torch.cuda.is_available", return_value=True)
+    @patch("torch.distributed.init_process_group")
+    @patch("torch.cuda.set_device")
+    def test_gloo_is_not_handed_a_cuda_device(self, _mock_set, mock_init, _mock_avail):
+        """The other shape: ``gloo`` runs on CPU and rejects a CUDA
+        ``device_id``, so the bind must follow the backend, not CUDA
+        availability."""
+        from spectramr.pipelines.distributed import setup_distributed
+
+        env = {"RANK": "0", "WORLD_SIZE": "2", "LOCAL_RANK": "0"}
+        with patch.dict("os.environ", env, clear=True):
+            setup_distributed(backend="gloo")
+
+        assert "device_id" not in mock_init.call_args.kwargs
 
 
 class TestCleanupDistributed:
@@ -37,7 +77,7 @@ class TestCleanupDistributed:
     @patch("torch.distributed.is_initialized", return_value=True)
     @patch("torch.distributed.destroy_process_group")
     def test_cleanup_destroys_group(self, mock_destroy, _mock_init):
-        from mriforge.pipelines.distributed import cleanup_distributed
+        from spectramr.pipelines.distributed import cleanup_distributed
 
         cleanup_distributed()
         mock_destroy.assert_called_once()
@@ -45,7 +85,7 @@ class TestCleanupDistributed:
     @patch("torch.distributed.is_initialized", return_value=False)
     @patch("torch.distributed.destroy_process_group")
     def test_cleanup_noop_when_not_initialized(self, mock_destroy, _mock_init):
-        from mriforge.pipelines.distributed import cleanup_distributed
+        from spectramr.pipelines.distributed import cleanup_distributed
 
         cleanup_distributed()
         mock_destroy.assert_not_called()
@@ -64,7 +104,7 @@ def _ddp_settings(**overrides):
     the only double that exercises the nested frozen-block copy this code depends
     on (non-negotiable #1).
     """
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(
         model={"model_type": "standard_unet", "in_channels": 1, "out_channels": 1},
@@ -81,8 +121,8 @@ class TestRunDistributedTrainingOverrides:
     """Regression tests for ``run_distributed_training`` override handling.
 
     Bug: ``run_distributed_training`` previously imported a nonexistent
-    ``mriforge.main._apply_overrides``, so every override-bearing DDP run raised
-    ``ImportError``. The fix imports the real ``mriforge.main.apply_overrides``.
+    ``spectramr.main._apply_overrides``, so every override-bearing DDP run raised
+    ``ImportError``. The fix imports the real ``spectramr.main.apply_overrides``.
     These tests isolate that single code path: heavy deps (process-group setup,
     config YAML loading, the training pipeline) are mocked, and we assert the
     override is applied without an ImportError and the resulting settings reach
@@ -94,23 +134,23 @@ class TestRunDistributedTrainingOverrides:
         return [
             # No real process group / CUDA on a CPU-only test box.
             patch(
-                "mriforge.pipelines.distributed.setup_distributed",
+                "spectramr.pipelines.distributed.setup_distributed",
                 return_value=(0, 1),
             ),
-            patch("mriforge.pipelines.distributed.cleanup_distributed"),
+            patch("spectramr.pipelines.distributed.cleanup_distributed"),
             # Lazy imports inside run_distributed_training resolve from these:
             patch(
-                "mriforge.config.settings.TrainingSettings.from_yaml",
+                "spectramr.config.settings.TrainingSettings.from_yaml",
                 return_value=settings_obj,
             ),
             patch(
-                "mriforge.pipelines.train.run_training_pipeline",
+                "spectramr.pipelines.train.run_training_pipeline",
                 run_pipeline_mock,
             ),
             # ``run_distributed_training`` imports apply_overrides RIGHTWARD from
             # the config layer (config/overrides.py), not leftward from main —
             # so the patch target is config.overrides, not main (CLAUDE.md #13).
-            patch("mriforge.config.overrides.apply_overrides", apply_overrides_mock),
+            patch("spectramr.config.overrides.apply_overrides", apply_overrides_mock),
             # Force LOCAL_RANK so device string construction is deterministic.
             patch.dict("os.environ", {"LOCAL_RANK": "0"}, clear=False),
         ]
@@ -118,11 +158,11 @@ class TestRunDistributedTrainingOverrides:
     def test_overrides_do_not_raise_import_error(self):
         """A one-element override list must NOT raise ImportError.
 
-        This is the core regression: the lazy ``from mriforge.main import
+        This is the core regression: the lazy ``from spectramr.main import
         apply_overrides`` must resolve to a real symbol. We use a passthrough
         mock so the import target is exercised but config validation is skipped.
         """
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         settings = _ddp_settings()
         run_pipeline = MagicMock(return_value={"status": "ok"})
@@ -163,7 +203,7 @@ class TestRunDistributedTrainingOverrides:
         """
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         # `seed` is a fact about the RUN. Both `training.seed` and the top-level `seed`
         # were retired to `run.seed` on 2026-07-31 with posture=raise, so a fixture
@@ -200,7 +240,7 @@ class TestRunDistributedTrainingOverrides:
         the caller's settings untouched (non-negotiable #1)."""
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         settings = _ddp_settings()
         run_pipeline = MagicMock(return_value={"status": "ok"})
@@ -235,7 +275,7 @@ class TestRunDistributedTrainingOverrides:
         'deepspeed' unreachable from ``train-distributed``)."""
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         settings = _ddp_settings()
         settings = settings.model_copy(
@@ -259,27 +299,27 @@ class TestRunDistributedTrainingOverrides:
         Guards against the import target silently disappearing again. We do NOT
         run the full pipeline here — just confirm the name resolves. The canonical
         home is now ``config/overrides.py`` (imported rightward from pipelines);
-        ``mriforge.main`` re-exports the SAME object for backward compatibility.
+        ``spectramr.main`` re-exports the SAME object for backward compatibility.
         """
-        from mriforge.config.overrides import apply_overrides as canonical
-        from mriforge.main import apply_overrides as re_exported
+        from spectramr.config.overrides import apply_overrides as canonical
+        from spectramr.main import apply_overrides as re_exported
 
         assert callable(canonical)
         assert re_exported is canonical
 
     def test_distributed_imports_apply_overrides_rightward(self):
-        """``pipelines/distributed.py`` must NOT import from ``mriforge.main``.
+        """``pipelines/distributed.py`` must NOT import from ``spectramr.main``.
 
         pipelines→main is a leftward (entry-layer) import that violates the
         inward-only dependency rule; the override util lives in the config layer.
         """
         import inspect
 
-        from mriforge.pipelines import distributed
+        from spectramr.pipelines import distributed
 
         src = inspect.getsource(distributed)
-        assert "from mriforge.main import apply_overrides" not in src
-        assert "from mriforge.config.overrides import apply_overrides" in src
+        assert "from spectramr.main import apply_overrides" not in src
+        assert "from spectramr.config.overrides import apply_overrides" in src
 
 
 class TestExecutionLedgerIsArmed:
@@ -297,7 +337,7 @@ class TestExecutionLedgerIsArmed:
     def _run(self, run_pipeline):
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         settings = _ddp_settings()
         with ExitStack() as stack:
@@ -308,7 +348,7 @@ class TestExecutionLedgerIsArmed:
             return run_distributed_training(config_path="dummy.yaml", backend="gloo")
 
     def test_ledger_is_armed_before_the_config_loads(self):
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         seen = {}
 
@@ -334,7 +374,7 @@ class TestExecutionLedgerIsArmed:
 
     def test_ledger_source_names_the_config(self):
         """Provenance must attribute the run to its config, not to a consumer."""
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         seen = {}
 
@@ -362,7 +402,7 @@ class TestIdleDeviceRefusal:
 
     @staticmethod
     def _refuse(**kw):
-        from mriforge.pipelines.distributed import idle_device_refusal
+        from spectramr.pipelines.distributed import idle_device_refusal
 
         base = {
             "allocated_on_node": None,
@@ -457,7 +497,7 @@ class TestIdleDeviceGuardWiring:
 
     @staticmethod
     def _settings(*, allow_idle: bool):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings(
             model={"model_type": "standard_unet", "in_channels": 1, "out_channels": 1},
@@ -475,24 +515,24 @@ class TestIdleDeviceGuardWiring:
     def _stack(self, settings, run_pipeline, *, allocated, visible):
         return [
             patch(
-                "mriforge.pipelines.distributed.setup_distributed",
+                "spectramr.pipelines.distributed.setup_distributed",
                 return_value=(0, 1),
             ),
-            patch("mriforge.pipelines.distributed.cleanup_distributed"),
+            patch("spectramr.pipelines.distributed.cleanup_distributed"),
             patch(
-                "mriforge.config.settings.TrainingSettings.from_yaml",
+                "spectramr.config.settings.TrainingSettings.from_yaml",
                 return_value=settings,
             ),
-            patch("mriforge.pipelines.train.run_training_pipeline", run_pipeline),
+            patch("spectramr.pipelines.train.run_training_pipeline", run_pipeline),
             # Patched at their home module: the launcher imports them lazily, so
             # the names do not exist in `pipelines.distributed`'s namespace. That
             # these are the CORE probes is the point -- see the class docstring.
             patch(
-                "mriforge.core.resources.allocated_gpus_per_node",
+                "spectramr.core.resources.allocated_gpus_per_node",
                 return_value=(allocated, "env:SLURM_GPUS_ON_NODE"),
             ),
             patch(
-                "mriforge.core.resources.visible_gpu_count",
+                "spectramr.core.resources.visible_gpu_count",
                 return_value=visible,
             ),
             patch.dict("os.environ", {"LOCAL_RANK": "0"}, clear=False),
@@ -502,7 +542,7 @@ class TestIdleDeviceGuardWiring:
         """One rank against a 4-GPU grant must not reach the training pipeline."""
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import (
+        from spectramr.pipelines.distributed import (
             IdleDeviceError,
             run_distributed_training,
         )
@@ -526,7 +566,7 @@ class TestIdleDeviceGuardWiring:
         """``allow_idle_devices`` is the acknowledged-debug-run escape hatch."""
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         run_pipeline = MagicMock(return_value={"status": "ok"})
         with ExitStack() as stack:
@@ -551,7 +591,7 @@ class TestIdleDeviceGuardWiring:
         """
         from contextlib import ExitStack
 
-        from mriforge.pipelines.distributed import run_distributed_training
+        from spectramr.pipelines.distributed import run_distributed_training
 
         run_pipeline = MagicMock(return_value={"status": "ok"})
         with ExitStack() as stack:

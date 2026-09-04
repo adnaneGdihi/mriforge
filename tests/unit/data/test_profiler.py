@@ -1,4 +1,4 @@
-"""Tests for the measured dataset profiler (``mriforge.data.profiler``).
+"""Tests for the measured dataset profiler (``spectramr.data.profiler``).
 
 Phase 1 covers the pure logic that closes the measured-capability gap (pitfall
 #18): the canonical physics-feature → need map, ``derive_needs`` three-state
@@ -13,7 +13,7 @@ import struct
 import numpy as np
 import pytest
 
-from mriforge.data import profiler
+from spectramr.data import profiler
 
 # --- canonical feature <-> need map -------------------------------------------------
 

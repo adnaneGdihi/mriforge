@@ -15,7 +15,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling import UniformCartesianKSpaceAccelerator
+from spectramr.infrastructure.physics.sampling import UniformCartesianKSpaceAccelerator
 
 
 def _sampler(**kw):

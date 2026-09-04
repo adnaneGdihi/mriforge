@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.multi_contrast_kspace_attention import (
+from spectramr.models.blocks.multi_contrast_kspace_attention import (
     MultiContrastKSpaceCrossAttention,
 )
 

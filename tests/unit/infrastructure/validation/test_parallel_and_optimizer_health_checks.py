@@ -17,8 +17,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.schemas.base import ParallelismConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.config.schemas.base import ParallelismConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 from tests.utils.config_block_stub import block_stub
 
 
@@ -148,7 +148,7 @@ class TestDeepSpeedPrecisionCoherent:
 class TestDeepSpeedConsolidatedBestCheckpoint:
     def test_disabling_it_warns_that_the_run_becomes_resume_only(self) -> None:
         """DeepSpeed writes a sharded tag DIRECTORY. Without the consolidated
-        copy, discover_best_checkpoint / campaign eval / `mriforge infer` find
+        copy, discover_best_checkpoint / campaign eval / `spectramr infer` find
         nothing -- at the END of the run."""
         result = _checker().check_deepspeed_consolidated_best_checkpoint(
             _config(save_consolidated_best=False)
@@ -338,7 +338,7 @@ class TestEveryCheckIsActuallyWired:
 
     @pytest.mark.parametrize("name", ADDED)
     def test_is_invoked_by_run_all_checks(self, name: str) -> None:
-        from mriforge.infrastructure.validation.witness.checks.meta_orphan_checks import (
+        from spectramr.infrastructure.validation.witness.checks.meta_orphan_checks import (
             invoked_check_methods,
         )
 
@@ -573,7 +573,7 @@ class TestDiffusionPredicateBoundaries:
 
     @staticmethod
     def _is_diffusion(mode: str) -> bool:
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker as C,
         )
 
@@ -614,10 +614,10 @@ class TestDiffusionPredicateBoundaries:
         than left as decoration."""
         import importlib
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
@@ -714,7 +714,7 @@ class TestComplexIsAboutDtypeNotArithmetic:
     """
 
     def test_complex_conv2d_returns_a_real_dtype(self) -> None:
-        from mriforge.models.layers.complex_conv import ComplexConv2d
+        from spectramr.models.layers.complex_conv import ComplexConv2d
 
         layer = ComplexConv2d(2, 4, kernel_size=3, padding=1)
         # Interleaved real/imag on the channel axis, so 2 * in_channels.
@@ -728,6 +728,6 @@ class TestComplexIsAboutDtypeNotArithmetic:
     def test_fft2c_does_carry_complex_dtype(self) -> None:
         """The counterpart: this is where the real complex64 lives, which is why
         the signals key on k-space rather than on the conv layer."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         assert fft2c(torch.randn(1, 1, 8, 8, dtype=torch.complex64)).is_complex()

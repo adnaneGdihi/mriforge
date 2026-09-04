@@ -20,15 +20,15 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.models import generators  # noqa: F401, E402
-from mriforge.models.generators.mno_family import (  # noqa: E402
+from spectramr.models import generators  # noqa: F401, E402
+from spectramr.models.generators.mno_family import (  # noqa: E402
     CMNOOperator,
     GMNOOperator,
     HSMNOOperator,
     MEMNOOperator,
     SMNOOperator,
 )
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 
 # ── Registry ──────────────────────────────────────────────────────
 
@@ -164,13 +164,13 @@ def test_g_mno_rejects_2d_shape() -> None:
 
 
 def test_oh_group_has_48_elements() -> None:
-    from mriforge.models.generators.mno_family import _OH_ELEMENTS
+    from spectramr.models.generators.mno_family import _OH_ELEMENTS
     assert len(_OH_ELEMENTS) == 48
 
 
 def test_apply_oh_invert_oh_are_inverses() -> None:
     """Every Oh element must round-trip exactly under apply/invert."""
-    from mriforge.models.generators.mno_family import (
+    from spectramr.models.generators.mno_family import (
         _OH_ELEMENTS,
         _apply_oh,
         _invert_oh,
@@ -221,7 +221,7 @@ def test_me_mno_oh_is_exactly_equivariant() -> None:
     from spec §3.3 — the test exercises a sample of Oh elements rather
     than the full 48 to keep runtime reasonable.
     """
-    from mriforge.models.generators.mno_family import _OH_ELEMENTS, _apply_oh
+    from spectramr.models.generators.mno_family import _OH_ELEMENTS, _apply_oh
     m = MEMNOOperator(
         symmetry_group="oh",
         in_channels=1, out_channels=1, spatial_shape=(4, 4, 4),

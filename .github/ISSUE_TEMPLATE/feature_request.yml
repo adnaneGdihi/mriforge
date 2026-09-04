@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest a new feature, API, or extension to MRIForge.
+description: Suggest a new feature, API, or extension to spectraMR.
 title: "feat: <one-line summary>"
 labels: ["enhancement", "triage"]
 body:

@@ -1,4 +1,4 @@
-"""Pre-commit / PR gate: fail if a src/mriforge/**.py change has no paired tests/** change.
+"""Pre-commit / PR gate: fail if a src/spectramr/**.py change has no paired tests/** change.
 
 Usage:
     python scripts/ci/check_test_paired_with_source.py                    # staged (pre-commit)
@@ -6,7 +6,7 @@ Usage:
 
 Exit codes:
     0 — no source change, or every source change is accompanied by a tests/ change.
-    1 — src/mriforge/ modules changed with NO tests/ file changed.
+    1 — src/spectramr/ modules changed with NO tests/ file changed.
 
 The PR gate MUST pass --base/--head. In CI nothing is staged, so the default staged
 mode would report success without inspecting the pull request at all.
@@ -52,7 +52,7 @@ def changed_sources(files: list[str]) -> list[str]:
     return [
         f
         for f in files
-        if f.startswith("src/mriforge/") and f.endswith(".py") and not f.endswith("__init__.py")
+        if f.startswith("src/spectramr/") and f.endswith(".py") and not f.endswith("__init__.py")
     ]
 
 
@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             "\nAdd or extend a test under tests/ in the same change.\n"
             "See CLAUDE.md 'Source <-> test pairing (hard rule)' for details.\n"
-            "Mapping convention: src/mriforge/<area>/<mod>.py"
+            "Mapping convention: src/spectramr/<area>/<mod>.py"
             " <-> tests/unit/<area>/test_<mod>.py",
             file=sys.stderr,
         )

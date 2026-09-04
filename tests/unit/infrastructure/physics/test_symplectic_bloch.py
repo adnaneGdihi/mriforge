@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.symplectic_bloch import (
+from spectramr.infrastructure.physics.symplectic_bloch import (
     energy_drift,
     hat_so3,
     munthe_kaas_step,

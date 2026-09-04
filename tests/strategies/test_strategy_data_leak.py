@@ -194,7 +194,7 @@ class TestGradientIsolation:
     def _run_gradient_check(strategy_cls, env_factory, batch):
         """Generic helper: instantiate strategy, run one step, check target grads."""
         env = env_factory()
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             strategy = strategy_cls(env=env, device="cpu")
 
         inp = batch["input"].clone().requires_grad_(True)
@@ -226,7 +226,7 @@ class TestGradientIsolation:
 
     def test_reconstruction_gradient_isolation(self):
         """Reconstruction strategy must not leak target into generator."""
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
         batch = _make_batch()
@@ -238,7 +238,7 @@ class TestGradientIsolation:
 
     def test_n2n_gradient_isolation(self):
         """Noise2Noise strategy must not leak target into generator."""
-        from mriforge.infrastructure.training.strategies.n2n_strategy import (
+        from spectramr.infrastructure.training.strategies.n2n_strategy import (
             NoiseToNoiseStrategy,
         )
         batch = _make_batch()
@@ -258,7 +258,7 @@ class TestTargetNotInForwardPass:
 
     def test_reconstruction_forward_args(self):
         """ReconstructionStrategy must call generator(input) not generator(target)."""
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -275,7 +275,7 @@ class TestTargetNotInForwardPass:
         batch = _make_batch()
         env = _make_env(gen)
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             strategy = ReconstructionTrainingStrategy(env=env, device="cpu")
 
         try:
@@ -302,7 +302,7 @@ class TestTargetNotInForwardPass:
 
     def test_n2n_forward_uses_input_rep(self):
         """N2N must call generator on first repetition, not second."""
-        from mriforge.infrastructure.training.strategies.n2n_strategy import (
+        from spectramr.infrastructure.training.strategies.n2n_strategy import (
             NoiseToNoiseStrategy,
         )
 
@@ -318,7 +318,7 @@ class TestTargetNotInForwardPass:
         batch = _make_batch()
         env = _make_env(gen)
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             strategy = NoiseToNoiseStrategy(env=env, device="cpu")
 
         try:
@@ -350,7 +350,7 @@ class TestTrainEvalModeIntegrity:
 
     def test_generator_in_train_mode_during_train_step(self):
         """Generator must be in .train() mode during train_step."""
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -359,7 +359,7 @@ class TestTrainEvalModeIntegrity:
         env = _make_env(gen)
         batch = _make_batch()
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             strategy = ReconstructionTrainingStrategy(env=env, device="cpu")
 
         try:
@@ -382,7 +382,7 @@ class TestBatchUnpackingIntegrity:
 
     def test_dict_batch_unpacking(self):
         """Standard dict batch must unpack correctly."""
-        from mriforge.infrastructure.training.strategies.mixins.batch_preparation import (
+        from spectramr.infrastructure.training.strategies.mixins.batch_preparation import (
             BatchPreparationMixin,
         )
 
@@ -399,7 +399,7 @@ class TestBatchUnpackingIntegrity:
 
     def test_tuple_batch_unpacking(self):
         """Tuple batch must unpack in correct order (input, target)."""
-        from mriforge.infrastructure.training.strategies.mixins.batch_preparation import (
+        from spectramr.infrastructure.training.strategies.mixins.batch_preparation import (
             BatchPreparationMixin,
         )
 
@@ -444,7 +444,7 @@ class TestLossAsymmetry:
     def test_ssot_loss_changes_with_swap(self):
         """UnifiedReconstructionLossComputer must produce different loss for swapped args."""
         try:
-            from mriforge.models.losses.computers import UnifiedReconstructionLossComputer
+            from spectramr.models.losses.computers import UnifiedReconstructionLossComputer
         except ImportError:
             pytest.skip("UnifiedReconstructionLossComputer not available")
 
@@ -465,7 +465,7 @@ class TestLossAsymmetry:
 
     def test_registry_l1_nonzero(self):
         """Registry L1 loss must return nonzero for distinct pred/target."""
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
 
         l1 = create_loss("l1")
         pred = torch.zeros(B, C_IMG, H, W)
@@ -484,7 +484,7 @@ class TestDeterminism:
 
     def test_reconstruction_deterministic(self):
         """Two runs with same seed must produce identical losses."""
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -494,7 +494,7 @@ class TestDeterminism:
             env = _make_env(gen)
             batch = _make_batch()
 
-            with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+            with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
                 strategy = ReconstructionTrainingStrategy(env=env, device="cpu")
 
             try:
@@ -531,7 +531,7 @@ class TestCycleBlochNoTargetLeak:
     The HF target is used ONLY for discriminator supervision, never as generator input."""
 
     def test_cycle_bloch_generator_sees_only_ulf(self):
-        from mriforge.infrastructure.training.strategies.cycle_bloch_strategy import (
+        from spectramr.infrastructure.training.strategies.cycle_bloch_strategy import (
             CycleBlochStrategy,
         )
 
@@ -548,7 +548,7 @@ class TestCycleBlochNoTargetLeak:
         batch = _make_batch()
         env = _make_env(gen, disc)
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             try:
                 strategy = CycleBlochStrategy(env=env, device="cpu")
             except Exception as exc:
@@ -576,7 +576,7 @@ class TestGuidedSRReferenceNotFullTarget:
     NOT see the full HF target, only the extracted reference slice/slab."""
 
     def test_guided_sr_reference_extraction_is_partial(self):
-        from mriforge.infrastructure.training.strategies.guided_sr_strategy import (
+        from spectramr.infrastructure.training.strategies.guided_sr_strategy import (
             GuidedSuperResolutionStrategy,
         )
 
@@ -586,7 +586,7 @@ class TestGuidedSRReferenceNotFullTarget:
         gen = TinyGenerator(in_ch=2)  # ULF + ref concatenated
         env = _make_env(gen)
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             try:
                 strategy = GuidedSuperResolutionStrategy(env=env, device="cpu")
             except Exception as exc:
@@ -613,7 +613,7 @@ class TestDiffusionNoisePrediction:
 
         import inspect
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -644,7 +644,7 @@ class TestValidationIsolation:
     """Validation step must not modify model weights or optimizer state."""
 
     def test_validation_does_not_update_weights(self):
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -652,7 +652,7 @@ class TestValidationIsolation:
         env = _make_env(gen)
         batch = _make_batch()
 
-        with patch("mriforge.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
+        with patch("spectramr.infrastructure.di.di_container.resolve_service", return_value=MagicMock()):
             strategy = ReconstructionTrainingStrategy(env=env, device="cpu")
 
         # Snapshot weights before validation
@@ -681,9 +681,9 @@ class TestNoHardcodedLosses:
     """Verify that recently remediated strategies use SSOT loss infrastructure."""
 
     TIER1_STRATEGIES = [
-        "src/mriforge/infrastructure/training/strategies/n2n_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/diff_siren.py",
-        "src/mriforge/infrastructure/training/strategies/disentangled_vae_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/n2n_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/diff_siren.py",
+        "src/spectramr/infrastructure/training/strategies/disentangled_vae_strategy.py",
     ]
 
     @pytest.mark.parametrize("filepath", TIER1_STRATEGIES)
@@ -742,14 +742,14 @@ class TestNoFunctionalLossesInRemediatedStrategies:
     """All remediated strategies must use create_loss() not F.mse_loss/F.l1_loss."""
 
     ALL_REMEDIATED = [
-        "src/mriforge/infrastructure/training/strategies/n2n_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/diff_siren.py",
-        "src/mriforge/infrastructure/training/strategies/cycle_bloch_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/disentangled_diffusion_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/disentangled_vae_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/guided_sr_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/meta_learning_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/n2n_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/diff_siren.py",
+        "src/spectramr/infrastructure/training/strategies/cycle_bloch_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/disentangled_diffusion_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/disentangled_vae_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/guided_sr_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/meta_learning_strategy.py",
     ]
 
     @pytest.mark.parametrize("filepath", ALL_REMEDIATED)
@@ -803,7 +803,7 @@ class TestLossRegistryIntegrity:
     @pytest.mark.parametrize("name", ["l1", "mse"])
     def test_registry_loss_has_grad(self, name):
         """Registry loss must propagate gradients through pred."""
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
 
         loss_fn = create_loss(name)
         pred = torch.randn(B, C_IMG, H, W, requires_grad=True)
@@ -822,7 +822,7 @@ class TestLossRegistryIntegrity:
     @pytest.mark.parametrize("name", ["l1", "mse"])
     def test_registry_loss_zero_for_identical(self, name):
         """Registry loss must be zero when pred == target (no phantom loss)."""
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
 
         loss_fn = create_loss(name)
         x = torch.randn(B, C_IMG, H, W)

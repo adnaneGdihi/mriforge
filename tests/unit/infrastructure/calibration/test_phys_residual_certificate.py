@@ -1,6 +1,6 @@
 """Unit tests for the PR-CC physics-residual conformal certificate.
 
-Targets ``mriforge.infrastructure.calibration.phys_residual_certificate``.
+Targets ``spectramr.infrastructure.calibration.phys_residual_certificate``.
 
 PR-CC calibrates a distribution-free hallucination certificate on the
 *physics-consistency residual* (re-render the observed contrast through the
@@ -41,7 +41,7 @@ def _params(h: int = 16, w: int = 16) -> torch.Tensor:
 
 
 def _clean_render(params: torch.Tensor) -> torch.Tensor:
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -53,7 +53,7 @@ def _clean_render(params: torch.Tensor) -> torch.Tensor:
 
 
 def test_marginal_coverage_meets_target() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 
@@ -79,7 +79,7 @@ def test_marginal_coverage_meets_target() -> None:
 
 
 def test_flags_injected_hallucination() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 
@@ -106,7 +106,7 @@ def test_flags_injected_hallucination() -> None:
 
 
 def test_mondrian_restores_per_field_coverage() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 
@@ -154,7 +154,7 @@ def test_mondrian_restores_per_field_coverage() -> None:
 
 
 def test_certify_before_calibrate_raises() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 
@@ -166,7 +166,7 @@ def test_certify_before_calibrate_raises() -> None:
 
 
 def test_unseen_field_raises_under_mondrian() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 
@@ -182,7 +182,7 @@ def test_unseen_field_raises_under_mondrian() -> None:
 
 
 def test_invalid_alpha_raises() -> None:
-    from mriforge.infrastructure.calibration.phys_residual_certificate import (
+    from spectramr.infrastructure.calibration.phys_residual_certificate import (
         PhysResidualConformalCertificate,
     )
 

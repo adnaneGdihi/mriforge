@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.infrastructure.physics.fft_ops import (
     _to_complex,
     _to_ri,
     fft2c,
@@ -391,7 +391,7 @@ class TestFFTDeviceHandling:
 # --- coil_combine selector (Task 3) ---
 import pytest  # noqa: E402
 
-from mriforge.infrastructure.physics.fft_ops import coil_combine  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import coil_combine  # noqa: E402
 
 
 def _imgs(c=4):
@@ -454,3 +454,77 @@ def test_fft2c_of_centred_delta_has_zero_phase(n: int) -> None:
     x = torch.zeros(n, n, dtype=torch.complex64)
     x[n // 2, n // 2] = 1.0
     assert float(fft2c(x).angle().abs().max()) < 1e-5
+
+
+class TestOneDimensionalHelpers:
+    """fft1c / ifft1c and the uncentered helpers: the readout-axis pair (2026-09-03)."""
+
+    @pytest.mark.parametrize("n", [16, 17])
+    def test_round_trip_even_and_odd(self, n):
+        from spectramr.infrastructure.physics.fft_ops import fft1c, ifft1c
+
+        x = torch.randn(2, 3, 8, n, dtype=torch.complex64)
+        assert torch.allclose(ifft1c(fft1c(x)), x, atol=1e-5)
+        assert torch.allclose(fft1c(ifft1c(x, dim=-2), dim=-2), x, atol=1e-5)
+
+    def test_matches_the_inline_spelling_the_operator_used(self):
+        # The operator spelled ifftshift(ifft(fftshift(k))) inline; on an even
+        # axis the two shifts agree, so the helper reproduces it exactly.
+        from spectramr.infrastructure.physics.fft_ops import ifft1c
+
+        k = torch.randn(2, 4, 8, 16, dtype=torch.complex64)
+        inline = torch.fft.ifftshift(
+            torch.fft.ifft(torch.fft.fftshift(k, dim=-1), dim=-1, norm="ortho"), dim=-1
+        )
+        assert torch.allclose(ifft1c(k), inline, atol=1e-6)
+
+    def test_dc_of_a_constant_signal_sits_at_the_centre_index(self):
+        from spectramr.infrastructure.physics.fft_ops import fft1c
+
+        n = 17
+        k = fft1c(torch.ones(1, 1, 4, n, dtype=torch.complex64))
+        assert k[..., n // 2].abs().min() > 1.0
+        mask = torch.ones(n, dtype=torch.bool)
+        mask[n // 2] = False
+        assert k[..., mask].abs().max() < 1e-5
+
+    def test_dim_argument_transforms_only_that_axis(self):
+        from spectramr.infrastructure.physics.fft_ops import fft1c
+
+        x = torch.randn(1, 1, 8, 16, dtype=torch.complex64)
+        k = fft1c(x, dim=-2)
+        assert torch.allclose(k.abs().pow(2).sum(dim=-2), x.abs().pow(2).sum(dim=-2), atol=1e-4)
+
+    def test_uncentered_helpers_are_torch_fft_with_ortho_norm(self):
+        from spectramr.infrastructure.physics.fft_ops import (
+            fft1_uncentered,
+            fft2_uncentered_last2,
+            ifft1_uncentered,
+            ifft2_uncentered_last2,
+        )
+
+        x = torch.randn(2, 8, 16, dtype=torch.complex64)
+        assert torch.allclose(fft1_uncentered(x), torch.fft.fft(x, dim=-1, norm="ortho"), atol=1e-6)
+        assert torch.allclose(ifft1_uncentered(fft1_uncentered(x)), x, atol=1e-5)
+        assert torch.allclose(
+            fft2_uncentered_last2(x), torch.fft.fft2(x, dim=(-2, -1), norm="ortho"), atol=1e-6
+        )
+        assert torch.allclose(ifft2_uncentered_last2(fft2_uncentered_last2(x)), x, atol=1e-5)
+
+    def test_real_imag_input_is_promoted_like_the_2d_helpers(self):
+        from spectramr.infrastructure.physics.fft_ops import fft1c
+
+        assert fft1c(torch.randn(1, 2, 8, 16)).is_complex()
+
+    def test_exported_in_the_ops_table(self):
+        from spectramr.infrastructure.physics.fft_ops import get_fft_ops
+
+        names = {
+            "fft1c",
+            "ifft1c",
+            "fft1_uncentered",
+            "ifft1_uncentered",
+            "fft2_uncentered_last2",
+            "ifft2_uncentered_last2",
+        }
+        assert names <= set(get_fft_ops())

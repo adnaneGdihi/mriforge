@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.data_consistency_layer import DataConsistencyLayer
+from spectramr.infrastructure.physics.data_consistency_layer import DataConsistencyLayer
 
 
 def test_complex_input_broadcasts_full_mask():

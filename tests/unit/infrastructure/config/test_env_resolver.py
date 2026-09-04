@@ -2,8 +2,8 @@
 
 Issue #618. ``main.py`` calls it at import, then unconditionally sets
 ``TMPDIR = <resolved root>``; ``accelerator.initialize_accelerator`` calls it
-again. The TMPDIR branch appends ``mriforge_cache`` to whatever TMPDIR holds, so
-the second call returned ``$TMPDIR/mriforge_cache/mriforge_cache`` -- a different
+again. The TMPDIR branch appends ``spectramr_cache`` to whatever TMPDIR holds, so
+the second call returned ``$TMPDIR/spectramr_cache/spectramr_cache`` -- a different
 root than the one main.py had already exported as ``TORCH_HOME`` /
 ``XDG_CACHE_HOME`` / ``CUDA_CACHE_CONFIG``. Visible in every cluster job log as
 two ``Cache root from TMPDIR:`` lines whose paths disagree.
@@ -16,14 +16,14 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.config.env_resolver import (
+from spectramr.infrastructure.config.env_resolver import (
     _CACHE_ENV_LAYOUT,
     CacheDirectoryError,
     configure_cache_environment,
     resolve_cache_root,
 )
 
-_VARS = ("MRIFORGE_CACHE_ROOT", "TMPDIR")
+_VARS = ("SPECTRAMR_CACHE_ROOT", "TMPDIR")
 
 #: Every variable ``configure_cache_environment`` owns. Spelled out rather than
 #: derived from ``_CACHE_ENV_LAYOUT`` so that dropping one from the layout is a
@@ -51,7 +51,7 @@ def test_second_call_returns_the_same_root_after_tmpdir_is_rewritten(
     clean_env.setenv("TMPDIR", str(tmp_path))
 
     first = resolve_cache_root()
-    assert first == tmp_path / "mriforge_cache"
+    assert first == tmp_path / "spectramr_cache"
 
     # Exactly what main.py:39 does immediately after the first call.
     clean_env.setenv("TMPDIR", str(first))
@@ -71,14 +71,14 @@ def test_resolution_is_pinned_into_the_documented_override_var(
 
     clean_env.setenv("TMPDIR", str(tmp_path))
     root = resolve_cache_root()
-    assert os.environ["MRIFORGE_CACHE_ROOT"] == str(root)
+    assert os.environ["SPECTRAMR_CACHE_ROOT"] == str(root)
 
 
 def test_explicit_override_still_wins_and_is_not_suffixed(
     clean_env: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     explicit = tmp_path / "chosen"
-    clean_env.setenv("MRIFORGE_CACHE_ROOT", str(explicit))
+    clean_env.setenv("SPECTRAMR_CACHE_ROOT", str(explicit))
     clean_env.setenv("TMPDIR", str(tmp_path / "ignored"))
 
     assert resolve_cache_root() == explicit
@@ -91,7 +91,7 @@ def test_root_is_announced_once_per_resolution(
     """Both calls log, but they must now agree on the path they report."""
     clean_env.setenv("TMPDIR", str(tmp_path))
     with caplog.at_level(
-        logging.INFO, logger="mriforge.infrastructure.config.env_resolver"
+        logging.INFO, logger="spectramr.infrastructure.config.env_resolver"
     ):
         first = resolve_cache_root()
         clean_env.setenv("TMPDIR", str(first))
@@ -104,8 +104,8 @@ def test_root_is_announced_once_per_resolution(
 class TestConfigureCacheEnvironment:
     """The cache block is one function so that no entry point can get a subset.
 
-    It was inline in ``main.py``, so ``mriforge train`` got six variables and
-    ``torchrun -m mriforge.cli train-distributed`` -- which never imports
+    It was inline in ``main.py``, so ``spectramr train`` got six variables and
+    ``torchrun -m spectramr.cli train-distributed`` -- which never imports
     ``main.py`` -- got the three ``initialize_accelerator`` happened to repeat.
     The two it left out were both caches DeepSpeed writes during its own import.
     """
@@ -161,7 +161,7 @@ class TestConfigureCacheEnvironment:
         A site profile exporting ``XDG_CACHE_HOME=$HOME/.cache`` would, under
         ``setdefault`` semantics, keep torch's JIT extension build root inside
         ``$HOME`` -- exactly the failure this block exists to prevent. The
-        documented control point is ``MRIFORGE_CACHE_ROOT``, so these are assigned.
+        documented control point is ``SPECTRAMR_CACHE_ROOT``, so these are assigned.
         """
         import os
 
@@ -238,7 +238,7 @@ class TestConfigureCacheEnvironment:
         """Anti-vacuity for the test above: the other branch names a *different* knob.
 
         Nothing was inherited here, so telling the operator to unset a variable
-        would be wrong -- ``MRIFORGE_CACHE_ROOT`` is the only control point for
+        would be wrong -- ``SPECTRAMR_CACHE_ROOT`` is the only control point for
         the five members that are assigned rather than setdefault'd.
         """
         blocker = tmp_path / "not-a-directory"
@@ -248,7 +248,7 @@ class TestConfigureCacheEnvironment:
             configure_cache_environment(blocker / "cache_root")
 
         message = str(excinfo.value)
-        assert "MRIFORGE_CACHE_ROOT" in message, message
+        assert "SPECTRAMR_CACHE_ROOT" in message, message
         assert "INHERITED" not in message, (
             f"a framework-chosen path was reported as inherited: {message}"
         )
@@ -273,7 +273,7 @@ class TestConfigureCacheEnvironment:
         assert "TMPDIR" in message, (
             f"the root's failure does not say which source produced it: {message}"
         )
-        assert "MRIFORGE_CACHE_ROOT" in message, "no remedy offered"
+        assert "SPECTRAMR_CACHE_ROOT" in message, "no remedy offered"
 
     def test_the_variable_names_match_the_env_ssot(self) -> None:
         """``core.env`` is the registry of framework env-var names.
@@ -282,7 +282,7 @@ class TestConfigureCacheEnvironment:
         ``import torch``, and ``core/__init__`` pulls torch -- so the literals are
         pinned against the SSOT here instead.
         """
-        from mriforge.core import env as env_ssot
+        from spectramr.core import env as env_ssot
 
         for var, _subdir, _overwrite in _CACHE_ENV_LAYOUT:
             attr = var

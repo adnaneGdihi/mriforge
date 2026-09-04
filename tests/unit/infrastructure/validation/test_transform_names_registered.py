@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 

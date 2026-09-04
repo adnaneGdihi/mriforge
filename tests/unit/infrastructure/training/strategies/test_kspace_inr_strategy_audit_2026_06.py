@@ -22,8 +22,8 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies import kspace_inr_strategy
-from mriforge.infrastructure.training.strategies.kspace_inr_strategy import (
+from spectramr.infrastructure.training.strategies import kspace_inr_strategy
+from spectramr.infrastructure.training.strategies.kspace_inr_strategy import (
     KSpaceINRStrategy,
 )
 

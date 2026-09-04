@@ -4,7 +4,7 @@ import numpy as np
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.coil_compression import (
+from spectramr.data.transforms.coil_compression import (
     SVDCoilCompression,
     SVDCoilCompressionTransform,
 )

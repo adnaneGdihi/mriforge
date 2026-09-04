@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
     PhysicsDrivenTrainingStrategy,
 )
 
@@ -57,7 +57,7 @@ def mock_env():
 @pytest.fixture
 def strategy(mock_env):
     """Instantiate PhysicsDrivenTrainingStrategy (NEW API - env only)."""
-    with patch("mriforge.infrastructure.physics.field_simulation.B0MapSimulator") as MockSim:
+    with patch("spectramr.infrastructure.physics.field_simulation.B0MapSimulator") as MockSim:
         MockSim.return_value.generate_batch.return_value = torch.randn(2, 1, 64, 64)
         MockSim.return_value.max_hz = 100.0
         strategy = PhysicsDrivenTrainingStrategy(
@@ -106,7 +106,7 @@ def test_compute_losses_impl_structure(strategy, mock_env):
         "PD": torch.randn(2, 1, 64, 64),
     }
 
-    with patch("mriforge.models.losses.physics_losses.BlochResidualLoss") as MockLoss:
+    with patch("spectramr.models.losses.physics_losses.BlochResidualLoss") as MockLoss:
         # Account for BlochResidualLoss().to(device) pattern
         MockLoss.return_value.to.return_value.return_value = torch.tensor(0.5)
 

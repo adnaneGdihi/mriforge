@@ -9,7 +9,7 @@ SSL loss weights live under ``losses.ssl`` now; the validator is a pass-through.
 
 from __future__ import annotations
 
-from mriforge.config.schemas.training.ssl import TrainingConfigSSL
+from spectramr.config.schemas.training.ssl import TrainingConfigSSL
 
 
 def test_default_construction_does_not_raise() -> None:

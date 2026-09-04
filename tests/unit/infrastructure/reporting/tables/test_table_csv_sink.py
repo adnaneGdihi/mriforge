@@ -18,7 +18,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.tables import (
+from spectramr.infrastructure.reporting.tables import (
     ablation_table,
     emit_table_csv,
     hyperparameter_table,

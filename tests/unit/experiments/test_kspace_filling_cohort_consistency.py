@@ -29,8 +29,8 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mriforge.config.schemas.loss import LossConfigSchema
-from mriforge.models.losses.weights import build_loss_weight_table
+from spectramr.config.schemas.loss import LossConfigSchema
+from spectramr.models.losses.weights import build_loss_weight_table
 from tests.utils.corpus import tracked_yamls
 
 _COHORT = Path(__file__).resolve().parents[3] / "experiments" / "inprogress" / "kspace_filling"
@@ -154,33 +154,11 @@ def test_target_channels_match_out_channels(arm: Path) -> None:
     )
 
 
-@pytest.mark.skipif(not _DATA_ARMS, reason="kspace_filling cohort not present")
-@pytest.mark.parametrize("arm", _DATA_ARMS, ids=[_arm_id(a) for a in _DATA_ARMS])
-def test_nex_reference_requires_m4raw_dataset_type(arm: Path) -> None:
-    """NEX-averaged reference guard (2026-07-06 regression fence).
-
-    ``data.use_repetitions`` is read ONLY by ``dataset_type: m4raw`` (routes to
-    ``M4RawRepetitionDataset``, which groups repetition files by filename stem and
-    returns ``target=mean(reps)`` — the high-SNR NEX average). Any other
-    ``dataset_type`` (``kspace`` -> ``UniversalMRIDataset`` via
-    ``_create_fastmri_universal``) silently IGNORES the knob (pitfall #15) and
-    uses each single, thermal-noise-limited record as its own "fully-sampled"
-    target. In this cohort — whose hypothesis is filling accelerated k-space to a
-    *high-SNR* reference — that makes the validation target a single noisy scan,
-    so val PSNR/SSIM grade against noise and best-checkpoint selection is
-    unreliable. This fence caught the two arms fixed on 2026-07-06
-    (experiment_11b_diff_varnet, experiment_130_ti_ccd), which carried
-    ``use_repetitions: true`` on ``dataset_type: kspace``.
-    """
-    data = yaml.safe_load(arm.read_text()).get("data") or {}
-    if data.get("use_repetitions") is not True:
-        pytest.skip("arm does not request repetition (NEX) averaging")
-    assert data.get("dataset_type") == "m4raw", (
-        f"{_arm_id(arm)}: use_repetitions=true but dataset_type="
-        f"{data.get('dataset_type')!r} — the NEX average is silently dropped "
-        f"(only dataset_type: m4raw reads use_repetitions), so the validation "
-        f"reference collapses to a single noisy scan. Set dataset_type: m4raw."
-    )
+# The NEX-reference route guard that lived here (2026-07-06) is now the
+# corpus-wide ``tests/unit/experiments/test_nex_reference_route_corpus.py``,
+# driving the ``nex_reference_route`` witness's predicate over every tracked
+# arm -- one owner (non-negotiable 17); 79 arms outside this cohort carried
+# the same defect the cohort-scoped copy could not see.
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +198,7 @@ def test_ablation_family_uses_dynamic_mask(arm: Path) -> None:
     # ``None is not False`` is True -- the guard passed on all 33 arms while
     # checking nothing, and nothing reported it. A negative assertion over a
     # defensively-defaulted dict cannot fail once its block moves.
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.from_yaml(str(arm))
     assert settings.undersampling.enable_dynamic_mask is not False, (
@@ -290,7 +268,7 @@ def test_kan_ablation_no_stray_pre_dc(arm: Path) -> None:
 # against a future espirit reintroduction landing a rank-deficient kernel.
 # ---------------------------------------------------------------------------
 
-# estimate_smaps defaults (src/mriforge/infrastructure/physics/coil_sensitivity.py).
+# estimate_smaps defaults (src/spectramr/infrastructure/physics/coil_sensitivity.py).
 _ESPIRIT_DEFAULT_KERNEL = 6
 _ESPIRIT_DEFAULT_ACS = 24
 

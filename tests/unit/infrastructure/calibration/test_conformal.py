@@ -1,6 +1,6 @@
 """Tests for ``ConformalCalibrator``.
 
-Targets ``mriforge.infrastructure.calibration.conformal`` — PR-3 (H1) of
+Targets ``spectramr.infrastructure.calibration.conformal`` — PR-3 (H1) of
 ``TODO/backlog_paradigm_expansion_roadmap.md``.
 
 Plan acceptance criteria covered:
@@ -22,11 +22,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.conformal import (
+from spectramr.infrastructure.calibration.conformal import (
     ConformalCalibrator,
     IConformalCalibrator,
 )
-from mriforge.infrastructure.calibration.scores import (
+from spectramr.infrastructure.calibration.scores import (
     absolute_residual,
     quantile_regression,
 )

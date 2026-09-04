@@ -1,6 +1,6 @@
 """Expansion tests for ``MetricsMixin``.
 
-Targets ``mriforge.infrastructure.training.strategies.mixins.metrics_mixin``.
+Targets ``spectramr.infrastructure.training.strategies.mixins.metrics_mixin``.
 
 These tests exercise the mixin's publicly-callable seams *in isolation*
 (no full ``BaseTrainingStrategy`` instantiation) so that the heavy
@@ -59,7 +59,7 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
+from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
 
 # ---------------------------------------------------------------------------
 # Test harness
@@ -1063,8 +1063,8 @@ class TestValidationImageKspaceVeto:
 
     @staticmethod
     def _to_vis_force_ifft(t):
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.training.utils.domain_inference import (
             looks_like_kspace,
         )
 
@@ -1099,7 +1099,7 @@ class TestValidationImageKspaceVeto:
         assert self._dc_blob_score(out) < 4.0  # stays a brain, NOT a DC blob
 
     def test_kspace_target_still_ifftd(self) -> None:
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         ksp = fft2c(self._brain().to(torch.complex64))
         ksp_rs = torch.cat([ksp.real, ksp.imag], dim=1)

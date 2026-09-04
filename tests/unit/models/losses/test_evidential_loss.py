@@ -1,6 +1,6 @@
 """Tests for ``EvidentialLoss``.
 
-Targets ``mriforge.models.losses.evidential_loss``. Normal-Inverse-Gamma
+Targets ``spectramr.models.losses.evidential_loss``. Normal-Inverse-Gamma
 (NIG) distribution loss for evidential regression. The network outputs
 4 channels (γ, ν, α, β); this loss minimises NLL + evidence regulariser.
 
@@ -20,7 +20,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.evidential_loss import EvidentialLoss
+from spectramr.models.losses.evidential_loss import EvidentialLoss
 
 
 def _make_evidential_pred(
@@ -184,6 +184,6 @@ def test_zero_inputs_clamped_to_safe_values() -> None:
 
 def test_evidential_registered() -> None:
     """``evidential`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "evidential" in list_available()

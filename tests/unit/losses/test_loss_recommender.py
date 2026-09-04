@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.losses.loss_recommender import (
+from spectramr.models.losses.loss_recommender import (
     LossRecommendation,
     LossRecommender,
     RecommendationSet,

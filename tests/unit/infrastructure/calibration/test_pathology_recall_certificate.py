@@ -1,6 +1,6 @@
 r"""Tests for the Pathology Recall Certificate (PRC) — ULF roadmap PR-23 / R4.
 
-Targets ``mriforge.infrastructure.calibration.pathology_recall_certificate``.
+Targets ``spectramr.infrastructure.calibration.pathology_recall_certificate``.
 
 Plan acceptance criterion (§"Tests"):
 
@@ -27,7 +27,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.calibration.pathology_recall_certificate import (
+from spectramr.infrastructure.calibration.pathology_recall_certificate import (
     PathologyRecallCertificate,
     PathologyRecallReport,
     hoeffding_recall_lower_bound,

@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.shared.utils.security``.
+"""Tests for ``spectramr.shared.utils.security``.
 
 Targets path-traversal guards, file-size limits, filename sanitisation,
 image-extension whitelisting, and the secure-temp-file helper. These
@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.shared.utils.security import (
+from spectramr.shared.utils.security import (
     FileSizeLimitError,
     PathTraversalError,
     SecurityError,

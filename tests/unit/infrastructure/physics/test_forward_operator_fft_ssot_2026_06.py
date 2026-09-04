@@ -18,8 +18,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.forward_operator import MultiCoilForwardOperator
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.forward_operator import MultiCoilForwardOperator
 
 
 def test_centered_forward_matches_fft2c_on_odd_grid():

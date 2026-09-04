@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.io_strategies import (
+from spectramr.data.io_strategies import (
     AutoDetectStrategy,
     DicomStrategy,
     FastMRIH5Strategy,

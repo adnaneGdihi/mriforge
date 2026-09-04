@@ -25,7 +25,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.pinn_strategy import (
+from spectramr.infrastructure.training.strategies.pinn_strategy import (
     ConcretePINNSensitivityStrategy,
 )
 
@@ -72,7 +72,7 @@ def test_pinn_null_guard_raises_with_helpful_message() -> None:
 
 def test_loss_config_schema_pinn_default_is_none() -> None:
     """Pin the schema-side condition that makes the guard necessary."""
-    from mriforge.config.schemas.loss import LossConfigSchema
+    from spectramr.config.schemas.loss import LossConfigSchema
 
     # When YAML omits ``losses.pinn``, the default is ``None``. If this
     # default ever changes, the PINN guard's role changes too.

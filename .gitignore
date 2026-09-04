@@ -80,6 +80,12 @@ coverage.xml
 *.py,cover
 .hypothesis/
 .pytest_cache/
+
+# Scratch file written into the repo root by the `yaml-audit` job's "Collect changed
+# experiment YAMLs" step. On a hosted runner it dies with the workspace; `make gate`
+# runs that same step in your checkout, so it lands here instead. Ignored rather than
+# cleaned up by the runner, which executes the workflow's steps verbatim on purpose.
+yamls.txt
 cover/
 
 # Translations
@@ -265,6 +271,10 @@ descriminator_metadata.xlsx
 # blanket *.json rule — they are the durable artifact the master report assembles
 # from, and survive the repo's auto-clean (reset --hard) between turns.
 !TODO/scientific_validation/*.json
+# Zenodo deposition metadata must be tracked despite the blanket *.json rule: it is
+# the release's citation metadata, it ships in the public export, and an allowlist
+# entry for an untracked path is a DEAD ALLOWANCE that `--strict` exits 2 on.
+!.zenodo.json
 *.png
 # JOSS figures: paper.md embeds these, so the JOSS build needs them tracked
 # despite the blanket *.png rule. Regenerate per paper/README.md.
@@ -288,11 +298,11 @@ checkpoints/final_model_epoch_100_20250927_011252.safetensors
 checkpoints/** */
 .idea
 **/*.backup*
-.idea/copilot.data.migration.agent.xml .idea/copilot.data.migration.ask2agent.xml .idea/copilot.data.migration.ask.xml .idea/copilot.data.migration.edit.xml .idea/mriforge.iml .idea/inspectionProfiles .idea/misc.xml .idea/modules.xml .idea/vcs.xml .idea/workspace.xml
+.idea/copilot.data.migration.agent.xml .idea/copilot.data.migration.ask2agent.xml .idea/copilot.data.migration.ask.xml .idea/copilot.data.migration.edit.xml .idea/spectramr.iml .idea/inspectionProfiles .idea/misc.xml .idea/modules.xml .idea/vcs.xml .idea/workspace.xml
 64mT_data_image
 experiments/inference*
 events.out*
-docs/presentation/mriforge_framework.pdf
+docs/presentation/spectramr_framework.pdf
 .claude/settings.local.json .claude/skills .claude/worktrees
 
 # Vendored baseline upstreams. The submodule pointers ARE tracked
@@ -302,7 +312,7 @@ docs/presentation/mriforge_framework.pdf
 # "modified content" noise in parent-repo ``git status``.
 
 # ============================================================
-# Pre-release additions (Task 10 of mriforge_claude_code_plan.md)
+# Pre-release additions (Task 10 of spectramr_claude_code_plan.md)
 # ============================================================
 
 # Python build / cache (some entries duplicate earlier lines; harmless)
@@ -359,7 +369,7 @@ docs/_build/
 docs/_autoapi/
 
 # Audit reports (local-only). Anchored to repo root so nested source dirs
-# named `audit/` (src/mriforge/config/schemas/audit/, tools/audit/, TODO/audit/)
+# named `audit/` (src/spectramr/config/schemas/audit/, tools/audit/, TODO/audit/)
 # aren't accidentally ignored.
 /audit/
 

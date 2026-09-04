@@ -8,7 +8,7 @@ class TestReconstructionStrategy:
 
     def test_strategy_exists(self):
         """Test reconstruction strategy exists."""
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -21,7 +21,7 @@ class TestGANTrainingStrategy:
 
     def test_strategy_exists(self):
         """Test GAN strategy exists."""
-        from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+        from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
         assert hasattr(GANTrainingStrategy, "train_step")
 
@@ -31,7 +31,7 @@ class TestDiffusionTrainingStrategy:
 
     def test_strategy_exists(self):
         """Test diffusion strategy exists."""
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -43,13 +43,13 @@ class TestVAETrainingStrategy:
 
     def test_strategy_exists(self):
         """Test VAE strategy exists."""
-        from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+        from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
         assert hasattr(VAETrainingStrategy, "train_step")
 
     def test_vqvae_strategy_exists(self):
         """Test VQVAE strategy exists."""
-        from mriforge.infrastructure.training.strategies.vae import VQVAETrainingStrategy
+        from spectramr.infrastructure.training.strategies.vae import VQVAETrainingStrategy
 
         assert hasattr(VQVAETrainingStrategy, "train_step")
 
@@ -67,7 +67,7 @@ class TestDomainAdaptationStrategy:
 
     def test_strategy_exists(self):
         """Test domain adaptation strategy exists."""
-        from mriforge.infrastructure.training.strategies.domain_adaptation import (
+        from spectramr.infrastructure.training.strategies.domain_adaptation import (
             DomainAdaptationTrainingStrategy,
         )
 
@@ -83,7 +83,7 @@ class TestCycleBlochStrategy:
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            from mriforge.infrastructure.training.strategies.cycle_bloch_strategy import (
+            from spectramr.infrastructure.training.strategies.cycle_bloch_strategy import (
                 CycleBlochStrategy,
             )
 
@@ -99,7 +99,7 @@ class TestN2NStrategy:
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            from mriforge.infrastructure.training.strategies.n2n_strategy import (
+            from spectramr.infrastructure.training.strategies.n2n_strategy import (
                 NoiseToNoiseStrategy,
             )
 
@@ -115,7 +115,7 @@ class TestStandardStrategy:
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
-            from mriforge.infrastructure.training.strategies.standard_strategy import (
+            from spectramr.infrastructure.training.strategies.standard_strategy import (
                 StandardTrainingStrategy,
             )
 
@@ -127,7 +127,7 @@ class TestPhysicsDrivenStrategy:
 
     def test_strategy_exists(self):
         """Test physics-driven strategy exists."""
-        from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+        from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
             PhysicsDrivenTrainingStrategy,
         )
 
@@ -139,7 +139,7 @@ class TestGraphColdDiffusionStrategy:
 
     def test_strategy_exists(self):
         """Test graph cold diffusion strategy exists."""
-        from mriforge.infrastructure.training.strategies.graph_cold_diffusion_strategy import (
+        from spectramr.infrastructure.training.strategies.graph_cold_diffusion_strategy import (
             GraphColdDiffusionStrategy,
         )
 
@@ -151,7 +151,7 @@ class TestPretrainingStrategy:
 
     def test_mae_strategy_exists(self):
         """Test MAE pretraining strategy exists."""
-        from mriforge.infrastructure.training.strategies.pretraining import (
+        from spectramr.infrastructure.training.strategies.pretraining import (
             MAEPretrainingStrategy,
         )
 
@@ -180,7 +180,7 @@ class TestMetaLearningStrategy:
 
     def test_strategy_exists(self):
         """Test meta-learning strategy exists."""
-        from mriforge.infrastructure.training.strategies.meta_learning_strategy import (
+        from spectramr.infrastructure.training.strategies.meta_learning_strategy import (
             MetaLearningTrainingStrategy,
         )
 

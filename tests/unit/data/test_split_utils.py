@@ -1,170 +1,109 @@
-"""Unit tests for the shared train/val index split helper (data SSOT).
+"""Subject-grouped splitting (cohort review 2026-09-02, T0.2).
 
-These are pure-Python and run without torch: ``split_index`` is the single
-source of truth every dataset instantiator / manifest loader now delegates to,
-so its contract (no leak, no empty split, honest single-file handling) is
-pinned here once instead of re-tested per call site.
+The planted violation comes first: the flat ``split_index`` DOES put one
+subject's files on both sides of the boundary, which is the leak the grouped
+variants exist to prevent. A test that only showed the grouped split working
+would not show that the ungrouped one fails.
 """
+
+from __future__ import annotations
 
 import pytest
 
-from mriforge.data.split_utils import split_index
+from spectramr.data.split_utils import (
+    split_index,
+    split_index_grouped,
+    split_index_three_way_grouped,
+    subject_id_from_name,
+)
 
 
-class TestSplitIndexHappyPath:
-    def test_non_overlapping_disjoint_union(self):
-        items = list(range(10))
-        train, val = split_index(items, 0.2)
-        assert set(train).isdisjoint(val)
-        assert sorted(train + val) == items
-        assert len(val) == 2 and len(train) == 8
-
-    def test_val_is_the_tail(self):
-        items = list(range(10))
-        train, val = split_index(items, 0.3)
-        # Convention: validation is the last n_val items (matches every caller).
-        assert val == [7, 8, 9]
-        assert train == [0, 1, 2, 3, 4, 5, 6]
-
-    def test_deterministic(self):
-        items = list(range(17))
-        assert split_index(items, 0.1) == split_index(items, 0.1)
-
-    def test_rounds_to_nearest(self):
-        # round(15 * 0.1) == 2 (int() would have truncated to 1).
-        _, val = split_index(list(range(15)), 0.1)
-        assert len(val) == 2
-
-    def test_both_splits_non_empty_for_multi_file(self):
-        for n in range(2, 12):
-            for frac in (0.01, 0.1, 0.5, 0.9, 0.99):
-                train, val = split_index(list(range(n)), frac)
-                assert len(train) >= 1, (n, frac)
-                assert len(val) >= 1, (n, frac)
-
-    def test_does_not_mutate_input(self):
-        items = [3, 1, 2]
-        split_index(items, 0.5)
-        assert items == [3, 1, 2]
+def _key(name: str) -> str:
+    return subject_id_from_name(name) or name
 
 
-class TestSplitIndexTrainOnly:
-    def test_zero_split_is_train_only(self):
-        items = list(range(5))
-        train, val = split_index(items, 0.0)
-        assert train == items
-        assert val == []
-
-    def test_negative_split_is_train_only(self):
-        train, val = split_index([1, 2, 3], -0.1)
-        assert train == [1, 2, 3]
-        assert val == []
-
-    def test_single_file_train_only_is_allowed(self):
-        # The escape hatch: one file + split==0 is a legitimate train-only run.
-        train, val = split_index(["only.h5"], 0.0)
-        assert train == ["only.h5"]
-        assert val == []
+def _subject_sets(items: list[str]) -> set[str]:
+    return {_key(i) for i in items}
 
 
-class TestSplitIndexSingleFileRaises:
-    def test_single_file_with_split_raises(self):
-        with pytest.raises(ValueError, match="single file"):
-            split_index(["only.h5"], 0.1)
-
-    def test_error_names_the_escape_hatch(self):
-        with pytest.raises(ValueError, match="validation_split: 0"):
-            split_index([object()], 0.5)
+# --- subject_id_from_name -----------------------------------------------------
 
 
-class TestSplitIndexEmpty:
-    def test_empty_returns_two_empties(self):
-        assert split_index([], 0.1) == ([], [])
+@pytest.mark.parametrize(
+    ("name", "expected"),
+    [
+        ("sub-01_T1w.nii.gz", "sub-01"),
+        ("sub-01/anat/sub-01_T2w.nii.gz", "sub-01"),
+        ("/data/bids/sub-A1b2/ses-02/anat/sub-A1b2_ses-02_FLAIR.nii", "sub-A1b2"),
+        ("2022_T101.h5", None),
+        ("file1000000.h5", None),
+        ("resub-01_T1w.nii.gz", None),
+    ],
+)
+def test_subject_id_from_name(name: str, expected: str | None) -> None:
+    assert subject_id_from_name(name) == expected
 
-    def test_empty_train_only(self):
-        assert split_index([], 0.0) == ([], [])
+
+# --- the planted violation: the flat split straddles a subject -----------------
 
 
-class TestSplitIndexIsTheOnlySplitter:
-    """``split_index`` is the data-layer SSOT; nothing may re-derive a partition.
+def test_flat_split_index_straddles_a_subject() -> None:
+    """Three subjects x two contrasts, 1/3 held out: the file-level tail split
+    takes two files, i.e. one whole subject -- but with an odd hold-out it takes
+    half a subject. Both shapes existed in the corpus; this pins the leaking one."""
+    files = [f"sub-{s:02d}_{c}.nii.gz" for s in (1, 2, 3) for c in ("T1w", "T2w")]
+    train, val = split_index(files, 0.5)  # 3 of 6 files -> sub-02 straddles
+    assert _subject_sets(train) & _subject_sets(val) == {"sub-02"}
 
-    Two modules did, and they disagreed with it — and with each other — in
-    different ways (2026-08-05):
 
-    * ``manifest_loader``'s carve-from-train fallback truncated with ``int()``
-      where the SSOT rounds, and on a single train record produced
-      ``max(1, 0) == 1``, handing the only file to validation and leaving
-      TRAINING EMPTY.
-    * ``preprocessed_dataset._apply_split`` sliced validation off the START
-      while every other loader takes it off the end, truncated the same way, and
-      yielded a silently EMPTY validation set whenever ``n * fraction < 1``.
+def test_grouped_split_never_straddles_a_subject() -> None:
+    files = [f"sub-{s:02d}_{c}.nii.gz" for s in (1, 2, 3) for c in ("T1w", "T2w")]
+    train, val = split_index_grouped(files, 0.5, key=_key)
+    assert not (_subject_sets(train) & _subject_sets(val))
+    assert sorted(train + val) == sorted(files)
+    # the fraction applies to SUBJECTS: round(3 * 0.5) = 2 held out
+    assert _subject_sets(val) == {"sub-02", "sub-03"}
 
-    Those are three of the exact drift behaviours ``split_utils``'s module
-    docstring names as its reason to exist ("silent leak, empty train,
-    warn-and-leak"), which is what makes a structural guard worth more than
-    another value assertion: the values only tell you about the cases you
-    thought to enumerate.
-    """
 
-    @staticmethod
-    def _split_size_expressions(tree, source: str) -> list[str]:
-        """Multiplications by a validation-fraction-ish name — i.e. someone
-        computing how many items to hold out."""
-        import ast
+def test_grouped_split_keeps_item_order_within_each_side() -> None:
+    files = ["sub-01_a", "sub-02_a", "sub-01_b", "sub-02_b", "sub-03_a"]
+    train, val = split_index_grouped(files, 0.34, key=_key)
+    assert train == ["sub-01_a", "sub-01_b", "sub-02_a", "sub-02_b"]
+    assert val == ["sub-03_a"]
 
-        names = ("validation_split", "validation_fraction", "val_frac", "val_split")
-        hits = []
-        for node in ast.walk(tree):
-            if not (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mult)):
-                continue
-            for side in (node.left, node.right):
-                spelled = (
-                    side.id
-                    if isinstance(side, ast.Name)
-                    else side.attr
-                    if isinstance(side, ast.Attribute)
-                    else None
-                )
-                if spelled in names:
-                    hits.append(f"line {node.lineno}: {ast.unparse(node)}")
-        return hits
 
-    def test_no_module_computes_its_own_split_size(self) -> None:
-        import ast
-        from pathlib import Path
+def test_unlabeled_files_are_their_own_groups_so_the_split_is_the_old_one() -> None:
+    """An M4Raw-style corpus carries no ``sub-`` label: grouping degrades to the
+    file-level split byte for byte, so no existing arm changes behaviour."""
+    files = [f"2022_T1{i:02d}.h5" for i in range(10)]
+    assert split_index_grouped(files, 0.2, key=_key) == split_index(files, 0.2)
 
-        root = Path(__file__).resolve().parents[3] / "src" / "mriforge"
-        offenders: list[str] = []
-        for path in sorted(root.rglob("*.py")):
-            if path.name == "split_utils.py":
-                continue  # the SSOT itself is where the arithmetic belongs
-            source = path.read_text(encoding="utf-8")
-            if not any(
-                n in source
-                for n in ("validation_split", "validation_fraction", "val_frac")
-            ):
-                continue
-            for hit in self._split_size_expressions(ast.parse(source), source):
-                offenders.append(f"{path.relative_to(root.parents[1])}: {hit}")
 
-        assert offenders == [], (
-            "A module is computing its own train/val partition size instead of "
-            "calling mriforge.data.split_utils.split_index:\n  "
-            + "\n  ".join(offenders)
-        )
+def test_grouped_split_train_only_escape_hatch() -> None:
+    files = ["sub-01_a", "sub-02_a"]
+    assert split_index_grouped(files, 0.0, key=_key) == (files, [])
 
-    def test_the_guard_would_catch_a_reintroduction(self) -> None:
-        """A structural check that cannot fail is not a check."""
-        import ast
 
-        src = "n_val = int(len(items) * validation_split)\n"
-        hits = self._split_size_expressions(ast.parse(src), src)
-        assert len(hits) == 1 and "validation_split" in hits[0]
+def test_grouped_split_single_subject_with_holdout_raises() -> None:
+    """One subject cannot be split without leaking it; mirrors ``split_index``."""
+    with pytest.raises(ValueError, match="single file"):
+        split_index_grouped(["sub-01_a", "sub-01_b"], 0.5, key=_key)
 
-    def test_attribute_spelling_is_caught_too(self) -> None:
-        """``config.split.validation_fraction`` is an Attribute, not a Name —
-        the shape the corpus actually uses at most call sites."""
-        import ast
 
-        src = "n = round(len(x) * config.split.validation_fraction)\n"
-        assert len(self._split_size_expressions(ast.parse(src), src)) == 1
+# --- three-way ------------------------------------------------------------------
+
+
+def test_three_way_grouped_is_pairwise_disjoint_by_subject_and_covers_everything() -> None:
+    files = [f"sub-{s:02d}_{c}" for s in range(1, 7) for c in ("T1w", "T2w", "FLAIR")]
+    train, val, test = split_index_three_way_grouped(files, 0.2, 0.2, key=_key)
+    sides = [_subject_sets(x) for x in (train, val, test)]
+    assert all(not (a & b) for i, a in enumerate(sides) for b in sides[i + 1 :])
+    assert sorted(train + val + test) == sorted(files)
+    assert len(_subject_sets(test)) == 1 and len(_subject_sets(val)) == 1
+
+
+def test_three_way_grouped_without_test_split_matches_two_way() -> None:
+    files = [f"sub-{s:02d}_{c}" for s in range(1, 5) for c in ("a", "b")]
+    train, val, test = split_index_three_way_grouped(files, 0.25, 0.0, key=_key)
+    assert test == []
+    assert (train, val) == split_index_grouped(files, 0.25, key=_key)

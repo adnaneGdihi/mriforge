@@ -14,7 +14,7 @@ from pathlib import Path
 
 def test_domain_validation_precedes_loss_audit() -> None:
     src = (
-        Path(__file__).resolve().parents[2] / "src" / "mriforge" / "bootstrap.py"
+        Path(__file__).resolve().parents[2] / "src" / "spectramr" / "bootstrap.py"
     ).read_text()
     domain_pos = src.find("verify_startup_loss_domains")
     losses_pos = src.find("verify_startup_losses(config.losses)")

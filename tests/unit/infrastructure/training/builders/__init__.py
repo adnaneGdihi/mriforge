@@ -1,4 +1,4 @@
-"""Builder tests mirroring ``src/mriforge/infrastructure/training/builders/``.
+"""Builder tests mirroring ``src/spectramr/infrastructure/training/builders/``.
 
 Load-bearing: without this file pytest names the modules here after their bare
 basename, so ``test_loss_builder.py`` / ``test_optimization_builder.py`` collide

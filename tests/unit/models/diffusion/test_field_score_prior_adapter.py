@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.diffusion.field_score_prior_adapter import FieldScorePriorAdapter
-from mriforge.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
-from mriforge.models.generators.field_physics_score_unet import FieldPhysicsEmbeddedScoreUNet
+from spectramr.models.diffusion.field_score_prior_adapter import FieldScorePriorAdapter
+from spectramr.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
+from spectramr.models.generators.field_physics_score_unet import FieldPhysicsEmbeddedScoreUNet
 
 
 def _prior() -> FieldPhysicsEmbeddedScoreUNet:

@@ -4,7 +4,7 @@ import pytest
 import torch
 from torch.amp import GradScaler as NativeScaler
 
-from mriforge.infrastructure.training.mixed_precision import (
+from spectramr.infrastructure.training.mixed_precision import (
     ComplexGradScaler,
     MixedPrecisionConfig,
     MixedPrecisionIntegrationHelper,

@@ -12,10 +12,10 @@ from collections.abc import Iterator
 
 import pytest
 
-from mriforge.domain.entities import ResolvedExperimentContext
-from mriforge.domain.entities.experiment_context import DataProfile
-from mriforge.infrastructure.validation import compatibility_matrix as cm
-from mriforge.models.capabilities import (
+from spectramr.domain.entities import ResolvedExperimentContext
+from spectramr.domain.entities.experiment_context import DataProfile
+from spectramr.infrastructure.validation import compatibility_matrix as cm
+from spectramr.models.capabilities import (
     AdapterCapabilities,
     LossCapabilities,
     ModelCapabilities,

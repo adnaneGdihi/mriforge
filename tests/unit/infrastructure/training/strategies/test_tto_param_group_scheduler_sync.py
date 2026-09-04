@@ -24,10 +24,10 @@ import pytest
 torch = pytest.importorskip("torch")
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts  # noqa: E402
 
-from mriforge.infrastructure.training.scheduler_system import (  # noqa: E402
+from spectramr.infrastructure.training.scheduler_system import (  # noqa: E402
     WarmupScheduler,
 )
-from mriforge.infrastructure.training.strategies.base import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.base import (  # noqa: E402
     BaseTrainingStrategy,
 )
 

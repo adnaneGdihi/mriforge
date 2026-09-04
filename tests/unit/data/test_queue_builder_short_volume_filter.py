@@ -33,7 +33,7 @@ import torchio as tio
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
 
-from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
 
 def _make_subject(shape: tuple[int, int, int, int]) -> tio.Subject:

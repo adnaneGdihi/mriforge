@@ -11,7 +11,7 @@ import types
 
 import pytest
 
-from mriforge.pipelines.train import _determinism_from_config
+from spectramr.pipelines.train import _determinism_from_config
 
 pytestmark = pytest.mark.unit
 

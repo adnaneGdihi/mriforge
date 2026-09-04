@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.wmh_dice_evaluator import (  # noqa: E402
+from spectramr.core.metrics.wmh_dice_evaluator import (  # noqa: E402
     LazySegmenterAdapter,
     WMHDiceEvaluator,
 )

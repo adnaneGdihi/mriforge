@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.infrastructure.training.strategies import mrf_acquisition_strategies as mod
-from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+from spectramr.infrastructure.training.strategies import mrf_acquisition_strategies as mod
+from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
     CrossScannerMRFHarmonisationStrategy,
 )
 

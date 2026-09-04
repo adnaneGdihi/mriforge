@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.pipelines.parallel import is_rank_zero, resolve_data_rank
+from spectramr.pipelines.parallel import is_rank_zero, resolve_data_rank
 
 
 def _config(strategy: str | None) -> SimpleNamespace:
@@ -41,7 +41,7 @@ class TestIsRankZero:
     ) -> None:
         """The regression: fsdp/deepspeed short-circuited to True here, so the
         rank check never ran and every rank reported rank 0."""
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         monkeypatch.setattr(
             parallel_mod.torch.distributed, "is_initialized", lambda: True
@@ -54,7 +54,7 @@ class TestIsRankZero:
     def test_process_group_strategies_are_rank_zero_on_rank_zero(
         self, strategy: str, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         monkeypatch.setattr(
             parallel_mod.torch.distributed, "is_initialized", lambda: True
@@ -71,7 +71,7 @@ class TestIsRankZero:
     def test_the_strategy_set_covers_every_process_group_strategy(self) -> None:
         """Pins the set against the schema so a newly-added sharded strategy
         cannot silently inherit the 'everyone is rank 0' answer."""
-        from mriforge.pipelines.parallel import _PROCESS_GROUP_STRATEGIES
+        from spectramr.pipelines.parallel import _PROCESS_GROUP_STRATEGIES
 
         assert _PROCESS_GROUP_STRATEGIES == {"ddp", "fsdp", "deepspeed"}
 
@@ -99,7 +99,7 @@ class TestResolveDataRank:
     def test_initialised_process_group_returns_the_real_rank(
         self, strategy: str, rank: int, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         monkeypatch.setattr(parallel_mod.torch.distributed, "is_initialized", lambda: True)
         monkeypatch.setattr(parallel_mod.torch.distributed, "get_rank", lambda: rank)
@@ -112,7 +112,7 @@ class TestResolveDataRank:
     ) -> None:
         """The two helpers must never disagree about who rank 0 is. Pins them
         together so a guard added to one cannot be forgotten in the other."""
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         monkeypatch.setattr(parallel_mod.torch.distributed, "is_initialized", lambda: True)
         monkeypatch.setattr(parallel_mod.torch.distributed, "get_rank", lambda: 2)

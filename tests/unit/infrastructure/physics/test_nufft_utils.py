@@ -16,7 +16,7 @@ import torch
 
 pytest.importorskip("torchkbnufft")
 
-from mriforge.infrastructure.physics.nufft_utils import apply_nufft_adjoint
+from spectramr.infrastructure.physics.nufft_utils import apply_nufft_adjoint
 
 
 def _radial_trajectory(num_spokes: int, samples: int) -> torch.Tensor:

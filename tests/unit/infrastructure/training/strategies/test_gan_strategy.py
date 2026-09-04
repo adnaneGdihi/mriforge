@@ -14,7 +14,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
 
 def test_train_generator_step_reads_loop_state_not_frozen_env_step() -> None:
@@ -170,7 +170,7 @@ class TestGANTrainStepEnforcement:
 
     def test_train_step_not_overridden(self):
         """Verify train_step is inherited from BaseTrainingStrategy."""
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         # GANTrainingStrategy should inherit final train_step behavior from base.
         assert hasattr(BaseTrainingStrategy, "train_step")

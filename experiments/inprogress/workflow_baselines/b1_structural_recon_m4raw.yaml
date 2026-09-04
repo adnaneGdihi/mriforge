@@ -1,0 +1,139 @@
+# b1: mri_structural x reconstruction. The second control.
+#
+# Input  = 4x retrospectively undersampled phase-aligned mean
+# Target = phase-aligned mean of reps
+#
+# READ THIS BEFORE COMPARING b1 TO b0. b1 is NOT "b0 plus a mask". Turning
+# undersampling on also SWAPS THE INPUT: PhysicsInformedMasking sources from the
+# `kspace` subject key, which M4Raw sets to the averaged TARGET, and overwrites
+# `input` with the masked version of it. So b0's noisy rep[0] input is discarded
+# here. b0 -> b1 is a TWO-factor change (mask on, AND input provenance
+# rep[0] -> clean mean), and no delta measured between the two arms is
+# attributable to the mask alone. Each arm is a clean control for its OWN task;
+# neither is a variant of the other. Both therefore carry `baseline: null`.
+# See README "Why b0 and b1 are not a single-factor pair".
+config_version: '1.0'
+
+workflow:
+  regime: mri_structural
+  # Agrees with the profile AND with the resolved strategy's own tag
+  # (ReconstructionTrainingStrategy.capabilities.tasks == {RECONSTRUCTION}).
+  # b0's `denoising` does not. See b0 and the README.
+  task: reconstruction
+
+metadata:
+  name: b1_structural_recon_m4raw
+  description: >-
+    Control arm. 4x Cartesian retrospective undersampling on M4Raw 0.3T brain:
+    predict the fully-sampled phase-aligned multi-rep mean from a 4x undersampled
+    version of that same mean. Both input and target derive from the clean mean;
+    the single-rep noise of b0 plays no part here.
+  author: Adnane
+  group: workflow_baselines_m4raw_structural
+  hypothesis: >-
+    A 2-channel complex k-space UNet recovers the fully-sampled phase-aligned
+    mean from 4x Cartesian-undersampled k-space with higher image-domain PSNR
+    than the zero-filled reconstruction of that same undersampled input.
+  primary_metric: psnr
+  # A control, not a variant. It is not "b0 plus one knob" (see the header), so
+  # pointing baseline at b0 would assert a single-factor pairing that does not
+  # hold.
+  baseline: null
+  tags:
+    type: reconstruction
+    paradigm: reconstruction
+    domain: kspace
+
+data:
+  dataset_type: m4raw
+  target_mode: phase_aligned_mean
+  # FACTOR 1 of 2 (absent in b0). Selects the Cartesian physics slot. Combined
+  # with acceleration.base_acceleration > 1 below this yields
+  # PhysicsInformedMasking, which masks `kspace` into `input` and emits the
+  # `mask` key the reconstruction strategy consumes.
+  # NOTE: `trajectory` WITHOUT an acceleration block selects
+  # _KSpaceToInputTransform instead, which makes input == target (identity task).
+  # These two knobs are only safe together.
+  trajectory: cartesian
+
+# FACTOR 2 of 2 (absent in b0). base_acceleration MUST be > 1.0: at exactly 1.0
+# the transform builder falls through to max_acceleration (default 8.0), so a
+# "1x" arm would silently run at 8x. max_acceleration is NOT declared because it
+# is unread on this path whenever base_acceleration > 1.
+  loader:
+    batch_size: 2
+    num_workers: 4
+  coils:
+    processing_mode: rss
+  split:
+    type: manifest
+  domain:
+    target_channels: 2
+  sampling:
+    patch_size:
+    - 256
+    - 256
+    - 1
+    samples_per_volume: 4
+    queue_length: 100
+  pairing:
+    single_contrast: true
+  source:
+    root: databases/m4raw/data
+    index_path: data/manifests/m4raw_train.json
+    validation_index_path: data/manifests/m4raw_multicoil_val.json
+undersampling:
+  base_acceleration: 4.0
+  center_fraction: 0.08
+
+model:
+  model_type: complex_unet
+  model_domain: kspace
+  target_domain: kspace
+  input_type: kspace
+  output_type: kspace
+  in_channels: 2
+  out_channels: 2
+  spatial_dims: 2
+  model_kwargs:
+    features:
+    - 32
+    - 64
+    - 128
+    - 256
+    img_size:
+    - 256
+    - 256
+    feature_domain: kspace
+
+training:
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  epochs: 50
+  output_dir: experiments/results/workflow_baselines/b1_structural_recon_m4raw
+
+optimization:
+
+  optimizer:
+    learning_rate: 0.0001
+losses:
+  kspace_losses:
+  - name: l1
+    weight: 1.0
+
+  policy:
+    output_domain: kspace
+validation:
+
+  loader:
+    shuffle: true
+  scoring:
+    compute:
+    - psnr
+    - ssim
+    domain: image
+    output_transform: ifft_magnitude
+logging:
+  identity:
+    experiment: b1_structural_recon_m4raw
+run:
+  seed: 42

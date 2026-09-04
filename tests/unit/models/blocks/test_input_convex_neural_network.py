@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
 
-from mriforge.models.blocks.input_convex_neural_network import InputConvexNeuralNetwork
+from spectramr.models.blocks.input_convex_neural_network import InputConvexNeuralNetwork
 
 
 def _net(**kw) -> InputConvexNeuralNetwork:

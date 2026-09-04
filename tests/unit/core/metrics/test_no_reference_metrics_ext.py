@@ -1,7 +1,7 @@
 """Tests for the ``no_reference_metrics`` battery extensions.
 
 Covers the two metrics appended to
-``mriforge.core.metrics.no_reference_metrics`` by the NR-metrics spec (§3):
+``spectramr.core.metrics.no_reference_metrics`` by the NR-metrics spec (§3):
 
 * ``ecfd`` — Empirical-Characteristic-Function Rician Deviation (lower better)
 * ``bnac`` — Background-Noise Autocorrelation Colour            (lower better)
@@ -22,8 +22,8 @@ torch = pytest.importorskip("torch")
 
 import torch.nn.functional as F  # noqa: E402
 
-from mriforge.core.metrics.context import MetricContext  # noqa: E402
-from mriforge.core.metrics.registry import get_metric  # noqa: E402
+from spectramr.core.metrics.context import MetricContext  # noqa: E402
+from spectramr.core.metrics.registry import get_metric  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

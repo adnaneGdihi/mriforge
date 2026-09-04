@@ -12,7 +12,7 @@ import inspect
 
 import torch
 
-from mriforge.infrastructure.training.strategies.ssdu_strategy import (
+from spectramr.infrastructure.training.strategies.ssdu_strategy import (
     SSDUReconstructionStrategy,
     split_acquired_mask,
 )
@@ -34,7 +34,7 @@ def test_split_acquired_mask_disjoint_and_complete() -> None:
 def test_multi_mask_loss_accepts_theta_masks_list() -> None:
     """The strategy now supplies context['theta_masks']; the loss must consume
     a list with a single prediction (the previously-crashing path)."""
-    from mriforge.models.losses.ssdu_loss import MultiMaskSSDULoss
+    from spectramr.models.losses.ssdu_loss import MultiMaskSSDULoss
 
     loss = MultiMaskSSDULoss()
     pred = torch.rand(1, 1, 8, 8)

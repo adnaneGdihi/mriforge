@@ -23,7 +23,7 @@ remains the opt-out and means "pass values through unmodified", never
 import pytest
 import torch
 
-from mriforge.data.collation.strategies import ImageCollateStrategy
+from spectramr.data.collation.strategies import ImageCollateStrategy
 
 
 class TestNonFiniteGuardRaises:
@@ -194,7 +194,7 @@ class TestChannelCountsAreNotPaddable:
 
     @staticmethod
     def _collate(batch):
-        from mriforge.data.collation.strategies import CollateStrategyFactory
+        from spectramr.data.collation.strategies import CollateStrategyFactory
 
         return CollateStrategyFactory.create("image").collate(batch)
 
@@ -235,7 +235,7 @@ class TestSpatialPaddingIsRecorded:
 
     @staticmethod
     def _collate(batch):
-        from mriforge.data.collation.strategies import CollateStrategyFactory
+        from spectramr.data.collation.strategies import CollateStrategyFactory
 
         return CollateStrategyFactory.create("image").collate(batch)
 
@@ -286,7 +286,7 @@ class TestTheKeySetIsCheckedAcrossTheBatch:
 
     @staticmethod
     def _collate(batch):
-        from mriforge.data.collation.strategies import CollateStrategyFactory
+        from spectramr.data.collation.strategies import CollateStrategyFactory
 
         return CollateStrategyFactory.create("image").collate(batch)
 
@@ -347,8 +347,8 @@ class TestSlabTargetModeIsReachable:
 
     @staticmethod
     def _select(**kw):
-        from mriforge.config.schemas.collation import CollationConfigSchema
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.config.schemas.collation import CollationConfigSchema
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -369,7 +369,7 @@ class TestSlabTargetModeIsReachable:
     def test_the_schema_rejects_an_unknown_mode(self) -> None:
         import pydantic
 
-        from mriforge.config.schemas.collation import CollationConfigSchema
+        from spectramr.config.schemas.collation import CollationConfigSchema
 
         with pytest.raises(pydantic.ValidationError):
             CollationConfigSchema(slab_target_mode="middl")
@@ -384,7 +384,7 @@ class TestSlabTargetModeDispatch:
     def _collate(mode):
         import torch
 
-        from mriforge.data.collation.strategies import SlabCollateStrategy
+        from spectramr.data.collation.strategies import SlabCollateStrategy
 
         batch = [
             {
@@ -423,14 +423,14 @@ class TestFlatten3dTo2dStaysUnreachable:
     """
 
     def test_it_is_not_a_schema_field(self) -> None:
-        from mriforge.config.schemas.collation import CollationConfigSchema
+        from spectramr.config.schemas.collation import CollationConfigSchema
 
         assert "flatten_3d_to_2d" not in CollationConfigSchema.model_fields
 
     def test_the_selector_never_passes_it(self) -> None:
         import inspect
 
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -444,12 +444,12 @@ class TestFlatten3dTo2dStaysUnreachable:
 
         train = (
             Path(__file__).resolve().parents[4]
-            / "src/mriforge/pipelines/train.py"
+            / "src/spectramr/pipelines/train.py"
         )
         assert "5D→4D" in train.read_text(encoding="utf-8")
 
     def test_the_standalone_helper_still_works(self) -> None:
         """Unreachable from config is not the same as dead."""
-        from mriforge.data.collation.strategies import squeezing_collate
+        from spectramr.data.collation.strategies import squeezing_collate
 
         assert callable(squeezing_collate)

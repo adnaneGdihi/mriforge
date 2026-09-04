@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.loss_folding import (
+from spectramr.infrastructure.training.strategies.loss_folding import (
     declared_loss_weights,
     fold_builder_image_losses,
 )
@@ -98,7 +98,7 @@ def test_fold_zero_valued_dict_loss_not_replaced() -> None:
 def test_scheduled_overrides_reads_loop_state() -> None:
     from types import SimpleNamespace
 
-    from mriforge.infrastructure.training.strategies.loss_folding import (
+    from spectramr.infrastructure.training.strategies.loss_folding import (
         scheduled_overrides,
     )
 
@@ -115,7 +115,7 @@ def test_scheduled_overrides_reads_loop_state() -> None:
 
 
 def test_inline_managed_with_widens_the_default_skip_set() -> None:
-    from mriforge.infrastructure.training.strategies.loss_folding import (
+    from spectramr.infrastructure.training.strategies.loss_folding import (
         inline_managed_with,
     )
 
@@ -127,7 +127,7 @@ def test_inline_managed_with_widens_the_default_skip_set() -> None:
 
 
 def test_fold_skips_a_strategy_declared_inline_term() -> None:
-    from mriforge.infrastructure.training.strategies.loss_folding import (
+    from spectramr.infrastructure.training.strategies.loss_folding import (
         inline_managed_with,
     )
 
@@ -159,7 +159,7 @@ def test_fold_skips_a_strategy_declared_inline_term() -> None:
 
 def test_declaring_an_inline_term_makes_its_weight_resolvable() -> None:
     """The point of the declaration: the schedule controller can now find a base."""
-    from mriforge.models.losses.weights import build_loss_weight_table
+    from spectramr.models.losses.weights import build_loss_weight_table
 
     table = build_loss_weight_table(
         _cfg([("l1", 1.0), ("cocycle_consistency", 0.1)]).losses

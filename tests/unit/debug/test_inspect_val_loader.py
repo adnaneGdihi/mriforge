@@ -26,9 +26,9 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.renames import RENAMES
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+from spectramr.config.schemas.renames import RENAMES
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (
     DataPipelineDirector,
 )
 
@@ -135,5 +135,5 @@ def test_missing_config_exits_nonzero(script: types.ModuleType, tmp_path: Path) 
 
 
 def test_src_is_on_sys_path_after_import(script: types.ModuleType) -> None:
-    """The old ``sys.path.append(os.getcwd())`` never made ``mriforge`` importable."""
+    """The old ``sys.path.append(os.getcwd())`` never made ``spectramr`` importable."""
     assert str(REPO / "src") in sys.path

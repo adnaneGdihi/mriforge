@@ -1,6 +1,6 @@
 """Tests for embedding modules.
 
-Targets ``mriforge.models.blocks.embeddings``:
+Targets ``spectramr.models.blocks.embeddings``:
 
 - ``PatchEmbedding`` — Vision Transformer patch projection
 - ``SinusoidalPositionEmbedding`` — diffusion timestep embedding
@@ -19,7 +19,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.blocks.embeddings import (
+from spectramr.models.blocks.embeddings import (
     KAN_AVAILABLE,
     CoordinatePositionalEncoding,
     FourierKANPositionalEmbedding,

@@ -1,6 +1,6 @@
 """The v1.0 reference template must load cleanly through ``from_yaml()``.
 
-``src/mriforge/config/schemas/templates/v1.0_reference.yaml`` is the schema SSOT
+``src/spectramr/config/schemas/templates/v1.0_reference.yaml`` is the schema SSOT
 and the live "copy-and-edit" surface a new contributor starts from.
 ``TrainingSettings`` is ``extra="forbid"`` — every key MUST be a real Pydantic
 field — so any silent schema drift makes the template itself unloadable. That is
@@ -9,11 +9,11 @@ the point of loading it here: prose can drift, an executed file cannot.
 This module asserts three contracts:
 
 1. ``experiment_name:`` is NEVER declared at top level. The only schema-defined
-   spelling lives on :class:`~mriforge.config.schemas.logging.LoggingConfigSchema`
+   spelling lives on :class:`~spectramr.config.schemas.logging.LoggingConfigSchema`
    (at ``logging.identity.experiment`` since phase 10b), so a top-level key was
    the original 2026-05-28 regression that fooled ``extra="forbid"``.
 2. The template round-trips through
-   :meth:`mriforge.config.settings.TrainingSettings.from_yaml`, and the value
+   :meth:`spectramr.config.settings.TrainingSettings.from_yaml`, and the value
    arrives at its CANONICAL home.
 3. The template declares ``CANONICAL_CONFIG_VERSION`` — a reference that teaches
    a legacy version is worse than no reference, since it is the file people copy.
@@ -25,7 +25,7 @@ all 41 were legacy spellings whose canonical target v6.1 already carried — zer
 had a canonical target absent from it. So nothing it documented was lost, and
 what it uniquely taught was the retired spelling. Its former drift (lowercase
 ``level: 'INFO'`` against the ``LogLevel`` enum, ``dataset_type: 'fastmri'``,
-legacy ``src.infrastructure...`` strategy paths after the ``src→mriforge``
+legacy ``src.infrastructure...`` strategy paths after the ``src→spectramr``
 rename) is history rather than a live risk, but the round-trip below is what
 would catch its recurrence.
 """
@@ -37,7 +37,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-import mriforge.config.schemas as _schemas
+import spectramr.config.schemas as _schemas
 
 # Anchored off the package, not the repo root, so the test runs from any cwd.
 TEMPLATES = Path(str(_schemas.__file__)).parent / "templates"
@@ -73,14 +73,14 @@ def test_no_top_level_experiment_name(v1_0_dict: dict) -> None:
 
 
 def test_the_template_declares_the_canonical_version(v1_0_dict: dict) -> None:
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
     assert str(v1_0_dict.get("config_version")) == CANONICAL_CONFIG_VERSION
 
 
 def test_reference_template_round_trips_through_training_settings() -> None:
     """The whole point: schema drift that breaks the reference fails here."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.from_yaml(V1_0)
     assert settings is not None
@@ -96,7 +96,7 @@ def test_the_reference_is_free_of_legacy_spellings() -> None:
     Resolved through ``RENAMES`` rather than a hand-written list, so a record
     added tomorrow is covered without editing this test.
     """
-    from mriforge.config.schemas.renames import RENAMES
+    from spectramr.config.schemas.renames import RENAMES
 
     def walk(node, prefix=""):
         if isinstance(node, dict):

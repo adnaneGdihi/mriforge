@@ -11,9 +11,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
     HealthCheckResult,
 )
@@ -42,7 +42,7 @@ def _a_metric_tagged(*regimes: Regime) -> str:
     """A registered metric whose workflows tag is exactly ``regimes`` (skip if none)."""
     import pytest
 
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     want = frozenset(regimes)
     for name, meta in MetricsRegistry._workflow_tags.items():
@@ -92,7 +92,7 @@ class TestDoesNotRejectLegitimateArms:
         # temporal_fidelity is tagged {FUNCTIONAL, DYNAMIC}; it must pass on both.
         import pytest
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         multi = None
         for name, meta in MetricsRegistry._workflow_tags.items():
@@ -112,7 +112,7 @@ class TestDoesNotRejectLegitimateArms:
     def test_a_disabled_loss_is_ignored(self) -> None:
         # A regime-foreign loss that is explicitly disabled must not trip the check.
         checker = ConfigHealthChecker.__new__(ConfigHealthChecker)
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         foreign = None
         for lname, meta in LossRegistry._loss_domains.items():
@@ -140,7 +140,7 @@ def test_a_foreign_loss_on_a_structural_arm_is_rejected() -> None:
     """The loss side of the same rule, driven by a real regime-tagged loss."""
     import pytest
 
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     foreign = None
     for lname, meta in LossRegistry._loss_domains.items():
@@ -185,8 +185,8 @@ def test_the_check_is_wired_into_the_audit_run(monkeypatch) -> None:
 
 def _runnable_config():
     """A minimal real ``TrainingSettings`` that ``run_all_checks`` can walk."""
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings.settings_from_dict(
         {
@@ -216,8 +216,8 @@ def test_the_77_annotated_arms_would_all_pass() -> None:
 
     import yaml
 
-    from mriforge.core.metrics.registry import MetricsRegistry
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     root = pathlib.Path(__file__).resolve().parents[4] / "experiments" / "inprogress"
     if not root.is_dir():

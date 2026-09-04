@@ -20,9 +20,9 @@ import inspect
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.contrast_aware import ContrastAwarePairedDataset
-from mriforge.data.datasets.universal_dataset import UniversalMRIDataset
-from mriforge.data.io_strategies import IOStrategyFactory
+from spectramr.data.datasets.contrast_aware import ContrastAwarePairedDataset
+from spectramr.data.datasets.universal_dataset import UniversalMRIDataset
+from spectramr.data.io_strategies import IOStrategyFactory
 
 
 class TestKSpaceStillLoads:

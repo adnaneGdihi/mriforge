@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.core.metrics.dkw`.
+"""Unit tests for :mod:`spectramr.core.metrics.dkw`.
 
 Beyond the closed form, these pin the two properties that motivated the move out
 of ``infrastructure/calibration/chd.py`` (#1183):
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.core.metrics.dkw import dkw_slack
+from spectramr.core.metrics.dkw import dkw_slack
 
 
 class TestDkwSlack:
@@ -50,12 +50,12 @@ class TestSingleOwner:
     """The move is only a fix if it left exactly one implementation behind."""
 
     def test_chd_reexports_the_same_object(self) -> None:
-        from mriforge.infrastructure.calibration import chd
+        from spectramr.infrastructure.calibration import chd
 
         assert chd.dkw_slack is dkw_slack
 
     def test_package_reexport_is_the_same_object(self) -> None:
-        from mriforge.infrastructure import calibration
+        from spectramr.infrastructure import calibration
 
         assert calibration.dkw_slack is dkw_slack
 
@@ -75,7 +75,7 @@ class TestLayerCleanliness:
 
     def test_module_imports_no_outward_layer(self) -> None:
         src = Path(dkw_path()).read_text(encoding="utf-8")
-        outward = ("mriforge.infrastructure", "mriforge.application", "mriforge.pipelines", "mriforge.cli")
+        outward = ("spectramr.infrastructure", "spectramr.application", "spectramr.pipelines", "spectramr.cli")
         imported: list[str] = []
         for node in ast.walk(ast.parse(src)):
             if isinstance(node, ast.Import):
@@ -86,7 +86,7 @@ class TestLayerCleanliness:
 
     def test_trajectory_metrics_no_longer_reaches_into_infrastructure(self) -> None:
         """The consumer whose function-local import kept the gate red (#1183)."""
-        from mriforge.core.metrics import trajectory_metrics
+        from spectramr.core.metrics import trajectory_metrics
 
         src = Path(trajectory_metrics.__file__).read_text(encoding="utf-8")
         offenders = [
@@ -94,22 +94,22 @@ class TestLayerCleanliness:
             for node in ast.walk(ast.parse(src))
             if isinstance(node, ast.ImportFrom)
             and node.module
-            and node.module.startswith("mriforge.infrastructure")
+            and node.module.startswith("spectramr.infrastructure")
         ]
         assert offenders == [], (
-            "core/metrics/trajectory_metrics.py imports mriforge.infrastructure at "
+            "core/metrics/trajectory_metrics.py imports spectramr.infrastructure at "
             f"{offenders} — including function-local imports, which the ^-anchored "
             "check_layering.sh grep cannot see."
         )
 
 
 def dkw_path() -> str:
-    from mriforge.core.metrics import dkw
+    from spectramr.core.metrics import dkw
 
     return dkw.__file__
 
 
 def chd_path() -> str:
-    from mriforge.infrastructure.calibration import chd
+    from spectramr.infrastructure.calibration import chd
 
     return chd.__file__

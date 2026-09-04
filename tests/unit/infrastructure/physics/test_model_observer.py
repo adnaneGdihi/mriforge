@@ -17,7 +17,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.model_observer import (
+from spectramr.infrastructure.physics.model_observer import (
     ChannelizedHotellingObserver,
     ddog_channel_bank,
     gabor_channel_bank,

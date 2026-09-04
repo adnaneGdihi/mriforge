@@ -1,6 +1,6 @@
 """Tests for the interactive 3-D volumetric viewer.
 
-Targets ``mriforge.infrastructure.reporting.interactive.viewer_3d``: builds a
+Targets ``spectramr.infrastructure.reporting.interactive.viewer_3d``: builds a
 Z-slice scrubber from a case carrying a 3-D ``*_volume`` array, and soft-skips
 honestly on 2-D-only cases (single-slice data) or empty input.
 """
@@ -11,7 +11,7 @@ import importlib.util
 
 import numpy as np
 
-from mriforge.infrastructure.reporting.interactive import viewer_3d as v3d
+from spectramr.infrastructure.reporting.interactive import viewer_3d as v3d
 
 _HAS_PLOTLY = importlib.util.find_spec("plotly") is not None
 

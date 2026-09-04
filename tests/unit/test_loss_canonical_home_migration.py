@@ -11,37 +11,37 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.models.losses import list_available
-from mriforge.models.losses.optimal_transport_losses import (
+from spectramr.models.losses import list_available
+from spectramr.models.losses.optimal_transport_losses import (
     DynamicOTFlow,
     KIDOTLoss,
     SinkhornDistance,
 )
-from mriforge.models.losses.physics_informed_integration_loss import PhysicsInformedLoss
+from spectramr.models.losses.physics_informed_integration_loss import PhysicsInformedLoss
 
 
 def test_physics_informed_integration_canonical_home() -> None:
-    """``PhysicsInformedLoss`` lives in ``mriforge.models.losses``."""
+    """``PhysicsInformedLoss`` lives in ``spectramr.models.losses``."""
     assert PhysicsInformedLoss.__module__ == (
-        "mriforge.models.losses.physics_informed_integration_loss"
+        "spectramr.models.losses.physics_informed_integration_loss"
     )
 
 
 def test_sinkhorn_canonical_home() -> None:
     assert SinkhornDistance.__module__ == (
-        "mriforge.models.losses.optimal_transport_losses"
+        "spectramr.models.losses.optimal_transport_losses"
     )
 
 
 def test_dynamic_ot_canonical_home() -> None:
     assert DynamicOTFlow.__module__ == (
-        "mriforge.models.losses.optimal_transport_losses"
+        "spectramr.models.losses.optimal_transport_losses"
     )
 
 
 def test_kidot_canonical_home() -> None:
     assert KIDOTLoss.__module__ == (
-        "mriforge.models.losses.optimal_transport_losses"
+        "spectramr.models.losses.optimal_transport_losses"
     )
 
 
@@ -62,17 +62,17 @@ def test_physics_integration_module_no_longer_imports_register_loss() -> None:
     being a dependency of the losses package. Removing that import broke
     the cycle.
     """
-    from mriforge.infrastructure.physics import integration
+    from spectramr.infrastructure.physics import integration
 
     src = inspect.getsource(integration)
-    assert "from mriforge.models.losses.registry import register_loss" not in src
+    assert "from spectramr.models.losses.registry import register_loss" not in src
     # The class itself is gone from this module too.
     assert "class PhysicsInformedLoss" not in src
 
 
 def test_ot_module_no_longer_decorates_losses() -> None:
     """``models/ot/optimal_transport.py`` no longer carries ``@register_loss``."""
-    from mriforge.models.ot import optimal_transport
+    from spectramr.models.ot import optimal_transport
 
     src = inspect.getsource(optimal_transport)
     assert "@register_loss(" not in src
@@ -91,7 +91,7 @@ def test_ot_package_init_does_not_re_export_losses() -> None:
     ``VelocityFieldNetwork`` (here), and the ``__init__`` re-exporting
     those losses formed a cycle.
     """
-    from mriforge.models import ot
+    from spectramr.models import ot
 
     assert not hasattr(ot, "SinkhornDistance")
     assert not hasattr(ot, "DynamicOTFlow")

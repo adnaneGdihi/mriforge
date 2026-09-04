@@ -61,10 +61,10 @@ if shutil.which("bart") is None:
         allow_module_level=True,
     )
 
-from mriforge.infrastructure.physics.coil_sensitivity import (  # noqa: E402
+from spectramr.infrastructure.physics.coil_sensitivity import (  # noqa: E402
     estimate_csm_espirit,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test parameters

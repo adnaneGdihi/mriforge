@@ -26,8 +26,8 @@ torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
-from mriforge.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
-from mriforge.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
+from spectramr.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
+from spectramr.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
 from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 
 # Every test here forwards GeoMambaUNet, whose MambaBlock dispatches to the
@@ -114,7 +114,7 @@ def test_gradients_flow_to_film_and_mamba(tiny_paired_batch, tmp_path) -> None:
 
 def test_strategy_dispatches_via_factory() -> None:
     """The new short name must resolve to GeoMambaULFStrategy."""
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     factory = TrainingStrategyFactory()
     assert "geomamba_ulf" in factory.STRATEGY_CLASS_PATHS
@@ -126,7 +126,7 @@ def test_cubical_ph_w2_autograd_through_pipeline(tiny_paired_batch, tmp_path) ->
     """When [topology] is installed, PH-W2 must be autograd-traceable."""
     pytest.importorskip("gudhi")
     pytest.importorskip("ot")
-    from mriforge.models.losses.cubical_ph_w2_loss import CubicalPHWassersteinLoss
+    from spectramr.models.losses.cubical_ph_w2_loss import CubicalPHWassersteinLoss
 
     inp, target, mask, template = tiny_paired_batch
     linearizer = MetricSFCLinearizer(

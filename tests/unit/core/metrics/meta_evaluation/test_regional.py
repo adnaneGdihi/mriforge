@@ -13,15 +13,15 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.meta_evaluation.regional import (  # noqa: E402
+from spectramr.core.metrics.meta_evaluation.regional import (  # noqa: E402
     build_regional_bundles,
     region_ids_in,
 )
-from mriforge.core.metrics.meta_evaluation.types import (  # noqa: E402
+from spectramr.core.metrics.meta_evaluation.types import (  # noqa: E402
     DegradationSample,
     MetricSet,
 )
-from mriforge.core.metrics.regions.types import (  # noqa: E402
+from spectramr.core.metrics.regions.types import (  # noqa: E402
     RegionMask,
     RegionSet,
     RegionSource,
@@ -59,7 +59,7 @@ def _region_set(lesion_side: int = 40) -> RegionSet:
 
 
 def _metric_set(keys: list[str]) -> MetricSet:
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     higher = {"psnr": True, "ssim": True, "ms_ssim": True, "mse": False, "mae": False}
     return MetricSet(

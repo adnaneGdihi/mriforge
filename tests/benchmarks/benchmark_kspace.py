@@ -3,9 +3,9 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import SimpleDataConsistency
-from mriforge.infrastructure.physics.fft_ops import FFTTransformer
-from mriforge.infrastructure.physics.sampling import KSpaceMaskGenerator
+from spectramr.infrastructure.physics.data_consistency import SimpleDataConsistency
+from spectramr.infrastructure.physics.fft_ops import FFTTransformer
+from spectramr.infrastructure.physics.sampling import KSpaceMaskGenerator
 
 
 @pytest.fixture

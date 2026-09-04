@@ -15,7 +15,7 @@ Tests cover:
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.normalization import (
+from spectramr.data.transforms.normalization import (
     KSpaceNormalizationTransform,
     NormalizationConfig,
     NormalizationStrategy,

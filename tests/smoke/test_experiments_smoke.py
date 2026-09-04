@@ -76,8 +76,8 @@ def test_experiment_smoke(config_path, tmp_path):
     # the ``patch.dict`` teardown evicted the two modules imported inside it,
     # forcing a re-import that re-ran every ``@register_model`` decorator. See
     # ``tests/smoke/test_active_experiments.py``.
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.pipelines import run_training_pipeline
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.pipelines import run_training_pipeline
 
     if torch.cuda.is_available():
         import gc

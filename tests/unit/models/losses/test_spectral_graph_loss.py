@@ -18,8 +18,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.registry import list_available  # noqa: E402
-from mriforge.models.losses.spectral_graph_loss import SpectralGraphLoss  # noqa: E402
+from spectramr.models.losses.registry import list_available  # noqa: E402
+from spectramr.models.losses.spectral_graph_loss import SpectralGraphLoss  # noqa: E402
 
 
 def test_registered() -> None:

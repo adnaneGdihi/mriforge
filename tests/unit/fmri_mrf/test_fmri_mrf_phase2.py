@@ -21,12 +21,12 @@ from tests.utils.corpus import tracked_yamls
 
 
 def test_mrf_schema_field_present_on_training_settings() -> None:
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
     assert "mrf" in TrainingSettings.model_fields
 
 
 def test_mrf_schema_round_trip_yaml() -> None:
-    from mriforge.config.schemas.mrf import MRFConfigSchema
+    from spectramr.config.schemas.mrf import MRFConfigSchema
     payload = {
         "spiral_rotation_schedule": "golden_angle",
         "conformal_kspace_map": "spiral_disk_v1",
@@ -43,7 +43,7 @@ def test_mrf_schema_round_trip_yaml() -> None:
 def test_mrf_schema_rejects_unknown_schedule() -> None:
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.mrf import MRFConfigSchema
+    from spectramr.config.schemas.mrf import MRFConfigSchema
     try:
         MRFConfigSchema(spiral_rotation_schedule="cubic")
     except ValidationError:
@@ -55,7 +55,7 @@ def test_mrf_schema_rejects_unknown_schedule() -> None:
 
 
 def test_cartesian_mask_4d_respects_acceleration() -> None:
-    from mriforge.infrastructure.physics.epi_simulator import cartesian_mask_4d
+    from spectramr.infrastructure.physics.epi_simulator import cartesian_mask_4d
     mask = cartesian_mask_4d(
         n_time=2, n_slice=2, height=16, width=16, in_plane_R=4, center_lines=4
     )
@@ -66,7 +66,7 @@ def test_cartesian_mask_4d_respects_acceleration() -> None:
 
 
 def test_simulated_multiband_epi_round_trip_shape() -> None:
-    from mriforge.infrastructure.physics.epi_simulator import (
+    from spectramr.infrastructure.physics.epi_simulator import (
         MultibandEPIConfig,
         adjoint_multiband_epi,
         simulated_multiband_epi,
@@ -83,7 +83,7 @@ def test_simulated_multiband_epi_round_trip_shape() -> None:
 
 
 def test_beltrami_pulse_curve_stays_close_to_base() -> None:
-    from mriforge.infrastructure.physics.acquisition import beltrami_pulse_curve
+    from spectramr.infrastructure.physics.acquisition import beltrami_pulse_curve
     base_alpha = torch.full((8,), 0.5)
     base_TR = torch.full((8,), 1.0)
     mu = 0.0 * torch.complex(torch.zeros(8), torch.zeros(8))
@@ -93,7 +93,7 @@ def test_beltrami_pulse_curve_stays_close_to_base() -> None:
 
 
 def test_acquisition_bound_rejects_overflowing_sar() -> None:
-    from mriforge.infrastructure.physics.acquisition import (
+    from spectramr.infrastructure.physics.acquisition import (
         AcquisitionBound,
         beltrami_pulse_curve,
     )
@@ -107,7 +107,7 @@ def test_acquisition_bound_rejects_overflowing_sar() -> None:
 
 
 def test_mrf_acquisition_manifold_forward_pass_compliance() -> None:
-    from mriforge.infrastructure.physics.acquisition import (
+    from spectramr.infrastructure.physics.acquisition import (
         AcquisitionBound,
         MRFAcquisitionManifold,
     )
@@ -133,7 +133,7 @@ _BLOCKING_AUDIT_CATEGORIES = (
 def _audit(path: Path) -> str:
     import subprocess
     res = subprocess.run(
-        ["python", "-m", "mriforge.cli", "audit", str(path)],
+        ["python", "-m", "spectramr.cli", "audit", str(path)],
         capture_output=True, text=True, check=False,
     )
     combined = res.stdout + res.stderr

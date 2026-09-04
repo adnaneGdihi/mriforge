@@ -7,11 +7,11 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.field_wiener_strategy import (
+from spectramr.infrastructure.training.strategies.field_wiener_strategy import (
     FieldWienerStrategy,
     compute_field_wiener_loss,
 )
-from mriforge.models.generators.field_wiener_net import FieldWienerNet
+from spectramr.models.generators.field_wiener_net import FieldWienerNet
 
 
 def _net() -> FieldWienerNet:
@@ -35,9 +35,9 @@ def test_loss_keys_and_finite() -> None:
 def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim/sobel_edge) fold onto the inline objective
     via the loss-SSOT seam; the inline l1 placeholder is skipped (no double-count)."""
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(FieldWienerStrategy)
     strat.env = types.SimpleNamespace(
@@ -80,7 +80,7 @@ def test_loss_reduces() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(FieldWienerStrategy)
@@ -124,8 +124,8 @@ def test_score_wiener_emits_band_and_field_sensitivity() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_wiener" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "field_wiener" in TrainingStrategyConfigSchema.model_fields

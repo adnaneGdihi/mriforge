@@ -1,4 +1,4 @@
-"""Behaviour of :mod:`mriforge.infrastructure.training.strategies.lifecycle`.
+"""Behaviour of :mod:`spectramr.infrastructure.training.strategies.lifecycle`.
 
 Issue #1353 / audit dossier D12 §3.1: the four lifecycle hooks were declared on
 ``BaseTrainingStrategy``, overridden by real strategies, and **never called**.
@@ -21,7 +21,7 @@ import logging
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.lifecycle import (
+from spectramr.infrastructure.training.strategies.lifecycle import (
     LIFECYCLE_HOOKS,
     StrategyLifecycleDriver,
 )
@@ -260,7 +260,7 @@ def test_the_first_fire_of_each_hook_is_logged_at_info(caplog):
     spy = _SpyStrategy()
     driver = StrategyLifecycleDriver(spy)
 
-    logger_name = "mriforge.infrastructure.training.strategies.lifecycle"
+    logger_name = "spectramr.infrastructure.training.strategies.lifecycle"
     with caplog.at_level(logging.INFO, logger=logger_name):
         driver.begin_epoch(0)
         driver.begin_epoch(1)
@@ -305,7 +305,7 @@ def test_the_hook_census_matches_what_the_base_strategy_declares():
     """A fifth hook added to ``BaseTrainingStrategy`` must be driven, not merely
     declared — which is the exact defect #1353 exists to close. This is the
     ratchet that makes the next one visible."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     declared = {
         name

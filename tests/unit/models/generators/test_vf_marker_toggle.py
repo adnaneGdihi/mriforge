@@ -12,12 +12,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.vf_field_generators import GraphCutUnwrapGenerator
-from mriforge.models.generators.vf_kspace_operators import (
+from spectramr.models.generators.vf_field_generators import GraphCutUnwrapGenerator
+from spectramr.models.generators.vf_kspace_operators import (
     MarkerGRAPPAConvolution,
     MTFDeApodizationOperator,
 )
-from mriforge.models.generators.vf_reconstruction_generators import (
+from spectramr.models.generators.vf_reconstruction_generators import (
     NeuralComplexSumGenerator,
     WienerUNetGenerator,
 )

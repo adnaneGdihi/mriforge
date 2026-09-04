@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.training.utils.kspace_masks`.
+"""Unit tests for :mod:`spectramr.infrastructure.training.utils.kspace_masks`.
 
 Focus: ``generate_batch_masks`` serves the fixed-seed cascade from a memoised
 on-device table instead of pulling the timestep tensor to the host. The host
@@ -17,11 +17,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.utils.kspace_masks import (
+from spectramr.infrastructure.training.utils.kspace_masks import (
     KSpaceMaskGenerator,
     SamplingPatternRegistry,
 )
-from mriforge.infrastructure.training.utils.mask_table_cache import MaskTableCache
+from spectramr.infrastructure.training.utils.mask_table_cache import MaskTableCache
 
 T, H, W = 12, 32, 32
 requires_cuda = pytest.mark.skipif(

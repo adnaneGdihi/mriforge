@@ -26,7 +26,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.jepa_strategy import JEPAStrategy
+from spectramr.infrastructure.training.strategies.jepa_strategy import JEPAStrategy
 
 
 def _make_jepa_strategy(generator: nn.Module | None) -> JEPAStrategy:

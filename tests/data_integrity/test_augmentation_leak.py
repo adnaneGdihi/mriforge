@@ -8,7 +8,7 @@ Run on CI, NOT local dev machine.
 import pytest
 import torch
 
-from mriforge.data.transforms.mri_transforms import RandomMRIFlip
+from spectramr.data.transforms.mri_transforms import RandomMRIFlip
 
 
 @pytest.mark.data_integrity
@@ -44,7 +44,7 @@ class TestAugmentationLeak:
         # Codebase should have a flag or separate list.
 
         # Real test: Check that the actual validation dataset config disables these
-        from mriforge.config.schemas.augmentation import AugmentationConfigSchema
+        from spectramr.config.schemas.augmentation import AugmentationConfigSchema
 
         val_config = AugmentationConfigSchema(
             prob_flip=0.0,
@@ -59,7 +59,7 @@ class TestAugmentationLeak:
         Verify noise injection is disabled for validation.
         """
         # Assuming we have a NoiseTransform
-        # from mriforge.data.transforms.noise import NoiseTransform
+        # from spectramr.data.transforms.noise import NoiseTransform
 
         # Mocking check
         is_training = False

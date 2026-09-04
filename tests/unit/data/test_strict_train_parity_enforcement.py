@@ -9,7 +9,7 @@ These tests previously drove ``DataPipelineDirector.build_inference_handle``,
 which had zero production callers -- so the suite was green over a dead copy
 while the live enforcement in ``pipelines/infer.py`` had no coverage at all.
 Both now route through the single implementation,
-:func:`mriforge.data.transforms.signature.enforce_train_infer_parity`.
+:func:`spectramr.data.transforms.signature.enforce_train_infer_parity`.
 """
 
 from __future__ import annotations
@@ -19,7 +19,7 @@ import pytest
 
 def _make_minimal_settings(strict: bool = True):
     """A TrainingSettings-shaped stand-in with strict_train_parity set."""
-    from mriforge.config.schemas.data import (
+    from spectramr.config.schemas.data import (
         DataConfigSchema,
         DataModesSchema,
         ModeConfigSchema,
@@ -48,7 +48,7 @@ def _make_minimal_settings(strict: bool = True):
 
 def test_strict_parity_raises_when_signature_diverges() -> None:
     """A bogus checkpoint signature must refuse the load."""
-    from mriforge.data.transforms.signature import enforce_train_infer_parity
+    from spectramr.data.transforms.signature import enforce_train_infer_parity
 
     settings = _make_minimal_settings(strict=True)
     with pytest.raises(RuntimeError, match="strict_train_parity"):
@@ -57,7 +57,7 @@ def test_strict_parity_raises_when_signature_diverges() -> None:
 
 def test_strict_parity_succeeds_when_signatures_match() -> None:
     """The signature the checker computes is the one it accepts."""
-    from mriforge.data.transforms.signature import (
+    from spectramr.data.transforms.signature import (
         compute_infer_signature,
         enforce_train_infer_parity,
     )
@@ -71,7 +71,7 @@ def test_strict_parity_succeeds_when_signatures_match() -> None:
 
 def test_strict_parity_off_skips_check_even_with_bad_signature() -> None:
     """strict_train_parity=false ⇒ the checkpoint signature is not enforced."""
-    from mriforge.data.transforms.signature import enforce_train_infer_parity
+    from spectramr.data.transforms.signature import enforce_train_infer_parity
 
     settings = _make_minimal_settings(strict=False)
     # Must not raise despite a deliberately wrong signature.
@@ -81,7 +81,7 @@ def test_strict_parity_off_skips_check_even_with_bad_signature() -> None:
 def test_strict_parity_with_none_checkpoint_signature_raises() -> None:
     """A pre-Phase-2 checkpoint records no signature, so it cannot satisfy
     parity -- the user must opt out explicitly rather than be waved through."""
-    from mriforge.data.transforms.signature import enforce_train_infer_parity
+    from spectramr.data.transforms.signature import enforce_train_infer_parity
 
     settings = _make_minimal_settings(strict=True)
     with pytest.raises(RuntimeError, match="missing"):
@@ -97,7 +97,7 @@ def test_infer_pipeline_calls_the_shared_enforcement() -> None:
     """
     import inspect
 
-    from mriforge.pipelines import infer as infer_mod
+    from spectramr.pipelines import infer as infer_mod
 
     src = inspect.getsource(infer_mod.run_inference_pipeline)
     code = "\n".join(line for line in src.splitlines() if not line.lstrip().startswith("#"))

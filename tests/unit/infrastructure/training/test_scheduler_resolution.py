@@ -16,9 +16,9 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.config.schemas.optimization import OptimizationConfigSchema
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.scheduler_resolution import (
+from spectramr.config.schemas.optimization import OptimizationConfigSchema
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.scheduler_resolution import (
     SCHEDULER_PARAM_KEYS,
     SchedulerSpec,
     resolve_scheduler_spec,
@@ -214,7 +214,7 @@ class TestNameAliases:
 
     def test_every_registry_name_has_a_param_key_set(self):
         """A factory with no declared param set cannot be validated."""
-        from mriforge.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
+        from spectramr.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
 
         missing = set(SCHEDULER_REGISTRY) - set(SCHEDULER_PARAM_KEYS)
         assert not missing, f"factories with no declared param keys: {sorted(missing)}"
@@ -224,7 +224,7 @@ class TestBuiltSchedulerBehaviour:
     """The end-to-end property the bug violated: the LR must anneal, not cycle."""
 
     def _lr_trace(self, spec: SchedulerSpec, iters: int, accum: int) -> list[float]:
-        from mriforge.infrastructure.training.scheduler_resolution import (
+        from spectramr.infrastructure.training.scheduler_resolution import (
             build_scheduler_from_spec,
         )
 

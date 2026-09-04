@@ -8,11 +8,11 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.cartoon_texture_safe_strategy import (
+from spectramr.infrastructure.training.strategies.cartoon_texture_safe_strategy import (
     CartoonTextureSafeStrategy,
     compute_cartoon_texture_loss,
 )
-from mriforge.models.losses.cartoon_texture_loss import CartoonTextureSafeLoss
+from spectramr.models.losses.cartoon_texture_loss import CartoonTextureSafeLoss
 
 
 class _TinyRestorer(nn.Module):
@@ -57,7 +57,7 @@ def test_loss_reduces(lambda_ct: float) -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(CartoonTextureSafeStrategy)
@@ -103,8 +103,8 @@ def test_score_cartoon_emits_fidelity() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "cartoon_texture_safe" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "cartoon_texture_safe" in TrainingStrategyConfigSchema.model_fields

@@ -18,7 +18,7 @@ def _make_args(**kwargs) -> argparse.Namespace:
 
 
 def test_audit_ksd_smoke_mode_passes(capsys: pytest.CaptureFixture[str]) -> None:
-    from mriforge.cli.audit_plan_novel_cli import audit_ksd_cmd
+    from spectramr.cli.audit_plan_novel_cli import audit_ksd_cmd
 
     args = _make_args(
         config=Path("dummy.yaml"),
@@ -39,7 +39,7 @@ def test_audit_ksd_smoke_mode_passes(capsys: pytest.CaptureFixture[str]) -> None
 def test_audit_ksd_json_output_is_parseable(capsys: pytest.CaptureFixture[str]) -> None:
     import json
 
-    from mriforge.cli.audit_plan_novel_cli import audit_ksd_cmd
+    from spectramr.cli.audit_plan_novel_cli import audit_ksd_cmd
 
     args = _make_args(
         config=Path("dummy.yaml"),
@@ -59,7 +59,7 @@ def test_audit_ksd_json_output_is_parseable(capsys: pytest.CaptureFixture[str]) 
 
 
 def test_audit_ksd_missing_samples_returns_error(tmp_path: Path) -> None:
-    from mriforge.cli.audit_plan_novel_cli import audit_ksd_cmd
+    from spectramr.cli.audit_plan_novel_cli import audit_ksd_cmd
 
     args = _make_args(
         config=Path("dummy.yaml"),
@@ -76,7 +76,7 @@ def test_audit_ksd_missing_samples_returns_error(tmp_path: Path) -> None:
 
 
 def test_audit_ksd_loads_pt_samples(tmp_path: Path) -> None:
-    from mriforge.cli.audit_plan_novel_cli import audit_ksd_cmd
+    from spectramr.cli.audit_plan_novel_cli import audit_ksd_cmd
 
     samples_path = tmp_path / "samples.pt"
     torch.save(torch.randn(64, 5), samples_path)
@@ -95,7 +95,7 @@ def test_audit_ksd_loads_pt_samples(tmp_path: Path) -> None:
 
 
 def test_simulate_acquisition_writes_csv(tmp_path: Path) -> None:
-    from mriforge.cli.audit_plan_novel_cli import simulate_acquisition_cmd
+    from spectramr.cli.audit_plan_novel_cli import simulate_acquisition_cmd
 
     out_csv = tmp_path / "sa.csv"
     args = _make_args(
@@ -115,7 +115,7 @@ def test_simulate_acquisition_writes_csv(tmp_path: Path) -> None:
 
 
 def test_simulate_acquisition_missing_config_errors(tmp_path: Path) -> None:
-    from mriforge.cli.audit_plan_novel_cli import simulate_acquisition_cmd
+    from spectramr.cli.audit_plan_novel_cli import simulate_acquisition_cmd
 
     args = _make_args(
         config=tmp_path / "missing.yaml",
@@ -129,7 +129,7 @@ def test_simulate_acquisition_missing_config_errors(tmp_path: Path) -> None:
 
 
 def test_attach_subparsers_registers_three_commands() -> None:
-    from mriforge.cli.audit_plan_novel_cli import attach_subparsers
+    from spectramr.cli.audit_plan_novel_cli import attach_subparsers
 
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd")
@@ -154,7 +154,7 @@ _ARCH = {"in_channels": 2, "cond_dim": 3, "base_width": 16}
 
 
 def _score_field_unet(**overrides):
-    from mriforge.models.diffusion.score_field_unet import ScoreFieldUNet
+    from spectramr.models.diffusion.score_field_unet import ScoreFieldUNet
 
     return ScoreFieldUNet(**{**_ARCH, **overrides})
 
@@ -194,8 +194,8 @@ def test_infer_protocol_runs_on_a_canonical_envelope(
     derived from tensor shapes rather than resolved through ``MODEL_REGISTRY``
     as ``D01#1`` proposes.
     """
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
-    from mriforge.infrastructure.services.checkpoint_service import _capture_rng_state
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.infrastructure.services.checkpoint_service import _capture_rng_state
 
     ckpt = _write_checkpoint(
         tmp_path,
@@ -217,7 +217,7 @@ def test_infer_protocol_runs_on_a_canonical_envelope(
 
 def test_infer_protocol_accepts_a_bare_state_dict(tmp_path: Path) -> None:
     """Layout 2 of the three the docstring advertises."""
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     ckpt = _write_checkpoint(tmp_path, _score_field_unet().state_dict())
     assert infer_protocol_cmd(_infer_args(ckpt, _write_image(tmp_path))) == 0
@@ -229,7 +229,7 @@ def test_instantiate_accepts_a_pickled_module() -> None:
     Pinned at the helper on purpose -- see the next test for why the verb
     itself can no longer reach this branch.
     """
-    from mriforge.cli.audit_plan_novel_cli import _instantiate_model_from_state
+    from spectramr.cli.audit_plan_novel_cli import _instantiate_model_from_state
 
     model = _instantiate_model_from_state(_score_field_unet(), cond_dim=None)
     assert model.head_sc.out_features == _ARCH["cond_dim"]
@@ -246,7 +246,7 @@ def test_pickled_module_checkpoints_are_refused_by_torch_load(tmp_path: Path) ->
     """
     import pickle
 
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     ckpt = _write_checkpoint(tmp_path, _score_field_unet())
     with pytest.raises(pickle.UnpicklingError, match=r"[Ww]eights only"):
@@ -255,7 +255,7 @@ def test_pickled_module_checkpoints_are_refused_by_torch_load(tmp_path: Path) ->
 
 def test_infer_protocol_raises_on_a_foreign_checkpoint(tmp_path: Path) -> None:
     """The defect: this used to warn and report a CI from random weights."""
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     ckpt = _write_checkpoint(tmp_path, {"model_state_dict": {"fc.weight": torch.randn(4, 4)}})
     with pytest.raises(KeyError, match=r"lift\.weight"):
@@ -264,7 +264,7 @@ def test_infer_protocol_raises_on_a_foreign_checkpoint(tmp_path: Path) -> None:
 
 def test_infer_protocol_raises_on_a_partial_state_dict(tmp_path: Path) -> None:
     """``strict=False`` accepted this silently, loading a subset of the weights."""
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     sd = _score_field_unet().state_dict()
     del sd["head_sx.weight"]
@@ -277,7 +277,7 @@ def test_infer_protocol_raises_when_cond_dim_contradicts_the_checkpoint(
     tmp_path: Path,
 ) -> None:
     """An explicit ``--cond-dim`` is an assertion, not a source of truth."""
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     ckpt = _write_checkpoint(tmp_path, {"model_state_dict": _score_field_unet().state_dict()})
     with pytest.raises(ValueError, match="--cond-dim 5 contradicts"):
@@ -285,7 +285,7 @@ def test_infer_protocol_raises_when_cond_dim_contradicts_the_checkpoint(
 
 
 def test_infer_protocol_accepts_a_cond_dim_that_agrees(tmp_path: Path) -> None:
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     ckpt = _write_checkpoint(tmp_path, {"model_state_dict": _score_field_unet().state_dict()})
     assert infer_protocol_cmd(_infer_args(ckpt, _write_image(tmp_path), cond_dim=3)) == 0
@@ -293,7 +293,7 @@ def test_infer_protocol_accepts_a_cond_dim_that_agrees(tmp_path: Path) -> None:
 
 def test_infer_protocol_still_exits_2_on_a_missing_file(tmp_path: Path) -> None:
     """Usage errors keep their exit code; only *defects* were promoted to raises."""
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
 
     image = _write_image(tmp_path)
     assert infer_protocol_cmd(_infer_args(tmp_path / "nope.pth", image)) == 2
@@ -302,13 +302,13 @@ def test_infer_protocol_still_exits_2_on_a_missing_file(tmp_path: Path) -> None:
 
 
 def test_architecture_is_read_off_the_shapes_not_guessed() -> None:
-    from mriforge.cli.audit_plan_novel_cli import _architecture_from_state_dict
+    from spectramr.cli.audit_plan_novel_cli import _architecture_from_state_dict
 
     assert _architecture_from_state_dict(_score_field_unet().state_dict()) == _ARCH
 
 
 def test_architecture_rejects_an_internally_inconsistent_state_dict() -> None:
-    from mriforge.cli.audit_plan_novel_cli import _architecture_from_state_dict
+    from spectramr.cli.audit_plan_novel_cli import _architecture_from_state_dict
 
     sd = _score_field_unet().state_dict()
     sd["cond_embed.0.weight"] = torch.randn(64, 9)  # implies cond_dim=8, not 3
@@ -317,14 +317,14 @@ def test_architecture_rejects_an_internally_inconsistent_state_dict() -> None:
 
 
 def test_instantiate_rejects_a_foreign_module() -> None:
-    from mriforge.cli.audit_plan_novel_cli import _instantiate_model_from_state
+    from spectramr.cli.audit_plan_novel_cli import _instantiate_model_from_state
 
     with pytest.raises(TypeError, match="not a ScoreFieldUNet"):
         _instantiate_model_from_state(torch.nn.Linear(4, 4), cond_dim=None)
 
 
 def test_instantiate_rejects_a_non_dict_payload() -> None:
-    from mriforge.cli.audit_plan_novel_cli import _instantiate_model_from_state
+    from spectramr.cli.audit_plan_novel_cli import _instantiate_model_from_state
 
     with pytest.raises(TypeError, match="unsupported checkpoint payload"):
         _instantiate_model_from_state([1, 2, 3], cond_dim=None)
@@ -332,7 +332,7 @@ def test_instantiate_rejects_a_non_dict_payload() -> None:
 
 def test_infer_protocol_cond_dim_default_is_none() -> None:
     """A concrete default cannot be told apart from a declaration (D01#4)."""
-    from mriforge.cli.audit_plan_novel_cli import attach_subparsers
+    from spectramr.cli.audit_plan_novel_cli import attach_subparsers
 
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="cmd")
@@ -351,9 +351,9 @@ def test_infer_protocol_loads_a_checkpoint_the_framework_actually_wrote(
     how the rng_state gap survived: the fixture agreed with the docstring
     rather than with the writer.
     """
-    from mriforge.cli.audit_plan_novel_cli import infer_protocol_cmd
-    from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-    from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+    from spectramr.cli.audit_plan_novel_cli import infer_protocol_cmd
+    from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+    from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
     model = _score_field_unet()
     service = CheckpointService(

@@ -23,7 +23,7 @@ consumer scanned the list for the single literal string ``"graph_encoding"`` and
 
 Every other entry was accepted at config load and then discarded without a word.
 There was no dotted-path resolver anywhere in the data path, so the four arms
-declaring ``name: mriforge.data.transforms.slice_profile.SliceProfileTransform``
+declaring ``name: spectramr.data.transforms.slice_profile.SliceProfileTransform``
 never ran that transform; the arm spelling the key ``type: scout_acquisition``
 was not even read; and an entry after a ``graph_encoding`` entry was dropped by
 the ``break``. Each of those arms is *named* for the mechanism it was not
@@ -64,7 +64,7 @@ could not be constructed from any config, the consumer silently did nothing:
 The registry
 ------------
 
-:mod:`mriforge.data.transforms.registry` makes registry membership the validator,
+:mod:`spectramr.data.transforms.registry` makes registry membership the validator,
 exactly as ``MetricsRegistry`` + ``check_metric_names_are_registered`` does for
 ``metrics.compute``: a name that is not registered **raises**, and every
 registered transform is reachable from YAML.
@@ -91,7 +91,7 @@ transform constructor and surfaces as a ``TypeError`` naming the transform.
 
 ``produces`` is the anti-facade payload. It lets an audit answer "is there any
 registered producer for the key this strategy reads?" without importing every
-strategy — see :func:`~mriforge.data.transforms.registry.transforms_producing`.
+strategy — see :func:`~spectramr.data.transforms.registry.transforms_producing`.
 ``tests/unit/data/transforms/test_registry.py`` pins that invariant for the
 three keys above, so a future refactor that unregisters one of them fails a test
 instead of quietly reinstating the dead chain.
@@ -99,7 +99,7 @@ instead of quietly reinstating the dead chain.
 Where the transforms are applied
 --------------------------------
 
-:meth:`~mriforge.data.builders.torchio_transform_builder.TorchIOTransformBuilder._append_registry_transforms`
+:meth:`~spectramr.data.builders.torchio_transform_builder.TorchIOTransformBuilder._append_registry_transforms`
 appends them to **both** the train and the val chain, last but one (before the
 image→k-space bridge). Applying a declared transform to train only would
 reproduce the normalization split this audit already found elsewhere: the model
@@ -120,10 +120,10 @@ Three layers of enforcement
 Adding a transform
 ------------------
 
-#. Put the class in ``src/mriforge/data/transforms/`` (non-negotiable #12 — one
+#. Put the class in ``src/spectramr/data/transforms/`` (non-negotiable #12 — one
    canonical home).
 #. Decorate it with ``@register_transform("<name>", produces=(...))``.
-#. Import the module from ``src/mriforge/data/transforms/__init__.py`` — the
+#. Import the module from ``src/spectramr/data/transforms/__init__.py`` — the
    decorator only runs when the module is imported, and a transform nobody
    imports is registered nowhere. This is the same maintenance contract as
    ``data/adapters/__init__.py``.

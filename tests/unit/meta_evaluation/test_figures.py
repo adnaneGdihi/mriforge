@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     AggregatorConfig,
     MetaEvaluationPipeline,
     MetricSet,
@@ -50,7 +50,7 @@ def _small_output():
 
 
 def test_render_all_writes_pngs(tmp_path) -> None:
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     metric_set = MetricSet(
         metrics={
@@ -80,7 +80,7 @@ def test_render_all_writes_pngs(tmp_path) -> None:
 
 def test_sim2rank_breakdown_emits_separate_panels(tmp_path) -> None:
     """ADR / SCVR / CDRS each get their own PNG instead of a 1×3 grid."""
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     metric_set = MetricSet(
         metrics={
@@ -111,7 +111,7 @@ def test_sim2rank_breakdown_emits_separate_panels(tmp_path) -> None:
 
 def test_top_bottom_indices_helper() -> None:
     """The inlined top-3/bottom-3 helper matches the SSOT logic."""
-    from mriforge.core.metrics.meta_evaluation.figures import (
+    from spectramr.core.metrics.meta_evaluation.figures import (
         _top_bottom_indices,
     )
 
@@ -125,7 +125,7 @@ def test_top_bottom_indices_helper() -> None:
 
 def test_metric_trajectories_emits_one_png_per_metric(tmp_path) -> None:
     """Each metric gets its own trajectory PNG under trajectories/."""
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     metric_set = MetricSet(
         metrics={
@@ -174,7 +174,7 @@ def _run_output(seed: int):
 
 def test_normalized_leaderboard_figure_written(tmp_path) -> None:
     """The headline normalized [0,1] consensus leaderboard is emitted."""
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     render_figures(_run_output(7), tmp_path)
     fig = tmp_path / "fig13_normalized_leaderboard.png"
@@ -184,7 +184,7 @@ def test_normalized_leaderboard_figure_written(tmp_path) -> None:
 
 def test_severity_response_heatmap_written(tmp_path) -> None:
     """Metric x degradation-family Spearman heatmap is emitted."""
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     render_figures(_run_output(8), tmp_path)
     fig = tmp_path / "fig14_severity_response_heatmap.png"
@@ -201,7 +201,7 @@ def test_render_all_is_layout_warning_free(tmp_path) -> None:
     """
     import warnings
 
-    from mriforge.core.metrics.meta_evaluation import render_figures
+    from spectramr.core.metrics.meta_evaluation import render_figures
 
     output = _run_output(9)
     with warnings.catch_warnings(record=True) as caught:
@@ -223,7 +223,7 @@ def test_render_all_is_layout_warning_free(tmp_path) -> None:
 
 
 def test_figures_module_exposes_matplotlib_flag() -> None:
-    from mriforge.core.metrics.meta_evaluation import figures
+    from spectramr.core.metrics.meta_evaluation import figures
 
     assert isinstance(figures.MATPLOTLIB_AVAILABLE, bool)
 
@@ -233,7 +233,7 @@ def test_render_raises_clear_error_without_matplotlib(tmp_path, monkeypatch) -> 
     clear ImportError instead of crashing on ``None.subplots``."""
     import pytest
 
-    from mriforge.core.metrics.meta_evaluation import _report_style as rs
+    from spectramr.core.metrics.meta_evaluation import _report_style as rs
 
     monkeypatch.setattr(rs, "MATPLOTLIB_AVAILABLE", False)
     with pytest.raises(ImportError, match="matplotlib"):
@@ -252,7 +252,7 @@ def test_render_all_raises_when_a_figure_raises(tmp_path, monkeypatch) -> None:
     """
     import pytest
 
-    from mriforge.core.metrics.meta_evaluation import figures as figures_mod
+    from spectramr.core.metrics.meta_evaluation import figures as figures_mod
 
     # Named to match the renderer it stands in for: render_all reports the failing
     # figure by `fn.__name__`, and the error must name it.
@@ -273,7 +273,7 @@ def test_render_all_tolerates_a_renderer_that_returns_none(
     This must stay distinct from a raise: omitting a ranker is a user choice, not
     a defect, and it must not fail the run.
     """
-    from mriforge.core.metrics.meta_evaluation import figures as figures_mod
+    from spectramr.core.metrics.meta_evaluation import figures as figures_mod
 
     monkeypatch.setattr(
         figures_mod, "normalized_leaderboard", lambda _output, _out_dir: None

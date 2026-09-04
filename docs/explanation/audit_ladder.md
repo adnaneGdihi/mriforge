@@ -35,7 +35,7 @@ Examples of what it catches:
 - Out-of-range float (`learning_rate: -0.1`)
 
 Implemented by: `TrainingSettings.from_yaml(path)` in
-`src/mriforge/config/settings.py`. The Pydantic engine does the work.
+`src/spectramr/config/settings.py`. The Pydantic engine does the work.
 
 Run it implicitly: any time a YAML is loaded. There's no explicit Tier 0
 CLI — if you can `from_yaml` it, it passed Tier 0.
@@ -47,7 +47,7 @@ fields and registries.** Operates on the already-parsed
 `TrainingSettings` object.
 
 The check list lives in
-[`src/mriforge/infrastructure/validation/config_health_checker.py`](https://github.com/adnaneGdihi/mriforge/blob/main/src/mriforge/infrastructure/validation/config_health_checker.py)
+[`src/spectramr/infrastructure/validation/config_health_checker.py`](https://github.com/adnaneGdihi/spectramr/blob/main/src/spectramr/infrastructure/validation/config_health_checker.py)
 — currently 56 checks. A few of the most-fired:
 
 | Check | What it enforces |
@@ -58,7 +58,7 @@ The check list lives in
 | `loss_domain_block_match` | Every enabled loss's `@register_loss(domain=...)` matches the block (`image_losses`, `kspace_losses`, …) it appears in |
 | `domain_alignment` | RSS-collapsed datasets pair with single-channel models; multi-coil datasets pair with multi-channel models |
 | `data_model_compatibility` | `data.patch_size` dimensionality matches `model.spatial_dims` from the registry |
-| `hardcoded_cluster_paths` | `data.data_root` doesn't leak another team's cluster prefix (with the [user-mount exemption](https://github.com/adnaneGdihi/mriforge/blob/main/docs/CLUSTER_DATA_LAYOUT.md#how-the-audit-treats-your-cluster-mount)) |
+| `hardcoded_cluster_paths` | `data.data_root` doesn't leak another team's cluster prefix (with the [user-mount exemption](https://github.com/adnaneGdihi/spectramr/blob/main/docs/CLUSTER_DATA_LAYOUT.md#how-the-audit-treats-your-cluster-mount)) |
 | `early_stopping_metric_compatibility` | `early_stopping.metric` corresponds to a metric that the validation loop actually emits |
 | `complex_unet_even_channels` | Backbones with complex-channel layouts get an even `in_channels` |
 | `output_dir_convention` | `training.output_dir` follows `experiments/results/<name>` |
@@ -66,14 +66,14 @@ The check list lives in
 Run it explicitly:
 
 ```bash
-mriforge audit experiments/inprogress/<arm>.yaml
+spectramr audit experiments/inprogress/<arm>.yaml
 ```
 
 Output:
 
 ```
 ✅ [model_registry] model_type='enhanced_deep_unet' registered
-✅ [strategy_registry] strategy='mriforge...DiffusionTrainingStrategy' → import-check passed
+✅ [strategy_registry] strategy='spectramr...DiffusionTrainingStrategy' → import-check passed
 ❌ [hardcoded_cluster_paths] data.data_root='/project/<someone-else>/...' starts with hardcoded cluster prefix '/project/'. ...
    fix: Replace the hardcoded path with a relative path (e.g. 'data/manifests/foo.json')...
 
@@ -102,8 +102,8 @@ What it does: **builds the actual model and runs one synthetic forward
 Run it explicitly:
 
 ```bash
-mriforge audit experiments/inprogress/<arm>.yaml --probe
-mriforge audit experiments/inprogress/<arm>.yaml --probe --save-probe-images out/
+spectramr audit experiments/inprogress/<arm>.yaml --probe
+spectramr audit experiments/inprogress/<arm>.yaml --probe --save-probe-images out/
 ```
 
 The probe generates a synthetic batch shaped like the YAML expects
@@ -123,8 +123,8 @@ Tier 1 — there's no GPU, and the probe is too slow for the budget.
 |---|---|---|
 | `pull_request` → `audit-smoke.yml` | Tier 0+1 | Fast (~100ms/yaml), no GPU needed |
 | `pull_request` → `test.yml` | Tier 0 (implicit via YAML loading) | Most tests use synthetic configs |
-| Manual: `mriforge audit <arm> --probe` | Tier 0+1+2 | One arm, all three tiers |
-| Manual: pre-release on Lightning Studio | Tier 2 + GPU tests | See [GPU validation in CONTRIBUTING](https://github.com/adnaneGdihi/mriforge/blob/main/CONTRIBUTING.md#maintainer-release-checklist-gpu-validation) |
+| Manual: `spectramr audit <arm> --probe` | Tier 0+1+2 | One arm, all three tiers |
+| Manual: pre-release on Lightning Studio | Tier 2 + GPU tests | See [GPU validation in CONTRIBUTING](https://github.com/adnaneGdihi/spectramr/blob/main/CONTRIBUTING.md#maintainer-release-checklist-gpu-validation) |
 
 ## What a failure looks like
 
@@ -132,16 +132,16 @@ The most-common failure classes in production, ranked by surprise factor:
 
 ### 1. `hardcoded_cluster_paths`
 
-`data.data_root='/project/<allocation>/<user>/mriforge/databases/...'`
+`data.data_root='/project/<allocation>/<user>/spectramr/databases/...'`
 
 **Cause:** YAML committed with an absolute cluster path. Local
 machines don't have the path; cluster machines have it but only after
 sync. The cluster's `PROJECT_ROOT` env var triggers an [exemption](../CLUSTER_DATA_LAYOUT.md#how-the-audit-treats-your-cluster-mount)
 so this check doesn't false-positive on legitimate cluster runs.
 
-**Fix:** Use `${MRIFORGE_DATA_ROOT}/databases/...` in the YAML and set
-`MRIFORGE_DATA_ROOT` per-host. See
-[fix_audit_issues.py](https://github.com/adnaneGdihi/mriforge/blob/main/scripts/release/fix_audit_issues.py)
+**Fix:** Use `${SPECTRAMR_DATA_ROOT}/databases/...` in the YAML and set
+`SPECTRAMR_DATA_ROOT` per-host. See
+[fix_audit_issues.py](https://github.com/adnaneGdihi/spectramr/blob/main/scripts/release/fix_audit_issues.py)
 for the bulk-rewrite script.
 
 ### 2. `loss_domain_block_match`

@@ -1,7 +1,7 @@
 import torch
 import torchio as tio
 
-from mriforge.data.builders.torchio_queue_builder import (
+from spectramr.data.builders.torchio_queue_builder import (
     TorchIOQueueBuilder,
     TorchIOQueueConfig,
 )

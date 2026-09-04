@@ -44,19 +44,19 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-# Path corrected 2026-05-24: the 2026-05 src→mriforge refactor moved the
-# package under src/mriforge/, but this constant still pointed at the
+# Path corrected 2026-05-24: the 2026-05 src→spectramr refactor moved the
+# package under src/spectramr/, but this constant still pointed at the
 # pre-refactor src/infrastructure/ path → FileNotFoundError silently
 # failed every assertion (the F14 guards went unverified). See
 # TODO/audit/smoke_audit_20260524.md.
 MIXIN_PY = (
     REPO_ROOT
-    / "src" / "mriforge" / "infrastructure" / "training" / "strategies"
+    / "src" / "spectramr" / "infrastructure" / "training" / "strategies"
     / "mixins" / "metrics_mixin.py"
 )
 DIFFUSION_PY = (
     REPO_ROOT
-    / "src" / "mriforge" / "infrastructure" / "training" / "strategies" / "diffusion.py"
+    / "src" / "spectramr" / "infrastructure" / "training" / "strategies" / "diffusion.py"
 )
 
 
@@ -83,7 +83,7 @@ def test_f14_mixin_raises_when_image_classified_but_kspace_shaped() -> None:
     assert "looks_like_kspace = (" in src, (
         "F14 mixin fix missing: the image-domain branch must inspect "
         "tensor shape before falling back to to_magnitude(). See "
-        "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py "
+        "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py "
         "around line 779. Audit anchor: §F14."
     )
     assert "torch.is_complex(ksp)" in src

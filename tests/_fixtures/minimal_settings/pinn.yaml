@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster
+# UNVERIFIED: validate via spectramr audit on cluster
 # Minimal settings fixture for the pinn family.
 # Covers strategy keys: pinn
 # Based on experiments/active/experiment_12_pinn_reconstruction.yaml
@@ -17,12 +17,12 @@ metadata:
     - pinn
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.pinn_strategy.ConcretePINNSensitivityStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.pinn_strategy.ConcretePINNSensitivityStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: reconstruction
-  output_dir: /tmp/mriforge_test/pinn
+  output_dir: /tmp/spectramr_test/pinn
   enable_mixed_precision: false
   enable_gradient_checkpointing: false
   physics_informed: true

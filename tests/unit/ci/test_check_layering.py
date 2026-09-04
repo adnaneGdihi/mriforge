@@ -28,42 +28,42 @@ def _normalize(raw: str) -> str:
 
 
 def test_key_is_invariant_to_import_line_wrapping() -> None:
-    module = "mriforge.infrastructure.training.utils.kspace_masks"
+    module = "spectramr.infrastructure.training.utils.kspace_masks"
     single = (
-        f"src/mriforge/models/diffusion/kspace_process.py:19:"
+        f"src/spectramr/models/diffusion/kspace_process.py:19:"
         f"from {module} import create_kspace_mask_generator"
     )
-    wrapped = f"src/mriforge/models/diffusion/kspace_process.py:21:from {module} import ("
+    wrapped = f"src/spectramr/models/diffusion/kspace_process.py:21:from {module} import ("
     assert _normalize(single) == _normalize(wrapped)
 
 
 def test_key_is_invariant_to_line_number() -> None:
-    early = "src/mriforge/models/x.py:3:from mriforge.pipelines.train import run"
-    late = "src/mriforge/models/x.py:900:from mriforge.pipelines.train import run"
+    early = "src/spectramr/models/x.py:3:from spectramr.pipelines.train import run"
+    late = "src/spectramr/models/x.py:900:from spectramr.pipelines.train import run"
     assert _normalize(early) == _normalize(late)
 
 
 def test_key_still_distinguishes_different_modules() -> None:
-    a = "src/mriforge/models/x.py:3:from mriforge.pipelines.train import run"
-    b = "src/mriforge/models/x.py:3:from mriforge.pipelines.infer import run"
+    a = "src/spectramr/models/x.py:3:from spectramr.pipelines.train import run"
+    b = "src/spectramr/models/x.py:3:from spectramr.pipelines.infer import run"
     assert _normalize(a) != _normalize(b)
 
 
 def test_key_still_distinguishes_different_files() -> None:
-    a = "src/mriforge/models/x.py:3:from mriforge.pipelines.train import run"
-    b = "src/mriforge/models/y.py:3:from mriforge.pipelines.train import run"
+    a = "src/spectramr/models/x.py:3:from spectramr.pipelines.train import run"
+    b = "src/spectramr/models/y.py:3:from spectramr.pipelines.train import run"
     assert _normalize(a) != _normalize(b)
 
 
 def test_key_preserves_plain_import_statements() -> None:
     """`import x` has no symbol list to collapse; it must survive intact."""
-    raw = "src/mriforge/models/x.py:3:import mriforge.pipelines.train"
-    assert _normalize(raw).endswith("import mriforge.pipelines.train")
+    raw = "src/spectramr/models/x.py:3:import spectramr.pipelines.train"
+    assert _normalize(raw).endswith("import spectramr.pipelines.train")
 
 
 def test_key_preserves_non_import_violations() -> None:
     """DataLoader / yaml.safe_load / @register_loss findings are not imports."""
-    raw = "src/mriforge/application/x.py:42:    loader = DataLoader(ds)"
+    raw = "src/spectramr/application/x.py:42:    loader = DataLoader(ds)"
     assert "DataLoader(ds)" in _normalize(raw)
 
 

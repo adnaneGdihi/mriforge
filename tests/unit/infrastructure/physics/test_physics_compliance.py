@@ -3,11 +3,11 @@ import unittest
 import numpy as np
 import torch
 
-from mriforge.infrastructure.physics.field_simulation import B0MapSimulator
-from mriforge.infrastructure.physics.implementations.gaussian_fourier_op import (
+from spectramr.infrastructure.physics.field_simulation import B0MapSimulator
+from spectramr.infrastructure.physics.implementations.gaussian_fourier_op import (
     differentiable_gaussian_fourier,
 )
-from mriforge.infrastructure.physics.integration import BlochEquationSolver
+from spectramr.infrastructure.physics.integration import BlochEquationSolver
 
 
 class TestPhysicsCompliance(unittest.TestCase):

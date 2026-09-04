@@ -18,7 +18,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.data.builders.torchio_subject_builder import FastMRISubjectBuilder
+from spectramr.data.builders.torchio_subject_builder import FastMRISubjectBuilder
 
 _GOLDEN = Path(__file__).with_name("_coil_processing_parity_golden.pt")
 
@@ -152,8 +152,8 @@ def test_coil_processing_parity(key: str) -> None:
 
 def _resolved_block(mode: str):
     """Build the resolved CoilProcessingConfig a legacy mode derives to."""
-    from mriforge.config.schemas.loader import _derive_coil_processing_from_legacy
-    from mriforge.config.schemas.physics import CoilProcessingConfig
+    from spectramr.config.schemas.loader import _derive_coil_processing_from_legacy
+    from spectramr.config.schemas.physics import CoilProcessingConfig
 
     raw = {"data": {"coil_processing_mode": mode, "num_virtual_coils": 2}}
     cp = _derive_coil_processing_from_legacy(raw)["physics"]["coil_processing"]
@@ -189,7 +189,7 @@ def test_coil_processing_block_parity(key: str) -> None:
 
 
 def _block(compression, combine, domain, channels, nvc=2):
-    from mriforge.config.schemas.physics import CoilProcessingConfig
+    from spectramr.config.schemas.physics import CoilProcessingConfig
 
     return CoilProcessingConfig(
         compression={"method": compression, "num_virtual_coils": nvc},

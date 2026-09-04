@@ -3,7 +3,7 @@
 Tropical-semiring consistency loss for the ``tropical_mrf`` /
 ``tropical_quantitative_maps`` paradigms. The loss genuinely consumes the
 tropical-geometry primitive at
-:mod:`mriforge.infrastructure.physics.tropical_geometry`, so these tests assert
+:mod:`spectramr.infrastructure.physics.tropical_geometry`, so these tests assert
 not only the registry / shape contract but that the primitive is exercised and
 that the loss behaves like a *tropical* consistency penalty (zero on identity,
 strictly positive on a tropically inconsistent mismatch).
@@ -14,8 +14,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.registry import LossRegistry, create_loss
-from mriforge.models.losses.tropical_semiring_loss import (
+from spectramr.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.tropical_semiring_loss import (
     TropicalSemiringConsistencyLoss,
 )
 
@@ -88,7 +88,7 @@ class TestTropicalSemiringConsistencyLoss:
 
     def test_primitive_is_invoked(self, monkeypatch):
         """The loss must actually call log_sum_exp_tropical from the primitive."""
-        import mriforge.models.losses.tropical_semiring_loss as mod
+        import spectramr.models.losses.tropical_semiring_loss as mod
 
         calls = {"n": 0}
         real = mod.log_sum_exp_tropical

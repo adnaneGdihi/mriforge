@@ -1,7 +1,7 @@
-"""Pytest configuration for MRIForge project
+"""Pytest configuration for spectraMR project
 ========================================
 
-This file configures pytest for the MRIForge project with proper path setup
+This file configures pytest for the spectraMR project with proper path setup
 for imports and test discovery.
 """
 
@@ -305,10 +305,10 @@ def suppress_noisy_loggers():
 try:
     import torch
 except ImportError as _torch_import_err:
-    if os.environ.get("MRIFORGE_ALLOW_NO_TORCH") != "1":
+    if os.environ.get("SPECTRAMR_ALLOW_NO_TORCH") != "1":
         raise RuntimeError(
             "torch is required to run the test suite. "
-            "Set MRIFORGE_ALLOW_NO_TORCH=1 only for collection-only smoke checks."
+            "Set SPECTRAMR_ALLOW_NO_TORCH=1 only for collection-only smoke checks."
         ) from _torch_import_err
 
     import sys
@@ -340,7 +340,7 @@ def clean_mocks():
         # Remove Mock objects from sys.modules that pollute the namespace
         to_remove = []
         for name, module in list(sys.modules.items()):
-            if name.startswith("mriforge.") and isinstance(module, Mock):
+            if name.startswith("spectramr.") and isinstance(module, Mock):
                 to_remove.append(name)
         for name in to_remove:
             del sys.modules[name]
@@ -526,9 +526,9 @@ def ensure_di_container_initialized():
     import logging as std_logging
     import tempfile
 
-    from mriforge.domain.interfaces.service_interfaces import ILoggingService
-    from mriforge.infrastructure.di.di_container import init_container
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.domain.interfaces.service_interfaces import ILoggingService
+    from spectramr.infrastructure.di.di_container import init_container
+    from spectramr.infrastructure.services.logging_service import (
         ComprehensiveLoggingService,
     )
 
@@ -701,30 +701,30 @@ requires_pandas = requires_lib(
 @pytest.fixture(scope="function")
 def setup_di_container(tmp_path):
     """Set up the DI container for tests."""
-    from mriforge.config.config import TrainingConfig
-    from mriforge.infrastructure.services.metrics_service import MetricsService
-    from mriforge.infrastructure.services.model_card_service import ModelCardService
+    from spectramr.config.config import TrainingConfig
+    from spectramr.infrastructure.services.metrics_service import MetricsService
+    from spectramr.infrastructure.services.model_card_service import ModelCardService
 
-    import mriforge.infrastructure.di.di_container as di_module
-    from mriforge.domain.interfaces.checkpoint_service_interface import (
+    import spectramr.infrastructure.di.di_container as di_module
+    from spectramr.domain.interfaces.checkpoint_service_interface import (
         ICheckpointService,
     )
-    from mriforge.domain.interfaces.model_card_interface import IModelCardService
-    from mriforge.domain.interfaces.service_interfaces import (
+    from spectramr.domain.interfaces.model_card_interface import IModelCardService
+    from spectramr.domain.interfaces.service_interfaces import (
         ILoggingService,
         IMemoryOptimizationService,
         IMetricsService,
     )
-    from mriforge.infrastructure.di.di_container import init_container
-    from mriforge.infrastructure.services.checkpoint_service import CheckpointService
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.di.di_container import init_container
+    from spectramr.infrastructure.services.checkpoint_service import CheckpointService
+    from spectramr.infrastructure.services.logging_service import (
         ComprehensiveLoggingService,
     )
-    from mriforge.infrastructure.services.memory_optimization_service import (
+    from spectramr.infrastructure.services.memory_optimization_service import (
         NoOpMemoryOptimizationService,
     )
-    from mriforge.models.factories.model_factory import ModelFactory
-    from mriforge.models.interfaces.models import IModelFactory
+    from spectramr.models.factories.model_factory import ModelFactory
+    from spectramr.models.interfaces.models import IModelFactory
 
     # Ensure a clean slate by resetting the global container
     di_module._global_container = None

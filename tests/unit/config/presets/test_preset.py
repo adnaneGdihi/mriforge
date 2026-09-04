@@ -18,11 +18,11 @@ from __future__ import annotations
 import pytest
 import yaml
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     CANONICAL_CONFIG_VERSION,
     LEGACY_CONFIG_VERSIONS,
 )
-from mriforge.config.presets.preset import ConfigPreset
+from spectramr.config.presets.preset import ConfigPreset
 
 
 def _preset(tmp_path, declared: str, expected: str | None = None) -> ConfigPreset:

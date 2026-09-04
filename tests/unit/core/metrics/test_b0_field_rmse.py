@@ -13,8 +13,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.b0_field_rmse import B0FieldRMSE
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.b0_field_rmse import B0FieldRMSE
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def test_registered_and_lower_is_better():

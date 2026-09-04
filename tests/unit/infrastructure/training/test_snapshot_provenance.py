@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.snapshot_provenance import (  # noqa: E402
+from spectramr.infrastructure.training.snapshot_provenance import (  # noqa: E402
     build_snapshot_provenance,
 )
 
@@ -36,6 +36,8 @@ def _config(**processing_overrides):
         data=SimpleNamespace(
             target_mode="phase_aligned_mean",
             nex_target_exclude_input=False,
+            nex_fallback="error",
+            slice_level_records=False,
             processing=processing,
             augmentation=SimpleNamespace(enabled=True),
         )
@@ -355,7 +357,7 @@ class TestNeverCorruptsTheArtifact:
 @pytest.fixture(autouse=True)
 def _clean_identity():
     """The identity is process-global, so it leaks between tests if left set."""
-    from mriforge.infrastructure.training.snapshot_provenance import reset_run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import reset_run_identity
 
     reset_run_identity()
     yield
@@ -363,7 +365,7 @@ def _clean_identity():
 
 
 def _published(**over):
-    from mriforge.infrastructure.training.snapshot_provenance import set_run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import set_run_identity
 
     record = {
         "run_id": "exp11-20260821_101500-abc123def456",
@@ -383,7 +385,7 @@ def test_the_published_id_is_the_pipelines_own_not_a_new_one() -> None:
     timestamp alone, and a reader correlating the two would conclude they came
     from different runs.
     """
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     _published()
     assert run_identity()["run_id"] == "exp11-20260821_101500-abc123def456"
@@ -393,7 +395,7 @@ def test_the_published_id_is_the_pipelines_own_not_a_new_one() -> None:
 def test_the_dirty_flag_travels_with_the_sha() -> None:
     """A clean sha does not reproduce a run whose tree was dirty, so the sha
     alone is not an identity."""
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     _published()
     record = run_identity()
@@ -405,7 +407,7 @@ def test_the_config_hash_is_carried_so_a_relaunch_is_detectable() -> None:
     """The `step_004000` case: the snapshot's config did not match the on-disk
     YAML, and there was no way to tell from the artifact. The hash is what makes
     that a comparison instead of an archaeology exercise."""
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     _published()
     assert run_identity()["config_sha256"] == "0f1e2d3c"
@@ -413,7 +415,7 @@ def test_the_config_hash_is_carried_so_a_relaunch_is_detectable() -> None:
 
 def test_two_runs_in_one_directory_are_distinguishable() -> None:
     """The failure #1299 reports, reduced: same arm dir, different launches."""
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     _published()
     first = run_identity()["run_id"]
@@ -424,7 +426,7 @@ def test_two_runs_in_one_directory_are_distinguishable() -> None:
 def test_nothing_published_still_yields_a_usable_id_that_admits_it() -> None:
     """A missing identity block is indistinguishable from a pre-#1299 snapshot,
     so there is always a record -- and it says when it is not the run's own."""
-    from mriforge.infrastructure.training.snapshot_provenance import (
+    from spectramr.infrastructure.training.snapshot_provenance import (
         IDENTITY_FALLBACK,
         run_identity,
     )
@@ -437,7 +439,7 @@ def test_nothing_published_still_yields_a_usable_id_that_admits_it() -> None:
 def test_the_fallback_is_stable_within_a_process() -> None:
     """Two snapshots from one un-published process must agree, or the artifact
     claims a relaunch happened between them."""
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     assert run_identity()["run_id"] == run_identity()["run_id"]
 
@@ -446,7 +448,7 @@ def test_publishing_after_a_fallback_was_minted_still_wins() -> None:
     """Provenance capture happens after the container is built, and a strategy
     constructed earlier may already have asked. The published record must not
     lose to a fallback that got there first."""
-    from mriforge.infrastructure.training.snapshot_provenance import run_identity
+    from spectramr.infrastructure.training.snapshot_provenance import run_identity
 
     assert run_identity()["identity_source"] == "fallback"
     _published()
@@ -456,7 +458,7 @@ def test_publishing_after_a_fallback_was_minted_still_wins() -> None:
 def test_an_empty_provenance_record_does_not_publish_a_hollow_identity() -> None:
     """`collect_run_provenance` is fail-open and legitimately returns `{}`. That
     must leave the fallback in charge, not stamp a row of Nones as canonical."""
-    from mriforge.infrastructure.training.snapshot_provenance import (
+    from spectramr.infrastructure.training.snapshot_provenance import (
         run_identity,
         set_run_identity,
     )
@@ -475,7 +477,7 @@ def test_the_pipeline_actually_publishes_the_identity() -> None:
     import ast
     import inspect
 
-    from mriforge.pipelines import train as train_mod
+    from spectramr.pipelines import train as train_mod
 
     tree = ast.parse(inspect.getsource(train_mod))
     called = {
@@ -499,13 +501,13 @@ def test_a_wrapper_delegating_through_base_is_traversed():
     chain, which is the half of the provenance record the declared-vs-applied
     comparison is made against.
     """
-    from mriforge.infrastructure.training.snapshot_provenance import _WRAPPER_ATTRS
+    from spectramr.infrastructure.training.snapshot_provenance import _WRAPPER_ATTRS
 
     assert "base" in _WRAPPER_ATTRS
 
 
 def test_the_walk_steps_through_a_base_attribute():
-    from mriforge.infrastructure.training import snapshot_provenance
+    from spectramr.infrastructure.training import snapshot_provenance
 
     class Leaf:
         transform = "LEAF-TRANSFORM"
@@ -536,7 +538,7 @@ def test_the_walk_steps_through_a_base_attribute():
 # answer "was the fully-sampled rung in this run?" without the config.
 
 
-from mriforge.infrastructure.training import snapshot_provenance  # noqa: E402
+from spectramr.infrastructure.training import snapshot_provenance  # noqa: E402
 
 
 class _FakeProcess:
@@ -560,9 +562,7 @@ def _accel_config(train_identity_rung: bool):
 
 
 def test_timestep_floor_records_declared_beside_applied():
-    record = snapshot_provenance.build_snapshot_provenance(
-        _accel_config(True), model=_FakeModel(0)
-    )
+    record = snapshot_provenance.build_snapshot_provenance(_accel_config(True), model=_FakeModel(0))
     assert record["timestep_floor"] == {
         "declared_train_identity_rung": True,
         "applied_min_timestep": 0,
@@ -576,9 +576,7 @@ def test_timestep_floor_reports_the_divergence_rather_than_hiding_it():
     config -- so a run where the two disagree renders both halves and lets the
     reader see it. Recomputing would make them agree by construction.
     """
-    record = snapshot_provenance.build_snapshot_provenance(
-        _accel_config(True), model=_FakeModel(1)
-    )
+    record = snapshot_provenance.build_snapshot_provenance(_accel_config(True), model=_FakeModel(1))
     assert record["timestep_floor"]["declared_train_identity_rung"] is True
     assert record["timestep_floor"]["applied_min_timestep"] == 1
 
@@ -674,3 +672,23 @@ def test_a_process_that_raises_is_reported_not_swallowed():
     assert "timestep_floor" not in record
     assert any("timestep floor probe failed" in entry for entry in record["incomplete"])
     assert any("accelerator not built" in entry for entry in record["incomplete"])
+
+
+def test_declared_block_stamps_the_nex_fallback_policy() -> None:
+    """``nex_fallback`` decides which reference a <3-rep contrast is graded
+    against under leave-one-out, so the snapshot carries it beside
+    ``nex_target_exclude_input`` (non-negotiable 14: declared knobs are stamped)."""
+    record = build_snapshot_provenance(_config())
+    assert record["declared"]["nex_fallback"] == "error"
+    assert record["declared"]["nex_target_exclude_input"] is False
+
+
+def test_declared_block_stamps_the_slice_level_index() -> None:
+    """``slice_level_records`` decides whether a sample came from one record per
+    slice (one slice read per repetition, a depth-1 subject) or one per group
+    (#1757); the snapshot says which index built what it shows (non-negotiable
+    14: declared knobs are stamped)."""
+    assert build_snapshot_provenance(_config())["declared"]["slice_level_records"] is False
+    on = _config()
+    on.data.slice_level_records = True
+    assert build_snapshot_provenance(on)["declared"]["slice_level_records"] is True

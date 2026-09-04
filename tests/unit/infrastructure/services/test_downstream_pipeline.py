@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.services.downstream import (
+from spectramr.infrastructure.services.downstream import (
     BrainClassificationAdapter,
     BrainSegmentationAdapter,
     DownstreamEvaluationPipeline,
@@ -75,7 +75,7 @@ def test_pipeline_rejects_empty_adapters() -> None:
 
 def test_protocol_compatibility() -> None:
     """Adapters satisfy the IDownstreamModelService runtime-checkable protocol."""
-    from mriforge.domain.interfaces.i_downstream_model_service import IDownstreamModelService
+    from spectramr.domain.interfaces.i_downstream_model_service import IDownstreamModelService
 
     seg = BrainSegmentationAdapter(_IdentitySegmenter(), num_classes=4)
     clf = BrainClassificationAdapter(_IdentityClassifier(), num_classes=3)

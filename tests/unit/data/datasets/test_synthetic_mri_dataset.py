@@ -19,7 +19,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.datasets.synthetic_mri_dataset import SyntheticMRIDataset
+from spectramr.data.datasets.synthetic_mri_dataset import SyntheticMRIDataset
 
 
 # ── Construction validation ───────────────────────────────────────────────────
@@ -180,7 +180,7 @@ def test_dry_iter_returns_length_correct_stub_subjects() -> None:
     """
     import torchio as tio
 
-    from mriforge.data.datasets.synthetic_mri_dataset import SyntheticMRIDataset
+    from spectramr.data.datasets.synthetic_mri_dataset import SyntheticMRIDataset
 
     ds = SyntheticMRIDataset.__new__(SyntheticMRIDataset)
     ds.num_samples = 3

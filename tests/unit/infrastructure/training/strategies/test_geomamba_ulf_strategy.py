@@ -28,10 +28,10 @@ torch = pytest.importorskip("torch")
 pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
-from mriforge.infrastructure.training.strategies.geomamba_ulf_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.geomamba_ulf_strategy import (  # noqa: E402
     GeoMambaULFStrategy,
 )
-from mriforge.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
+from spectramr.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
 
 
 def _tiny_model() -> GeoMambaUNet:
@@ -107,9 +107,7 @@ def test_apply_metric_sfc_config_unwraps_ddp_module() -> None:
     wrapper = SimpleNamespace(module=model)
     s = GeoMambaULFStrategy.__new__(GeoMambaULFStrategy)
     s.env = SimpleNamespace(generator=wrapper)
-    s._apply_metric_sfc_config(
-        SimpleNamespace(metric_sfc=SimpleNamespace(beta=7.0))
-    )
+    s._apply_metric_sfc_config(SimpleNamespace(metric_sfc=SimpleNamespace(beta=7.0)))
     assert model.sfc_beta == 7.0
 
 
@@ -122,7 +120,7 @@ def test_get_ph_loss_raises_when_topology_deps_missing(monkeypatch) -> None:
     """A non-zero cubical_ph_w2 weight with gudhi/POT absent must RAISE, not
     warn-and-skip. Skipping silently degrades the PH arm to plain L1 while it
     smoke-PASSes (pitfalls #9/#16). The strategy's whole method claim is PH."""
-    import mriforge.models.losses.cubical_ph_w2_loss as ph_mod
+    import spectramr.models.losses.cubical_ph_w2_loss as ph_mod
 
     class _NoDeps:
         def __init__(self, *a, **k):
@@ -138,7 +136,7 @@ def test_get_ph_loss_raises_when_topology_deps_missing(monkeypatch) -> None:
 
 def test_get_ph_loss_caches_constructed_module(monkeypatch) -> None:
     """When deps are present the module is built once and cached."""
-    import mriforge.models.losses.cubical_ph_w2_loss as ph_mod
+    import spectramr.models.losses.cubical_ph_w2_loss as ph_mod
 
     calls = {"n": 0}
 
@@ -154,3 +152,95 @@ def test_get_ph_loss_caches_constructed_module(monkeypatch) -> None:
     second = s._get_ph_loss()
     assert first is second
     assert calls["n"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Cohort review 2026-09-03 — one weight owner, a truthful Beltrami, declared
+# loss ownership
+# ---------------------------------------------------------------------------
+
+
+def _weights_cfg(entries, reconstruction=None):
+    """A config double: ``image_losses`` entries and an optional lambda section."""
+    return SimpleNamespace(
+        losses=SimpleNamespace(
+            image_losses=[{"name": n, "weight": w} for n, w in entries],
+            kspace_losses=[],
+            complex_losses=[],
+            reconstruction=reconstruction if reconstruction is not None else SimpleNamespace(),
+        ),
+        training=SimpleNamespace(geomamba_ulf=None),
+    )
+
+
+def _bare_for_setup(cfg):
+    s = GeoMambaULFStrategy.__new__(GeoMambaULFStrategy)
+    s.config = cfg
+    s.env = SimpleNamespace(generator=_tiny_model())
+    s._apply_metric_sfc_config = lambda *_a, **_k: None
+    s.logging_service = None
+    return s
+
+
+def test_the_three_weights_come_from_the_loss_weight_table() -> None:
+    """``losses.image_losses`` entries are the one owner: the strategy used to read l1
+    from ``losses.reconstruction.lambda_l1`` (schema default 10.0) and the topology
+    terms through its own resolver."""
+    s = _bare_for_setup(_weights_cfg([("l1", 10.0), ("cubical_ph_w2", 0.1)]))
+    GeoMambaULFStrategy._setup_strategy_specific_components(s)
+    assert (s._lambda_l1, s._lambda_ph_w2, s._lambda_beltrami) == (10.0, 0.1, 0.0)
+
+
+def test_an_author_written_lambda_is_the_same_owner() -> None:
+    """The table reads both surfaces; ``losses.reconstruction.lambda_l1`` written by
+    the author resolves the same way an ``image_losses`` entry does."""
+    s = _bare_for_setup(_weights_cfg([], reconstruction=SimpleNamespace(lambda_l1=3.0)))
+    GeoMambaULFStrategy._setup_strategy_specific_components(s)
+    assert (s._lambda_l1, s._lambda_ph_w2, s._lambda_beltrami) == (3.0, 0.0, 0.0)
+
+
+def test_an_arm_without_an_l1_entry_is_refused() -> None:
+    s = _bare_for_setup(_weights_cfg([("cubical_ph_w2", 1.0)]))
+    with pytest.raises(ValueError, match=r"losses\.image_losses"):
+        GeoMambaULFStrategy._setup_strategy_specific_components(s)
+
+
+def test_a_weighted_beltrami_on_a_one_channel_output_raises() -> None:
+    """Planted violation: 13 arms declared the term at out_channels=1 and it never
+    computed (the silent skip this replaces)."""
+    s = GeoMambaULFStrategy.__new__(GeoMambaULFStrategy)
+    s.env = SimpleNamespace(generator=lambda x, mask=None, contrast_id=None: x)
+    s._uncertainty_loss = None
+    s._lambda_l1, s._lambda_ph_w2, s._lambda_beltrami = 10.0, 0.0, 0.05
+    s._topology_warmup_epochs = 0
+    s._ph_loss = None
+    s._beltrami_loss = None
+    x = torch.rand(1, 1, 8, 8)
+    with pytest.raises(ValueError, match="2-channel"):
+        GeoMambaULFStrategy._compute_losses_impl(s, x, x, epoch=0)
+
+
+def test_an_unweighted_beltrami_on_a_one_channel_output_is_simply_absent() -> None:
+    """Weight 0 is an absent term, not an error, so every arm that deleted the entry
+    trains on a 1-channel head."""
+    s = GeoMambaULFStrategy.__new__(GeoMambaULFStrategy)
+    s.env = SimpleNamespace(generator=lambda x, mask=None, contrast_id=None: x)
+    s._uncertainty_loss = None
+    s._lambda_l1, s._lambda_ph_w2, s._lambda_beltrami = 10.0, 0.0, 0.0
+    s._topology_warmup_epochs = 0
+    s._ph_loss = None
+    s._beltrami_loss = None
+    x = torch.rand(1, 1, 8, 8)
+    losses = GeoMambaULFStrategy._compute_losses_impl(s, x, x, epoch=0)
+    assert set(losses) == {"loss_l1", "g_total_loss"}
+
+
+def test_loss_ownership_is_declared() -> None:
+    """The class states what it computes inline and that it folds nothing; the private
+    weight resolver that made the same YAML weigh differently here is gone."""
+    assert GeoMambaULFStrategy.inline_losses == frozenset(
+        {"l1", "cubical_ph_w2", "beltrami_diagnostic"}
+    )
+    assert GeoMambaULFStrategy.folds_image_losses is False
+    assert not hasattr(GeoMambaULFStrategy, "_read_loss_weight")
+    assert not hasattr(GeoMambaULFStrategy, "_search_loss_weight")

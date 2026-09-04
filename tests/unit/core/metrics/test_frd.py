@@ -1,6 +1,6 @@
 """Tests for ``FrdMetric`` (Fréchet Radiomic Distance / FID).
 
-Targets ``mriforge.core.metrics.frd``. FRD computes the Fréchet distance
+Targets ``spectramr.core.metrics.frd``. FRD computes the Fréchet distance
 between two Gaussian-modelled feature distributions; standard FID
 formula. Verifies the identity property (real == fake → distance 0),
 mean-shift behaviour, and the matrix-square-root fallback for singular
@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.core.metrics.frd import FrdMetric
+from spectramr.core.metrics.frd import FrdMetric
 
 
 # ---------------------------------------------------------------------------

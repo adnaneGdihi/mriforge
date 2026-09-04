@@ -33,15 +33,15 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.forward_probe import (
+from spectramr.infrastructure.validation.forward_probe import (
     ProbeResult,
     synthetic_forward_probe,
 )
-from mriforge.infrastructure.validation.phantom_builder import (
+from spectramr.infrastructure.validation.phantom_builder import (
     save_probe_images,
     synthetic_phantom,
 )
-from mriforge.infrastructure.validation.spec_card import synthesize_spec_card
+from spectramr.infrastructure.validation.spec_card import synthesize_spec_card
 from tests.utils.data_config_stub import DataConfigStub  # noqa: E402
 
 # ── helpers ──────────────────────────────────────────────────────────────────

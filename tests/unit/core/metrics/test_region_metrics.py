@@ -4,14 +4,14 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-# E402 is correct in general and wrong here: importing mriforge pulls in torch, so these
+# E402 is correct in general and wrong here: importing spectramr pulls in torch, so these
 # must sit BELOW the importorskip or a torch-less environment gets an ImportError at
 # collection instead of a clean skip.
-from mriforge.core.metrics.outcome import (  # noqa: E402
+from spectramr.core.metrics.outcome import (  # noqa: E402
     MetricNotApplicableError,
     NotApplicableReason,
 )
-from mriforge.core.metrics.registry import get_metric, list_available  # noqa: E402
+from spectramr.core.metrics.registry import get_metric, list_available  # noqa: E402
 
 
 def test_banding_region_mse_registered():

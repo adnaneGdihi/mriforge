@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.jepa_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.jepa_strategy import (  # noqa: E402
     multi_block_mask,
 )
 

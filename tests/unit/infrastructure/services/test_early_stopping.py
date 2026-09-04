@@ -1,6 +1,6 @@
 """Tests for ``EarlyStoppingService``.
 
-Targets ``mriforge.infrastructure.services.early_stopping``. The service
+Targets ``spectramr.infrastructure.services.early_stopping``. The service
 monitors validation metrics and signals when training should halt.
 Iteration-based, supports min/max modes, optional improvement
 callbacks, and either check-based or iteration-based patience.
@@ -22,9 +22,9 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.config.schemas.enums import MetricMode
-from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.config.schemas.enums import MetricMode
+from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
 
 # ---------------------------------------------------------------------------
@@ -238,7 +238,7 @@ def test_reset_returns_to_initial_state() -> None:
 def test_delegates_to_plateau_monitor() -> None:
     """After the refactor the service composes a shared PlateauMonitor; its
     best_value/wait_count/best_iteration are properties reading that monitor."""
-    from mriforge.infrastructure.training.plateau_monitor import PlateauMonitor
+    from spectramr.infrastructure.training.plateau_monitor import PlateauMonitor
 
     cfg = EarlyStoppingConfigSchema(enabled=True, patience=3, mode=MetricMode.MIN)
     svc = EarlyStoppingService(cfg)
@@ -275,9 +275,9 @@ def test_get_state_returns_documented_keys() -> None:
 def test_nan_metric_is_ignored_and_never_stops() -> None:
     """A non-finite metric must not accrue patience nor trip the iteration-based
     patience_min_iterations stop (M7)."""
-    from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-    from mriforge.config.schemas.enums import MetricMode
-    from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+    from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+    from spectramr.config.schemas.enums import MetricMode
+    from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
     cfg = EarlyStoppingConfigSchema(
         enabled=True, patience=2, metric="val_psnr", mode=MetricMode.MAX, patience_min_iterations=10
@@ -307,8 +307,8 @@ def test_nan_metric_is_ignored_and_never_stops() -> None:
 class TestModeIsReconciledWithTheDirectionSSOT:
     @staticmethod
     def _build(metric, mode, *, enabled=True):
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         return EarlyStoppingService(
             EarlyStoppingConfigSchema(enabled=enabled, metric=metric, mode=mode, patience=3)

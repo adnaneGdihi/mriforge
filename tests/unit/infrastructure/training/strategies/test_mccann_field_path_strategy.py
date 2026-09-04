@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mccann_field_path_strategy import (
+from spectramr.infrastructure.training.strategies.mccann_field_path_strategy import (
     McCannFieldPathStrategy,
     compute_mccann_loss,
 )
-from mriforge.models.generators.mccann_geodesic_icnn import McCannGeodesicICNN
+from spectramr.models.generators.mccann_geodesic_icnn import McCannGeodesicICNN
 
 
 def _net() -> McCannGeodesicICNN:
@@ -51,7 +51,7 @@ def test_loss_reduces() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(McCannFieldPathStrategy)
@@ -101,8 +101,8 @@ def test_validation_forward_raises_without_both_fields() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "mccann_field_path" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "mccann_field_path" in TrainingStrategyConfigSchema.model_fields

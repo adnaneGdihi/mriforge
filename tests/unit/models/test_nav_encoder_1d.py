@@ -6,16 +6,16 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.encoders.nav_encoder_1d import NavEncoder1D  # noqa: E402
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models.encoders.nav_encoder_1d import NavEncoder1D  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 
 
 class TestRegistration:
     def test_registered(self) -> None:
         # Force the package init to fire.
-        import mriforge.models.encoders  # noqa: F401
+        import spectramr.models.encoders  # noqa: F401
         # Direct import path triggers registration too.
-        import mriforge.models.encoders.nav_encoder_1d  # noqa: F401
+        import spectramr.models.encoders.nav_encoder_1d  # noqa: F401
         assert "nav_encoder_1d" in MODEL_REGISTRY
 
 

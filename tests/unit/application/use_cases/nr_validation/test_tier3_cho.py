@@ -12,13 +12,13 @@ import math
 
 import torch
 
-from mriforge.application.use_cases.nr_validation.cards import TierResult
-from mriforge.application.use_cases.nr_validation.tier3_cho import (
+from spectramr.application.use_cases.nr_validation.cards import TierResult
+from spectramr.application.use_cases.nr_validation.tier3_cho import (
     _ensemble,
     _insert_blob,
     score_cho_concordance,
 )
-from mriforge.infrastructure.physics.model_observer import (
+from spectramr.infrastructure.physics.model_observer import (
     ChannelizedHotellingObserver,
     gabor_channel_bank,
 )

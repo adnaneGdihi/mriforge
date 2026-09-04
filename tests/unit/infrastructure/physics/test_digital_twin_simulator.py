@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.digital_twin_simulator import (
+from spectramr.infrastructure.physics.digital_twin_simulator import (
     _QUANTILE_MAX_ELEMS,
     CornerFiducialEmbedder,
     DigitalTwinSimulator,
@@ -30,7 +30,7 @@ from mriforge.infrastructure.physics.digital_twin_simulator import (
     simulate_spike_noise,
     simulate_undersampling,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 # ──────────────────────────────────────────────────────────────────────
 # Fixtures
@@ -129,7 +129,7 @@ class TestB0ExternalField:
         assert abs(float(sim.last_b0_field.mean()) - 60.0) < 1.0
 
     def test_simulate_b0_inhomogeneity_accepts_external_field(self) -> None:
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         img = torch.complex(torch.randn(1, 1, 16, 16), torch.randn(1, 1, 16, 16))
         out = simulate_b0_inhomogeneity(
@@ -237,7 +237,7 @@ class TestCornerFiducialEmbedder:
         (exp_vf_ib_infonce_v2 ``IBVFTrainingStrategy``). With the cap lowered
         the embedder must subsample, not raise.
         """
-        import mriforge.infrastructure.physics.digital_twin_simulator as dts
+        import spectramr.infrastructure.physics.digital_twin_simulator as dts
 
         monkeypatch.setattr(dts, "_QUANTILE_MAX_ELEMS", 256)
         embedder = CornerFiducialEmbedder(im_size=(48, 48), marker_type="gaussian")
@@ -260,7 +260,7 @@ class TestCornerFiducialEmbedder:
         (not raw ``torch.quantile``), so a small-tensor cap test can't catch this;
         we spy that the guarded helper is the one invoked.
         """
-        import mriforge.infrastructure.physics.digital_twin_simulator as dts
+        import spectramr.infrastructure.physics.digital_twin_simulator as dts
 
         real = dts._robust_quantile
         calls: list[tuple[int, ...]] = []
@@ -299,7 +299,7 @@ class TestRobustQuantile:
     def test_subsamples_above_cap_close_estimate(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """With a lowered cap the strided subsample still tracks the true
         quantile (uniform decimation is unbiased for a smooth quantile)."""
-        import mriforge.infrastructure.physics.digital_twin_simulator as dts
+        import spectramr.infrastructure.physics.digital_twin_simulator as dts
 
         monkeypatch.setattr(dts, "_QUANTILE_MAX_ELEMS", 1000)
         x = torch.linspace(0.0, 1.0, 50_000)  # >cap, smooth
@@ -651,7 +651,7 @@ def test_degradation_only_differs_from_marker_path() -> None:
 
 
 def test_from_config_maps_motion_fields() -> None:
-    from mriforge.config.schemas.physics import DigitalTwinConfig
+    from spectramr.config.schemas.physics import DigitalTwinConfig
 
     cfg = DigitalTwinConfig(motion_composite=["rigid", "periodic"], motion_severity=2.5)
     sim = DigitalTwinSimulator.from_config(cfg, (64, 64))
@@ -669,7 +669,6 @@ def test_motion_severity_saturates_not_amplifies_gradient() -> None:
     future change that makes severity scale signal *amplitude* (which would
     let the gradient blow up).
     """
-    import torch.nn.functional as F
 
     clean = _img() / _img().abs().max()
     distances = []
@@ -768,7 +767,7 @@ def test_b1_strength_respects_degradation_range() -> None:
 
 
 def test_from_config_forwards_progressive_degradations_and_ranges() -> None:
-    from mriforge.config.schemas.physics import DigitalTwinConfig
+    from spectramr.config.schemas.physics import DigitalTwinConfig
 
     cfg = DigitalTwinConfig(
         progressive_degradations=["motion", "b0"],
@@ -1037,7 +1036,7 @@ def test_extensions_taxonomy_cross_reference_is_accurate() -> None:
     """The module docstring cross-references the ``D1-D31`` taxonomy living in
     :mod:`digital_twin_extensions`. Verify that claim stays accurate (the
     ``D1-D20`` label it replaced was stale): the extensions registry is 31 ops."""
-    from mriforge.infrastructure.physics.digital_twin_extensions import (
+    from spectramr.infrastructure.physics.digital_twin_extensions import (
         DEGRADATION_REGISTRY,
     )
 
@@ -1054,14 +1053,14 @@ class TestRegistryDegradationsAreReachable:
 
     @staticmethod
     def _registry_names() -> set[str]:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
         return set(DEGRADATION_REGISTRY)
 
     def test_known_axes_is_the_union_of_both_banks(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             NATIVE_DEGRADATION_AXES,
             known_degradation_axes,
         )
@@ -1081,24 +1080,20 @@ class TestRegistryDegradationsAreReachable:
         with pytest.raises(ValueError, match="Unknown progressive_degradations"):
             DigitalTwinSimulator(im_size=IM_SIZE, progressive_degradations=["b_0"])
         with pytest.raises(ValueError, match="Unknown degradation_ranges"):
-            DigitalTwinSimulator(
-                im_size=IM_SIZE, degradation_ranges={"nope": (0.0, 1.0)}
-            )
+            DigitalTwinSimulator(im_size=IM_SIZE, degradation_ranges={"nope": (0.0, 1.0)})
 
     def test_overlapping_names_are_handled_natively_not_twice(self) -> None:
         """Five names live in BOTH banks. The native stage is diffusion-coupled
         and already wired, so it wins; applying the registry copy as well would
         corrupt twice at one severity."""
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             NATIVE_DEGRADATION_AXES,
         )
 
         overlap = sorted(NATIVE_DEGRADATION_AXES & self._registry_names())
         assert overlap, "expected a non-empty overlap; the guard is vacuous without it"
 
-        sim = DigitalTwinSimulator(
-            im_size=IM_SIZE, progressive_degradations=[*overlap, "rician"]
-        )
+        sim = DigitalTwinSimulator(im_size=IM_SIZE, progressive_degradations=[*overlap, "rician"])
         assert sim._registry_degradations == ("rician",), (
             f"native axes {overlap} leaked into the registry pass and would be "
             "applied a second time"
@@ -1109,9 +1104,7 @@ class TestRegistryDegradationsAreReachable:
         between wiring a knob and advertising one (pitfall #16)."""
         clean = torch.randn(1, 1, *IM_SIZE, dtype=torch.complex64)
         base = DigitalTwinSimulator(im_size=IM_SIZE)
-        with_axis = DigitalTwinSimulator(
-            im_size=IM_SIZE, progressive_degradations=["rician"]
-        )
+        with_axis = DigitalTwinSimulator(im_size=IM_SIZE, progressive_degradations=["rician"])
 
         a, _, _ = base.forward(clean, corruption_factor=1.0, seed=11)
         b, _, _ = with_axis.forward(clean, corruption_factor=1.0, seed=11)
@@ -1133,20 +1126,19 @@ class TestRegistryDegradationsAreReachable:
         Float``. The original phase is re-attached rather than zeroed."""
         clean = torch.randn(1, 1, *IM_SIZE, dtype=torch.complex64)
         for axis in ("rician", "complex_gaussian", "rigid_motion", "t2star_blur"):
-            sim = DigitalTwinSimulator(
-                im_size=IM_SIZE, progressive_degradations=[axis]
-            )
+            sim = DigitalTwinSimulator(im_size=IM_SIZE, progressive_degradations=[axis])
             out, _, _ = sim.forward(clean, corruption_factor=1.0, seed=5)
             assert out.is_complex(), f"{axis} broke the complex dtype contract"
             assert torch.isfinite(out.real).all() and torch.isfinite(out.imag).all()
+
 
 class TestSeveritySchedule:
     """The severity ramp reaches the simulator, and does not disturb the default."""
 
     @staticmethod
     def _sim(**kw):
-        from mriforge.config.schemas.physics import DigitalTwinConfig
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.config.schemas.physics import DigitalTwinConfig
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             DigitalTwinSimulator,
         )
 
@@ -1160,10 +1152,7 @@ class TestSeveritySchedule:
             for cf in (0.0, 0.17, 1 / 3, 0.5, 0.83, 1.0):
                 eff = (
                     cf
-                    if (
-                        not sim.progressive_degradations
-                        or feat in sim.progressive_degradations
-                    )
+                    if (not sim.progressive_degradations or feat in sim.progressive_degradations)
                     else 1.0
                 )
                 expected = vmin + (vmax - vmin) * eff
@@ -1206,9 +1195,7 @@ class TestSeveritySchedule:
             degradation_ranges={"motion": (0.0, 1.0)},
             degradation_schedules={"motion": "power_law"},
         )
-        assert sim.severity_at_timestep("motion", 500, 1001) == sim._get_effective_cf(
-            "motion", 0.5
-        )
+        assert sim.severity_at_timestep("motion", 500, 1001) == sim._get_effective_cf("motion", 0.5)
 
     def test_the_timestep_ladder_is_inspectable_without_a_forward_pass(self):
         """What a timestep-aware training will apply, before any data moves --
@@ -1232,11 +1219,65 @@ class TestSeveritySchedule:
     def test_direct_construction_rejects_an_unknown_scheduled_axis(self):
         """Half this class's callers bypass the schema (tests, the chain replay,
         the sweeps), and a key nothing looks up is silently inert."""
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             DigitalTwinSimulator,
         )
 
         with pytest.raises(ValueError, match="Unknown degradation_schedules"):
-            DigitalTwinSimulator(
-                im_size=(32, 32), degradation_schedules={"not_an_axis": "linear"}
-            )
+            DigitalTwinSimulator(im_size=(32, 32), degradation_schedules={"not_an_axis": "linear"})
+
+
+class TestAtAcceleration:
+    """``DigitalTwinSimulator.at_acceleration`` (the OOD readout's seam, VF review 2026-09-03)."""
+
+    @staticmethod
+    def _sim(**kw) -> DigitalTwinSimulator:
+        args = dict(
+            im_size=IM_SIZE,
+            enable_motion=False,
+            snr_range=(100.0, 100.0),
+            enable_undersampling=True,
+            acceleration=4.0,
+        )
+        args.update(kw)
+        return DigitalTwinSimulator(**args)
+
+    @staticmethod
+    def _sampled_fraction(sim: DigitalTwinSimulator) -> float:
+        mask = sim.last_undersampling_mask
+        assert mask is not None
+        return float(mask.float().mean())
+
+    def test_the_twin_undersamples_at_the_rung_inside_and_at_its_own_rate_outside(self) -> None:
+        sim = self._sim()
+        img = torch.complex(torch.randn(1, 1, *IM_SIZE), torch.randn(1, 1, *IM_SIZE))
+        sim(img)
+        in_distribution = self._sampled_fraction(sim)
+        with sim.at_acceleration(16.0):
+            assert sim.acceleration == 16.0 and sim.enable_undersampling is True
+            sim(img)
+            out_of_distribution = self._sampled_fraction(sim)
+        # 16x keeps fewer lines than 4x; both keep the centre.
+        assert out_of_distribution < in_distribution
+        assert sim.acceleration == 4.0 and sim.enable_undersampling is True
+        assert sim.last_undersampling_mask is None, "the OOD mask must not outlive the pass"
+
+    def test_a_twin_that_never_undersampled_is_switched_on_only_inside(self) -> None:
+        sim = self._sim(enable_undersampling=False, acceleration=1.0)
+        img = torch.complex(torch.randn(1, 1, *IM_SIZE), torch.randn(1, 1, *IM_SIZE))
+        with sim.at_acceleration(8.0):
+            sim(img)
+            assert sim.last_undersampling_mask is not None
+        assert sim.enable_undersampling is False and sim.acceleration == 1.0
+
+    def test_restored_when_the_pass_raises(self) -> None:
+        """Planted violation: a failing rung must not leave the twin at 32x."""
+        sim = self._sim()
+        with pytest.raises(RuntimeError, match="boom"), sim.at_acceleration(32.0):
+            raise RuntimeError("boom")
+        assert sim.acceleration == 4.0 and sim.enable_undersampling is True
+
+    def test_a_rate_at_or_below_one_is_refused(self) -> None:
+        sim = self._sim()
+        with pytest.raises(ValueError, match="must exceed 1.0"), sim.at_acceleration(1.0):
+            pass

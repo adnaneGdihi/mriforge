@@ -1,6 +1,6 @@
 """Tests for image-domain hallucination metrics (PR-4 / H2).
 
-Targets ``mriforge.core.metrics.hallucination_metrics``.
+Targets ``spectramr.core.metrics.hallucination_metrics``.
 
 Plan acceptance criteria covered:
 
@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.hallucination_metrics import (
+from spectramr.core.metrics.hallucination_metrics import (
     fabrication_rate,
     feature_fidelity_index,
     hallucination_index_ensemble,
@@ -189,7 +189,7 @@ def test_ensemble_metric_singleton_raises() -> None:
 
 def test_metrics_registered() -> None:
     """Both registered metrics resolvable via the metric registry."""
-    from mriforge.core.metrics.registry import list_available
+    from spectramr.core.metrics.registry import list_available
 
     available = list_available()
     assert "feature_fidelity_index" in available
@@ -198,7 +198,7 @@ def test_metrics_registered() -> None:
 
 def test_aliases_resolve() -> None:
     """``FFI`` and ``FAB`` aliases dispatch to the canonical names."""
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     ffi = get_metric("FFI")
     fab = get_metric("FAB")
@@ -213,7 +213,7 @@ def test_hallucination_rate_alias_maps_to_fabrication_rate() -> None:
     (``FAB = |F_pred \\ F_target| / |F_pred|``), so the VF arm's metric name is
     an alias rather than a duplicate implementation.
     """
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     # Aliases resolve via get_metric (they are not listed in list_available(),
     # which returns canonical names only).

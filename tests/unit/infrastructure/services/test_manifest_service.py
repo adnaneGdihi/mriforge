@@ -1,6 +1,6 @@
 """Tests for ``ManifestService``.
 
-Targets ``mriforge.infrastructure.services.manifest_service``. JSON-backed
+Targets ``spectramr.infrastructure.services.manifest_service``. JSON-backed
 manifest creation, save/load, listing, and structural validation for
 preprocessing-pipeline artifact tracking.
 
@@ -22,7 +22,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.services.manifest_service import ManifestService
+from spectramr.infrastructure.services.manifest_service import ManifestService
 
 
 # ---------------------------------------------------------------------------

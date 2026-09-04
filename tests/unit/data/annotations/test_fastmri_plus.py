@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.annotations.fastmri_plus import (  # noqa: E402
+from spectramr.data.annotations.fastmri_plus import (  # noqa: E402
     ESTABLISHED_Y_ORIGIN,
     BoxOutOfBoundsError,
     LesionBox,
@@ -16,7 +16,7 @@ from mriforge.data.annotations.fastmri_plus import (  # noqa: E402
     parse_annotations,
     pooled_lesion_mask,
 )
-from mriforge.data.annotations.fastmri_plus_classes import LesionGroup  # noqa: E402
+from spectramr.data.annotations.fastmri_plus_classes import LesionGroup  # noqa: E402
 
 _HEADER = "file,slice,study_level,x,y,width,height,label\n"
 

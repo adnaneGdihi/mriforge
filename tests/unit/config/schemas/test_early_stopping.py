@@ -1,6 +1,6 @@
 """Tests for ``EarlyStoppingConfigSchema``.
 
-Targets ``mriforge.config.schemas.early_stopping``. Pydantic v2 schema for
+Targets ``spectramr.config.schemas.early_stopping``. Pydantic v2 schema for
 early-stopping behaviour. Validates: documented defaults, ge/le
 constraints, ``frozen=True`` immutability, ``extra='forbid'``.
 """
@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.config.schemas.enums import MetricMode
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.config.schemas.enums import MetricMode
 
 
 # ---------------------------------------------------------------------------
@@ -109,8 +109,8 @@ def test_extra_fields_rejected() -> None:
 class TestModeMatchesMetricDirection:
     @staticmethod
     def _build(metric: str, mode: str, *, enabled: bool = True):
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.config.schemas.enums import MetricMode
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.enums import MetricMode
 
         return EarlyStoppingConfigSchema(enabled=enabled, metric=metric, mode=MetricMode(mode))
 
@@ -168,7 +168,7 @@ class TestModeMatchesMetricDirection:
         ranker. This asserts the validator agrees with it rather than carrying
         its own opinion.
         """
-        from mriforge.core.metrics.metric_directions import metric_higher_is_better
+        from spectramr.core.metrics.metric_directions import metric_higher_is_better
 
         for metric in ("val_loss", "val_psnr", "val_ssim", "val_lpips"):
             good = "max" if metric_higher_is_better(metric) else "min"

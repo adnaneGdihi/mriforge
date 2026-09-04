@@ -20,8 +20,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.data import AcquisitionMetadataConfigSchema
-from mriforge.data.transforms.acquisition_metadata import (
+from spectramr.config.schemas.data import AcquisitionMetadataConfigSchema
+from spectramr.data.transforms.acquisition_metadata import (
     LoadAcquisitionMetadata,
     MissingAcquisitionMetadata,
     _coalesce,

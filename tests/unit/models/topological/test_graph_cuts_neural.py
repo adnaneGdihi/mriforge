@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.models.topological.graph_cuts_neural`.
+"""Unit tests for :mod:`spectramr.models.topological.graph_cuts_neural`.
 
 Covers the pitfall-#9 contract on ``GraphConstruct``: an unknown ``distance``
 string must raise a clear ``ValueError`` naming the offending option at
@@ -15,8 +15,8 @@ device='cpu', tiny tensors, fixed seed.
 import pytest
 import torch
 
-from mriforge.models.registry import MODEL_REGISTRY
-from mriforge.models.topological.graph_cuts_neural import (
+from spectramr.models.registry import MODEL_REGISTRY
+from spectramr.models.topological.graph_cuts_neural import (
     GraphConstruct,
     GraphCutsNeural,
 )
@@ -83,7 +83,7 @@ class TestCapabilityContract:
     """
 
     def _caps(self):
-        from mriforge.models.registry import get_model_capabilities
+        from spectramr.models.registry import get_model_capabilities
 
         return get_model_capabilities("graph_cuts_neural")
 

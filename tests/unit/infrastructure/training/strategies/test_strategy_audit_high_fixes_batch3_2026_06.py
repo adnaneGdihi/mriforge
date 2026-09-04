@@ -17,7 +17,7 @@ import torch
 
 
 def test_mri_slam_narrow_except_and_no_self_compare_target() -> None:
-    from mriforge.infrastructure.training.strategies.mri_slam_strategy import (
+    from spectramr.infrastructure.training.strategies.mri_slam_strategy import (
         MRISLAMStrategy,
     )
 
@@ -30,7 +30,7 @@ def test_mri_slam_narrow_except_and_no_self_compare_target() -> None:
 
 
 def test_volumetric_metrics_adapter_defaulted() -> None:
-    from mriforge.infrastructure.training.strategies.volumetric import (
+    from spectramr.infrastructure.training.strategies.volumetric import (
         TRELLISTrainingStrategy,
     )
 
@@ -41,7 +41,7 @@ def test_volumetric_metrics_adapter_defaulted() -> None:
 
 
 def test_virtual_fiducial_docstring_no_false_fixed_noise_claim() -> None:
-    from mriforge.infrastructure.training.strategies.virtual_fiducial_strategy import (
+    from spectramr.infrastructure.training.strategies.virtual_fiducial_strategy import (
         ConcreteVirtualFiducialStrategy,
     )
 
@@ -56,7 +56,7 @@ def test_virtual_fiducial_docstring_no_false_fixed_noise_claim() -> None:
 
 def test_meta_learning_inner_loss_is_deterministic_preferred_key() -> None:
     """``_inner_loss`` must prefer a stable key (``l1``) over insertion order."""
-    from mriforge.infrastructure.training.strategies.meta_learning_strategy import (
+    from spectramr.infrastructure.training.strategies.meta_learning_strategy import (
         MetaLearningTrainingStrategy,
     )
 
@@ -77,7 +77,7 @@ def test_meta_learning_inner_loss_is_deterministic_preferred_key() -> None:
 
 
 def test_disentangled_val_image_errors_logged_not_swallowed() -> None:
-    from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+    from spectramr.infrastructure.training.strategies.disentangled_strategy import (
         DisentangledTrainingStrategy,
     )
 
@@ -88,7 +88,7 @@ def test_disentangled_val_image_errors_logged_not_swallowed() -> None:
 
 
 def test_pmps_fixtures_check_is_anchored() -> None:
-    from mriforge.infrastructure.training.strategies import pmps_strategies
+    from spectramr.infrastructure.training.strategies import pmps_strategies
 
     src = inspect.getsource(pmps_strategies)
     # The bare-substring ``"fixtures" in str(...)`` (which a
@@ -98,7 +98,7 @@ def test_pmps_fixtures_check_is_anchored() -> None:
 
 
 def test_mrf_kspace_dead_solver_removed() -> None:
-    from mriforge.infrastructure.training.strategies import mrf_kspace_strategies
+    from spectramr.infrastructure.training.strategies import mrf_kspace_strategies
 
     # The dead solver import/attr is gone.
     assert not hasattr(mrf_kspace_strategies, "SeparableBeltrami4DSolver")
@@ -109,7 +109,7 @@ def test_mrf_kspace_dead_solver_removed() -> None:
 
 
 def test_pretraining_uses_resolve_legacy_batch_and_reraises_val() -> None:
-    from mriforge.infrastructure.training.strategies.pretraining import (
+    from spectramr.infrastructure.training.strategies.pretraining import (
         MAEPretrainingStrategy,
     )
 

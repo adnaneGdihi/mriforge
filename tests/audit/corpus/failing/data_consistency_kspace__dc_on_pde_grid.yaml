@@ -18,7 +18,7 @@ metadata:
   name: Failing — data_consistency_kspace (DC enabled on pde_synthetic dataset)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   training_mode: reconstruction
   max_iterations: 10
   device: cuda

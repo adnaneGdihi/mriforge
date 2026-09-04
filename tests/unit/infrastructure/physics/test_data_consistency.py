@@ -3,14 +3,14 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import (
+from spectramr.infrastructure.physics.data_consistency import (
     AdaptiveDataConsistency,
     DataConsistencyLayer,
     NoiseAdaptiveDataConsistency,
     SimpleDataConsistency,
     data_consistency,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 
 class TestSimpleDataConsistencyMethod:
@@ -563,12 +563,12 @@ class TestValidDcMethodsSSOT:
     """
 
     def test_is_frozenset(self):
-        from mriforge.infrastructure.physics.data_consistency import VALID_DC_METHODS
+        from spectramr.infrastructure.physics.data_consistency import VALID_DC_METHODS
 
         assert isinstance(VALID_DC_METHODS, frozenset)
 
     def test_contains_all_advertised_methods(self):
-        from mriforge.infrastructure.physics.data_consistency import VALID_DC_METHODS
+        from spectramr.infrastructure.physics.data_consistency import VALID_DC_METHODS
 
         assert {
             "hard",
@@ -709,7 +709,7 @@ class TestNoiseTypeIsValidatedEverywhere:
 
     @staticmethod
     def _layers():
-        from mriforge.infrastructure.physics.data_consistency import (
+        from spectramr.infrastructure.physics.data_consistency import (
             DataConsistencyLayer,
             HardDataConsistency,
             SimpleDataConsistency,
@@ -724,7 +724,7 @@ class TestNoiseTypeIsValidatedEverywhere:
 
     def test_hard_dc_actually_stores_it(self) -> None:
         """It used to accept the parameter and drop it on the floor."""
-        from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+        from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
         assert hasattr(HardDataConsistency(), "noise_type")
 
@@ -736,7 +736,7 @@ class TestNoiseTypeIsValidatedEverywhere:
                 cls(noise_type=bad)
 
     def test_the_error_names_the_layer_that_rejected_it(self) -> None:
-        from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+        from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
         with pytest.raises(ValueError, match="HardDataConsistency"):
             HardDataConsistency(noise_type="rician")
@@ -753,7 +753,7 @@ class TestHardDataConsistencyTakesNoWeight:
     def test_constructor_has_no_weight_parameter(self) -> None:
         import inspect
 
-        from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+        from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
         params = set(inspect.signature(HardDataConsistency.__init__).parameters)
         assert "weight" not in params
@@ -761,7 +761,7 @@ class TestHardDataConsistencyTakesNoWeight:
         assert "beta" not in params
 
     def test_noise_levels_are_settable(self) -> None:
-        from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+        from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
         layer = HardDataConsistency(train_noise_level=0.07, eval_noise_level=0.03)
         assert layer.train_noise_level == 0.07

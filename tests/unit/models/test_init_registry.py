@@ -22,9 +22,9 @@ import json
 import subprocess
 import sys
 
-import mriforge.models.init_registry as init_registry
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+import spectramr.models.init_registry as init_registry
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def test_populate_is_idempotent_via_internal_flag() -> None:
@@ -91,7 +91,7 @@ def test_import_failure_is_recorded_and_warned(monkeypatch, caplog) -> None:
     import logging
 
     real_import = importlib.import_module
-    victim = "mriforge.models.generators.vf_reconstruction_generators"
+    victim = "spectramr.models.generators.vf_reconstruction_generators"
 
     def _boom(name: str, *a, **kw):
         if name == victim:
@@ -126,8 +126,8 @@ def test_get_registry_import_failures_returns_a_copy() -> None:
     """Callers cannot mutate the recorded failures out from under the registry."""
     populate_model_registry()
     snapshot = init_registry.get_registry_import_failures()
-    snapshot["mriforge.models.bogus"] = "nope"
-    assert "mriforge.models.bogus" not in init_registry.get_registry_import_failures()
+    snapshot["spectramr.models.bogus"] = "nope"
+    assert "spectramr.models.bogus" not in init_registry.get_registry_import_failures()
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +150,7 @@ def test_get_registry_import_failures_returns_a_copy() -> None:
 def test_a_broken_subpackage_is_recorded_not_dropped(tmp_path, monkeypatch) -> None:
     import pkgutil
 
-    from mriforge.models import init_registry
+    from spectramr.models import init_registry
 
     root = tmp_path / "modelwalkprobe"
     (root / "sub").mkdir(parents=True)
@@ -234,9 +234,9 @@ def test_aliases_survive_an_early_import_of_the_stubs_module() -> None:
     """
     code = (
         "import json, warnings; warnings.filterwarnings('ignore')\n"
-        "import mriforge.models.stubs\n"  # the adversarial early import
-        "from mriforge.models.init_registry import populate_model_registry\n"
-        "from mriforge.models.registry import MODEL_REGISTRY\n"
+        "import spectramr.models.stubs\n"  # the adversarial early import
+        "from spectramr.models.init_registry import populate_model_registry\n"
+        "from spectramr.models.registry import MODEL_REGISTRY\n"
         "populate_model_registry()\n"
         "print(json.dumps(sorted(MODEL_REGISTRY)))\n"
     )
@@ -248,7 +248,7 @@ def test_aliases_survive_an_early_import_of_the_stubs_module() -> None:
 
     missing = [a for a in _ORDER_SENSITIVE_ALIASES if a not in names]
     assert not missing, (
-        f"{len(missing)} model name(s) vanished because ``mriforge.models.stubs`` "
+        f"{len(missing)} model name(s) vanished because ``spectramr.models.stubs`` "
         f"was imported before populate_model_registry(): {missing}.\n"
         "register_aliases() must be CALLED by populate, not left to fire on "
         "import -- see the comment above and stubs.py's own tail comment."

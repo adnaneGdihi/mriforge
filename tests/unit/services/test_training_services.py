@@ -6,7 +6,7 @@ class TestModelManagementService:
 
     def test_service_exists(self):
         """Test model management service exists."""
-        from mriforge.infrastructure.services.model_management_service import (
+        from spectramr.infrastructure.services.model_management_service import (
             ModelManagementService,
         )
 
@@ -18,7 +18,7 @@ class TestModelCompilationService:
 
     def test_service_exists(self):
         """Test model compilation service exists."""
-        from mriforge.infrastructure.services.model_compilation_service import (
+        from spectramr.infrastructure.services.model_compilation_service import (
             ModelCompilationService,
         )
 
@@ -32,7 +32,7 @@ class TestModelCompilationService:
 
         import pytest
 
-        from mriforge.infrastructure.services.model_compilation_service import (
+        from spectramr.infrastructure.services.model_compilation_service import (
             ModelCompilationService,
         )
 
@@ -45,7 +45,7 @@ class TestPipelineExecutionService:
 
     def test_service_exists(self):
         """Test pipeline execution service exists."""
-        from mriforge.infrastructure.services.pipeline_execution_service import (
+        from spectramr.infrastructure.services.pipeline_execution_service import (
             PipelineExecutionService,
         )
 
@@ -57,7 +57,7 @@ class TestProfilingServices:
 
     def test_profiling_service_exists(self):
         """Test profiling service exists."""
-        from mriforge.infrastructure.services.profiling_service import ProfilingService
+        from spectramr.infrastructure.services.profiling_service import ProfilingService
 
         assert hasattr(ProfilingService, "__init__")
 

@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.hypernet_api import (
+from spectramr.models.blocks.hypernet_api import (
     Hypernet,
     HypernetWrappedModule,
     IdentityHypernet,
@@ -133,5 +133,5 @@ def test_hypernet_canary_forward_is_finite() -> None:
 def test_hypernet_unknown_name_raises() -> None:
     """``get_hypernet`` with an unknown name raises ``KeyError``."""
     with pytest.raises(KeyError, match="Unknown hypernet"):
-        from mriforge.models.blocks.hypernet_api import get_hypernet
+        from spectramr.models.blocks.hypernet_api import get_hypernet
         get_hypernet("definitely_not_registered", context_dim=2, param_shapes={"x": (1,)})

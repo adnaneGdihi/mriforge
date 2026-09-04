@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     SUPPORTED_ACCELERATION_TYPES,
     create_kspace_accelerator,
 )

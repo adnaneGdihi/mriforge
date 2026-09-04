@@ -8,11 +8,11 @@ z-aggregator's Pareto-only guarantee.
 
 from __future__ import annotations
 
-from mriforge.core.metrics.meta_evaluation.aggregation import (
+from spectramr.core.metrics.meta_evaluation.aggregation import (
     KemenyConfig,
     kemeny_consensus,
 )
-from mriforge.core.metrics.meta_evaluation.types import RankingResult
+from spectramr.core.metrics.meta_evaluation.types import RankingResult
 
 
 def _axis(method: str, order: list[str]) -> RankingResult:

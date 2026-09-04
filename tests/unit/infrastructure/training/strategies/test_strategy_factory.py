@@ -22,8 +22,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -80,7 +80,7 @@ def test_get_strategy_class_known_key_returns_base_subclass(mode: str) -> None:
     Checks only static import — does NOT instantiate the strategy (that needs
     a full TrainingEnvironment + GPU).
     """
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     factory = TrainingStrategyFactory()
     cfg = _config_with_training_mode(mode)
@@ -99,12 +99,12 @@ def test_get_strategy_class_known_key_returns_base_subclass(mode: str) -> None:
 @pytest.mark.unit
 def test_get_strategy_class_explicit_class_path_takes_priority() -> None:
     """Explicit training.strategy_class overrides training_mode."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     factory = TrainingStrategyFactory()
     # Use explicit full class path — reconstruction is a reliable concrete class
     full_path = (
-        "mriforge.infrastructure.training.strategies.reconstruction"
+        "spectramr.infrastructure.training.strategies.reconstruction"
         ".ReconstructionTrainingStrategy"
     )
     cfg = _config_with_strategy_class(full_path)
@@ -127,7 +127,7 @@ def test_get_strategy_class_unknown_paradigm_raises() -> None:
     raise instead of falling back.'  The factory obeys the same rule — an unknown
     strategy name must produce an explicit, loud error.
     """
-    from mriforge.domain.exceptions import ConfigurationError
+    from spectramr.domain.exceptions import ConfigurationError
 
     factory = TrainingStrategyFactory()
     cfg = _config_with_no_strategy()
@@ -143,7 +143,7 @@ def test_unresolvable_training_mode_is_named_in_the_error() -> None:
     A user who typo'd training_mode was told to add the field they had already
     filled in.
     """
-    from mriforge.domain.exceptions import ConfigurationError
+    from spectramr.domain.exceptions import ConfigurationError
 
     factory = TrainingStrategyFactory()
 
@@ -162,7 +162,7 @@ def test_declared_training_mode_beats_diffusion_lookalike_fields() -> None:
     both keys from the schema), but it silently inverted the priority order for
     every duck-typed caller. The rung is now gone.
     """
-    from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+    from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
     factory = TrainingStrategyFactory()
     cfg = _config_with_training_mode("gan")
@@ -180,7 +180,7 @@ def test_get_strategy_class_none_config_raises() -> None:
     cfg = MagicMock()
     cfg.training = None  # no training section at all
 
-    # v6.0 dispatch raises the domain-specific ConfigurationError (a MRIForgeError,
+    # v6.0 dispatch raises the domain-specific ConfigurationError (a SpectraMRError,
     # NOT a builtin) when no strategy can be resolved — see
     # strategy_factory.get_strategy_class final raise.
     with pytest.raises(ConfigurationError):
@@ -198,7 +198,7 @@ def test_load_strategy_class_raises_on_bad_module() -> None:
     factory = TrainingStrategyFactory()
 
     with pytest.raises(ValueError, match="Failed to load strategy class"):
-        factory._load_strategy_class("mriforge.nonexistent_module.ghost.GhostStrategy")
+        factory._load_strategy_class("spectramr.nonexistent_module.ghost.GhostStrategy")
 
 
 @pytest.mark.unit
@@ -209,7 +209,7 @@ def test_load_strategy_class_raises_on_missing_class() -> None:
     with pytest.raises(ValueError, match="Failed to load strategy class"):
         # Module exists, class does not
         factory._load_strategy_class(
-            "mriforge.infrastructure.training.strategy_factory.NonExistentClass9999"
+            "spectramr.infrastructure.training.strategy_factory.NonExistentClass9999"
         )
 
 
@@ -311,7 +311,7 @@ def test_create_strategy_with_mocked_class() -> None:
 @pytest.mark.unit
 def test_training_mode_dispatch_reconstruction() -> None:
     """Legacy training_mode='reconstruction' dispatches to ReconstructionTrainingStrategy."""
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -324,7 +324,7 @@ def test_training_mode_dispatch_reconstruction() -> None:
 @pytest.mark.unit
 def test_training_mode_dispatch_gan() -> None:
     """Legacy training_mode='gan' dispatches to GANTrainingStrategy."""
-    from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+    from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
     factory = TrainingStrategyFactory()
     cfg = _config_with_training_mode("gan")
@@ -333,7 +333,7 @@ def test_training_mode_dispatch_gan() -> None:
 
 
 def test_multi_acquisition_strategy_registered() -> None:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

@@ -6,7 +6,7 @@ mechanism does work). This file establishes the second, and only the second.
 
 A same-process assertion cannot: pytest has already imported hundreds of
 modules by the time it runs, so a decorator that fires only because a sibling
-test imported its module looks identical to one a plain ``import mriforge.*``
+test imported its module looks identical to one a plain ``import spectramr.*``
 reaches. ``models/init_registry.py:73-190`` records six incidents of exactly
 that, e.g. at ``:110-115`` -- *"``gans`` registers 9 models ... Before this
 entry, only the last 3 fired (transitively via ``generators/__init__.py``), the
@@ -72,18 +72,18 @@ def _subprocess_env() -> dict[str, str]:
     silently describes a different tree. Assert the two agree rather than
     trusting either.
     """
-    import mriforge
+    import spectramr
 
-    imported_src = Path(mriforge.__file__).resolve().parents[1]
+    imported_src = Path(spectramr.__file__).resolve().parents[1]
     assert imported_src == _REPO_SRC, (
-        f"this test process imported mriforge from {imported_src}, but the test "
+        f"this test process imported spectramr from {imported_src}, but the test "
         f"file lives under {_REPO_SRC}. The subprocess would measure a "
         "different tree than the one under test."
     )
     return {
         **os.environ,
         "PYTHONPATH": str(_REPO_SRC),
-        "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1",
+        "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1",
     }
 
 
@@ -129,36 +129,36 @@ print("RESULT " + json.dumps(
 
 _READS = {
     "models": """
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     # Not optional and not implicit: MODEL_REGISTRY is 0 on a plain
-    # ``import mriforge.models``. This is the call a config path makes.
+    # ``import spectramr.models``. This is the call a config path makes.
     populate_model_registry()
     return list(MODEL_REGISTRY)
 """,
     "losses": """
-    import mriforge.models.losses as losses
+    import spectramr.models.losses as losses
 
     return losses.LossRegistry.list_available()
 """,
     "metrics": """
-    import mriforge.core.metrics as metrics
+    import spectramr.core.metrics as metrics
 
     return metrics.list_available()
 """,
     "transforms": """
-    import mriforge.data.transforms as transforms
+    import spectramr.data.transforms as transforms
 
     return transforms.list_transforms()
 """,
 }
 
 _WALK_ROOTS = {
-    "models": "mriforge.models",
-    "losses": "mriforge.models.losses",
-    "metrics": "mriforge.core.metrics",
-    "transforms": "mriforge.data.transforms",
+    "models": "spectramr.models",
+    "losses": "spectramr.models.losses",
+    "metrics": "spectramr.core.metrics",
+    "transforms": "spectramr.data.transforms",
 }
 
 #: One name per registry that sits behind that registry's curation step, so an
@@ -247,7 +247,7 @@ def test_every_strategy_dotted_path_resolves_from_a_cold_import() -> None:
     driver = """
 import importlib, json
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 # A CLASS attribute -- a module-level import of it raises.
 paths = TrainingStrategyFactory.STRATEGY_CLASS_PATHS

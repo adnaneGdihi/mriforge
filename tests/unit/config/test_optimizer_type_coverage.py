@@ -19,7 +19,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
 # ---------------------------------------------------------------------------
 # Fixture: a tiny model to supply parameters
@@ -54,7 +54,7 @@ class TestOptimizerTypeCoverage:
     @pytest.mark.parametrize("opt_type,needs_extra", CASES, ids=[c[0] for c in CASES])
     def test_optimizer_created(self, opt_type: str, needs_extra: bool, tiny_params):
         """create_single_optimizer must return a valid Optimizer for each type."""
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -86,7 +86,7 @@ class TestOptimizerTypeCoverage:
         self, opt_type: str, needs_extra: bool, tiny_params
     ):
         """The configured learning rate must appear in the optimizer's param_groups."""
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -118,7 +118,7 @@ class TestOptimizerEnumCompleteness:
 
     def test_all_implemented_types_are_in_enum(self):
         """Every implemented type must appear in the OptimizerType enum."""
-        from mriforge.config.schemas.enums import OptimizerType
+        from spectramr.config.schemas.enums import OptimizerType
 
         enum_values = {m.value for m in OptimizerType}
         for impl_type in self.IMPLEMENTED:
@@ -141,8 +141,8 @@ class TestOptimizerEnumCompleteness:
 
     def test_every_enum_value_is_registered(self):
         """The advertised vocabulary and the dispatch table are the same set."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.infrastructure.training.optimizer_registry import (
             OptimizerRegistry,
         )
 
@@ -156,14 +156,14 @@ class TestOptimizerEnumCompleteness:
     def test_the_unimplemented_set_is_a_ratchet_not_a_dumping_ground(self):
         """Any entry must still be a real enum value, so the guard cannot go
         stale the way an allowlist silently does once its entries are fixed."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         stale = self.KNOWN_UNIMPLEMENTED - OPTIMIZER_NAMES
         assert not stale, f"stale KNOWN_UNIMPLEMENTED entries: {sorted(stale)}"
 
     def test_unknown_optimizer_raises_value_error(self, tiny_params):
         """An unknown optimizer type must raise ValueError, not silently default."""
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -195,8 +195,8 @@ class TestConfigOptimizerTypePropagation:
         self, opt_type: str, expected_cls: type, tiny_params
     ):
         """optimizer_type in OptimizationConfigSchema must select the correct torch class."""
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -242,8 +242,8 @@ class TestEveryAdvertisedNameActuallyConstructs:
     def test_name_builds_through_the_production_path(
         self, opt_type: str, tiny_params
     ) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.optimizer_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.optimizer_resolution import (
             build_optimizer_from_spec,
             resolve_optimizer_spec,
         )
@@ -267,8 +267,8 @@ class TestEveryAdvertisedNameActuallyConstructs:
         self, opt_type: str, tiny_params
     ) -> None:
         """Construction is not enough -- ``lbfgs`` and friends only fail on use."""
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.optimizer_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.optimizer_resolution import (
             build_optimizer_from_spec,
             resolve_optimizer_spec,
         )

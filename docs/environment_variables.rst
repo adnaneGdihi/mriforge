@@ -16,7 +16,7 @@ Command index
 **23 verbs**, read from the live ``argparse`` tree rather than transcribed.
 ``--config?`` is measured per subparser: a blank cell means the verb takes its
 input another way (``audit`` takes the YAML as a positional). ``launch?`` marks the
-**6** verbs reachable through ``mriforge launch --pipeline``.
+**6** verbs reachable through ``spectramr launch --pipeline``.
 
 See :doc:`cli_reference` for the full flag set of each verb; this table is the index,
 not a replacement.
@@ -29,95 +29,95 @@ not a replacement.
      - ``--config``
      - ``launch``
      - Purpose
-   * - ``mriforge doctor``
+   * - ``spectramr doctor``
      - yes
      - —
      - Print environment diagnostics (torch/CUDA, devices, cache/data roots, env knobs).
-   * - ``mriforge train``
+   * - ``spectramr train``
      - yes
      - yes
      - Train a model.
-   * - ``mriforge sanity_check``
+   * - ``spectramr sanity_check``
      - yes
      - yes
      - Sanity check — overfit a single batch.
-   * - ``mriforge ablation``
+   * - ``spectramr ablation``
      - yes
      - yes
      - Train the baseline plus one variant per ``--vary`` override; report per-metric deltas. Sequential/local.
-   * - ``mriforge infer``
+   * - ``spectramr infer``
      - yes
      - yes
      - Run inference using a trained model.
-   * - ``mriforge infer-dataset``
+   * - ``spectramr infer-dataset``
      - yes
      - —
      - **Deprecated** — alias for ``infer``.
-   * - ``mriforge experiment``
+   * - ``spectramr experiment``
      - yes
      - yes
      - Run a complete experiment with directory management.
-   * - ``mriforge train-distributed``
+   * - ``spectramr train-distributed``
      - yes
      - —
      - DDP training. Not launched directly — see `Distributed runs`_.
-   * - ``mriforge predict``
+   * - ``spectramr predict``
      - yes
      - —
      - Inference via the SSOT pipeline.
-   * - ``mriforge benchmark``
+   * - ``spectramr benchmark``
      - —
      - —
      - Run benchmarks.
-   * - ``mriforge export``
+   * - ``spectramr export``
      - yes
      - —
      - Export a model.
-   * - ``mriforge list-features``
+   * - ``spectramr list-features``
      - —
      - —
      - List available models, losses, metrics, strategies.
-   * - ``mriforge audit``
+   * - ``spectramr audit``
      - —
      - —
      - Audit an experiment YAML: Tier 0 schema, Tier 1 health checker, Tier 2 probe with ``--probe``. Takes the YAML as a **positional**, not ``--config``. Exit 0 pass / 1 warnings / 2 errors.
-   * - ``mriforge campaign``
+   * - ``spectramr campaign``
      - —
      - —
      - Manage campaigns (``submit`` / ``status`` / ``evaluate`` / ``cancel``).
-   * - ``mriforge hpo``
+   * - ``spectramr hpo``
      - yes
      - yes
      - Optuna-backed HPO over a base training YAML; each trial is a separate trainer subprocess.
-   * - ``mriforge report``
+   * - ``spectramr report``
      - yes
      - —
      - Canonical figures + tables for an output dir (same pipeline as the end-of-training hook).
-   * - ``mriforge meta-evaluate``
+   * - ``spectramr meta-evaluate``
      - —
      - —
      - Rank a metric set with the meta-evaluation framework.
-   * - ``mriforge audit-ksd``
+   * - ``spectramr audit-ksd``
      - —
      - —
      - Tier-3 KSD defensibility audit over a generative-prior model.
-   * - ``mriforge infer-protocol``
+   * - ``spectramr infer-protocol``
      - —
      - —
      - Posterior-mode inference over acquisition parameters.
-   * - ``mriforge simulate-acquisition``
+   * - ``spectramr simulate-acquisition``
      - —
      - —
      - Synthetic IB-acquisition trajectory with per-step metrics; writes CSV.
-   * - ``mriforge design-mrf-sequence``
+   * - ``spectramr design-mrf-sequence``
      - —
      - —
      - Beltrami-CRLB-optimal MRF pulse-sequence design.
-   * - ``mriforge regulatory``
+   * - ``spectramr regulatory``
      - —
      - —
      - Regulatory bundle CLI (``bundle`` / ``verify`` / ``status``).
-   * - ``mriforge launch``
+   * - ``spectramr launch``
      - —
      - —
      - Unified launcher — any pipeline, anywhere. See `Launch backends`_.
@@ -125,7 +125,7 @@ not a replacement.
 Launch backends
 ---------------
 
-``mriforge launch`` runs any pipeline anywhere: ``--where {local,docker,apptainer,slurm}``.
+``spectramr launch`` runs any pipeline anywhere: ``--where {local,docker,apptainer,slurm}``.
 :doc:`execution_modes` describes the axes and the resource flags — verified against
 the current code while writing this page — so what follows is only the part that
 belongs here: **how the environment reaches the run**, which differs per backend and
@@ -140,30 +140,30 @@ is not documented elsewhere.
      - Notes
    * - ``local``
      - Full — it is your shell
-     - Runs ``mriforge <verb> --config …`` in-process.
+     - Runs ``spectramr <verb> --config …`` in-process.
    * - ``slurm``
      - Full, via ``sbatch --export=ALL``
      - Emits an ``#SBATCH`` script from one ``ResourceSpec``. ``--account`` /
-       ``--partition`` fall back to ``MRIFORGE_SLURM_ACCOUNT`` / ``MRIFORGE_SLURM_PARTITION``.
+       ``--partition`` fall back to ``SPECTRAMR_SLURM_ACCOUNT`` / ``SPECTRAMR_SLURM_PARTITION``.
    * - ``apptainer``
      - Full — Apptainer inherits the host environment by default
      - Also passes ``--env CUDA_VISIBLE_DEVICES=…`` explicitly. Image from
-       ``MRIFORGE_APPTAINER_SIF`` (default ``mriforge.sif``).
+       ``SPECTRAMR_APPTAINER_SIF`` (default ``spectramr.sif``).
    * - ``docker``
-     - **``MRIFORGE_LAUNCH_*`` only**
-     - Docker inherits nothing. Image from ``MRIFORGE_DOCKER_IMAGE``
-       (default ``mriforge:v6.1``). See the warning below.
+     - **``SPECTRAMR_LAUNCH_*`` only**
+     - Docker inherits nothing. Image from ``SPECTRAMR_DOCKER_IMAGE``
+       (default ``spectramr:v6.1``). See the warning below.
 
 .. warning::
 
-   **A docker run does not see your** ``MRIFORGE_*`` **configuration.** Only the
-   ``MRIFORGE_LAUNCH_*`` provenance variables are forwarded, so ``MRIFORGE_DATA_ROOT``
+   **A docker run does not see your** ``SPECTRAMR_*`` **configuration.** Only the
+   ``SPECTRAMR_LAUNCH_*`` provenance variables are forwarded, so ``SPECTRAMR_DATA_ROOT``
    is unset inside the container and ``env.data_root()`` falls back to
    ``./databases`` — a *different data root* than the identical command run locally,
    with no warning. ``scripts/container/entrypoint.sh`` exists to fix this by sourcing
    a mounted :file:`.env`, and :doc:`CLUSTER_DATA_LAYOUT` calls it "the Docker /
    Apptainer entrypoint", but :file:`scripts/container/Dockerfile` sets
-   ``ENTRYPOINT ["python3.12", "-m", "mriforge.cli"]`` and never invokes it. Tracked
+   ``ENTRYPOINT ["python3.12", "-m", "spectramr.cli"]`` and never invokes it. Tracked
    in issue #1117. Until it is resolved, pass what you need explicitly.
 
 ``--dry-run`` prints the exact command or script without executing it, and is the
@@ -171,22 +171,22 @@ way to check what a backend actually forwards:
 
 .. code-block:: console
 
-   $ export MRIFORGE_DATA_ROOT=/data/mine
-   $ mriforge launch X.yaml --where docker --gpus 2 --dry-run
-   docker run --gpus 2 --env MRIFORGE_LAUNCH_BACKEND=docker ... \
-     -v /repo:/workspace mriforge:v6.1 train --config X.yaml
-   # note: MRIFORGE_DATA_ROOT is absent
+   $ export SPECTRAMR_DATA_ROOT=/data/mine
+   $ spectramr launch X.yaml --where docker --gpus 2 --dry-run
+   docker run --gpus 2 --env SPECTRAMR_LAUNCH_BACKEND=docker ... \
+     -v /repo:/workspace spectramr:v6.1 train --config X.yaml
+   # note: SPECTRAMR_DATA_ROOT is absent
 
 Distributed runs
 ----------------
 
-``mriforge train-distributed`` is **not** launched directly — it expects a ``torchrun``
+``spectramr train-distributed`` is **not** launched directly — it expects a ``torchrun``
 rendezvous. Two supported routes:
 
 Single node
    .. code-block:: bash
 
-      torchrun --nproc_per_node=N -m mriforge.cli train-distributed --config X.yaml
+      torchrun --nproc_per_node=N -m spectramr.cli train-distributed --config X.yaml
 
 Multi-node (SLURM)
    :file:`scripts/training/train_distributed.sbatch` stands up the allocation and the
@@ -201,7 +201,7 @@ Multi-node (SLURM)
           --rdzv_backend=c10d \
           --rdzv_endpoint="${MASTER_ADDR}:${MASTER_PORT}" \
           --rdzv_id="${SLURM_JOB_ID}" \
-          -m mriforge.cli train-distributed --config "${CONFIG}"
+          -m spectramr.cli train-distributed --config "${CONFIG}"
 
 ``nproc_per_node × nnodes`` is the DDP world size. ``RANK`` / ``LOCAL_RANK`` /
 ``WORLD_SIZE`` / ``MASTER_ADDR`` / ``MASTER_PORT`` are then set by ``torchrun`` and
@@ -209,7 +209,7 @@ read by the distributed pipeline — see `Distributed training`_ below.
 
 .. note::
 
-   ``launch --where slurm`` emits plain ``python -m mriforge.cli train``, **not**
+   ``launch --where slurm`` emits plain ``python -m spectramr.cli train``, **not**
    ``torchrun`` — the unified launcher does not wrap distributed runs. For DDP use
    the sbatch wrapper or ``torchrun`` directly.
 
@@ -220,7 +220,7 @@ Scope: what counts as an environment variable here
 
 **211 variables** are documented below, measured from the tracked tree rather
 than transcribed from the two partial lists that already exist
-(:file:`src/mriforge/core/env.py` and :file:`.env.example`) — see `Reconciliation`_
+(:file:`src/spectramr/core/env.py` and :file:`.env.example`) — see `Reconciliation`_
 for where those two disagree with the code.
 
 A shell script is full of names that *look* like environment variables but are
@@ -264,20 +264,20 @@ Three surfaces are involved, and they are **not** equivalent:
    The six one-off :file:`scripts/training/submit_*` scripts are absent from that
    list; a :file:`.env` has no effect on anything they launch.
 
-:file:`src/mriforge/core/env.py`
+:file:`src/spectramr/core/env.py`
    Name constants plus parsed-default helpers (``env.data_root()``,
    ``env.force_cpu()``, ``env.as_bool()``). Its docstring calls itself the single
    source of truth for *every* variable the framework reads; it currently holds
    **31**.
 
-:file:`src/mriforge/infrastructure/config/env_resolver.py`
+:file:`src/spectramr/infrastructure/config/env_resolver.py`
    Resolves the cache root and device preference at startup, and *writes*
-   ``MRIFORGE_CACHE_ROOT`` back into the environment so child processes inherit it.
+   ``SPECTRAMR_CACHE_ROOT`` back into the environment so child processes inherit it.
 
 .. warning::
 
-   Reading a variable directly with ``os.environ.get("MRIFORGE_...")`` instead of
-   through :mod:`mriforge.core.env` is what produced the drift in `Reconciliation`_.
+   Reading a variable directly with ``os.environ.get("SPECTRAMR_...")`` instead of
+   through :mod:`spectramr.core.env` is what produced the drift in `Reconciliation`_.
    New knobs belong in ``core/env.py`` **and** :file:`.env.example`, per
    non-negotiable #8 (every exposed knob is read, validated and stamped).
 
@@ -294,38 +294,38 @@ Where the framework looks for data, caches and legacy mounts.
      - Default
      - What it does / where it is read
 
-   * - ``MRIFORGE_DATA_ROOT``
+   * - ``SPECTRAMR_DATA_ROOT``
      - ``./databases``
-     - Data root. Every ``${MRIFORGE_DATA_ROOT}/...`` placeholder in YAML expands against it.
-       Read by ``src/mriforge/data/metadata/path_resolver.py`` (+4 more)
+     - Data root. Every ``${SPECTRAMR_DATA_ROOT}/...`` placeholder in YAML expands against it.
+       Read by ``src/spectramr/data/metadata/path_resolver.py`` (+4 more)
    * - ``PROJECT_ROOT``
      - *unset*
      - Project root; synonym for the data root used by ``PathResolver`` / ``PathNormalizer``.
-       Read by ``src/mriforge/data/metadata/path_resolver.py`` (+1 more)
-   * - ``MRIFORGE_ROOT``
+       Read by ``src/spectramr/data/metadata/path_resolver.py`` (+1 more)
+   * - ``SPECTRAMR_ROOT``
      - *unset*
      - Third project-root spelling, read only by ``PathNormalizer`` and the config health checker.
-       Read by ``src/mriforge/shared/utils/path_normalizer.py``
-   * - ``MRIFORGE_CLUSTER_ROOT``
+       Read by ``src/spectramr/shared/utils/path_normalizer.py``
+   * - ``SPECTRAMR_CLUSTER_ROOT``
      - ``str(PROJECT_ROOT``
      - Alternate cluster mount root used by ``cluster_explorer``.
-       Read by ``src/mriforge/tools/cluster_explorer.py`` (+1 more)
-   * - ``MRIFORGE_CACHE_ROOT``
+       Read by ``src/spectramr/tools/cluster_explorer.py`` (+1 more)
+   * - ``SPECTRAMR_CACHE_ROOT``
      - *unset*
      - Cache dir for weights and metric backbones. Also \*written\* by ``env_resolver``.
-       Read by ``src/mriforge/infrastructure/config/env_resolver.py`` (+2 more)
-   * - ``MRIFORGE_LEGACY_ABS_PREFIXES``
+       Read by ``src/spectramr/infrastructure/config/env_resolver.py`` (+2 more)
+   * - ``SPECTRAMR_LEGACY_ABS_PREFIXES``
      - *unset*
      - Colon-separated legacy absolute prefixes stripped before resolving.
-       Read by ``src/mriforge/data/metadata/path_resolver.py`` (+1 more)
-   * - ``MRIFORGE_LEGACY_CLUSTER_PREFIX``
+       Read by ``src/spectramr/data/metadata/path_resolver.py`` (+1 more)
+   * - ``SPECTRAMR_LEGACY_CLUSTER_PREFIX``
      - *unset*
      - Single legacy cluster prefix auto-rewritten to the project root.
-       Read by ``src/mriforge/shared/utils/path_normalizer.py`` (+1 more)
+       Read by ``src/spectramr/shared/utils/path_normalizer.py`` (+1 more)
    * - ``FASTMRI_DATASETS_ROOT``
      - *unset*
      - fastMRI-specific data-root override.
-       Read by ``src/mriforge/shared/utils/path_normalizer.py`` (+1 more)
+       Read by ``src/spectramr/shared/utils/path_normalizer.py`` (+1 more)
 
 Device, determinism and the accelerated-run contract
 ----------------------------------------------------
@@ -343,31 +343,31 @@ Non-negotiable 9b: heavy pipelines run on an accelerator or raise. These are the
    * - ``FORCE_CPU``
      - *unset*
      - The documented CPU escape hatch of the accelerated-run contract. Read \*and validated\* by ``compute_device`` — an unrecognized boolean raises.
-       Read by ``src/mriforge/core/compute_device.py`` (+1 more)
-   * - ``MRIFORGE_DEVICE``
+       Read by ``src/spectramr/core/compute_device.py`` (+1 more)
+   * - ``SPECTRAMR_DEVICE``
      - ``auto``
      - Device preference consumed by ``env_resolver`` (``auto`` by default).
-       Read by ``src/mriforge/infrastructure/config/env_resolver.py`` (+1 more)
-   * - ``MRIFORGE_NO_GPU_PROBE``
+       Read by ``src/spectramr/infrastructure/config/env_resolver.py`` (+1 more)
+   * - ``SPECTRAMR_NO_GPU_PROBE``
      - *unset*
      - Skips the ``nvidia-smi`` probe in the container entrypoint. Read by shell, not Python.
-       Read by ``src/mriforge/core/env.py``
-   * - ``MRIFORGE_GPU_MEMORY_FRACTION``
+       Read by ``src/spectramr/core/env.py``
+   * - ``SPECTRAMR_GPU_MEMORY_FRACTION``
      - *unset*
      - Per-process GPU memory cap, float in (0, 1]. An invalid value raises at device init.
-       Read by ``src/mriforge/infrastructure/training/utils/training_utils.py`` (+1 more)
+       Read by ``src/spectramr/infrastructure/training/utils/training_utils.py`` (+1 more)
    * - ``CUDA_VISIBLE_DEVICES``
      - *unset*
      - Standard CUDA device mask; read for provenance and for the CPU-fallback warning.
-       Read by ``src/mriforge/infrastructure/training/utils/training_utils.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/training/utils/training_utils.py`` (+2 more)
    * - ``PYTHONHASHSEED``
      - ``0``
      - Hash seed; \*written\* by ``seed_control`` from the run's base seed.
-       Read by ``src/mriforge/shared/utils/seed_control.py`` (+2 more)
+       Read by ``src/spectramr/shared/utils/seed_control.py`` (+2 more)
    * - ``CUBLAS_WORKSPACE_CONFIG``
      - ``:4096:8``
      - cuBLAS determinism workspace; ``setdefault`` to ``:4096:8`` by ``pipelines/train``.
-       Read by ``src/mriforge/core/env.py``
+       Read by ``src/spectramr/core/env.py``
 
 Framework behaviour and the CLI
 -------------------------------
@@ -380,51 +380,51 @@ Framework behaviour and the CLI
      - Default
      - What it does / where it is read
 
-   * - ``MRIFORGE_SUPPRESS_CLINICAL_WARNING``
+   * - ``SPECTRAMR_SUPPRESS_CLINICAL_WARNING``
      - ``1``
      - Silences the import-time clinical-use warning. Intended for batch jobs only.
-       Read by ``src/mriforge/__init__.py`` (+2 more)
-   * - ``MRIFORGE_QUIET``
+       Read by ``src/spectramr/__init__.py`` (+2 more)
+   * - ``SPECTRAMR_QUIET``
      - *unset*
      - Suppresses the heavy-startup notice for slow CLI commands.
-       Read by ``src/mriforge/cli/app.py``
-   * - ``MRIFORGE_DEBUG``
+       Read by ``src/spectramr/cli/app.py``
+   * - ``SPECTRAMR_DEBUG``
      - *unset*
      - Forces a full traceback on CLI errors (same effect as ``-v``).
-       Read by ``src/mriforge/cli/app.py``
-   * - ``MRIFORGE_PLUGINS``
+       Read by ``src/spectramr/cli/app.py``
+   * - ``SPECTRAMR_PLUGINS``
      - *unset*
      - Extra plugin module paths to import, alongside the entry-point groups.
-       Read by ``src/mriforge/plugins.py``
-   * - ``MRIFORGE_LEDGER_STRICT``
+       Read by ``src/spectramr/plugins.py``
+   * - ``SPECTRAMR_LEDGER_STRICT``
      - *unset*
      - Makes a missing execution-ledger stamp fatal. Off by default so a stamping hiccup never kills GPU work; on for CI and cluster audits.
-       Read by ``src/mriforge/core/execution_ledger.py``
-   * - ``MRIFORGE_DIMENSION_CONTRACT``
+       Read by ``src/spectramr/core/execution_ledger.py``
+   * - ``SPECTRAMR_DIMENSION_CONTRACT``
      - ``observe``
      - Dimension-contract mode, one of the valid modes; defaults to ``observe``. An unrecognized value raises.
-       Read by ``src/mriforge/infrastructure/validation/dimension_contract.py``
-   * - ``MRIFORGE_ALLOW_MAMBA_FALLBACK``
+       Read by ``src/spectramr/infrastructure/validation/dimension_contract.py``
+   * - ``SPECTRAMR_ALLOW_MAMBA_FALLBACK``
      - *unset*
      - Opts into the Gated-Conv+GRU fallback when ``mamba-ssm`` is absent. CPU/CI wiring tests only.
-       Read by ``src/mriforge/models/blocks/mamba_block.py``
-   * - ``MRIFORGE_FIGURE_STYLE``
+       Read by ``src/spectramr/models/blocks/mamba_block.py``
+   * - ``SPECTRAMR_FIGURE_STYLE``
      - ``editorial``
      - Figure style for sim2rank plots.
        Read by ``scripts/sim2rank/style.py``
    * - ``FORCE_COLOR``
      - *unset*
      - Force ANSI colour in the logging service.
-       Read by ``src/mriforge/infrastructure/services/logging_service.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/services/logging_service.py`` (+2 more)
    * - ``NO_COLOR``
      - *unset*
      - Disable ANSI colour (the ``no-color.org`` convention).
-       Read by ``src/mriforge/infrastructure/services/logging_service.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/services/logging_service.py`` (+2 more)
 
-Execution backends (``mriforge launch``)
+Execution backends (``spectramr launch``)
 ---------------------------------------
 
-The ``MRIFORGE_LAUNCH_*`` trio is *written* by ``launch`` onto the child run so its provenance records the backend and resources it ran under.
+The ``SPECTRAMR_LAUNCH_*`` trio is *written* by ``launch`` onto the child run so its provenance records the backend and resources it ran under.
 
 .. list-table::
    :header-rows: 1
@@ -434,33 +434,33 @@ The ``MRIFORGE_LAUNCH_*`` trio is *written* by ``launch`` onto the child run so 
      - Default
      - What it does / where it is read
 
-   * - ``MRIFORGE_DOCKER_IMAGE``
+   * - ``SPECTRAMR_DOCKER_IMAGE``
      - ``_DEFAULT_DOCKER_IMAGE``
      - Docker image for the ``docker`` execution backend.
-       Read by ``src/mriforge/infrastructure/execution/backends.py``
-   * - ``MRIFORGE_APPTAINER_SIF``
+       Read by ``src/spectramr/infrastructure/execution/backends.py``
+   * - ``SPECTRAMR_APPTAINER_SIF``
      - ``_DEFAULT_APPTAINER_SIF``
      - Apptainer ``.sif`` image for the ``apptainer`` backend.
-       Read by ``src/mriforge/infrastructure/execution/backends.py``
-   * - ``MRIFORGE_SLURM_ACCOUNT``
+       Read by ``src/spectramr/infrastructure/execution/backends.py``
+   * - ``SPECTRAMR_SLURM_ACCOUNT``
      - ``_DEFAULT_SLURM_ACCOUNT``
      - SLURM account fallback for ``ResourceSpec`` so a non-default user does not fail at ``sbatch`` time.
-       Read by ``src/mriforge/infrastructure/execution/backends.py``
-   * - ``MRIFORGE_SLURM_PARTITION``
+       Read by ``src/spectramr/infrastructure/execution/backends.py``
+   * - ``SPECTRAMR_SLURM_PARTITION``
      - *unset*
      - SLURM partition fallback for ``ResourceSpec``.
-       Read by ``src/mriforge/infrastructure/execution/backends.py``
-   * - ``MRIFORGE_LAUNCH_BACKEND``
+       Read by ``src/spectramr/infrastructure/execution/backends.py``
+   * - ``SPECTRAMR_LAUNCH_BACKEND``
      - *unset*
-     - Set \*by\* ``mriforge launch`` on the child run so provenance records the backend it ran under.
+     - Set \*by\* ``spectramr launch`` on the child run so provenance records the backend it ran under.
        Read by ``tests/unit/cli/test_launch.py``
-   * - ``MRIFORGE_LAUNCH_ACCOUNT``
+   * - ``SPECTRAMR_LAUNCH_ACCOUNT``
      - *unset*
-     - Set \*by\* ``mriforge launch`` — resolved account, stamped into child provenance.
+     - Set \*by\* ``spectramr launch`` — resolved account, stamped into child provenance.
        Read by ``tests/unit/cli/test_launch.py``
-   * - ``MRIFORGE_LAUNCH_GPUS``
+   * - ``SPECTRAMR_LAUNCH_GPUS``
      - *unset*
-     - Set \*by\* ``mriforge launch`` — resolved GPU count, stamped into child provenance.
+     - Set \*by\* ``spectramr launch`` — resolved GPU count, stamped into child provenance.
        Read by ``tests/unit/cli/test_launch.py``
 
 Threading, caches and PyTorch tuning
@@ -491,32 +491,32 @@ Most of these the framework **sets for you** — see `Variables the framework wr
    * - ``PYTORCH_CUDA_ALLOC_CONF``
      - *unset*
      - Allocator config; ``main.py`` writes ``expandable_segments:True,max_split_size_mb:512``.
-       Read by ``src/mriforge/main.py`` (+4 more)
+       Read by ``src/spectramr/main.py`` (+4 more)
    * - ``CUDA_CACHE_MAXSIZE``
      - *unset*
      - CUDA JIT cache cap; written by ``main.py`` (2 GB).
-       Read by ``src/mriforge/main.py`` (+1 more)
+       Read by ``src/spectramr/main.py`` (+1 more)
    * - ``CUDA_CACHE_CONFIG``
      - ``str(cache_root / "cuda_cache``
      - CUDA JIT cache dir; written under the cache root.
-       Read by ``src/mriforge/accelerator.py`` (+3 more)
+       Read by ``src/spectramr/accelerator.py`` (+3 more)
    * - ``TORCH_HOME``
      - ``str(cache_root / "torch_cache``
      - Torch hub cache; written under the resolved cache root.
-       Read by ``src/mriforge/accelerator.py`` (+3 more)
+       Read by ``src/spectramr/accelerator.py`` (+3 more)
    * - ``TORCH_METRICS_CACHE``
      - *unset*
      - torchmetrics cache dir; written by ``main.py``.
-       Read by ``src/mriforge/main.py``
+       Read by ``src/spectramr/main.py``
    * - ``TRITON_CACHE_DIR``
      - ``str(cache_root / "triton_cache``
      - Triton's cache dir, and the **one** member of the cache block applied with
        ``setdefault`` — see `The cache block has exactly two knobs`_.
-       Read by ``src/mriforge/infrastructure/config/env_resolver.py`` (+1 more)
+       Read by ``src/spectramr/infrastructure/config/env_resolver.py`` (+1 more)
    * - ``TORCH_CUDA_EAGER_CACHE_MANAGER``
      - *unset*
      - Eager cache manager flag; written by ``main.py``.
-       Read by ``src/mriforge/core/metrics/evaluation_metrics.py`` (+1 more)
+       Read by ``src/spectramr/core/metrics/evaluation_metrics.py`` (+1 more)
    * - ``TORCHDYNAMO_VERBOSE``
      - ``0``
      - Dynamo verbosity; written, not read.
@@ -524,11 +524,11 @@ Most of these the framework **sets for you** — see `Variables the framework wr
    * - ``TMPDIR``
      - ``/tmp/<user>``
      - Temp dir. Written in three places — see the \*hardcoded default\* warning below.
-       Read by ``src/mriforge/infrastructure/config/env_resolver.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/config/env_resolver.py`` (+2 more)
    * - ``XDG_CACHE_HOME``
      - *unset*
      - XDG cache base; consulted by ``env.cache_root()`` and written by ``main.py``.
-       Read by ``src/mriforge/main.py`` (+1 more)
+       Read by ``src/spectramr/main.py`` (+1 more)
    * - ``NUMBA_CACHE_DIR``
      - *unset*
      - Numba cache dir; written by the legacy preprocessing script.
@@ -549,7 +549,7 @@ anything you export:
    * - Variable
      - Yours to set?
      - Why
-   * - ``MRIFORGE_CACHE_ROOT``
+   * - ``SPECTRAMR_CACHE_ROOT``
      - **yes**
      - Read first when the root is resolved; moves all six at once.
    * - ``TRITON_CACHE_DIR``
@@ -577,7 +577,7 @@ also the operator's only instruction, it names the knob:
    applied with setdefault rather than assignment (DeepSpeed asks operators to point
    Triton at a non-NFS path), so this value was NOT chosen by the framework.
    Either unset TRITON_CACHE_DIR to use the framework's own path
-   (/tmp/$USER/mriforge_cache/triton_cache), or export it somewhere writable:
+   (/tmp/$USER/spectramr_cache/triton_cache), or export it somewhere writable:
        export TRITON_CACHE_DIR="/tmp/$USER/triton_cache"
    A value whose first component is empty (e.g. '/triton_cache') is usually an unset
    ${PREFIX} in "${PREFIX}/triton_cache".
@@ -592,7 +592,7 @@ keeps the value and explains itself when the directory cannot be created.
 
    On a cluster, prefer node-local storage and include ``$USER``::
 
-       export MRIFORGE_CACHE_ROOT="/tmp/$USER/mriforge_cache"
+       export SPECTRAMR_CACHE_ROOT="/tmp/$USER/spectramr_cache"
        export TRITON_CACHE_DIR="/tmp/$USER/triton_cache"
 
    ``/tmp`` is sticky and shared on a compute node, so a bare ``/tmp/<name>``
@@ -615,23 +615,23 @@ Set by ``torchrun`` or by the in-process launcher; read by the distributed pipel
    * - ``RANK``
      - ``os.environ.get("LOCAL_RANK", "-1``
      - Global rank. Read by the distributed pipeline; written by the in-process launcher.
-       Read by ``src/mriforge/infrastructure/distributed/launcher.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/distributed/launcher.py`` (+2 more)
    * - ``LOCAL_RANK``
      - ``rank``
      - Node-local rank.
-       Read by ``src/mriforge/infrastructure/distributed/distributed_training.py`` (+3 more)
+       Read by ``src/spectramr/infrastructure/distributed/distributed_training.py`` (+3 more)
    * - ``WORLD_SIZE``
      - ``-1``
      - Total process count; ``env.is_distributed()`` keys off it.
-       Read by ``src/mriforge/infrastructure/distributed/launcher.py`` (+2 more)
+       Read by ``src/spectramr/infrastructure/distributed/launcher.py`` (+2 more)
    * - ``LOCAL_WORLD_SIZE``
      - ``world_size``
      - Node-local process count, read by ``pipelines/distributed``.
-       Read by ``src/mriforge/pipelines/distributed.py``
+       Read by ``src/spectramr/pipelines/distributed.py``
    * - ``MASTER_ADDR``
      - ``127.0.0.1``
      - Rendezvous address; ``setdefault`` to ``127.0.0.1``.
-       Read by ``src/mriforge/core/env.py``
+       Read by ``src/spectramr/core/env.py``
    * - ``MASTER_PORT``
      - ``29500``
      - Rendezvous port; ``setdefault`` to ``29500``.
@@ -674,15 +674,15 @@ Read only under :file:`tests/` or by CI scripts; none affect a normal training r
      - Default
      - What it does / where it is read
 
-   * - ``MRIFORGE_ALLOW_NO_TORCH``
+   * - ``SPECTRAMR_ALLOW_NO_TORCH``
      - *unset*
      - Lets the test conftest proceed when torch is unavailable.
        Read by ``tests/conftest.py``
-   * - ``MRIFORGE_UPDATE_ARCH_BASELINE``
+   * - ``SPECTRAMR_UPDATE_ARCH_BASELINE``
      - *unset*
      - Rewrites the architecture-fitness baseline instead of asserting against it.
        Read by ``tests/architecture/_fitness_lib.py``
-   * - ``MRIFORGE_UPDATE_LOSS_KEY_GOLDEN``
+   * - ``SPECTRAMR_UPDATE_LOSS_KEY_GOLDEN``
      - *unset*
      - Rewrites the loss-key golden file instead of asserting against it.
        Read by ``tests/experiments/test_loss_weight_no_op_migration.py``
@@ -718,11 +718,11 @@ Read only under :file:`tests/` or by CI scripts; none affect a normal training r
      - ``600``
      - Per-test timeout for the sharded CPU test array.
        Read by ``scripts/ci/run_cpu_tests_array.sbatch``
-   * - ``MRIFORGE_TEST_EVENT_LOG``
+   * - ``SPECTRAMR_TEST_EVENT_LOG``
      - *unset*
      - JSONL path the ``pytest_result_collector`` plugin writes per-test events to. Exported per shard by the CPU test array.
        Read by ``scripts/ci/pytest_plugins/pytest_result_collector.py``
-   * - ``MRIFORGE_TEST_SHARD``
+   * - ``SPECTRAMR_TEST_SHARD``
      - *unset*
      - Shard index stamped into each event by the same plugin.
        Read by ``scripts/ci/pytest_plugins/pytest_result_collector.py``
@@ -802,7 +802,7 @@ Secrets
      - Default
      - What it does / where it is read
 
-   * - ``MRIFORGE_ZIP_PASSWORD``
+   * - ``SPECTRAMR_ZIP_PASSWORD``
      - *unset*
      - Password for encrypted external dataset archives. \*\*Secret — never commit a value.\*\*
        Read by ``scripts/data/extract_external_datasets.py``
@@ -1077,7 +1077,7 @@ Script-scoped variables
 -----------------------
 
 Each of these is read by one or two operational scripts and has no effect on a
-normal ``mriforge train`` run. They are the ``VAR=value ./<script>.sh`` overrides
+normal ``spectramr train`` run. They are the ``VAR=value ./<script>.sh`` overrides
 that the maintainers' cluster workflow relies on.
 
 .. warning::
@@ -1169,23 +1169,23 @@ that the maintainers' cluster workflow relies on.
    * - ``FILTER``
      - *unset*
      - ``scripts/ci/rerun_smoke_failures_20260509.sbatch``, ``scripts/ci/rerun_smoke_failures_20260509.sh``
-   * - ``MRIFORGE_ALLOW_MISSING_RIPGREP``
+   * - ``SPECTRAMR_ALLOW_MISSING_RIPGREP``
      - *unset*
      - ``tests/unit/config/test_schema_key_consumption.py``
-   * - ``MRIFORGE_FORENSICS_SCRIPT``
-     - ``$HOME/.claude/skills/mriforge-im...``
+   * - ``SPECTRAMR_FORENSICS_SCRIPT``
+     - ``$HOME/.claude/skills/spectramr-im...``
      - ``scripts/ci/refresh_diagnostics.sh``
-   * - ``MRIFORGE_LAUNCH_``
+   * - ``SPECTRAMR_LAUNCH_``
      - *unset*
-     - ``src/mriforge/infrastructure/execution/backends.py``
-   * - ``MRIFORGE_TEST_EVENT_MAXLEN``
+     - ``src/spectramr/infrastructure/execution/backends.py``
+   * - ``SPECTRAMR_TEST_EVENT_MAXLEN``
      - *unset*
      - ``scripts/ci/pytest_plugins/pytest_result_collector.py``
    * - ``HEAD``
      - ``HEAD``
      - ``scripts/ci/cluster_verify.sh``
    * - ``IMAGE``
-     - ``mriforge.sif``
+     - ``spectramr.sif``
      - ``scripts/container/launch_multi_container.sh``
    * - ``IM_SIZE``
      - ``256``
@@ -1317,7 +1317,7 @@ you export can be silently replaced. Two different disciplines are in use:
 
 .. warning::
 
-   Exporting ``OMP_NUM_THREADS=8`` before ``mriforge train`` has **no effect** —
+   Exporting ``OMP_NUM_THREADS=8`` before ``spectramr train`` has **no effect** —
    :file:`main.py` overwrites it with ``1`` on import. The ``4`` default you may have
    seen comes from :file:`runners/run_kspace_cold_diffusion.py`, a different entry
    point. Thread count is an entry-point property here, not an environment one.
@@ -1332,85 +1332,85 @@ you export can be silently replaced. Two different disciplines are in use:
 
    * - ``CUBLAS_WORKSPACE_CONFIG``
      - ``:4096:8``
-     - ``src/mriforge/core/env.py``
+     - ``src/spectramr/core/env.py``
    * - ``CUDA_CACHE_CONFIG``
      - ``str(cache_root / "cuda_cache``
-     - ``src/mriforge/accelerator.py``, ``src/mriforge/main.py`` (+2 more)
+     - ``src/spectramr/accelerator.py``, ``src/spectramr/main.py`` (+2 more)
    * - ``CUDA_CACHE_MAXSIZE``
      - *unset*
-     - ``src/mriforge/main.py``, ``src/mriforge/core/env.py``
+     - ``src/spectramr/main.py``, ``src/spectramr/core/env.py``
    * - ``FASTMRI_DATASETS_ROOT``
      - *unset*
-     - ``src/mriforge/shared/utils/path_normalizer.py``, ``src/mriforge/core/env.py``
+     - ``src/spectramr/shared/utils/path_normalizer.py``, ``src/spectramr/core/env.py``
    * - ``FORCE_COLOR``
      - *unset*
-     - ``src/mriforge/infrastructure/services/logging_service.py``, ``tests/smoke/test_colored_logging.py`` (+1 more)
-   * - ``MRIFORGE_ALLOW_MAMBA_FALLBACK``
+     - ``src/spectramr/infrastructure/services/logging_service.py``, ``tests/smoke/test_colored_logging.py`` (+1 more)
+   * - ``SPECTRAMR_ALLOW_MAMBA_FALLBACK``
      - *unset*
-     - ``src/mriforge/models/blocks/mamba_block.py``
-   * - ``MRIFORGE_CACHE_ROOT``
+     - ``src/spectramr/models/blocks/mamba_block.py``
+   * - ``SPECTRAMR_CACHE_ROOT``
      - *unset*
-     - ``src/mriforge/infrastructure/config/env_resolver.py``, ``tests/unit/infrastructure/config/test_env_resolver.py`` (+1 more)
-   * - ``MRIFORGE_LAUNCH_ACCOUNT``
-     - *unset*
-     - ``tests/unit/cli/test_launch.py``
-   * - ``MRIFORGE_LAUNCH_BACKEND``
+     - ``src/spectramr/infrastructure/config/env_resolver.py``, ``tests/unit/infrastructure/config/test_env_resolver.py`` (+1 more)
+   * - ``SPECTRAMR_LAUNCH_ACCOUNT``
      - *unset*
      - ``tests/unit/cli/test_launch.py``
-   * - ``MRIFORGE_LAUNCH_GPUS``
+   * - ``SPECTRAMR_LAUNCH_BACKEND``
      - *unset*
      - ``tests/unit/cli/test_launch.py``
-   * - ``MRIFORGE_SUPPRESS_CLINICAL_WARNING``
+   * - ``SPECTRAMR_LAUNCH_GPUS``
+     - *unset*
+     - ``tests/unit/cli/test_launch.py``
+   * - ``SPECTRAMR_SUPPRESS_CLINICAL_WARNING``
      - ``1``
-     - ``src/mriforge/__init__.py``, ``src/mriforge/cli/app.py`` (+1 more)
+     - ``src/spectramr/__init__.py``, ``src/spectramr/cli/app.py`` (+1 more)
    * - ``LOCAL_RANK``
      - ``rank``
-     - ``src/mriforge/infrastructure/distributed/distributed_training.py``, ``src/mriforge/infrastructure/distributed/launcher.py`` (+2 more)
+     - ``src/spectramr/infrastructure/distributed/distributed_training.py``, ``src/spectramr/infrastructure/distributed/launcher.py`` (+2 more)
    * - ``MASTER_ADDR``
      - ``127.0.0.1``
-     - ``src/mriforge/core/env.py``
+     - ``src/spectramr/core/env.py``
    * - ``MASTER_PORT``
      - ``29500``
-     - ``tests/unit/pipelines/test_train.py``, ``src/mriforge/core/env.py``
+     - ``tests/unit/pipelines/test_train.py``, ``src/spectramr/core/env.py``
    * - ``MKL_NUM_THREADS``
      - ``4``
-     - ``runners/run_kspace_cold_diffusion.py``, ``src/mriforge/main.py`` (+2 more)
+     - ``runners/run_kspace_cold_diffusion.py``, ``src/spectramr/main.py`` (+2 more)
    * - ``NUMBA_CACHE_DIR``
      - *unset*
      - ``scripts/preprocessing/preprocessing_legacy.py``
    * - ``OMP_NUM_THREADS``
      - ``4``
-     - ``runners/run_kspace_cold_diffusion.py``, ``src/mriforge/main.py`` (+2 more)
+     - ``runners/run_kspace_cold_diffusion.py``, ``src/spectramr/main.py`` (+2 more)
    * - ``OPENBLAS_NUM_THREADS``
      - ``4``
-     - ``runners/run_kspace_cold_diffusion.py``, ``src/mriforge/main.py`` (+1 more)
+     - ``runners/run_kspace_cold_diffusion.py``, ``src/spectramr/main.py`` (+1 more)
    * - ``PYTHONHASHSEED``
      - ``0``
-     - ``src/mriforge/shared/utils/seed_control.py``, ``tests/unit/shared/utils/test_seed_control.py`` (+1 more)
+     - ``src/spectramr/shared/utils/seed_control.py``, ``tests/unit/shared/utils/test_seed_control.py`` (+1 more)
    * - ``PYTORCH_CUDA_ALLOC_CONF``
      - *unset*
-     - ``src/mriforge/main.py``, ``tests/integration/test_determinism_sentinel.py`` (+3 more)
+     - ``src/spectramr/main.py``, ``tests/integration/test_determinism_sentinel.py`` (+3 more)
    * - ``RANK``
      - ``os.environ.get("LOCAL_RANK", "-1``
-     - ``src/mriforge/infrastructure/distributed/launcher.py``, ``src/mriforge/pipelines/distributed.py`` (+1 more)
+     - ``src/spectramr/infrastructure/distributed/launcher.py``, ``src/spectramr/pipelines/distributed.py`` (+1 more)
    * - ``TMPDIR``
      - ``/tmp/<user>``
-     - ``src/mriforge/infrastructure/config/env_resolver.py``, ``src/mriforge/main.py`` (+1 more)
+     - ``src/spectramr/infrastructure/config/env_resolver.py``, ``src/spectramr/main.py`` (+1 more)
    * - ``TORCHDYNAMO_VERBOSE``
      - ``0``
      - ``tests/conftest.py``
    * - ``TORCH_CUDA_EAGER_CACHE_MANAGER``
      - *unset*
-     - ``src/mriforge/core/metrics/evaluation_metrics.py``, ``src/mriforge/main.py``
+     - ``src/spectramr/core/metrics/evaluation_metrics.py``, ``src/spectramr/main.py``
    * - ``TORCH_HOME``
      - ``str(cache_root / "torch_cache``
-     - ``src/mriforge/accelerator.py``, ``src/mriforge/main.py`` (+2 more)
+     - ``src/spectramr/accelerator.py``, ``src/spectramr/main.py`` (+2 more)
    * - ``TORCH_METRICS_CACHE``
      - *unset*
-     - ``src/mriforge/main.py``
+     - ``src/spectramr/main.py``
    * - ``TRITON_CACHE_DIR``
      - ``str(cache_root / "triton_cache``
-     - ``src/mriforge/infrastructure/config/env_resolver.py``, ``src/mriforge/infrastructure/services/memory_optimization_service.py``
+     - ``src/spectramr/infrastructure/config/env_resolver.py``, ``src/spectramr/infrastructure/services/memory_optimization_service.py``
    * - ``WANDB_CONSOLE``
      - *unset*
      - ``scripts/data/verify_experiment_data_compliance.py``, ``tests/integration/test_inprogress_yamls.py``
@@ -1422,10 +1422,10 @@ you export can be silently replaced. Two different disciplines are in use:
      - ``scripts/data/verify_experiment_data_compliance.py``, ``tests/integration/test_inprogress_yamls.py``
    * - ``WORLD_SIZE``
      - ``-1``
-     - ``src/mriforge/infrastructure/distributed/launcher.py``, ``src/mriforge/pipelines/distributed.py`` (+1 more)
+     - ``src/spectramr/infrastructure/distributed/launcher.py``, ``src/spectramr/pipelines/distributed.py`` (+1 more)
    * - ``XDG_CACHE_HOME``
      - *unset*
-     - ``src/mriforge/main.py``, ``src/mriforge/core/env.py``
+     - ``src/spectramr/main.py``, ``src/spectramr/core/env.py``
 
 Set by operational scripts
 --------------------------
@@ -1448,7 +1448,7 @@ calling the script has no effect.
    * - ``CUDA_VISIBLE_DEVICES``
      - *(varies)*
      - :file:`scripts/ci/run_cpu_tests_array.sbatch`
-   * - ``MRIFORGE_SUPPRESS_CLINICAL_WARNING``
+   * - ``SPECTRAMR_SUPPRESS_CLINICAL_WARNING``
      - ``1``
      - :file:`scripts/ci/run_cpu_tests_array.sbatch`
    * - ``MKL_NUM_THREADS``
@@ -1486,30 +1486,30 @@ The two pre-existing lists disagree with the code, in one direction each.
 
 **Variables are read in Python but absent from** :file:`core/env.py`, whose
 docstring claims it lists every variable the framework reads. This gap was **44**
-when the page was written. Twelve names — every ``MRIFORGE_*`` variable read
-inside :file:`src/mriforge/` — were registered subsequently and are now enforced
-by ``test_every_mriforge_var_read_in_src_is_declared_here``, so that direction
+when the page was written. Twelve names — every ``SPECTRAMR_*`` variable read
+inside :file:`src/spectramr/` — were registered subsequently and are now enforced
+by ``test_every_spectramr_var_read_in_src_is_declared_here``, so that direction
 cannot regress. Re-measure rather than quoting the total; the framework half that
 *remains* is:
 
-* ``MRIFORGE_ALLOW_MISSING_RIPGREP``
-* ``MRIFORGE_ALLOW_NO_TORCH``
-* ``MRIFORGE_FIGURE_STYLE``
-* ``MRIFORGE_TEST_EVENT_LOG``
-* ``MRIFORGE_TEST_EVENT_MAXLEN``
-* ``MRIFORGE_TEST_SHARD``
-* ``MRIFORGE_UPDATE_ARCH_BASELINE``
-* ``MRIFORGE_UPDATE_LOSS_KEY_GOLDEN``
-* ``MRIFORGE_ZIP_PASSWORD``
+* ``SPECTRAMR_ALLOW_MISSING_RIPGREP``
+* ``SPECTRAMR_ALLOW_NO_TORCH``
+* ``SPECTRAMR_FIGURE_STYLE``
+* ``SPECTRAMR_TEST_EVENT_LOG``
+* ``SPECTRAMR_TEST_EVENT_MAXLEN``
+* ``SPECTRAMR_TEST_SHARD``
+* ``SPECTRAMR_UPDATE_ARCH_BASELINE``
+* ``SPECTRAMR_UPDATE_LOSS_KEY_GOLDEN``
+* ``SPECTRAMR_ZIP_PASSWORD``
 
 These are read from :file:`scripts/` or :file:`tests/` rather than from the
 package, which is why the guard does not reach them; they are test switches,
 tracking flags and tooling knobs.
 
-One family is in-package yet still unregistered, deliberately: ``MRIFORGE_LAUNCH_*``
+One family is in-package yet still unregistered, deliberately: ``SPECTRAMR_LAUNCH_*``
 is composed at runtime from a prefix in
-:file:`src/mriforge/infrastructure/execution/backends.py`, exported by
-``mriforge launch`` and read back by the child run to stamp provenance. It is an
+:file:`src/spectramr/infrastructure/execution/backends.py`, exported by
+``spectramr launch`` and read back by the child run to stamp provenance. It is an
 internal handoff rather than an operator knob — setting one by hand falsifies the
 record — and its membership derives from ``_LAUNCH_RESOURCE_FIELDS``, so a
 hand-copied list here would be its own drift surface. The guard excludes it
@@ -1526,12 +1526,12 @@ because there are **two** registries and they are not connected:
 
 * ``env.names()`` has exactly one consumer in the tree —
   :file:`scripts/release/print_env.py`.
-* ``mriforge diagnostics`` does **not** use it. It iterates ``_ENV_KNOBS``
-  (:file:`src/mriforge/cli/diagnostics.py`), a hand-maintained tuple that is a
+* ``spectramr diagnostics`` does **not** use it. It iterates ``_ENV_KNOBS``
+  (:file:`src/spectramr/cli/diagnostics.py`), a hand-maintained tuple that is a
   separate partial list.
 
 So registering a variable in :file:`core/env.py` does *not* make it appear in
-``mriforge diagnostics``; the twelve added here do not. Reconciling ``_ENV_KNOBS``
+``spectramr diagnostics``; the twelve added here do not. Reconciling ``_ENV_KNOBS``
 against ``names()`` is a further piece of work, deliberately not done here.
 
 .. note::
@@ -1540,13 +1540,13 @@ against ``names()`` is a further piece of work, deliberately not done here.
    export list and the registry. A constant declared in :file:`core/env.py` but
    left out of ``__all__`` is invisible to ``names()`` *and* to the
    ``.env.example`` advertisement test, which iterates it —
-   ``MRIFORGE_GPU_MEMORY_FRACTION`` sat in that hole with a validating resolver
+   ``SPECTRAMR_GPU_MEMORY_FRACTION`` sat in that hole with a validating resolver
    whose own docstring called it "registered in core/env.py".
    ``test_all_constants_are_exported`` now closes it.
 
 .. note::
 
-   :file:`src/mriforge/cli/diagnostics.py` keeps a *third*, hand-maintained list of 12
+   :file:`src/spectramr/cli/diagnostics.py` keeps a *third*, hand-maintained list of 12
    names to display. All 12 are genuinely read, but it is neither a subset nor a
    superset of the other two — a fourth surface to keep in sync.
 
@@ -1557,7 +1557,7 @@ advertisement test passing. There are no advertised-but-inert knobs.
 Known rough edges
 -----------------
 
-* **Fixed (#1250).** :file:`src/mriforge/core/metrics/evaluation_metrics.py` used to do
+* **Fixed (#1250).** :file:`src/spectramr/core/metrics/evaluation_metrics.py` used to do
   ``os.environ.setdefault("TMPDIR", "/tmp/<user>")`` at import — a **hardcoded username**
   as the fallback temp dir, pointing on any other account at a directory the user may not
   own. It also set ``TORCH_CUDA_EAGER_CACHE_MANAGER`` behind a ``torch.cuda.is_available()``
@@ -1569,18 +1569,18 @@ Known rough edges
   ``resolve_cache_root``, so importing a metrics module silently redirected the
   framework-wide cache root, and whether it won depended on import order. It was also inert
   on its own terms — the assignment sat *below* that module's ``import torch``, and PyTorch
-  reads these when the CUDA allocator initialises. :file:`src/mriforge/main.py` owns this
+  reads these when the CUDA allocator initialises. :file:`src/spectramr/main.py` owns this
   bootstrap correctly, above ``import torch``. The remaining ``TMPDIR`` writers derive it
   from the resolved cache root.
-* **Fixed (#1250).** :file:`src/mriforge/infrastructure/services/memory_optimization_service.py`
+* **Fixed (#1250).** :file:`src/spectramr/infrastructure/services/memory_optimization_service.py`
   used to ``makedirs("/tmp/triton_cache")`` and point ``TRITON_CACHE_DIR`` at it. Two
   defects: the path carried no ``$USER`` term (``/tmp`` is sticky, so the directory belongs
   to whoever created it first — the exact EACCES documented under `The cache block has exactly two knobs`_
   above), and it was a **second writer** to a variable ``configure_cache_environment()``
   already owns, so the effective value depended on whether a run had reached that service
-  yet. The service now sets no cache directory; steer it with ``MRIFORGE_CACHE_ROOT``.
-* Three project-root spellings coexist — ``PROJECT_ROOT``, ``MRIFORGE_DATA_ROOT`` and
-  ``MRIFORGE_ROOT`` — resolved by different modules with different precedence.
+  yet. The service now sets no cache directory; steer it with ``SPECTRAMR_CACHE_ROOT``.
+* Three project-root spellings coexist — ``PROJECT_ROOT``, ``SPECTRAMR_DATA_ROOT`` and
+  ``SPECTRAMR_ROOT`` — resolved by different modules with different precedence.
   ``env.project_root()`` checks the first two; ``PathNormalizer`` checks the third.
 
 Re-measuring

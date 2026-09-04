@@ -1,6 +1,6 @@
 """Tests for ``ConformalCalibrationRunner``.
 
-Targets ``mriforge.infrastructure.calibration.runner``. Phase-2 of PR-3.
+Targets ``spectramr.infrastructure.calibration.runner``. Phase-2 of PR-3.
 
 Categories:
 
@@ -17,8 +17,8 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.calibration.conformal import ConformalCalibrator
-from mriforge.infrastructure.calibration.runner import (
+from spectramr.infrastructure.calibration.conformal import ConformalCalibrator
+from spectramr.infrastructure.calibration.runner import (
     CalibrationReport,
     ConformalCalibrationRunner,
 )

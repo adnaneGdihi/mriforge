@@ -5,8 +5,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.metrics import MetricsConfigSchema
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.config.schemas.metrics import MetricsConfigSchema
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 

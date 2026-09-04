@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 import torch
 import torchio as tio
 
-from mriforge.data.builders.torchio_subject_builder import FastMRISubjectBuilder
+from spectramr.data.builders.torchio_subject_builder import FastMRISubjectBuilder
 
 
 class TestFastMRIPropagation:

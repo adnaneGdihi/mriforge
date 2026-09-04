@@ -1,6 +1,6 @@
 """Tests for ``HFENLoss``.
 
-Targets ``mriforge.models.losses.hfen_loss``. High-Frequency Error Norm:
+Targets ``spectramr.models.losses.hfen_loss``. High-Frequency Error Norm:
 Laplacian-of-Gaussian filtered L2 distance, suitable as both a
 high-pass loss (``normalize=False``) and as a ratio metric
 (``normalize=True``).
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.hfen_loss import HFENLoss, _build_log_kernel
+from spectramr.models.losses.hfen_loss import HFENLoss, _build_log_kernel
 
 
 # ---------------------------------------------------------------------------
@@ -199,6 +199,6 @@ def test_gradient_flows_to_pred() -> None:
 
 def test_hfen_registered() -> None:
     """``hfen`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "hfen" in list_available()

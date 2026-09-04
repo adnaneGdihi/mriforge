@@ -11,8 +11,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.data.builders.torchio_transform_builder import (
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.data.builders.torchio_transform_builder import (
     TorchIOTransformBuilder,
     TorchIOTransformConfig,
 )
@@ -32,7 +32,7 @@ def _proxy(data_cfg, accel=None):
     since the reader walks into the block; None is what produced the
     "'NoneType' object is not iterable" pair.
     """
-    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+    from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
     class _P:
         def __init__(self, d, a):
@@ -191,10 +191,10 @@ def test_director_wraps_in_lazy_encode_when_enabled(
     tmp_path, monkeypatch
 ) -> None:
     """latent_diffusion.enabled=true ⇒ datasets are wrapped in LazyEncodeWrapper."""
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         DataPipelineDirector,
     )
-    from mriforge.data.builders.lazy_encode import LazyEncodeWrapper
+    from spectramr.data.builders.lazy_encode import LazyEncodeWrapper
 
     # Write a dummy checkpoint (a module, since LazyEncodeWrapper expects
     # torch.save(module, ...) shape by default).
@@ -230,10 +230,10 @@ def test_director_wraps_in_lazy_encode_when_enabled(
 
 def test_director_wraps_in_meta_learning_when_enabled() -> None:
     """meta_learning.enabled=true ⇒ train dataset wrapped in MetaLearningDataset."""
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         DataPipelineDirector,
     )
-    from mriforge.data.datasets.meta_learning_dataset import MetaLearningDataset
+    from spectramr.data.datasets.meta_learning_dataset import MetaLearningDataset
 
     data_cfg = DataConfigSchema(
         meta_learning={
@@ -260,7 +260,7 @@ def test_director_wraps_in_meta_learning_when_enabled() -> None:
 
 def test_director_default_is_noop() -> None:
     """No Phase 4f blocks enabled ⇒ datasets pass through unchanged."""
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         DataPipelineDirector,
     )
 
@@ -279,7 +279,7 @@ def test_director_default_is_noop() -> None:
 
 def test_temporal_sampler_raises_when_dispatched_via_queue() -> None:
     """sampler.type=temporal_uniform via tio.Queue ⇒ ValueError (fail-loud)."""
-    from mriforge.data.builders.torchio_queue_builder import (
+    from spectramr.data.builders.torchio_queue_builder import (
         TorchIOQueueBuilder,
         TorchIOQueueConfig,
     )
@@ -293,7 +293,7 @@ def test_temporal_sampler_raises_when_dispatched_via_queue() -> None:
 
 def test_unknown_sampler_type_raises() -> None:
     """Unknown sampler.type ⇒ ValueError listing valid options."""
-    from mriforge.data.builders.torchio_queue_builder import (
+    from spectramr.data.builders.torchio_queue_builder import (
         TorchIOQueueBuilder,
         TorchIOQueueConfig,
     )

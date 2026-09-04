@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.structured_covariance import (
+from spectramr.infrastructure.physics.structured_covariance import (
     StructuredCovariance,
     lowrank_from_basis,
     radial_to_grid,

@@ -8,12 +8,12 @@ from pathlib import Path
 import pytest
 
 try:
-    from mriforge.shared.utils.path_security import validate_path
+    from spectramr.shared.utils.path_security import validate_path
 except ImportError:
     validate_path = None
 
 try:
-    from mriforge.shared.utils.device_utils import get_device
+    from spectramr.shared.utils.device_utils import get_device
 except ImportError:
     get_device = None
 

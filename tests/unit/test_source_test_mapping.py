@@ -1,6 +1,6 @@
 """Meta-test: every substantial source module has at least one referencing test.
 
-For every non-trivial module under src/mriforge/ (>=40 non-blank non-comment
+For every non-trivial module under src/spectramr/ (>=40 non-blank non-comment
 lines, not __init__.py), asserts that SOME test file under tests/ references
 the module stem — either by importing it or by being named test_<stem>.py.
 
@@ -27,7 +27,7 @@ while _REPO != _REPO.parent:
         break
     _REPO = _REPO.parent
 
-SRC = _REPO / "src" / "mriforge"
+SRC = _REPO / "src" / "spectramr"
 TESTS = _REPO / "tests"
 
 

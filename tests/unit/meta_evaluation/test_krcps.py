@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.conformal import select_conformal_threshold
-from mriforge.core.metrics.meta_evaluation.krcps import KRCPSResult, krcps_calibrate
+from spectramr.core.metrics.meta_evaluation.conformal import select_conformal_threshold
+from spectramr.core.metrics.meta_evaluation.krcps import KRCPSResult, krcps_calibrate
 
 
 def _calib(n: int = 20, d: int = 4, scale: float = 1.0):

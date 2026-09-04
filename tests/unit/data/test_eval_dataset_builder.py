@@ -1,8 +1,8 @@
-"""Tests for :mod:`mriforge.data.builders.eval_dataset_builder`.
+"""Tests for :mod:`spectramr.data.builders.eval_dataset_builder`.
 
 This module is the Phase-1 plug for the eval-bypass CLAUDE.md #11
 violation. It exposes role-aware loaders that the campaign evaluator
-delegates to — see :mod:`mriforge.infrastructure.orchestration.campaign_evaluator`.
+delegates to — see :mod:`spectramr.infrastructure.orchestration.campaign_evaluator`.
 
 Coverage:
 
@@ -14,7 +14,7 @@ Coverage:
 - Malformed-file behavior is fail-soft for missing keys (returns
   ``None`` and logs a warning), not silent.
 - Reference tensors are **unnormalized** (no [-1, 1] rescaling like
-  :func:`mriforge.infrastructure.io.adapters.load_nifti` applies).
+  :func:`spectramr.infrastructure.io.adapters.load_nifti` applies).
 """
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.builders.eval_dataset_builder import (
+from spectramr.data.builders.eval_dataset_builder import (
     load_clean_reference,
     load_paired_samples,
     load_per_sample_metrics,
@@ -60,7 +60,7 @@ def test_clean_reference_loads_npy(tmp_path: Path) -> None:
 def test_clean_reference_does_not_normalize_npy(tmp_path: Path) -> None:
     """Critical: eval references must NOT be rescaled to [-1, 1].
 
-    :func:`mriforge.infrastructure.io.adapters.load_nifti` min-max
+    :func:`spectramr.infrastructure.io.adapters.load_nifti` min-max
     rescales to ``[-1, 1]`` for training-input ingestion. The eval
     loader must NOT apply this — metrics need the original range.
     """
@@ -208,16 +208,16 @@ def test_uncertainty_bundle_returns_none_for_missing_keys(
 
 def test_campaign_evaluator_uses_eval_dataset_builder() -> None:
     """Pin: the refactor in
-    :mod:`mriforge.infrastructure.orchestration.campaign_evaluator` must
+    :mod:`spectramr.infrastructure.orchestration.campaign_evaluator` must
     import the eval-dataset-builder loaders. If a future refactor
     re-introduces direct ``np.load`` / ``nib.load`` / ``h5py.File``
     calls there, this test (plus
     :mod:`tests.data_integrity.test_data_loading_ssot`) trips.
     """
     src = Path(
-        "src/mriforge/infrastructure/orchestration/campaign_evaluator.py"
+        "src/spectramr/infrastructure/orchestration/campaign_evaluator.py"
     ).read_text(encoding="utf-8")
-    assert "from mriforge.data.builders.eval_dataset_builder import" in src, (
+    assert "from spectramr.data.builders.eval_dataset_builder import" in src, (
         "campaign_evaluator must import the SSOT eval loaders — Phase 1 "
         "of the data-layer unification plan."
     )
@@ -246,7 +246,7 @@ def test_pickle_manifest_remains_inline_per_amendment_c(tmp_path: Path) -> None:
     flip — forcing the contributor to update Amendment C consciously.
     """
     src = Path(
-        "src/mriforge/infrastructure/orchestration/campaign_evaluator.py"
+        "src/spectramr/infrastructure/orchestration/campaign_evaluator.py"
     ).read_text(encoding="utf-8")
     assert "pickle.load(f)" in src, (
         "If pkl-manifest inline-loading was removed, Amendment C is "

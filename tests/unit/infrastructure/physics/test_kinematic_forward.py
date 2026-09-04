@@ -20,7 +20,7 @@ class TestKinematicForwardOperator:
 
     @pytest.fixture
     def op(self):
-        from mriforge.infrastructure.physics.kinematic_forward import (
+        from spectramr.infrastructure.physics.kinematic_forward import (
             KinematicForwardOperator,
         )
 
@@ -102,7 +102,7 @@ class TestKinematicForwardOperatorNoNUFFT:
     @pytest.mark.skipif(HAS_NUFFT, reason="torchkbnufft IS installed")
     def test_import_error_without_nufft(self) -> None:
         """KinematicForwardOperator should raise ImportError without torchkbnufft."""
-        from mriforge.infrastructure.physics.kinematic_forward import (
+        from spectramr.infrastructure.physics.kinematic_forward import (
             KinematicForwardOperator,
         )
 
@@ -121,7 +121,7 @@ def test_translation_phase_recovers_shift() -> None:
     """
     import torchkbnufft as tkbn
 
-    from mriforge.infrastructure.physics.kinematic_forward import (
+    from spectramr.infrastructure.physics.kinematic_forward import (
         KinematicForwardOperator,
     )
 

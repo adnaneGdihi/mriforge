@@ -10,7 +10,7 @@ import pytest
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from mriforge.data.builders.site_balancer import (
+from spectramr.data.builders.site_balancer import (
     Balancer,
     ConcatBalancer,
     RoundRobinBalancer,

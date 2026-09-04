@@ -12,7 +12,7 @@ import math
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.transfer import (
+from spectramr.core.metrics.meta_evaluation.transfer import (
     pmean_diff_bound,
     tv_distance,
     tv_distance_samples,
@@ -181,7 +181,7 @@ def test_tv_debias_keeps_disjoint_laws_separated() -> None:
 def test_joint_tv_catches_dependence_shift_marginals_miss() -> None:
     import numpy as np
 
-    from mriforge.core.metrics.meta_evaluation.transfer import (
+    from spectramr.core.metrics.meta_evaluation.transfer import (
         tv_distance_joint_samples,
     )
 
@@ -204,7 +204,7 @@ def test_joint_tv_catches_dependence_shift_marginals_miss() -> None:
 def test_joint_tv_zero_for_same_law_high_for_shift() -> None:
     import numpy as np
 
-    from mriforge.core.metrics.meta_evaluation.transfer import (
+    from spectramr.core.metrics.meta_evaluation.transfer import (
         tv_distance_joint_samples,
     )
 
@@ -217,7 +217,7 @@ def test_joint_tv_zero_for_same_law_high_for_shift() -> None:
 
 
 def test_joint_tv_degenerate_inputs_return_zero() -> None:
-    from mriforge.core.metrics.meta_evaluation.transfer import (
+    from spectramr.core.metrics.meta_evaluation.transfer import (
         tv_distance_joint_samples,
     )
 

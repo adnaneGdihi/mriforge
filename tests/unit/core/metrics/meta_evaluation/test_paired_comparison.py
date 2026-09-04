@@ -8,7 +8,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.meta_evaluation.paired_comparison import (  # noqa: E402
+from spectramr.core.metrics.meta_evaluation.paired_comparison import (  # noqa: E402
     _tied_ranks,
     lesion_vs_control,
     spearman_rho,

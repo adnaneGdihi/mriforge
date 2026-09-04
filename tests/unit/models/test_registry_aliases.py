@@ -2,7 +2,7 @@
 
 Twenty name-variant ``model_type`` strings were purged from
 ``VALID_MODEL_TYPES`` in commit ``d8ccb8452`` and then re-added as
-aliases in ``mriforge.models.stubs.register_aliases`` (Phase 1 of
+aliases in ``spectramr.models.stubs.register_aliases`` (Phase 1 of
 ``TODO/deleted_model_types_reimplementation_plan.md``).
 
 ``ALIAS_TABLE`` below is the frozen source of truth. Each alias MUST
@@ -19,9 +19,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.validation_constants import VALID_MODEL_TYPES  # noqa: E402
-from mriforge.models.init_registry import populate_model_registry  # noqa: E402
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.config.validation_constants import VALID_MODEL_TYPES  # noqa: E402
+from spectramr.models.init_registry import populate_model_registry  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 
 # alias -> canonical registered name
 ALIAS_TABLE: dict[str, str] = {
@@ -164,7 +164,7 @@ KNOWN_CROSS_REGISTRY_DISAGREEMENTS = frozenset(
 # ``create_model``), and it is still the only thing that populates the
 # generator registry this test compares against — reading it IS the point.
 def test_no_new_name_binds_to_two_different_classes() -> None:
-    from mriforge.models.factories.model_factory import ModelFactory
+    from spectramr.models.factories.model_factory import ModelFactory
 
     populate_model_registry()
     generators = ModelFactory()._registry._generators

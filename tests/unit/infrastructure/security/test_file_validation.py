@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.security.file_validation import validate_file_path
+from spectramr.infrastructure.security.file_validation import validate_file_path
 
 
 def test_rejects_absolute_path_with_trusted_named_component() -> None:
@@ -46,4 +46,4 @@ def test_accepts_legitimate_relative_trusted_path() -> None:
 def test_rejects_path_outside_every_trusted_root() -> None:
     """A project-relative path that is not under any trusted root is rejected."""
     with pytest.raises(ValueError):
-        validate_file_path("src/mriforge/main.py")
+        validate_file_path("src/spectramr/main.py")

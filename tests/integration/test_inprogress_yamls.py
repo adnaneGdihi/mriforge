@@ -19,10 +19,10 @@ os.environ["WANDB_CONSOLE"] = "off"
 os.environ["WANDB_SILENT"] = "true"
 
 # Important: Always load via TrainingSettings to enforce Pydantic v6 validation
-from mriforge.config.schemas.data import DataSourceConfigSchema
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+from spectramr.config.schemas.data import DataSourceConfigSchema
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (
     DataPipelineDirector,
 )
 from tests.utils.corpus import tracked_yamls
@@ -387,7 +387,7 @@ def test_ldm_cohort_is_on_the_latest_accepted_schema_version():
     """
     import yaml as _yaml
 
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
     latest = CANONICAL_CONFIG_VERSION
     files = _ldm_cohort_yamls()
@@ -410,7 +410,7 @@ def test_numeric_max_over_accepted_versions_would_invert():
     so a single legacy entry is enough to make ``max()`` outrank the canonical
     version. This asserts the inversion is real, so the guard below has teeth.
     """
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
     hypothetical_accepted = {CANONICAL_CONFIG_VERSION, "6.1"}
     numeric_max = max(hypothetical_accepted, key=lambda v: tuple(int(p) for p in v.split(".")))
@@ -445,19 +445,67 @@ def test_cohort_version_test_does_not_rank_the_accepted_set():
     )
 
 
-@pytest.mark.skipif(not _LDM_COHORT_DIR.is_dir(), reason="ldm cohort not present")
-@pytest.mark.parametrize("yaml_path", _ldm_cohort_yamls(), ids=lambda p: p.stem)
-def test_ldm_cohort_metadata_version_matches_config_version(yaml_path):
-    """``metadata.version`` mirrors ``config_version`` — no half-migrations.
+# --------------------------------------------------------------------------
+# `metadata.version` is the AUTHOR's arm revision, never the schema tier
+# --------------------------------------------------------------------------
+#
+# This replaces `test_ldm_cohort_metadata_version_matches_config_version`, which
+# asserted the two must be EQUAL. That is the conflation, not the invariant, and
+# the repo had already elected against it: `tests/unit/config/schemas/
+# test_defaults_provider.py` fixed the provider default to None and asserts
+# `metadata.version` must never be a config tier -- "even the *current* tier is
+# wrong here". Two enforcers, opposite rules, one of them defence-in-depth for
+# the losing side (non-negotiable 17), so the loser's enforcement is deleted
+# rather than kept in sync.
+#
+# It was also RED, on `dev`, before this change touched anything: all six cohort
+# arms sat at `config_version: '1.0'` with `metadata.version: '6.1'`. A test
+# demanding the wrong thing had simply been left failing.
+#
+# What replaces it is strictly stronger: the corpus, not one cohort, and the
+# elected rule rather than its negation.
+#
+#: The schema lineage the 2026-08-03 restart retired. Spelled out rather than
+#: derived: `LEGACY_CONFIG_VERSIONS` is empty since PR #891 and
+#: `ACCEPTED_CONFIG_VERSIONS` is `{"1.0"}`, so no constant in the codebase still
+#: names 5.x/6.x -- a membership test against those sets is green on exactly the
+#: values this guard exists to catch. (That was a real defect in the two unit
+#: tests above, found by planting `"6.0"` and watching them pass.)
+_RETIRED_TIER_LINEAGE = ("5.", "6.")
 
-    ``metadata.version`` is a free-form string that nothing validates, so a bump
-    that touches only the top-level key leaves the arm self-inconsistent and the
-    drift is silent.
+#: Deliberately NOT forbidden here, though the unit tests forbid it as a
+#: *default*: `1.0` as a declared `metadata.version` is textually identical to a
+#: genuine author revision 1.0, and 23 `inprogress/` arms carry it. Failing them
+#: would be a guess about author intent, and this file cannot recover that intent.
+#: The unit-test guards cover the mechanism that could re-introduce it wholesale.
+_AMBIGUOUS_WITH_AN_AUTHOR_REVISION = frozenset({"1.0"})
+
+
+@pytest.mark.parametrize("yaml_path", get_inprogress_yamls(), ids=lambda p: p.stem)
+def test_metadata_version_is_not_a_retired_schema_tier(yaml_path):
+    """No `inprogress/` arm carries a v5/v6 schema tier as its author revision.
+
+    `metadata.version` versions the ARM (`experiment_12_image_cold_diffusion_v2
+    .yaml` declares `'2.0'` and has `_v2` in its filename); `config_version`
+    versions the SCHEMA. The v5/v6 -> 1.0 restart smeared the second into the
+    first through a template, leaving 468 of 647 arms claiming an author revision
+    of `6.0` or `6.1` that no author ever wrote.
+
+    A ratchet, not a drain: the corpus was cleaned in the same change that added
+    this, so what it guards is re-entry -- a new arm copied from an old template.
     """
     import yaml as _yaml
 
     data = _yaml.safe_load(yaml_path.read_text())
-    assert data["metadata"]["version"] == data["config_version"], (
-        f"{yaml_path.name}: metadata.version={data['metadata']['version']!r} != "
-        f"config_version={data['config_version']!r}"
+    metadata = data.get("metadata") if isinstance(data, dict) else None
+    if not isinstance(metadata, dict) or "version" not in metadata:
+        return  # absent is the canonical state: "the author did not say"
+
+    declared = str(metadata["version"])
+    assert not declared.startswith(_RETIRED_TIER_LINEAGE), (
+        f"{yaml_path.name}: metadata.version={declared!r} is a retired config "
+        f"tier, not an author revision. Delete the key (absent == 'the author "
+        f"did not say') or replace it with the arm's own revision. "
+        f"config_version={data.get('config_version')!r} is where the schema tier "
+        f"lives."
     )

@@ -12,7 +12,7 @@ from pydicom.uid import ExplicitVRLittleEndian
 # Add project root to sys.path
 sys.path.insert(0, os.getcwd())
 
-from mriforge.data.io_strategies import DicomStrategy, NiftiStrategy
+from spectramr.data.io_strategies import DicomStrategy, NiftiStrategy
 
 
 def create_dummy_dicom_series(dir_path, num_slices=30):

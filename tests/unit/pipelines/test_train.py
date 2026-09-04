@@ -1,6 +1,6 @@
 """Tests for the ``run_training_pipeline`` env/strategy injection seam (WS-A).
 
-When a caller (e.g. ``mriforge.api.fit``) supplies a pre-built
+When a caller (e.g. ``spectramr.api.fit``) supplies a pre-built
 :class:`TrainingEnvironment`, the pipeline must skip the config-driven
 ``TrainingEnvironmentDirector`` and drive the SAME loop on the injected env.
 The loop itself is stubbed here so these stay fast unit tests; what they pin is
@@ -17,10 +17,10 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-import mriforge.pipelines.train as train_mod
-import mriforge.pipelines.training_loop as training_loop_mod
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+import spectramr.pipelines.train as train_mod
+import spectramr.pipelines.training_loop as training_loop_mod
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
 
 def _config_dict(tmp_path) -> dict:
@@ -142,7 +142,7 @@ def test_startup_summary_is_emitted_before_the_logging_level_is_configured(monke
         return real_build(*args, **kwargs)
 
     monkeypatch.setattr(
-        "mriforge.infrastructure.logging.provenance.log_startup_summary",
+        "spectramr.infrastructure.logging.provenance.log_startup_summary",
         _record_summary,
     )
     monkeypatch.setattr(train_mod.bootstrap, "build_container", _record_container)
@@ -293,7 +293,7 @@ def test_model_schema_defaults_spatial_dims_to_2_for_undeclared_2d_arms():
     still gets 2 from ``ModelConfigSchema`` and its 5D slab folds into the batch
     (that flatten is covered by test_..._flattens_5d_for_2d_net above). This pins
     the guarantee that makes the direct read safe."""
-    from mriforge.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
 
     assert ModelConfigSchema().spatial_dims == 2
 
@@ -308,7 +308,7 @@ class TestVisualCaptureMissEscalation:
     """
 
     def test_limit_is_small_enough_to_catch_a_broken_seam(self) -> None:
-        from mriforge.pipelines.train import _VISUAL_CAPTURE_MISS_LIMIT
+        from spectramr.pipelines.train import _VISUAL_CAPTURE_MISS_LIMIT
 
         # One miss can be a fluke (an odd batch); a handful in a row cannot.
         assert 2 <= _VISUAL_CAPTURE_MISS_LIMIT <= 5
@@ -336,7 +336,7 @@ class TestVisualCaptureMissEscalation:
         """
         import dataclasses
 
-        from mriforge.pipelines.train import (
+        from spectramr.pipelines.train import (
             _VISUAL_CAPTURE_MISS_LIMIT,
             _visual_capture_state,
         )
@@ -368,7 +368,7 @@ class TestVisualCaptureMissEscalation:
         """Pins the counter contract the escalation branch in _run_validation uses."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines.train import _VISUAL_CAPTURE_MISS_LIMIT
+        from spectramr.pipelines.train import _VISUAL_CAPTURE_MISS_LIMIT
 
         pipeline = SimpleNamespace()
         escalations = 0
@@ -399,7 +399,7 @@ class TestOutputSanityEscalation:
     """
 
     def test_limit_matches_the_visual_capture_convention(self) -> None:
-        from mriforge.pipelines.train import (
+        from spectramr.pipelines.train import (
             _OUTPUT_SANITY_MISS_LIMIT,
             _VISUAL_CAPTURE_MISS_LIMIT,
         )
@@ -414,7 +414,7 @@ class TestOutputSanityEscalation:
         """Pins the counter contract the escalation branch uses."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines.train import _OUTPUT_SANITY_MISS_LIMIT
+        from spectramr.pipelines.train import _OUTPUT_SANITY_MISS_LIMIT
 
         pipeline = SimpleNamespace()
         escalations = 0
@@ -432,7 +432,7 @@ class TestOutputSanityEscalation:
     def test_the_guard_is_importable_from_the_pipeline_module(self) -> None:
         """The check must be reachable where validation runs, not only in tests —
         a guard that lives only in ``core/metrics`` protects nothing."""
-        import mriforge.pipelines.train as train_mod
+        import spectramr.pipelines.train as train_mod
 
         assert hasattr(train_mod, "measure_output_sanity")
 
@@ -538,7 +538,7 @@ class TestProvenanceDataCounts:
         import ast
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         tree = ast.parse(inspect.getsource(train))
 
@@ -636,7 +636,7 @@ def _resolved_config_from_run(tmp_path, monkeypatch, *, extra_config=None):
     """Run the real pipeline and return the parsed resolved_config.json."""
     import json
 
-    from mriforge.core.execution_ledger import ExecutionLedger
+    from spectramr.core.execution_ledger import ExecutionLedger
 
     raw = _config_dict(tmp_path)
     if extra_config:
@@ -717,7 +717,7 @@ def test_existing_readers_still_parse_the_enhanced_artifact(tmp_path, monkeypatc
 
     An inline per-key annotation would have broken every existing consumer.
     """
-    from mriforge.infrastructure.reporting.cohort_ablation import _read_resolved_config
+    from spectramr.infrastructure.reporting.cohort_ablation import _read_resolved_config
 
     payload = _resolved_config_from_run(tmp_path, monkeypatch)
     stamps = list(tmp_path.rglob("resolved_config.json"))
@@ -742,7 +742,7 @@ class TestParallelProvenanceStamp:
     def _source():
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         return inspect.getsource(train)
 
@@ -771,8 +771,8 @@ def test_train_resolves_target_size_from_patch_size_only() -> None:
     import ast
     import inspect
 
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.pipelines import train
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.pipelines import train
 
     assert "image_size" not in DataConfigSchema.model_fields
     # The canonical key the migration folds into is still there.
@@ -814,7 +814,7 @@ class TestBestColumnDirectionUsesTheSSOT:
         ],
     )
     def test_declared_columns_resolve(self, column, expected):
-        from mriforge.pipelines.train import _column_higher_is_better
+        from spectramr.pipelines.train import _column_higher_is_better
 
         assert _column_higher_is_better(column) is expected
 
@@ -824,13 +824,13 @@ class TestBestColumnDirectionUsesTheSSOT:
         The SSOT matches whole underscore-delimited token runs, so an invented
         column now returns None instead of borrowing MAD's direction.
         """
-        from mriforge.pipelines.train import _column_higher_is_better
+        from spectramr.pipelines.train import _column_higher_is_better
 
         assert _column_higher_is_better("train_made_up") is None
 
     @pytest.mark.parametrize("column", ["lr", "grad_norm"])
     def test_non_metric_columns_are_undeclared(self, column):
-        from mriforge.pipelines.train import _column_higher_is_better
+        from spectramr.pipelines.train import _column_higher_is_better
 
         assert _column_higher_is_better(column) is None
 
@@ -848,7 +848,7 @@ class TestSummariseBestMetricsFromCsv:
         return path
 
     def test_metric_takes_max_and_loss_takes_min(self, tmp_path):
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         path = self._write(
             tmp_path,
@@ -863,7 +863,7 @@ class TestSummariseBestMetricsFromCsv:
 
     def test_a_loss_named_after_a_metric_is_still_minimized(self, tmp_path):
         """The regression: `ssim_loss_best` reported the WORST (max) loss."""
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         path = self._write(
             tmp_path,
@@ -877,7 +877,7 @@ class TestSummariseBestMetricsFromCsv:
 
     def test_undeclared_columns_get_no_best_rather_than_a_guess(self, tmp_path):
         """A 'best grad_norm' is not a quantity; omitting it beats inventing it."""
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         path = self._write(
             tmp_path,
@@ -904,14 +904,14 @@ class TestSummariseBestMetricsFromCsv:
 
 class TestValidationCsvDerivation:
     def test_name_swap_keeps_a_suffixed_pair_together(self):
-        from mriforge.pipelines.train import validation_csv_for
+        from spectramr.pipelines.train import validation_csv_for
 
         got = validation_csv_for("/runs/a/logs/training_metrics_gan.csv")
         assert got.name == "validation_metrics_gan.csv"
         assert got.parent.as_posix() == "/runs/a/logs"
 
     def test_falls_back_to_a_sibling_when_the_name_does_not_match(self):
-        from mriforge.pipelines.train import validation_csv_for
+        from spectramr.pipelines.train import validation_csv_for
 
         got = validation_csv_for("/runs/a/logs/curve.csv")
         assert got.as_posix() == "/runs/a/logs/validation_metrics.csv"
@@ -929,7 +929,7 @@ class TestBestFoldsBothCsvs:
 
     def _make_pair(self, tmp_path):
         """Reproduce #481's shape: declared-but-empty val_* + a real val CSV."""
-        from mriforge.pipelines.train import validation_csv_for
+        from spectramr.pipelines.train import validation_csv_for
 
         train = tmp_path / "training_metrics.csv"
         self._write(
@@ -963,7 +963,7 @@ class TestBestFoldsBothCsvs:
         return train
 
     def test_val_metrics_reach_the_best_block(self, tmp_path):
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         best = _summarise_best_metrics_from_csv(str(self._make_pair(tmp_path)), final_iteration=200)
         # The alarming number a triager needs to see, previously invisible.
@@ -979,14 +979,14 @@ class TestBestFoldsBothCsvs:
         If those were folded as values the key would be absent or wrong; the real
         value has to come from the validation CSV.
         """
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         best = _summarise_best_metrics_from_csv(str(self._make_pair(tmp_path)), final_iteration=200)
         assert best["val_psnr_best"] == pytest.approx(6.8)
 
     def test_a_missing_validation_csv_is_not_an_error(self, tmp_path):
         """Validation-disabled arms must still get their training bests."""
-        from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+        from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
         train = tmp_path / "training_metrics.csv"
         self._write(
@@ -999,7 +999,7 @@ class TestBestFoldsBothCsvs:
 
     def test_the_run_window_is_applied_to_the_validation_csv_too(self, tmp_path):
         """#586's window must not be bypassed by the second file."""
-        from mriforge.pipelines.train import (
+        from spectramr.pipelines.train import (
             _summarise_best_metrics_from_csv,
             validation_csv_for,
         )
@@ -1049,11 +1049,11 @@ class TestReportingHasOneEntryPoint:
     def test_an_unconfigured_run_gets_the_tables_only_floor(self, tmp_path, monkeypatch):
         from types import SimpleNamespace
 
-        from mriforge.pipelines import train as train_mod
+        from spectramr.pipelines import train as train_mod
 
         calls: list[dict] = []
         monkeypatch.setattr(
-            "mriforge.infrastructure.reporting.generate_report",
+            "spectramr.infrastructure.reporting.generate_report",
             lambda run_dir, **kw: (
                 calls.append({"run_dir": run_dir, **kw})
                 or {"tables": {"tab_run_summary": {"csv": tmp_path / "x.csv"}}}
@@ -1074,11 +1074,11 @@ class TestReportingHasOneEntryPoint:
         """`enabled: false` means "no figures", not "no artifacts at all"."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines import train as train_mod
+        from spectramr.pipelines import train as train_mod
 
         calls: list[dict] = []
         monkeypatch.setattr(
-            "mriforge.infrastructure.reporting.generate_report",
+            "spectramr.infrastructure.reporting.generate_report",
             lambda run_dir, **kw: calls.append(kw) or {"tables": {}},
         )
         _, logger_ = self._logger()
@@ -1093,12 +1093,12 @@ class TestReportingHasOneEntryPoint:
         """A report failure must not fail a finished run."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines import train as train_mod
+        from spectramr.pipelines import train as train_mod
 
         def _boom(*a, **k):
             raise RuntimeError("plotter exploded")
 
-        monkeypatch.setattr("mriforge.infrastructure.reporting.generate_report", _boom)
+        monkeypatch.setattr("spectramr.infrastructure.reporting.generate_report", _boom)
         seen, logger_ = self._logger()
         train_mod._maybe_run_reporting(
             SimpleNamespace(reporting=None), run_dir=tmp_path, logger_=logger_
@@ -1111,7 +1111,7 @@ class TestReportingHasOneEntryPoint:
         this asserts the CALL SITE, not the module's existence."""
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop)
         code = "\n".join(ln for ln in src.splitlines() if not ln.strip().startswith("#"))
@@ -1139,7 +1139,7 @@ class TestAnAllNaNValidationRowFailsTheRun:
     def _guard_source() -> str:
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         src = inspect.getsource(train)
         start = src.index('EVERY "\n                f"metric is non-finite')
@@ -1189,7 +1189,7 @@ class TestRunSummaryRecordsWhereCheckpointsWent:
     def _summary(tmp_path, ckpt_dir):
         from types import SimpleNamespace
 
-        from mriforge.pipelines.train import _checkpoint_summary
+        from spectramr.pipelines.train import _checkpoint_summary
 
         cfg = SimpleNamespace(checkpoint=SimpleNamespace(checkpoint_dir=str(ckpt_dir)))
         return _checkpoint_summary(cfg, tmp_path)
@@ -1225,7 +1225,7 @@ class TestRunSummaryRecordsWhereCheckpointsWent:
 
         from types import SimpleNamespace
 
-        from mriforge.pipelines.train import _checkpoint_summary
+        from spectramr.pipelines.train import _checkpoint_summary
 
         absent = _checkpoint_summary(SimpleNamespace(checkpoint=None), tmp_path)
         assert absent["dir"] is None
@@ -1234,7 +1234,7 @@ class TestRunSummaryRecordsWhereCheckpointsWent:
         """A footer diagnostic must not cost a finished run its summary."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines.train import _checkpoint_summary
+        from spectramr.pipelines.train import _checkpoint_summary
 
         class _Explodes:
             @property
@@ -1248,7 +1248,7 @@ class TestRunSummaryRecordsWhereCheckpointsWent:
         """Anti-vacuity: the helper is useless if nothing stamps it."""
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         src = inspect.getsource(train._emit_run_summary)
         assert '"checkpoints": _checkpoint_summary(config, run_dir)' in src
@@ -1381,7 +1381,7 @@ class TestFatalHealthChecksAbortBeforeBootstrap:
 
     @staticmethod
     def _report(check_name: str, severity: str = "error"):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             HealthCheckReport,
             HealthCheckResult,
         )
@@ -1477,7 +1477,7 @@ class TestFatalHealthChecksAbortBeforeBootstrap:
         import sys
         from pathlib import Path
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             FATAL_HEALTH_CHECKS,
         )
 
@@ -1542,7 +1542,7 @@ class TestSeedRankOffsetOrdering:
     def _source() -> str:
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         return inspect.getsource(train)
 
@@ -1552,7 +1552,7 @@ class TestSeedRankOffsetOrdering:
         import ast
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         tree = ast.parse(inspect.getsource(train))
         calls = [
@@ -1621,7 +1621,7 @@ def _train_ast():
     import inspect
     import textwrap
 
-    from mriforge.pipelines import train
+    from spectramr.pipelines import train
 
     return ast.parse(
         textwrap.dedent(inspect.getsource(train.run_training_pipeline))
@@ -1778,7 +1778,7 @@ class TestThePerRankGatherCannotDeadlock:
         after it is unreachable on that rank while the others block."""
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         source = inspect.getsource(train.run_training_pipeline)
         assert source.index("rank_device_inventory") < source.index(
@@ -1800,7 +1800,7 @@ class TestOnlyRankZeroWritesTheCanonicalArtifacts:
     def _source():
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         return inspect.getsource(train.run_training_pipeline)
 
@@ -2387,7 +2387,7 @@ def test_validation_epoch_mean_is_unchanged_when_every_batch_is_full():
 
 def test_validation_batch_sample_count_reads_the_target_first():
     """The target is the tensor every full-reference metric graded against."""
-    from mriforge.data.batch_types import TrainingBatch
+    from spectramr.data.batch_types import TrainingBatch
 
     assert (
         train_mod._validation_batch_sample_count(
@@ -2427,7 +2427,7 @@ def test_an_unsizeable_batch_is_reported_not_silently_weighted(caplog):
 
     batches = [NS(payload="no tensors here")]
     pipeline, logging_cfg = _val_pipeline(batches)
-    with caplog.at_level(_logging.WARNING, logger="mriforge.pipelines.train"):
+    with caplog.at_level(_logging.WARNING, logger="spectramr.pipelines.train"):
         train_mod._run_validation(
             pipeline,
             _NoTensorStrategy(logging_cfg),
@@ -2437,3 +2437,128 @@ def test_an_unsizeable_batch_is_reported_not_silently_weighted(caplog):
         )
     messages = [r.getMessage() for r in caplog.records]
     assert any("weighted as a single sample" in m for m in messages), messages
+
+
+class TestReportArtifactWritesAreRankGuardedAndOrdered:
+    """#1685 -- four ranks raced on ``report_cases/``; three lost.
+
+    ``ReportCaseRecorder.write`` and the per-case sink ran on EVERY rank
+    against one shared run dir, and the reporting hook that reads them ran
+    unsynchronised. Both are ordering facts about a ~700-line function, not
+    values it returns, so they are pinned structurally: the AST is the only
+    thing a comment cannot satisfy, and ``inspect.getsource`` substring checks
+    on this file would score green on the prose that documents the fix.
+    """
+
+    @staticmethod
+    def _pipeline_body():
+        import ast
+        import inspect
+
+        from spectramr.pipelines import train as train_mod
+
+        with open(inspect.getfile(train_mod), encoding="utf-8") as fh:
+            tree = ast.parse(fh.read())
+        fns = [
+            n
+            for n in ast.walk(tree)
+            if isinstance(n, ast.FunctionDef) and n.name == "run_training_pipeline"
+        ]
+        assert len(fns) == 1
+        return fns[0]
+
+    @staticmethod
+    def _calls(node):
+        import ast
+
+        out = []
+        for n in ast.walk(node):
+            if isinstance(n, ast.Call):
+                f = n.func
+                if isinstance(f, ast.Attribute):
+                    out.append((n, f.attr))
+                elif isinstance(f, ast.Name):
+                    out.append((n, f.id))
+        return out
+
+    def test_both_artifact_writers_sit_under_the_rank_zero_guard(self):
+        import ast
+
+        fn = self._pipeline_body()
+        guarded = set()
+        for node in ast.walk(fn):
+            if not (isinstance(node, ast.If) and isinstance(node.test, ast.Name)):
+                continue
+            if node.test.id != "_is_rank_zero":
+                continue
+            guarded.update(attr for _, attr in self._calls(node) if attr == "write")
+        assert guarded == {"write"}, (
+            "``_report_recorder.write`` / ``_per_case_sink.write`` must run under "
+            "``if _is_rank_zero:`` -- unguarded, every rank writes the same files"
+        )
+
+    def test_no_write_call_escapes_the_guard(self):
+        """The set-difference form: a THIRD writer added later must be caught.
+
+        A test that only proves the two known calls are inside the guard stays
+        green when a new sink is appended outside it.
+        """
+        import ast
+
+        fn = self._pipeline_body()
+        writers = {
+            id(n)
+            for n, attr in self._calls(fn)
+            if attr == "write"
+            and isinstance(n.func, ast.Attribute)
+            and isinstance(n.func.value, ast.Name)
+            and n.func.value.id in {"_report_recorder", "_per_case_sink"}
+        }
+        assert len(writers) == 2, f"expected two artifact writers, found {len(writers)}"
+        inside = set()
+        for node in ast.walk(fn):
+            if (
+                isinstance(node, ast.If)
+                and isinstance(node.test, ast.Name)
+                and node.test.id == "_is_rank_zero"
+            ):
+                inside.update(id(n) for n, _ in self._calls(node))
+        assert writers <= inside, "an artifact writer sits outside the rank-zero guard"
+
+    def test_a_barrier_separates_the_writes_from_the_reporting_hook(self):
+        """The hook READS what the guarded block WRITES.
+
+        Without the barrier a straggler enters reporting against a run dir only
+        rank 0 has finished populating -- the same ``Bad CRC-32`` symptom from
+        the other direction, and one that a rank guard alone cannot fix.
+        """
+        fn = self._pipeline_body()
+        barriers = [n.lineno for n, attr in self._calls(fn) if attr == "barrier"]
+        hooks = [n.lineno for n, attr in self._calls(fn) if attr == "_maybe_run_reporting"]
+        assert barriers, "no ``RankUtility.barrier()`` in the training pipeline"
+        assert hooks, "the reporting hook call site moved or was renamed"
+        assert min(barriers) < min(hooks), (
+            f"barrier at line {min(barriers)} must precede the reporting hook at line {min(hooks)}"
+        )
+
+    def test_the_barrier_is_the_existing_owner_not_a_second_one(self):
+        """Non-negotiable 17. ``RankUtility.barrier`` already owns this.
+
+        A fresh ``dist.barrier()`` here would need its own is-initialised guard
+        and would be a second, differently-conditioned owner of one primitive.
+        """
+        import ast
+
+        fn = self._pipeline_body()
+        for node, attr in self._calls(fn):
+            if attr != "barrier":
+                continue
+            assert isinstance(node.func, ast.Attribute)
+            assert isinstance(node.func.value, ast.Name)
+            assert node.func.value.id == "RankUtility", ast.dump(node.func)
+
+    def test_rank_utility_barrier_is_a_noop_without_a_process_group(self):
+        """Behavioural half: the guard must not break single-process training."""
+        from spectramr.infrastructure.distributed.distributed_training import RankUtility
+
+        RankUtility.barrier()  # must not raise

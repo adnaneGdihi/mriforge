@@ -17,7 +17,7 @@ import pytest
 torch = pytest.importorskip("torch")
 import torch.nn as nn  # noqa: E402
 
-from mriforge.models.profiling.advanced_profiling import (  # noqa: E402
+from spectramr.models.profiling.advanced_profiling import (  # noqa: E402
     GradientCheckpointing,
 )
 

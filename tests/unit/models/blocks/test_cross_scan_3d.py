@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.cross_scan_3d import CrossScan3D, MambaSSM1D
+from spectramr.models.blocks.cross_scan_3d import CrossScan3D, MambaSSM1D
 
 
 # ── MambaSSM1D ───────────────────────────────────────────────────────────

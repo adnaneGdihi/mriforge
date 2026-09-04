@@ -12,10 +12,10 @@ from tests.utils.config_block_stub import block_stub
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies import (
+from spectramr.infrastructure.training.strategies import (
     meta_learning_strategy as _mls,
 )
-from mriforge.infrastructure.training.strategies.meta_learning_strategy import (
+from spectramr.infrastructure.training.strategies.meta_learning_strategy import (
     MetaLearningTrainingStrategy,
 )
 

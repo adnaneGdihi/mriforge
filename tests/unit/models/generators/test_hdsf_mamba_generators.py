@@ -28,11 +28,11 @@ from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 @pytest.fixture(autouse=True)
 def _allow_mamba_fallback(monkeypatch):
     """Kernel-absent boxes only; a no-op wherever ``mamba_ssm`` imports."""
-    monkeypatch.setenv("MRIFORGE_ALLOW_MAMBA_FALLBACK", "1")
+    monkeypatch.setenv("SPECTRAMR_ALLOW_MAMBA_FALLBACK", "1")
 
 
 def _encoder():
-    from mriforge.models.generators.hdsf_mamba_generators import HDSFMambaEncoder
+    from spectramr.models.generators.hdsf_mamba_generators import HDSFMambaEncoder
 
     return HDSFMambaEncoder(
         d_model=8, num_layers=1, d_state=4, block_size=4, dilation=2

@@ -2,15 +2,16 @@
 Accelerated-run contract
 ========================
 
-.. module:: mriforge.core.compute_device
+.. module:: spectramr.core.compute_device
 
 **Heavy pipelines run on an accelerator. If none is available, they raise —
 they never silently degrade to CPU.**
 
 "Heavy" means anything that consumes real GPU-hours: training, sanity-check,
 experiment, inference, prediction, validation, evaluation, HPO, ablation,
-benchmarking, distributed runs, campaigns, and the Tier-2 audit probe. The set
-is :data:`HEAVY_PIPELINES`.
+benchmarking, distributed runs, campaigns, PGGS reconstruction (Gaussian
+splatting with latent-diffusion refinement and test-time optimisation, gated
+since 2026-09-03) and the Tier-2 audit probe. The set is :data:`HEAVY_PIPELINES`.
 
 Why
 ===
@@ -26,7 +27,7 @@ The consequences were invisible by construction:
   that logged *"Falling back to CPU mode..."*, so a driver mismatch, an ECC
   fault, or an OOM on the probe allocation all produced a *successful* CPU run.
 * ``bootstrap.build_container`` flattened ``"auto"`` to ``"cpu"`` **before**
-  constructing :class:`~mriforge.infrastructure.services.device_manager.DeviceManager`,
+  constructing :class:`~spectramr.infrastructure.services.device_manager.DeviceManager`,
   whose own (correct) CUDA guard therefore never fired on the live path.
 
 Both are the same standing rule at the hardware layer -- *a silent fallback is
@@ -74,7 +75,7 @@ CPU remains reachable, but only deliberately — never by accident:
 * ``--device cpu`` on the CLI,
 * ``run.device: cpu`` in the experiment YAML (the top-level ``device:``
   spelling was retired with a **raise** posture -- see ``RENAMES``),
-* ``MRIFORGE_DEVICE=cpu``,
+* ``SPECTRAMR_DEVICE=cpu``,
 * ``FORCE_CPU=true`` in the environment (the CI / co-simulation hatch).
 
 Each path is logged loudly and stamped into the resolved
@@ -121,7 +122,7 @@ Step 3 is not a plain attribute read. ``run.device`` carries a schema default
 of ``"cuda"``, and the resolver treats an explicit ``"cuda"`` as a hard
 requirement that ``FORCE_CPU`` may not relax while ``auto`` is relaxable --
 so substituting the default for a declaration would quietly convert every
-undeclared arm into a CUDA-mandatory one. :func:`mriforge.main._declared_device`
+undeclared arm into a CUDA-mandatory one. :func:`spectramr.main._declared_device`
 is the single owner of that distinction (non-negotiable 17); it gates on
 Pydantic's ``model_fields_set`` and returns ``None`` when the key is absent.
 
@@ -144,7 +145,7 @@ documented CPU backing is the same deliberate exception.
 Audit: the Tier-2 acceleration gate
 ===================================
 
-``mriforge audit <yaml> --probe`` now **checks that the run is accelerated by a
+``spectramr audit <yaml> --probe`` now **checks that the run is accelerated by a
 device other than CPU**, and fails otherwise.
 
 This closes a live facade. The Tier-2 probe's headline value is catching CUDA
@@ -156,11 +157,11 @@ kind: it
 certified "did not crash on CPU", never "this arm will run on the GPU it was
 scheduled for".
 
-The gate (``_gate_probe_acceleration`` in :mod:`mriforge.cli.app`) resolves the
+The gate (``_gate_probe_acceleration`` in :mod:`spectramr.cli.app`) resolves the
 probe device as **CLI ``--device`` > the config's own ``training.device`` > a
 *declared* ``run.device`` > ``auto``** -- so by default the probe exercises the
 device the *real run* will use -- and then emits a ``tier2_probe_accelerated``
-check. It shares :func:`mriforge.main._declared_device` with the launch verbs:
+check. It shares :func:`spectramr.main._declared_device` with the launch verbs:
 reading ``run.device`` as a plain attribute resolved to ``"cuda"`` for every
 arm that declared no device, which made the ``auto`` leg unreachable and the
 "CPU, user dictated" row below unreachable under ``FORCE_CPU``.
@@ -248,7 +249,7 @@ SSOT:
    * - ``orchestration.campaign_evaluator``
      - ``"cuda" if is_available() else "cpu"`` on the per-sample metric pass
    * - ``config.env_resolver.resolve_device``
-     - ``MRIFORGE_DEVICE`` defaulted to ``"cpu"``
+     - ``SPECTRAMR_DEVICE`` defaulted to ``"cpu"``
 
 Known residue
 -------------
@@ -280,6 +281,6 @@ See also
 
 * :doc:`known_limitations` — what the shipped tree does not do, measured rather
   than estimated.
-* ``mriforge audit --help`` — the Tier 0/1/2 ladder this gate extends. The
+* ``spectramr audit --help`` — the Tier 0/1/2 ladder this gate extends. The
   ladder's own user guide belongs to the internal documentation tree and is not
   published with this release.

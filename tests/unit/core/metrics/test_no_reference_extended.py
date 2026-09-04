@@ -18,7 +18,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def _disk(h=96, w=96):

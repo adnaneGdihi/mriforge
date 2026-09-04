@@ -32,8 +32,8 @@ from typing import Any
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.physics.data_consistency import VALID_DC_METHODS
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.physics.data_consistency import VALID_DC_METHODS
 from tests.utils.corpus import tracked_yamls
 
 MATRIX_DIR = (

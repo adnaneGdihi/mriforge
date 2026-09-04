@@ -20,7 +20,7 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.multi_param_mapping_strategy import (
+from spectramr.infrastructure.training.strategies.multi_param_mapping_strategy import (
     OneShotMultiParameterStrategy,
 )
 

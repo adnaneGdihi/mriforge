@@ -1,6 +1,6 @@
 """Unit tests for the explicit encoding-matrix builder.
 
-Covers :class:`mriforge.infrastructure.physics.encoding_matrix.EncodingMatrixBuilder`
+Covers :class:`spectramr.infrastructure.physics.encoding_matrix.EncodingMatrixBuilder`
 which constructs the MRI encoding matrix ``E`` incorporating per-readout
 B0 phase, and also exposes matrix-free ``forward`` / ``adjoint`` operators.
 
@@ -21,7 +21,7 @@ import pytest
 torch = pytest.importorskip("torch")
 
 # Skip the whole module if the target hasn't been integrated yet.
-em_mod = pytest.importorskip("mriforge.infrastructure.physics.encoding_matrix")
+em_mod = pytest.importorskip("spectramr.infrastructure.physics.encoding_matrix")
 EncodingMatrixBuilder = em_mod.EncodingMatrixBuilder
 
 

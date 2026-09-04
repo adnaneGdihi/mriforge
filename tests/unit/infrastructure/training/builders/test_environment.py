@@ -1,7 +1,7 @@
 """Tests for :meth:`TrainingEnvironment.from_components`.
 
 The config-driven path builds a :class:`TrainingEnvironment` via the
-``TrainingEnvironmentDirector``. The scripting path (``mriforge.api.fit``) needs
+``TrainingEnvironmentDirector``. The scripting path (``spectramr.api.fit``) needs
 to build the *same* immutable container from loose, hand-supplied objects so it
 can drive the *same* loop. ``from_components`` is that adapter: it maps a user's
 model/optimizer/losses/loaders onto the exact attribute contract the loop and
@@ -14,8 +14,8 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
 
 def _cfg() -> TrainingSettings:

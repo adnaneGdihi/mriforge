@@ -9,7 +9,7 @@ class TestStatisticalTests:
 
     @pytest.fixture
     def st(self):
-        from mriforge.core.metrics.statistical_tests import StatisticalTests
+        from spectramr.core.metrics.statistical_tests import StatisticalTests
         return StatisticalTests
 
     # ── Legacy API ───────────────────────────────────────────────────
@@ -159,7 +159,7 @@ class TestStatisticalTests:
         """perform_tests should return a StatisticalReport."""
         import torch
 
-        from mriforge.core.metrics.statistical_tests import StatisticalReport
+        from spectramr.core.metrics.statistical_tests import StatisticalReport
 
         pred = torch.randn(10, 1, 16, 16)
         target = torch.randn(10, 1, 16, 16)
@@ -202,7 +202,7 @@ class TestStatisticalTestsExtended:
 
     @pytest.fixture
     def st(self):
-        from mriforge.core.metrics.statistical_tests import StatisticalTests
+        from spectramr.core.metrics.statistical_tests import StatisticalTests
         return StatisticalTests
 
     # ── parametrize: bootstrap over multiple confidence levels ───────────

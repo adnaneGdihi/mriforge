@@ -16,24 +16,24 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.adapters.registry import (
+from spectramr.data.adapters.registry import (
     ADAPTER_REGISTRY,
     get_adapter_capabilities,
     register_adapter,
 )
-from mriforge.infrastructure.validation.adapter_composition import (
+from spectramr.infrastructure.validation.adapter_composition import (
     candidate_adapters_for,
     compose_chain,
     forms_match,
 )
-from mriforge.models.capabilities import (
+from spectramr.models.capabilities import (
     AdapterCapabilities,
     LossCapabilities,
     ModelCapabilities,
     StrategyCapabilities,
     VALID_INSERTION_POINTS,
 )
-from mriforge.models.registry import (
+from spectramr.models.registry import (
     MODEL_REGISTRY,
     get_model_capabilities,
     register_model,
@@ -345,7 +345,7 @@ class TestLossCapabilitiesDomainAgnostic:
     """
 
     def test_it_defaults_to_false(self) -> None:
-        from mriforge.models.capabilities import LossCapabilities
+        from spectramr.models.capabilities import LossCapabilities
 
         assert LossCapabilities().domain_agnostic is False
 
@@ -353,7 +353,7 @@ class TestLossCapabilitiesDomainAgnostic:
         """``domain=None`` means UNANNOTATED; ``domain_agnostic=True`` means
         deliberately generic. Collapsing them is what let 104 of 214
         registrations read as intentional while being merely un-audited."""
-        from mriforge.models.capabilities import LossCapabilities
+        from spectramr.models.capabilities import LossCapabilities
 
         unannotated = LossCapabilities()
         generic = LossCapabilities(domain_agnostic=True)
@@ -363,6 +363,6 @@ class TestLossCapabilitiesDomainAgnostic:
     def test_agnostic_is_absent_from_the_domain_literal(self) -> None:
         import typing
 
-        from mriforge.models.capabilities import Domain
+        from spectramr.models.capabilities import Domain
 
         assert "agnostic" not in typing.get_args(Domain)

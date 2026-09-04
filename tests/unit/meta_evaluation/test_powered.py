@@ -12,7 +12,7 @@ import math
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.powered import (
+from spectramr.core.metrics.meta_evaluation.powered import (
     certify_partial_order,
     min_samples_for_gap,
     min_samples_for_pool,
@@ -46,7 +46,7 @@ def test_bounded_scores_rescales_unit_range_preserving_gaps() -> None:
     # assumes. The rescale preserves ordering AND relative gaps (it is linear).
     import math
 
-    from mriforge.core.metrics.meta_evaluation.pipeline import _bounded_scores
+    from spectramr.core.metrics.meta_evaluation.pipeline import _bounded_scores
 
     b = _bounded_scores({"a": 10.0, "b": 30.0, "c": 50.0})
     assert min(b.values()) == pytest.approx(-1.0)

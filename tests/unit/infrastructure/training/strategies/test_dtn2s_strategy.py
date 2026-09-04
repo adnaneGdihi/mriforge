@@ -1,6 +1,6 @@
 """Unit tests for ``dtn2s_strategy`` -- the J-invariance mask must leave context.
 
-Paired with ``src/mriforge/infrastructure/training/strategies/dtn2s_strategy.py``,
+Paired with ``src/spectramr/infrastructure/training/strategies/dtn2s_strategy.py``,
 which had no paired test until #1028. That absence is part of the defect's
 history: the mask blocked 100% of voxels at every window size and nothing at the
 strategy level ever asserted otherwise.
@@ -27,10 +27,10 @@ class TestMaskLeavesVisibleContext:
 
     @staticmethod
     def _strategy(recv: int):
-        from mriforge.config.schemas.training.strategy_knobs_2026_08 import (
+        from spectramr.config.schemas.training.strategy_knobs_2026_08 import (
             DTN2STrainingConfigSchema,
         )
-        from mriforge.infrastructure.training.strategies.dtn2s_strategy import (
+        from spectramr.infrastructure.training.strategies.dtn2s_strategy import (
             DTN2SStrategy,
         )
 

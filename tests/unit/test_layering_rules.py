@@ -25,70 +25,70 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_step_executor_canonical_home_is_infrastructure() -> None:
-    """``StepExecutor`` lives in ``mriforge.infrastructure.training.step_executor``.
+    """``StepExecutor`` lives in ``spectramr.infrastructure.training.step_executor``.
 
     Reverse-import cleanup (Phase 2): the class (then named ``Trainer``) was at
-    ``mriforge.pipelines.trainer`` where ``base.py`` (infrastructure) had to
+    ``spectramr.pipelines.trainer`` where ``base.py`` (infrastructure) had to
     import upward into pipelines. Renamed Trainer→StepExecutor 2026-06-18 to
     free the ``Trainer`` name for the public scripting orchestrator.
     """
-    from mriforge.infrastructure.training.step_executor import StepExecutor
+    from spectramr.infrastructure.training.step_executor import StepExecutor
 
-    assert StepExecutor.__module__ == "mriforge.infrastructure.training.step_executor"
+    assert StepExecutor.__module__ == "spectramr.infrastructure.training.step_executor"
 
 
 def test_pipelines_trainer_shim_removed() -> None:
-    """The legacy ``mriforge.pipelines.trainer`` re-export shim was removed
+    """The legacy ``spectramr.pipelines.trainer`` re-export shim was removed
     (2026-06-18). Importing it must fail loudly — no silent legacy path lingers."""
     with pytest.raises(ModuleNotFoundError):
-        import mriforge.pipelines.trainer  # noqa: F401
+        import spectramr.pipelines.trainer  # noqa: F401
 
 
 def test_base_strategy_imports_step_executor_from_infrastructure() -> None:
     """``BaseTrainingStrategy.__init__`` imports ``StepExecutor`` from the canonical home."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     src = inspect.getsource(BaseTrainingStrategy.__init__)
     assert (
-        "from mriforge.infrastructure.training.step_executor import StepExecutor" in src
+        "from spectramr.infrastructure.training.step_executor import StepExecutor" in src
     )
-    assert "from mriforge.pipelines.trainer" not in src
+    assert "from spectramr.pipelines.trainer" not in src
 
 
 def test_dotted_override_canonical_home_is_infrastructure() -> None:
-    """``apply_dotted_override`` lives in ``mriforge.infrastructure.hpo.dotted_override``."""
-    from mriforge.infrastructure.hpo.dotted_override import apply_dotted_override
+    """``apply_dotted_override`` lives in ``spectramr.infrastructure.hpo.dotted_override``."""
+    from spectramr.infrastructure.hpo.dotted_override import apply_dotted_override
 
     assert apply_dotted_override.__module__ == (
-        "mriforge.infrastructure.hpo.dotted_override"
+        "spectramr.infrastructure.hpo.dotted_override"
     )
 
 
 def test_hpo_search_spaces_is_thin_shim_for_dotted_override() -> None:
-    """``mriforge.pipelines.hpo_search_spaces.apply_dotted_override`` re-exports the canonical fn."""
-    from mriforge.infrastructure.hpo.dotted_override import (
+    """``spectramr.pipelines.hpo_search_spaces.apply_dotted_override`` re-exports the canonical fn."""
+    from spectramr.infrastructure.hpo.dotted_override import (
         apply_dotted_override as canonical,
     )
-    from mriforge.pipelines.hpo_search_spaces import apply_dotted_override
+    from spectramr.pipelines.hpo_search_spaces import apply_dotted_override
 
     assert apply_dotted_override is canonical
 
 
 def test_hpo_coordinator_no_longer_imports_dotted_override_from_pipelines() -> None:
     """The coordinator's import is inward (infrastructure/hpo)."""
-    from mriforge.infrastructure.coordination import hpo_coordinator
+    from spectramr.infrastructure.coordination import hpo_coordinator
 
     src = inspect.getsource(hpo_coordinator)
-    assert "from mriforge.infrastructure.hpo.dotted_override import" in src
+    assert "from spectramr.infrastructure.hpo.dotted_override import" in src
     # No longer imports apply_dotted_override from pipelines/
-    assert "from mriforge.pipelines.hpo_search_spaces import apply_dotted_override" not in src
+    assert "from spectramr.pipelines.hpo_search_spaces import apply_dotted_override" not in src
 
 
 def test_profiling_helpers_no_longer_imports_pipelines() -> None:
     """The thin ``run_*_training`` wrappers were removed; no models→pipelines import."""
     helpers = REPO_ROOT / "src" / "models" / "analysis" / "profiling_helpers.py"
     assert not helpers.exists(), (
-        "src/mriforge/models/analysis/profiling_helpers.py was reintroduced — "
+        "src/spectramr/models/analysis/profiling_helpers.py was reintroduced — "
         "the file imported upward from pipelines/ (CLAUDE.md layer-direction "
         "violation). Callers should invoke run_training_pipeline directly."
     )
@@ -96,7 +96,7 @@ def test_profiling_helpers_no_longer_imports_pipelines() -> None:
 
 def test_models_analysis_init_does_not_export_profiling_helpers() -> None:
     """The package init no longer re-exports the deleted thin wrappers."""
-    from mriforge.models import analysis
+    from spectramr.models import analysis
 
     assert "run_gan_training" not in dir(analysis)
     assert "run_diffusion_training" not in dir(analysis)
@@ -118,11 +118,11 @@ def test_dice_risk_segmentation_primitive_lives_in_core() -> None:
     ``core/metrics/`` (moved from ``infrastructure/calibration/`` 2026-06-18);
     ``dice_risk`` imports them rightward (core→core), NOT core→infrastructure.
     """
-    from mriforge.core.metrics.quantitative import dice_risk, segmentation
+    from spectramr.core.metrics.quantitative import dice_risk, segmentation
 
-    assert segmentation.__name__ == "mriforge.core.metrics.quantitative.segmentation"
+    assert segmentation.__name__ == "spectramr.core.metrics.quantitative.segmentation"
     src = inspect.getsource(dice_risk)
-    assert "from mriforge.core.metrics.quantitative.segmentation import" in src
+    assert "from spectramr.core.metrics.quantitative.segmentation import" in src
     assert "infrastructure.calibration.segmentation" not in src
 
 

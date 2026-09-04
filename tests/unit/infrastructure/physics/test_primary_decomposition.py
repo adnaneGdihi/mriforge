@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.primary_decomposition import (
+from spectramr.infrastructure.physics.primary_decomposition import (
     build_hankel_matrix,
     multi_contrast_hankel_rank_stratification,
     primary_projection_loss,

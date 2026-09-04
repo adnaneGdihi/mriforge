@@ -7,7 +7,7 @@ were surfaces kept alive by their own coverage (#710)."""
 
 from __future__ import annotations
 
-from mriforge.infrastructure.reporting.style import (
+from spectramr.infrastructure.reporting.style import (
     add_metadata_footer,
     caption_for,
     styled_figure,
@@ -17,7 +17,7 @@ from mriforge.infrastructure.reporting.style import (
 def test_styled_figure_decorator_calls_use_default_style(monkeypatch) -> None:
     called = []
     monkeypatch.setattr(
-        "mriforge.infrastructure.reporting.style.use_default_style",
+        "spectramr.infrastructure.reporting.style.use_default_style",
         lambda *a, **k: called.append(True),
     )
 

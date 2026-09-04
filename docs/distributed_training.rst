@@ -51,10 +51,10 @@ Launching
 .. code-block:: bash
 
    # none, dp -- no launcher
-   mriforge train --config <arm>.yaml
+   spectramr train --config <arm>.yaml
 
    # ddp, fsdp, deepspeed
-   torchrun --nproc_per_node=4 -m mriforge.cli train-distributed --config <arm>.yaml
+   torchrun --nproc_per_node=4 -m spectramr.cli train-distributed --config <arm>.yaml
 
 The launcher does **not** rewrite ``parallel.strategy``. It used to force it to
 ``"ddp"`` on every distributed launch, which is what made ``fsdp`` and
@@ -88,7 +88,7 @@ Derive the rank count rather than typing it::
 
    GPUS="$(nvidia-smi -L | grep -c '^GPU ')"     # or: ${SLURM_GPUS_ON_NODE:?}
    torchrun --standalone --nproc_per_node="$GPUS" \
-       -m mriforge.cli train-distributed --config <arm>.yaml
+       -m spectramr.cli train-distributed --config <arm>.yaml
 
 Note that ``--gpus=N`` populates only ``SLURM_GPUS``, which is a **job total**;
 ``SLURM_GPUS_ON_NODE`` and ``SLURM_GPUS_PER_NODE`` are per node. The check reads
@@ -148,7 +148,7 @@ Wrap ordering
 -------------
 
 Parallelisation happens at two hooks inside
-:class:`~mriforge.infrastructure.training.builders.director.TrainingEnvironmentDirector`,
+:class:`~spectramr.infrastructure.training.builders.director.TrainingEnvironmentDirector`,
 and which hook a strategy uses is a correctness constraint:
 
 .. code-block:: text
@@ -172,7 +172,7 @@ builder's model selection see a ``DistributedDataParallel``.
 already-built optimizer.
 
 Adding a strategy means registering a plugin in
-:mod:`mriforge.infrastructure.distributed.strategy_registry`, not editing a
+:mod:`spectramr.infrastructure.distributed.strategy_registry`, not editing a
 dispatch chain. A test compares the schema's ``ParallelStrategy`` Literal against
 the registry so the two cannot drift.
 
@@ -184,7 +184,7 @@ Gradient clipping under FSDP
 different factor. Nothing errors -- every rank steps successfully -- and it
 presents as training instability.
 
-:class:`~mriforge.infrastructure.training.optimizers.FSDPStepPolicy` uses FSDP's
+:class:`~spectramr.infrastructure.training.optimizers.FSDPStepPolicy` uses FSDP's
 own ``model.clip_grad_norm_()``, which all-reduces the squared norms first. The
 strategy supplies it, because the strategy is what knows how the model was
 wrapped.
@@ -355,7 +355,7 @@ Checkpoints
 
 Every wrapper renames the keys ``state_dict()`` emits -- ``torch.compile`` adds
 ``_orig_mod.``, DP/DDP and ``ModelEma`` add ``module.``, FSDP adds
-``_fsdp_wrapped_module.``. :mod:`mriforge.core.module_utils` is the single place
+``_fsdp_wrapped_module.``. :mod:`spectramr.core.module_utils` is the single place
 that strips them, applied at every save and load site.
 
 This is not cosmetic. Every inference and evaluation path builds a **bare** model
@@ -367,7 +367,7 @@ produces metrics that read as a bad arm.
 DeepSpeed writes a sharded tag *directory*. With
 ``save_consolidated_best: true`` (the default) rank 0 additionally writes a
 single-file ``checkpoint_best.pt``, so ``discover_best_checkpoint``, campaign
-evaluation and ``mriforge infer`` keep working without understanding ZeRO shards.
+evaluation and ``spectramr infer`` keep working without understanding ZeRO shards.
 Turning it off makes the run resume-only, and the audit warns.
 
 Reading a consolidated checkpoint back
@@ -381,10 +381,10 @@ tag directory, calls ``save_16bit_model``, and then *returns* -- so
 metadata and the best checkpoint does not.
 
 Restoring it therefore requires the strategy that wrote it.
-:meth:`~mriforge.infrastructure.builders.directors.checkpoint_director.CheckpointDirector.load_from`
+:meth:`~spectramr.infrastructure.builders.directors.checkpoint_director.CheckpointDirector.load_from`
 reads the sharded tag directory through the adapter and skips the generic parse
 when the file has no ``generator`` key, and
-:meth:`~mriforge.infrastructure.builders.directors.checkpoint_director.CheckpointDirector.with_parallel_runtime`
+:meth:`~spectramr.infrastructure.builders.directors.checkpoint_director.CheckpointDirector.with_parallel_runtime`
 is what supplies that adapter. **A director built without it resolves**
 ``DefaultCheckpointAdapter`` **and cannot read any sharded strategy's
 checkpoint** -- which is how ``early_stopping.restore_best_weights`` used to
@@ -428,9 +428,9 @@ training iteration.
    may_checkpoint = is_main_process or checkpoints_need_all_ranks
 
 One predicate, derived once from
-:attr:`~mriforge.infrastructure.distributed.strategy_registry.ParallelRuntime.checkpoints_require_all_ranks`,
+:attr:`~spectramr.infrastructure.distributed.strategy_registry.ParallelRuntime.checkpoints_require_all_ranks`,
 used at every checkpoint site. The strategy's
-:class:`~mriforge.infrastructure.distributed.checkpoint_adapters.IParallelCheckpointAdapter`
+:class:`~spectramr.infrastructure.distributed.checkpoint_adapters.IParallelCheckpointAdapter`
 then decides which rank touches the disk (with ``rank0_only=True`` the others
 hold empty tensors, so letting them write would litter the run directory with
 files that pass every existence check).

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.commuting_correction import (
+from spectramr.infrastructure.physics.commuting_correction import (
     CommutingCorrectionAnalyzer,
     commutator,
     commuting_defect,

@@ -21,7 +21,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
+from spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
     LesionSampler,
     SyntheticPathologyAugStrategy,
 )
@@ -80,7 +80,7 @@ def _make_strategy() -> tuple[SyntheticPathologyAugStrategy, _TinyGenerator]:
     # for the duration of the test by attaching to the instance is not enough
     # (super() resolves on the class). Instead we patch the parent method to the
     # instance-aware stub via the class MRO entry the child uses.
-    from mriforge.infrastructure.training.strategies import reconstruction
+    from spectramr.infrastructure.training.strategies import reconstruction
 
     strat._test_parent_impl = _parent_impl  # type: ignore[attr-defined]
     return strat, gen
@@ -101,7 +101,7 @@ def _run_one_step(strat, gen, monkeypatch_parent):  # noqa: ANN001
 def test_loss_lesion_weighted_is_present_and_nonzero(monkeypatch) -> None:
     """The region-weighted term must appear and be > 0 (pre-fix it was absent)."""
     strat, gen = _make_strategy()
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -124,7 +124,7 @@ def test_loss_lesion_weighted_is_present_and_nonzero(monkeypatch) -> None:
 def test_loss_lesion_weighted_folded_into_total(monkeypatch) -> None:
     """g_total_loss must include the region-weighted term."""
     strat, gen = _make_strategy()
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -147,7 +147,7 @@ def test_loss_lesion_weighted_carries_grad_to_generator(monkeypatch) -> None:
     detached, otherwise the paradigm-specific loss trains nothing.
     """
     strat, gen = _make_strategy()
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 

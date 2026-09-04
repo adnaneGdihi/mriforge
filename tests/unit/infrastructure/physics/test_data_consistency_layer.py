@@ -1,6 +1,6 @@
 """Tests for ``DataConsistencyLayer``.
 
-Targets ``mriforge.infrastructure.physics.data_consistency_layer``. The
+Targets ``spectramr.infrastructure.physics.data_consistency_layer``. The
 classic hard-DC layer: at sampled k-space locations, the network
 guess is replaced with the acquired measurement.
 
@@ -18,8 +18,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency_layer import DataConsistencyLayer
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.data_consistency_layer import DataConsistencyLayer
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 # ---------------------------------------------------------------------------

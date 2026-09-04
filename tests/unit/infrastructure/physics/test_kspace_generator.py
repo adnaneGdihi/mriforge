@@ -14,7 +14,7 @@ covered positively below rather than merely being tripped over.
 import pytest
 import torch
 
-from mriforge.models.generators.kspace_cold_diffusion_generator import (
+from spectramr.models.generators.kspace_cold_diffusion_generator import (
     KSpaceColdDiffusionGenerator,
 )
 

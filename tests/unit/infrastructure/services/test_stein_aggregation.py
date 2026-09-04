@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.services.stein_aggregation import (
+from spectramr.infrastructure.services.stein_aggregation import (
     federated_svgd_step,
     product_of_experts_score,
     rbf_kernel,

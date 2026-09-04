@@ -14,7 +14,7 @@ import pytest
 import torch
 from torch.optim.lr_scheduler import ConstantLR, CosineAnnealingLR, LinearLR
 
-from mriforge.infrastructure.training.scheduler_system import (
+from spectramr.infrastructure.training.scheduler_system import (
     SCHEDULER_REGISTRY,
     WarmupScheduler,
 )

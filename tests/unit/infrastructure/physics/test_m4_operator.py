@@ -4,7 +4,7 @@ import pytest
 import torch
 
 try:
-    from mriforge.infrastructure.physics.m4_operator import Operator_A_m4
+    from spectramr.infrastructure.physics.m4_operator import Operator_A_m4
 
     TORCHKBNUFFT_AVAILABLE = True
 except ImportError:

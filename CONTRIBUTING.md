@@ -1,14 +1,14 @@
-# Contributing to MRIForge
+# Contributing to spectraMR
 
-Thank you for considering a contribution. MRIForge is research software, so
+Thank you for considering a contribution. spectraMR is research software, so
 correctness matters more than speed. The rules below exist so the framework
 stays auditable and reproducible across releases.
 
 ## Development environment
 
 ```bash
-git clone https://github.com/adnaneGdihi/mriforge.git
-cd mriforge
+git clone https://github.com/adnaneGdihi/spectramr.git
+cd spectramr
 python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
@@ -39,7 +39,39 @@ and the lint / type / pre-commit tooling.
   - `fix(physics): correct fft2c normalisation for AMP path`
   - `docs(api): regenerate autoapi after registry rename`
 
+## Before you open a PR: `make gate`
+
+**Actions runs the lanes below on your pull request here. On the private research
+repository it is disabled, so the same lanes
+execute.** Run the blocking lane yourself:
+
+```bash
+make gate                                        # the whole lane
+make gate GATE_ARGS="--list"                     # what it derived, without running it
+make gate GATE_ARGS="--jobs guards --quiet"      # one job
+```
+
+`scripts/ci/run_required_locally.py` **parses** `.github/workflows/pr-required.yml`
+rather than restating it, so a job added there runs here with no edit. It reports
+three states, and never folds the third into the first:
+
+| State | Meaning | Exit |
+|---|---|---|
+| `PASS` | the step ran and succeeded | — |
+| `FAIL` | the step ran and failed | 1 |
+| `UNRUNNABLE` | the step could not run; a tool is absent | 2 |
+
+`UNRUNNABLE` is deliberately not a pass. Install the missing tool, or pass
+`--allow-unrunnable` to state that you accept the gap — silence would make an
+unrun check indistinguishable from a passing one, which is exactly the failure
+`docs/known_limitations.rst` records for the audit ladder's green ticks.
+
 ## CI policy (advisory vs. blocking)
+
+> **This table describes the lane's *design*, not its current behaviour.**
+> On the private research repository Actions is disabled and nothing below runs on
+> a PR; here it does. Read it as the
+> specification `make gate` executes locally.
 
 The codebase is large and pre-publish hardening is in progress. To keep CI
 informative without blocking merges, most quality checks currently run in
@@ -59,9 +91,9 @@ informative without blocking merges, most quality checks currently run in
 | `zizmor` (Actions workflow static analysis) | Advisory (unpinned-uses backlog) | — |
 
 Advisory checks still run on every PR; the maintainer watches them shrink.
-See `docs/explanation/ci_ratchet.md` for the multi-phase plan to bring the
-advisory set back to blocking, and the rules for promoting individual
-checks as the backlog drains.
+The plan for promoting advisory checks back to blocking lives with the gates
+themselves, in `scripts/ci/` and their baselines: a check graduates when its
+baseline reaches zero and a planted violation has been watched to turn it red.
 
 ## Test policy
 
@@ -75,16 +107,17 @@ pytest tests/physics/ -v                   # MRI physics suite
 pytest -m "integration"                    # opt-in, multi-component flows
 ```
 
-If your change touches anything under `src/mriforge/infrastructure/physics/`,
+If your change touches anything under `src/spectramr/infrastructure/physics/`,
 you must also run `pytest tests/physics/` locally.
 
-If your change adds a YAML key, declare it on the owning Pydantic schema in
-the same change -- a class with `extra="ignore"` drops an undeclared key
-without a word, and the run then trains on the default. Confirm the key is
-read by auditing a config that sets it:
+If your change adds a YAML key, declare it on the owning Pydantic schema in the
+same change — a class with `extra="ignore"` drops an undeclared key without a word
+and the run then trains on the default, so a clean parse is not evidence the key was
+read. Confirm it by auditing a config that actually sets it:
 
 ```bash
-mriforge audit experiments/templates/comprehensive_config_template.yaml
+spectramr audit <your-config>.yaml
+python scripts/ci/report_discarded_config_keys.py <dir-holding-it>   # is the key READ?
 ```
 
 ### Maintainer release checklist (GPU validation)
@@ -102,10 +135,10 @@ sufficient for a single pre-release validation pass.
 1. **Spin up a CUDA studio** on Lightning AI and clone the release branch.
 
    ```bash
-   git clone --branch release/vX.Y.Z https://github.com/adnaneGdihi/mriforge.git
-   cd mriforge
+   git clone --branch release/vX.Y.Z https://github.com/adnaneGdihi/spectramr.git
+   cd spectramr
    python3.12 -m venv .venv && source .venv/bin/activate
-   pip install torch --index-url https://download.pytorch.org/whl/cu129
+   pip install torch --index-url https://download.pytorch.org/whl/cu126
    pip install -e ".[dev]"
    ```
 
@@ -117,17 +150,16 @@ sufficient for a single pre-release validation pass.
    pytest tests/integration/test_determinism_sentinel.py -v
    ```
 
-3. **Run the Tier-2 forward-probe audit** on every smoke-clean arm you are
-   releasing. The arm corpus is not distributed, so point the audit at your
-   own configs; the shipped template is the worked example.
+3. **Run the Tier-2 forward-probe audit** on every configuration the tree ships.
+   (`experiments/` holds the full arm corpus in the research repository and the
+   templates plus exemplar arms in the published one; the command is the same.)
 
    ```bash
-   mriforge audit experiments/templates/comprehensive_config_template.yaml \
-     --probe --strict
+   spectramr audit experiments/ --probe --strict
    ```
 
-4. **Record the outcome** in `RELEASE_NOTES_vX_Y.md` under the
-   "GPU validation" section: hardware (e.g. `Lightning Studio L4 24GB`),
+4. **Record the outcome** in `CHANGELOG.md` under the release being prepared:
+   hardware (e.g. `Lightning Studio L4 24GB`),
    PyTorch version, CUDA version, pass/fail per suite. Future contributors
    can then compare future GPU runs against this baseline.
 
@@ -148,43 +180,43 @@ stays manual and pre-release-only.
 invariant: that `initialize_accelerator(...)` produces bit-identical RNG
 streams given the same seed and rank. Several training paradigms in this repo
 (diffusion, cold diffusion, cycle-Bloch) rely on this for reproducible
-sampling. If you change `src/mriforge/accelerator.py`, run this test before
+sampling. If you change `src/spectramr/accelerator.py`, run this test before
 opening the PR — it executes in under a second on CPU and catches the kind of
 silent drift that no other test surfaces.
 
 ## Where new components live
 
-MRIForge uses a registry-dispatcher pattern. Adding a component means writing
+spectraMR uses a registry-dispatcher pattern. Adding a component means writing
 the class, decorating it, and mounting it on the package `__init__.py`.
 
 | Component | Directory | Decorator |
 |---|---|---|
-| Training paradigm | `src/mriforge/infrastructure/training/strategies/` | subclass of `BaseTrainingStrategy`; register in `STRATEGY_CLASS_PATHS` |
-| Model architecture | `src/mriforge/models/generators/` (or `discriminators/`) | `@register_model(name=..., training_mode=...)` |
-| Loss | `src/mriforge/models/losses/` | `@register_loss(name=..., domain=...)` |
-| Metric | `src/mriforge/core/metrics/` | `@register_metric(name=...)` |
-| Dataset | `src/mriforge/data/datasets/` | `@register_dataset(name=...)` |
-| Physics primitive | `src/mriforge/infrastructure/physics/` | direct import; no registry |
+| Training paradigm | `src/spectramr/infrastructure/training/strategies/` | subclass of `BaseTrainingStrategy`; register in `STRATEGY_CLASS_PATHS` |
+| Model architecture | `src/spectramr/models/generators/` (or `discriminators/`) | `@register_model(name=..., training_mode=...)` |
+| Loss | `src/spectramr/models/losses/` | `@register_loss(name=..., domain=...)` |
+| Metric | `src/spectramr/core/metrics/` | `@register_metric(name=...)` |
+| Dataset | `src/spectramr/data/datasets/` | `@register_dataset(name=...)` |
+| Physics primitive | `src/spectramr/infrastructure/physics/` | direct import; no registry |
 
 ### Adding a new training paradigm (four-step recipe)
 
 1. **Write the strategy.** Subclass `BaseTrainingStrategy` in a new file under
-   `src/mriforge/infrastructure/training/strategies/`. Implement `train_step`,
+   `src/spectramr/infrastructure/training/strategies/`. Implement `train_step`,
    `validate_step`, and any overrides for `setup_optimizer`,
    `before_epoch`, `after_epoch`.
 2. **Register the dispatch key.** Add an entry to
    `STRATEGY_CLASS_PATHS` in
-   `src/mriforge/infrastructure/training/strategy_factory.py`, plus matching
+   `src/spectramr/infrastructure/training/strategy_factory.py`, plus matching
    entries in `VALID_TRAINING_MODES` and `TRAINING_MODE_CONSTRAINTS` in
-   `src/mriforge/config/validation_constants.py`.
+   `src/spectramr/config/validation_constants.py`.
 3. **Write a YAML.** Place a reference config under
    `experiments/inprogress/<paradigm>/<arm>.yaml` with
-   `training.strategy_class = "mriforge.infrastructure.training.strategies.<YourClass>"`
+   `training.strategy_class = "spectramr.infrastructure.training.strategies.<YourClass>"`
    and `training.training_mode = "<your_alias>"`.
 4. **Land tests + docs.** Add a unit test under `tests/unit/infrastructure/training/`
    and a docs page under `docs/explanation/` or `docs/how_to/`.
 
-Run `python -m mriforge.cli audit experiments/inprogress/<paradigm>/<arm>.yaml`
+Run `python -m spectramr.cli audit experiments/inprogress/<paradigm>/<arm>.yaml`
 and confirm it returns zero blocking errors before opening the PR.
 
 ## Figure and data provenance

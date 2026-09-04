@@ -15,10 +15,10 @@ import types
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.manifolds.beltrami_4d import (
+from spectramr.infrastructure.physics.manifolds.beltrami_4d import (
     SeparableBeltrami4DSolver,
 )
-from mriforge.infrastructure.training.strategies.fmri_kspace_strategies import (
+from spectramr.infrastructure.training.strategies.fmri_kspace_strategies import (
     SpatiotemporalAdaptiveSFCReconStrategy,
 )
 

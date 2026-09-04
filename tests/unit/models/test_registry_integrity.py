@@ -67,7 +67,7 @@ class TestRegistryIntegrity:
         # __file__ = tests/unit/models/test_registry_integrity.py
         # parents[3] = repo root
         base_path = Path(__file__).resolve().parents[3]
-        models_path = base_path / "src" / "mriforge" / "models"
+        models_path = base_path / "src" / "spectramr" / "models"
 
         scanner = RegistrationScanner(base_path)
         scanner.scan_directory(models_path)
@@ -171,7 +171,7 @@ class TestRegistrationFormat:
         idiomatic in older generators like ``pma_varnet``.
         """
         base_path = Path(__file__).resolve().parents[3]
-        models_path = base_path / "src" / "mriforge" / "models"
+        models_path = base_path / "src" / "spectramr" / "models"
 
         # Capture the decorator call's argument span (DOTALL because the
         # decorator commonly spans multiple lines with kwargs). Anchored to
@@ -217,13 +217,13 @@ class TestRegistrationFormat:
         Scans both keyword and positional forms of ``@register_model``.
         """
         base_path = Path(__file__).resolve().parents[3]
-        models_path = base_path / "src" / "mriforge" / "models"
+        models_path = base_path / "src" / "spectramr" / "models"
 
         # Pinned universe of decorator-form registration modes (the paradigm
         # dispatch bucket, distinct from config VALID_TRAINING_MODES). This is
         # a source-scan ratchet: adding a new mode string is a deliberate act
         # that must be reflected here, so a typo'd mode fails the gate. Refreshed
-        # 2026-07-02 after the src->mriforge rename left this test scanning a
+        # 2026-07-02 after the src->spectramr rename left this test scanning a
         # non-existent path (silently vacuous) — the set had drifted to 24 while
         # the tree carried 52.
         # 2026-07-02 (sota_registry retirement): "acquisition" and "synthesis"

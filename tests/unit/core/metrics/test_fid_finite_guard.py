@@ -13,7 +13,7 @@ import pytest
 from tests.utils.optional_backends import requires_torch_fidelity
 import torch
 
-from mriforge.core.metrics.evaluation_metrics import FID
+from spectramr.core.metrics.evaluation_metrics import FID
 
 
 class _ExplodingFID(torch.nn.Module):

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import DataConfigSchema
+from spectramr.config.schemas.data import DataConfigSchema
 
 
 def test_mrixfields_knobs_default_off() -> None:

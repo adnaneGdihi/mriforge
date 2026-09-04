@@ -98,7 +98,7 @@ def test_kspace_cross_attention_uses_valid_attention_type() -> None:
     to it (20fbfeee4). The arm's whole hypothesis is cross-contrast k-space
     attention, so pinning ``none`` would strip its headline mechanism (pitfall
     #16). The test asserts a real complex-safe cross-attention fires instead."""
-    from mriforge.models.blocks.attention_domains import COMPLEX_UNET_BLOCK_ATTENTION
+    from spectramr.models.blocks.attention_domains import COMPLEX_UNET_BLOCK_ATTENTION
 
     cfg = _load("experiments/inprogress/multi_contrast/exp_kspace_cross_attention.yaml")
     mk = cfg["model"]["model_kwargs"]

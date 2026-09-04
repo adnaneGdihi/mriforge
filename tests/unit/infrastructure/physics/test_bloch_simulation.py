@@ -1,6 +1,6 @@
 """Tests for ``DifferentiableBlochSimulator`` (SE / GRE).
 
-Targets ``mriforge.infrastructure.physics.bloch_simulation``. This is the
+Targets ``spectramr.infrastructure.physics.bloch_simulation``. This is the
 simulator consumed by the MRF dictionary; it implements the SE and GRE
 analytical signal equations as a differentiable PyTorch module.
 
@@ -15,7 +15,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.bloch_simulation import (
+from spectramr.infrastructure.physics.bloch_simulation import (
     DifferentiableBlochSimulator,
 )
 

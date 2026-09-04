@@ -7,11 +7,11 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (
+from spectramr.infrastructure.training.strategies.cross_field_translation_strategy import (
     CrossFieldTranslationStrategy,
     compute_cross_field_losses,
 )
-from mriforge.models.generators.cross_field_renderer import AnatomyFieldRenderer
+from spectramr.models.generators.cross_field_renderer import AnatomyFieldRenderer
 
 
 def _batch() -> dict:
@@ -51,8 +51,8 @@ def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim) fold onto the rendered prediction via the
     loss-SSOT seam; the inline l1 placeholder is skipped (no double-count). This is the
     shared strategy behind b17/b19 (add sharpness) and b38 (bare l1 -> folds nothing)."""
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(CrossFieldTranslationStrategy)
     strat.env = types.SimpleNamespace(
@@ -71,7 +71,7 @@ def test_builder_image_losses_folded_via_seam() -> None:
 def test_bare_l1_placeholder_folds_nothing_via_seam() -> None:
     """The b38 case: an arm that keeps only the bare l1 placeholder folds NOTHING (skip-l1),
     so loss_total is byte-identical to the inline-only objective (no double-count, no drift)."""
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     torch.manual_seed(0)
     gen = AnatomyFieldRenderer(in_channels=1, out_channels=1, latent_channels=16)
@@ -142,7 +142,7 @@ def test_validation_contrast_conditioning_gates_cid() -> None:
     # (so train and val use the SAME conditioning); True -> the forwarded id flows.
     import types
 
-    from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (
+    from spectramr.infrastructure.training.strategies.cross_field_translation_strategy import (
         CrossFieldTranslationStrategy,
     )
 
@@ -161,7 +161,7 @@ def test_validation_contrast_conditioning_gates_cid() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -175,7 +175,7 @@ def test_validation_forward_renders_at_target_field() -> None:
     # pipeline forwards it) rather than a bare batch_context bracket access.
     import types
 
-    from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (
+    from spectramr.infrastructure.training.strategies.cross_field_translation_strategy import (
         CrossFieldTranslationStrategy,
     )
 
@@ -195,7 +195,7 @@ def test_validation_forward_renders_at_target_field() -> None:
 def test_validation_forward_raises_when_target_field_absent() -> None:
     import types
 
-    from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (
+    from spectramr.infrastructure.training.strategies.cross_field_translation_strategy import (
         CrossFieldTranslationStrategy,
     )
 
@@ -214,8 +214,8 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.infrastructure.training.strategies.cross_field_translation_strategy import (
         CrossFieldTranslationStrategy,
     )
     tb = BatchAdapter.from_dict(_batch())

@@ -1,6 +1,6 @@
 r"""Tests for the IMU 6-DOF integrator (idea 9 §9.2).
 
-Targets ``mriforge.infrastructure.sensors.adapters.imu``.
+Targets ``spectramr.infrastructure.sensors.adapters.imu``.
 
 Plan acceptance criterion (§9.7):
 
@@ -26,7 +26,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.sensors.adapters.imu import (
+from spectramr.infrastructure.sensors.adapters.imu import (
     IMUSample,
     integrate_imu_stream,
 )

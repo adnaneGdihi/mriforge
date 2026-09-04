@@ -273,7 +273,7 @@ class TestConfiguredValMetricsResolveMonitors:
         return pred, target
 
     def test_computer_emits_monitor_metrics(self, device, mag_pair):
-        from mriforge.core.metrics.computer import (
+        from spectramr.core.metrics.computer import (
             create_validation_metrics_computer,
         )
 
@@ -288,10 +288,10 @@ class TestConfiguredValMetricsResolveMonitors:
         assert "robust_mri_psnr" in computed
 
     def test_monitor_resolves_against_merged_result(self, device, mag_pair):
-        from mriforge.core.metrics.computer import (
+        from spectramr.core.metrics.computer import (
             create_validation_metrics_computer,
         )
-        from mriforge.pipelines.train import early_stop_monitor_candidates
+        from spectramr.pipelines.train import early_stop_monitor_candidates
 
         pred, target = mag_pair
         computer = create_validation_metrics_computer(

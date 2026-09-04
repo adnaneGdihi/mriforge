@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.evaluation.mrixfields_baselines.original_arch import (
+from spectramr.infrastructure.evaluation.mrixfields_baselines.original_arch import (
     ClovaaiMappingNetwork,
     ClovaaiStarGANv2Generator,
     extract_generator_state,
@@ -163,8 +163,8 @@ def test_extract_model_no_netg_prefix_raises():
 @pytest.mark.unit
 def test_cyclegan_generator_round_trip():
     """Wrap cyclegan_generator state dict with netG. prefix, extract, and reload strict=True."""
-    import mriforge.models.generators.cycle_gan  # noqa: F401 — registers the model
-    from mriforge.models.registry import get_model_class
+    import spectramr.models.generators.cycle_gan  # noqa: F401 — registers the model
+    from spectramr.models.registry import get_model_class
 
     gen_cls = get_model_class("cyclegan_generator")
 

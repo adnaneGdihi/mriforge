@@ -1,6 +1,6 @@
 """Tests for ``PlateauMonitor``.
 
-Targets ``mriforge.infrastructure.training.plateau_monitor`` — the shared
+Targets ``spectramr.infrastructure.training.plateau_monitor`` — the shared
 plateau-detection primitive extracted from ``EarlyStoppingService`` and reused
 by ``LossScheduleController``. It owns the strict MIN/MAX comparator, the
 ``min_delta`` threshold, the ``patience`` wait counter, and a post-fire
@@ -18,8 +18,8 @@ Categories:
 
 from __future__ import annotations
 
-from mriforge.config.schemas.enums import MetricMode
-from mriforge.infrastructure.training.plateau_monitor import PlateauMonitor
+from spectramr.config.schemas.enums import MetricMode
+from spectramr.infrastructure.training.plateau_monitor import PlateauMonitor
 
 # ---------------------------------------------------------------------------
 # Construction / reset

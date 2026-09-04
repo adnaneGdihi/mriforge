@@ -1,11 +1,11 @@
 """Unit tests for the gated-graph block and GatedGNNReconstructor.
 
 Covers:
-* :func:`mriforge.models.blocks.graph.gated_gnn.scatter_add` aggregation.
-* :class:`mriforge.models.blocks.graph.gated_gnn.GatedGraphConv` forward
+* :func:`spectramr.models.blocks.graph.gated_gnn.scatter_add` aggregation.
+* :class:`spectramr.models.blocks.graph.gated_gnn.GatedGraphConv` forward
   shape and message propagation across the graph (a perturbation at one
   vertex influences a distant vertex after T >= diameter steps).
-* :class:`mriforge.models.generators.gated_gnn_reconstructor.GatedGNNReconstructor`
+* :class:`spectramr.models.generators.gated_gnn_reconstructor.GatedGNNReconstructor`
   forward shape and registration as ``gated_gnn``.
 
 Written but not executed here; they run on the cluster.
@@ -14,9 +14,9 @@ Written but not executed here; they run on the cluster.
 import pytest
 import torch
 
-from mriforge.models.blocks.graph.gated_gnn import GatedGraphConv, scatter_add
-from mriforge.models.generators.gated_gnn_reconstructor import GatedGNNReconstructor
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.blocks.graph.gated_gnn import GatedGraphConv, scatter_add
+from spectramr.models.generators.gated_gnn_reconstructor import GatedGNNReconstructor
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 
 class TestScatterAdd:

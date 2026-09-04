@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
-from mriforge.models.vq.vqgan import VQGAN
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.models.vq.vqgan import VQGAN
 
 
 class TestVQGANTrainingStrategy:
@@ -77,7 +77,7 @@ class TestVQGANTrainingStrategy:
             getattr(bi, _m).return_value = bi
         bi.build.return_value = {}
         with patch(
-            "mriforge.infrastructure.training.builders.loss_builder.LossBuilder",
+            "spectramr.infrastructure.training.builders.loss_builder.LossBuilder",
             builder,
         ):
             strategy = GANTrainingStrategy(env=mock_env)

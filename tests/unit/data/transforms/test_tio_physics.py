@@ -13,9 +13,9 @@ import pytest
 torch = pytest.importorskip("torch")
 tio = pytest.importorskip("torchio")
 
-from mriforge.config.schemas.physics import DigitalTwinConfig  # noqa: E402
-from mriforge.data.transforms.tio_physics import DigitalTwinDegradation  # noqa: E402
-from mriforge.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
+from spectramr.config.schemas.physics import DigitalTwinConfig  # noqa: E402
+from spectramr.data.transforms.tio_physics import DigitalTwinDegradation  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
     DigitalTwinSimulator,
 )
 
@@ -106,7 +106,7 @@ def test_physics_masking_undersamples_width_constant_along_height() -> None:
     (the fully-sampled/readout axis). Guards against a silent axis flip and
     documents the assumption the physics-SSOT consolidation must reconcile.
     """
-    from mriforge.data.transforms.tio_physics import PhysicsInformedMasking
+    from spectramr.data.transforms.tio_physics import PhysicsInformedMasking
 
     torch.manual_seed(0)
     m = PhysicsInformedMasking(acceleration=4, center_fraction=0.25)
@@ -129,7 +129,7 @@ def test_physics_informed_mask_is_deterministic_and_cached() -> None:
     UNSEEDED → a different mask per item, unlike every seeded generator in the
     physics SSOT. It is now seeded per width (reproducible) and cached per
     ``(width, height)`` so it is not recomputed in every ``apply_transform``."""
-    from mriforge.data.transforms.tio_physics import PhysicsInformedMasking
+    from spectramr.data.transforms.tio_physics import PhysicsInformedMasking
 
     m = PhysicsInformedMasking(acceleration=4, center_fraction=0.1)
     a = m._generate_mask(48, 16)
@@ -146,7 +146,7 @@ def test_physics_informed_mask_is_deterministic_and_cached() -> None:
 def test_physics_informed_mask_seed_untouched_by_global_rng() -> None:
     """The seeded per-width generator must not depend on global torch RNG, so
     two instances agree regardless of intervening global draws."""
-    from mriforge.data.transforms.tio_physics import PhysicsInformedMasking
+    from spectramr.data.transforms.tio_physics import PhysicsInformedMasking
 
     torch.manual_seed(1)
     a = PhysicsInformedMasking(acceleration=6)._generate_mask(64, 8)

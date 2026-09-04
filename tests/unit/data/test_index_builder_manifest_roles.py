@@ -15,8 +15,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.data import DataSplitConfigSchema
-from mriforge.data.metadata.index_builder import IndexBuilder
+from spectramr.config.schemas.data import DataSplitConfigSchema
+from spectramr.data.metadata.index_builder import IndexBuilder
 from tests.utils.data_config_stub import DataConfigStub
 
 

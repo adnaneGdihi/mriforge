@@ -5,14 +5,14 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.chain_fitter import (
+from spectramr.infrastructure.physics.chain_fitter import (
     DegenerateFitError,
     fit_chain,
     warm_start_theta,
 )
-from mriforge.infrastructure.physics.degradation_chain import ChainLink, DegradationChain
-from mriforge.infrastructure.physics.digital_twin_extensions import DEGRADATION_REGISTRY
-from mriforge.infrastructure.physics.quality_descriptors import measure_attributes
+from spectramr.infrastructure.physics.degradation_chain import ChainLink, DegradationChain
+from spectramr.infrastructure.physics.digital_twin_extensions import DEGRADATION_REGISTRY
+from spectramr.infrastructure.physics.quality_descriptors import measure_attributes
 
 ATTRS = ["tenengrad_variance"]
 
@@ -227,7 +227,7 @@ def test_fit_rejects_a_target_missing_an_attribute():
 
 
 def test_acquisition_warm_start_sets_only_the_noise_axis():
-    from mriforge.infrastructure.physics.chain_fitter import acquisition_warm_start
+    from spectramr.infrastructure.physics.chain_fitter import acquisition_warm_start
 
     # complex_gaussian declares snr [dB] 40 -> 2. A -19 dB prediction targets 21 dB,
     # which is exactly the midpoint => theta 0.5. t2star_blur is not a noise axis, so
@@ -243,7 +243,7 @@ def test_acquisition_warm_start_discovers_the_noise_axis_from_the_registry():
     A hardcoded 'complex_gaussian' would silently stop applying the moment a chain
     used a different noise operator, with nothing reporting it.
     """
-    from mriforge.infrastructure.physics.chain_fitter import acquisition_warm_start
+    from spectramr.infrastructure.physics.chain_fitter import acquisition_warm_start
 
     noise_axes = [
         n
@@ -259,7 +259,7 @@ def test_acquisition_warm_start_discovers_the_noise_axis_from_the_registry():
 
 
 def test_acquisition_warm_start_matches_the_declared_affine_inverse():
-    from mriforge.infrastructure.physics.chain_fitter import acquisition_warm_start
+    from spectramr.infrastructure.physics.chain_fitter import acquisition_warm_start
 
     spec = DEGRADATION_REGISTRY["complex_gaussian"].severity.primary
     delta = spec.value_at(0.25) - spec.at_theta_min

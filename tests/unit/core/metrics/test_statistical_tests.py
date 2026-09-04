@@ -13,8 +13,8 @@ import math
 import numpy as np
 import pytest
 
-from mriforge.core.metrics.statistical_tests import StatisticalTests
-from mriforge.infrastructure.calibration.chd import dkw_slack
+from spectramr.core.metrics.statistical_tests import StatisticalTests
+from spectramr.infrastructure.calibration.chd import dkw_slack
 
 
 class TestClopperPearsonInterval:

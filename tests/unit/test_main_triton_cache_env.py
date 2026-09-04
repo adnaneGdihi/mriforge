@@ -34,18 +34,18 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 
-_PROBE = "import os, mriforge.main;print('TRITON=' + os.environ.get('TRITON_CACHE_DIR', '<unset>'))"
+_PROBE = "import os, spectramr.main;print('TRITON=' + os.environ.get('TRITON_CACHE_DIR', '<unset>'))"
 
 
 def _import_main(env_extra: dict[str, str]) -> str:
-    """Import ``mriforge.main`` in a clean process and report TRITON_CACHE_DIR."""
+    """Import ``spectramr.main`` in a clean process and report TRITON_CACHE_DIR."""
     env = {
         k: v
         for k, v in os.environ.items()
-        if k not in {"TRITON_CACHE_DIR", "MRIFORGE_CACHE_ROOT", "XDG_CACHE_HOME"}
+        if k not in {"TRITON_CACHE_DIR", "SPECTRAMR_CACHE_ROOT", "XDG_CACHE_HOME"}
     }
     env["PYTHONPATH"] = str(REPO / "src")
-    env["MRIFORGE_SUPPRESS_CLINICAL_WARNING"] = "1"
+    env["SPECTRAMR_SUPPRESS_CLINICAL_WARNING"] = "1"
     env.update(env_extra)
     proc = subprocess.run(
         [sys.executable, "-c", _PROBE],
@@ -55,7 +55,7 @@ def _import_main(env_extra: dict[str, str]) -> str:
         timeout=600,
     )
     if proc.returncode != 0:
-        pytest.skip(f"mriforge.main is not importable here: {proc.stderr[-400:]}")
+        pytest.skip(f"spectramr.main is not importable here: {proc.stderr[-400:]}")
     for line in proc.stdout.splitlines():
         if line.startswith("TRITON="):
             return line[len("TRITON=") :]
@@ -69,10 +69,10 @@ def test_importing_main_sets_the_triton_cache_dir(tmp_path: Path) -> None:
     Triton reads it at its own import; leaving it unset is what produced the
     ``~/.triton`` write.
     """
-    resolved = _import_main({"MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot")})
+    resolved = _import_main({"SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot")})
     assert resolved != "<unset>", "TRITON_CACHE_DIR unset; Triton falls back to ~/.triton"
     assert str(tmp_path) in resolved, (
-        f"TRITON_CACHE_DIR={resolved!r} does not follow MRIFORGE_CACHE_ROOT"
+        f"TRITON_CACHE_DIR={resolved!r} does not follow SPECTRAMR_CACHE_ROOT"
     )
 
 
@@ -84,7 +84,7 @@ def test_the_triton_cache_is_not_under_home(tmp_path: Path) -> None:
     unfixed code produced, so a run that lands anywhere under ``$HOME`` has not
     been moved.
     """
-    resolved = _import_main({"MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot")})
+    resolved = _import_main({"SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot")})
     home = str(Path.home())
     assert not resolved.startswith(home), (
         f"TRITON_CACHE_DIR={resolved!r} is inside $HOME ({home}). DeepSpeed "
@@ -104,7 +104,7 @@ def test_an_explicit_setting_is_not_clobbered(tmp_path: Path) -> None:
     chosen = str(tmp_path / "operator-chose-this")
     resolved = _import_main(
         {
-            "MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot"),
+            "SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot"),
             "TRITON_CACHE_DIR": chosen,
         }
     )
@@ -116,14 +116,14 @@ def test_an_explicit_setting_is_not_clobbered(tmp_path: Path) -> None:
 # ─────────────────────────────────────────────────────────────────────────────
 # The same three questions, asked of the OTHER entry point.
 #
-# Every probe above imports ``mriforge.main``. The multi-GPU launch documented in
+# Every probe above imports ``spectramr.main``. The multi-GPU launch documented in
 # ``scripts/training/train_distributed.sbatch:173`` is
-# ``torchrun -m mriforge.cli train-distributed``, which never imports that module
+# ``torchrun -m spectramr.cli train-distributed``, which never imports that module
 # -- so all three passed for a year while the path that actually runs DeepSpeed
 # had TRITON_CACHE_DIR unset. Measured on the pre-fix tree::
 #
-#     import mriforge.cli   ->  TRITON_CACHE_DIR=None  XDG_CACHE_HOME=None
-#     import mriforge.main  ->  both set under cache_root
+#     import spectramr.cli   ->  TRITON_CACHE_DIR=None  XDG_CACHE_HOME=None
+#     import spectramr.main  ->  both set under cache_root
 #
 # The caches are configured at runtime on that path (``initialize_accelerator``),
 # not at import, so the probe below calls it. XDG_CACHE_HOME is checked alongside
@@ -134,8 +134,8 @@ def test_an_explicit_setting_is_not_clobbered(tmp_path: Path) -> None:
 _DISTRIBUTED_PROBE = """
 import os
 os.environ["FORCE_CPU"] = "true"
-import mriforge.cli  # the package `torchrun -m mriforge.cli` executes
-from mriforge.accelerator import initialize_accelerator
+import spectramr.cli  # the package `torchrun -m spectramr.cli` executes
+from spectramr.accelerator import initialize_accelerator
 initialize_accelerator(device_str="cpu", seed=42, pipeline="train")
 for key in ("TRITON_CACHE_DIR", "XDG_CACHE_HOME"):
     print(key + "=" + os.environ.get(key, "<unset>"))
@@ -148,10 +148,10 @@ def _via_cli_entry_point(env_extra: dict[str, str]) -> dict[str, str]:
         k: v
         for k, v in os.environ.items()
         if k
-        not in {"TRITON_CACHE_DIR", "MRIFORGE_CACHE_ROOT", "XDG_CACHE_HOME", "TMPDIR"}
+        not in {"TRITON_CACHE_DIR", "SPECTRAMR_CACHE_ROOT", "XDG_CACHE_HOME", "TMPDIR"}
     }
     env["PYTHONPATH"] = str(REPO / "src")
-    env["MRIFORGE_SUPPRESS_CLINICAL_WARNING"] = "1"
+    env["SPECTRAMR_SUPPRESS_CLINICAL_WARNING"] = "1"
     env.update(env_extra)
     proc = subprocess.run(
         [sys.executable, "-c", _DISTRIBUTED_PROBE],
@@ -175,16 +175,16 @@ def _via_cli_entry_point(env_extra: dict[str, str]) -> dict[str, str]:
 def test_the_distributed_entry_point_sets_the_caches_too(tmp_path: Path) -> None:
     """The regression that shipped: main.py was fixed, the torchrun path was not."""
     resolved = _via_cli_entry_point(
-        {"MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot")}
+        {"SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot")}
     )
     for key, value in resolved.items():
         assert value != "<unset>", (
-            f"{key} is unset on the `torchrun -m mriforge.cli train-distributed` "
+            f"{key} is unset on the `torchrun -m spectramr.cli train-distributed` "
             "path. DeepSpeed writes both of these during its own import, so they "
             "fall back into $HOME and the import fails on a cluster."
         )
         assert str(tmp_path) in value, (
-            f"{key}={value!r} does not follow MRIFORGE_CACHE_ROOT"
+            f"{key}={value!r} does not follow SPECTRAMR_CACHE_ROOT"
         )
 
 
@@ -192,7 +192,7 @@ def test_the_distributed_entry_point_sets_the_caches_too(tmp_path: Path) -> None
 def test_the_distributed_entry_point_caches_are_not_under_home(tmp_path: Path) -> None:
     """Anti-vacuity, stated as the failure it prevents (cf. the main.py twin)."""
     resolved = _via_cli_entry_point(
-        {"MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot")}
+        {"SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot")}
     )
     home = str(Path.home())
     for key, value in resolved.items():
@@ -209,7 +209,7 @@ def test_the_distributed_entry_point_honours_an_explicit_triton_setting(
     chosen = str(tmp_path / "operator-chose-this")
     resolved = _via_cli_entry_point(
         {
-            "MRIFORGE_CACHE_ROOT": str(tmp_path / "cacheroot"),
+            "SPECTRAMR_CACHE_ROOT": str(tmp_path / "cacheroot"),
             "TRITON_CACHE_DIR": chosen,
         }
     )

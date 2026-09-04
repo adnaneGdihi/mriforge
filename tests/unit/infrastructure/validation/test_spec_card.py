@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.infrastructure.validation.spec_card import (
+from spectramr.infrastructure.validation.spec_card import (
     _derive_data_form,
     synthesize_spec_card,
 )
@@ -86,8 +86,8 @@ def test_spec_card_reads_the_decomposed_data_blocks():
     default instead of raising. A real settings object is the only stand-in that
     can catch that -- a ``SimpleNamespace`` has whatever attribute you give it.
     """
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.spec_card import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.spec_card import (
         _derive_data_form,
         _derive_loss_form,
     )
@@ -120,7 +120,7 @@ def test_spec_card_reads_the_decomposed_data_blocks():
 def test_safe_get_walks_dotted_paths_and_falls_back():
     from types import SimpleNamespace
 
-    from mriforge.infrastructure.validation.spec_card import _safe_get
+    from spectramr.infrastructure.validation.spec_card import _safe_get
 
     nested = SimpleNamespace(sampling=SimpleNamespace(patch_size=(64, 64, 1)))
     assert _safe_get(nested, "sampling.patch_size", "patch_size") == (64, 64, 1)

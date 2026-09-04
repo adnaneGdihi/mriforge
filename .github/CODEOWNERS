@@ -1,4 +1,4 @@
-# MRIForge ownership.
+# spectraMR ownership.
 # A solo maintainer owns every path until a co-maintainer joins.
 # When that happens, partition by area (physics / training / models / docs).
 

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.conformal import (
+from spectramr.core.metrics.meta_evaluation.conformal import (
     conformal_metric_selection,
     crc_admissible,
     crc_risk_bound,

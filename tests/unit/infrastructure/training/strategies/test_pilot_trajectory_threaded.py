@@ -23,7 +23,7 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
+from spectramr.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
 
 
 def _make_pilot(trajectory, *, codesign_enabled=False):

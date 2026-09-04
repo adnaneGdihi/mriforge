@@ -1,6 +1,6 @@
 """Tests for fusion blocks.
 
-Targets ``mriforge.models.blocks.fusion``. Six fusion strategies for
+Targets ``spectramr.models.blocks.fusion``. Six fusion strategies for
 combining multiple reconstruction outputs:
 
 - ``AttentionFusionBlock``: learned attention weights
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.fusion import (
+from spectramr.models.blocks.fusion import (
     AdaptiveFusionBlock,
     AttentionFusionBlock,
     FeatureFusionBlock,

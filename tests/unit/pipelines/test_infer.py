@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import yaml as _yaml
 
-from mriforge.domain.exceptions import (
+from spectramr.domain.exceptions import (
     ConfigurationError,
     DataCorruptionError,
     DimensionMismatchError,
@@ -161,7 +161,7 @@ class TestLoadInputRoutesThroughSSOT:
         h5py = pytest.importorskip("h5py")
         import numpy as np
 
-        from mriforge.pipelines.infer import _load_input
+        from spectramr.pipelines.infer import _load_input
 
         p = tmp_path / "scan.h5"
         ksp = np.arange(6, dtype=np.float32).reshape(2, 3)
@@ -180,7 +180,7 @@ class TestLoadInputRoutesThroughSSOT:
         from pathlib import Path
 
         src = (
-            Path(__file__).resolve().parents[3] / "src" / "mriforge" / "pipelines" / "infer.py"
+            Path(__file__).resolve().parents[3] / "src" / "spectramr" / "pipelines" / "infer.py"
         ).read_text()
         start = src.index("def _load_input(")
         end = src.index("\ndef ", start + 1)
@@ -208,31 +208,31 @@ class TestResolveInferenceParadigm:
         )
 
     def test_multi_stage_short_circuits_without_detector(self, monkeypatch):
-        from mriforge.pipelines import infer
+        from spectramr.pipelines import infer
 
         # If the detector is consulted for a multi-stage class, fail — the gate
         # must short-circuit (detector cannot emit "multi").
         monkeypatch.setattr(
-            "mriforge.infrastructure.inference.inference_factory."
+            "spectramr.infrastructure.inference.inference_factory."
             "InferenceStrategyFactory._infer_strategy_type",
             lambda cfg: (_ for _ in ()).throw(
                 AssertionError("detector must not be called for multi-stage")
             ),
         )
         cfg = self._cfg(
-            "mriforge.infrastructure.training.strategies.pipeline_strategy.MultiTrainingStrategy"
+            "spectramr.infrastructure.training.strategies.pipeline_strategy.MultiTrainingStrategy"
         )
         assert infer._resolve_inference_paradigm(cfg) == "multi"
 
     def test_non_multi_defers_to_ssot_detector(self, monkeypatch):
-        from mriforge.pipelines import infer
+        from spectramr.pipelines import infer
 
         monkeypatch.setattr(
-            "mriforge.infrastructure.inference.inference_factory."
+            "spectramr.infrastructure.inference.inference_factory."
             "InferenceStrategyFactory._infer_strategy_type",
             lambda cfg: "gan",
         )
-        cfg = self._cfg("mriforge...GANTrainingStrategy")
+        cfg = self._cfg("spectramr...GANTrainingStrategy")
         # The SSOT detector's verdict is used verbatim — never a stale "unknown".
         result = infer._resolve_inference_paradigm(cfg)
         assert result == "gan"
@@ -241,10 +241,10 @@ class TestResolveInferenceParadigm:
     def test_absent_strategy_class_still_defers_to_detector(self, monkeypatch):
         from types import SimpleNamespace
 
-        from mriforge.pipelines import infer
+        from spectramr.pipelines import infer
 
         monkeypatch.setattr(
-            "mriforge.infrastructure.inference.inference_factory."
+            "spectramr.infrastructure.inference.inference_factory."
             "InferenceStrategyFactory._infer_strategy_type",
             lambda cfg: "reconstruction",
         )
@@ -262,14 +262,14 @@ class TestInferenceAcceleratedRunContract:
     neither honoured ``"auto"`` (``torch.device("auto")`` is a TypeError) nor
     checked CUDA availability — it built a cuda device object on a GPU-less host
     and only failed later, deep inside a ``.to(device)``. It now routes through
-    the SSOT contract in :mod:`mriforge.core.compute_device`.
+    the SSOT contract in :mod:`spectramr.core.compute_device`.
     """
 
     def test_pipeline_resolves_device_through_the_ssot(self) -> None:
         from pathlib import Path
 
         src = (
-            Path(__file__).resolve().parents[3] / "src" / "mriforge" / "pipelines" / "infer.py"
+            Path(__file__).resolve().parents[3] / "src" / "spectramr" / "pipelines" / "infer.py"
         ).read_text()
         assert "resolve_torch_device" in src
         assert "device_obj = torch.device(device)" not in src, (
@@ -280,7 +280,7 @@ class TestInferenceAcceleratedRunContract:
     def test_no_accelerator_raises_for_infer(self, monkeypatch) -> None:
         import torch
 
-        from mriforge.core.compute_device import (
+        from spectramr.core.compute_device import (
             AcceleratorRequiredError,
             resolve_torch_device,
         )
@@ -294,7 +294,7 @@ class TestInferenceAcceleratedRunContract:
     def test_explicit_cpu_inference_is_permitted(self, monkeypatch) -> None:
         import torch
 
-        from mriforge.core.compute_device import resolve_torch_device
+        from spectramr.core.compute_device import resolve_torch_device
 
         monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
         decision = resolve_torch_device("cpu", pipeline="infer")
@@ -312,7 +312,7 @@ def test_infer_preprocess_gates_on_declared_normalization_fields() -> None:
     for validity, NOT because inference reads it -- it no longer does, and no
     training code ever did (see
     ``TestInferenceNormalizesExactlyAsTrainingDoes``)."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     cfg = DataConfigSchema()
     assert cfg.processing.normalization_type in {
@@ -343,7 +343,7 @@ class TestManifestTestSplitRoute:
     def test_pipeline_accepts_the_flag(self) -> None:
         import inspect
 
-        from mriforge.pipelines.infer import run_inference_pipeline
+        from spectramr.pipelines.infer import run_inference_pipeline
 
         params = inspect.signature(run_inference_pipeline).parameters
         assert "from_manifest_test_split" in params
@@ -364,7 +364,7 @@ class TestManifestTestSplitRoute:
         """A mistyped --input must raise, never silently switch sources."""
         import inspect
 
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.pipelines import infer as infer_mod
 
         src = inspect.getsource(infer_mod.run_inference_pipeline)
         code = "\n".join(line for line in src.splitlines() if not line.lstrip().startswith("#"))
@@ -376,7 +376,7 @@ class TestManifestTestSplitRoute:
 
     def test_cli_parses_the_flag(self) -> None:
         """The knob is declared on the CLI (non-negotiable #8)."""
-        from mriforge.cli.app import build_parser
+        from spectramr.cli.app import build_parser
 
         args = build_parser().parse_args(
             [
@@ -403,7 +403,7 @@ class TestManifestTestSplitRoute:
         """
         import inspect
 
-        from mriforge.cli.app import build_parser
+        from spectramr.cli.app import build_parser
 
         args = build_parser().parse_args(["infer", "--config", "c.yaml", "--checkpoint", "m.pt"])
         bound = args.func  # what the parser actually dispatches to
@@ -414,7 +414,7 @@ class TestManifestTestSplitRoute:
             "handler must forward from_manifest_test_split"
         )
 
-        from mriforge.main import infer_command
+        from spectramr.main import infer_command
 
         forwarded = inspect.getsource(infer_command)
         code = "\n".join(
@@ -445,7 +445,7 @@ class TestInferBuildsThroughTheCanonicalBuilder:
         from pathlib import Path
 
         return (
-            Path(__file__).resolve().parents[3] / "src" / "mriforge" / "pipelines" / "infer.py"
+            Path(__file__).resolve().parents[3] / "src" / "spectramr" / "pipelines" / "infer.py"
         ).read_text()
 
     def test_pipeline_no_longer_calls_the_config_sniffing_factory(self) -> None:
@@ -482,7 +482,7 @@ class TestInferBuildsThroughTheCanonicalBuilder:
 
     def test_pipeline_binds_the_shared_checkpoint_reader(self) -> None:
         """Behavioural: the one reader is bound at module scope."""
-        import mriforge.pipelines.infer as infer_mod
+        import spectramr.pipelines.infer as infer_mod
 
         assert hasattr(infer_mod, "resolve_state_dict"), (
             "infer.py still carries its own envelope vocabulary; it knew only "
@@ -515,7 +515,7 @@ class TestAccelerationConfigReachesTheModel:
 
         import pytest as _pytest
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         arm = Path(__file__).resolve().parents[3] / self.ARM
         if not arm.is_file():
@@ -525,10 +525,10 @@ class TestAccelerationConfigReachesTheModel:
     def test_builder_injects_the_declared_acs_band_not_the_default(self) -> None:
         import torch
 
-        from mriforge.infrastructure.training.builders.model_builder import (
+        from spectramr.infrastructure.training.builders.model_builder import (
             ModelBuilder,
         )
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -558,7 +558,7 @@ class TestAccelerationConfigReachesTheModel:
         """The #1306 raise itself: set clip ratio + absent flag == ValueError."""
         import torch
 
-        from mriforge.infrastructure.training.builders.model_builder import (
+        from spectramr.infrastructure.training.builders.model_builder import (
             ModelBuilder,
         )
 
@@ -591,7 +591,7 @@ def _norm_arm(
     dataset_type: str = "m4raw",
 ):
     """A minimal arm whose image-normalization block is fully declared."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     cfg = {
         "config_version": "1.0",
@@ -628,7 +628,7 @@ class TestInferenceNormalizesExactlyAsTrainingDoes:
 
     def test_a_kspace_normalized_arm_gets_no_image_normalization(self, tmp_path):
         """The mutual exclusion, which is the whole cohort's situation."""
-        from mriforge.pipelines.infer import _normalize_like_training
+        from spectramr.pipelines.infer import _normalize_like_training
 
         config = _norm_arm(
             tmp_path,
@@ -651,11 +651,11 @@ class TestInferenceNormalizesExactlyAsTrainingDoes:
         """
         import torchio as tio
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
-        from mriforge.pipelines.infer import _normalize_like_training
+        from spectramr.pipelines.infer import _normalize_like_training
 
         config = _norm_arm(
             tmp_path,
@@ -678,7 +678,7 @@ class TestInferenceNormalizesExactlyAsTrainingDoes:
 
     def test_rescale_percentiles_no_longer_steers_inference(self, tmp_path):
         """It steered inference and nothing else; no training code reads it."""
-        from mriforge.pipelines.infer import _normalize_like_training
+        from spectramr.pipelines.infer import _normalize_like_training
 
         tensor = torch.rand(1, 2, 8, 8) * 100.0
         wide = _norm_arm(
@@ -699,12 +699,132 @@ class TestInferenceNormalizesExactlyAsTrainingDoes:
         cannot arrive from a validated YAML. The resolver must still refuse it
         rather than fall through, because inference resolves the string itself.
         """
-        from mriforge.pipelines.infer import _normalize_like_training
+        from spectramr.pipelines.infer import _normalize_like_training
 
         config = _norm_arm(tmp_path, normalization_type="none")
         object.__setattr__(config.data.processing, "normalization_type", "not_a_strategy")
         with pytest.raises(ConfigurationError, match="Unknown normalization_type"):
             _normalize_like_training(torch.rand(1, 2, 8, 8), config)
+
+
+class TestImageNormalizationHasOneOwner:
+    """Training and predict resolve the SAME image-normalization spec.
+
+    They used to each carry a copy of the three-part decision (k-space
+    precedence, the ``robust_percentile`` fold, the spec), and the copies had
+    drifted once already (see :class:`TestInferenceNormalizesExactlyAsTrainingDoes`).
+    The guard here is structural: both call sites go through
+    ``resolve_image_normalization`` and get the same answer for the same arm,
+    across the reference template and two committed arms with opposite
+    k-space settings.
+    """
+
+    TEMPLATE = "src/spectramr/config/schemas/templates/v1.0_reference.yaml"
+    ARMS = (
+        "experiments/inprogress/kspace_filling/experiment_11_kspace_cold_diffusion.yaml",
+        "experiments/inprogress/reconstruction/baseline_m4raw_unet_4x.yaml",
+    )
+
+    @staticmethod
+    def _settings(rel: str):
+        from spectramr.config.settings import TrainingSettings
+
+        path = Path(__file__).resolve().parents[3] / rel
+        if not path.exists():
+            pytest.skip(f"not present: {rel}")
+        return TrainingSettings.from_yaml(str(path))
+
+    @staticmethod
+    def _record_both(monkeypatch, config):
+        """Run the builder's val chain and predict's normalizer under one spy."""
+        from spectramr.data.builders.torchio_transform_builder import (
+            TorchIOTransformBuilder,
+            TorchIOTransformConfig,
+        )
+        from spectramr.data.transforms import normalization as norm_mod
+        from spectramr.pipelines.infer import _normalize_like_training
+
+        real = norm_mod.resolve_image_normalization
+        seen: list[tuple[dict, object]] = []
+
+        def _spy(**kwargs):
+            spec = real(**kwargs)
+            seen.append((kwargs, spec))
+            return spec
+
+        monkeypatch.setattr(norm_mod, "resolve_image_normalization", _spy)
+
+        class _Proxy:
+            # ``from_training_config`` reads ``config.undersampling`` by name;
+            # the same shape ``signature.compute_infer_signature`` uses.
+            def __init__(self, data_cfg, undersampling_cfg):
+                self._data = data_cfg
+                self.undersampling = undersampling_cfg
+
+            def __getattr__(self, name):
+                return getattr(self._data, name)
+
+        tcfg = TorchIOTransformConfig.from_training_config(
+            _Proxy(config.data, getattr(config, "undersampling", None))
+        )
+        TorchIOTransformBuilder.build_val_transforms(tcfg)
+        assert len(seen) == 1, "the builder must resolve exactly once"
+        _normalize_like_training(torch.rand(1, config.model.in_channels, 8, 8), config)
+        assert len(seen) == 2, "predict must resolve exactly once"
+        return seen
+
+    @pytest.mark.parametrize("rel", (TEMPLATE, *ARMS))
+    def test_builder_and_predict_resolve_the_same_spec(self, monkeypatch, rel):
+        config = self._settings(rel)
+        (builder_kwargs, builder_spec), (infer_kwargs, infer_spec) = self._record_both(
+            monkeypatch, config
+        )
+        assert builder_kwargs == infer_kwargs, "the two call sites read different knobs"
+        assert builder_spec == infer_spec
+        processing = config.data.processing
+        assert builder_kwargs["normalization_type"] == processing.normalization_type, (
+            "the declared spelling must reach the resolver unfolded"
+        )
+
+    @pytest.mark.parametrize("rel", ARMS)
+    def test_a_kspace_normalized_arm_resolves_to_none_on_both_sides(self, monkeypatch, rel):
+        config = self._settings(rel)
+        assert config.data.processing.enable_kspace_normalization is True, rel
+        for _kwargs, spec in self._record_both(monkeypatch, config):
+            assert spec is None
+
+    def test_the_fold_is_invisible_to_the_transform_signature(self, tmp_path):
+        """``robust_percentile`` and ``percentile`` hash to the same chain.
+
+        ``strict_train_parity`` compares the chain signature a checkpoint
+        recorded against the one predict recomputes; the signature hashes the
+        transforms' classes and kwargs, so the spec, never the declared
+        spelling. Pinned here because the fold moved out of the builder and a
+        signature shift would refuse every strict checkpoint of the 270 arms
+        that spell it ``robust_percentile``.
+        """
+        from spectramr.data.transforms.signature import compute_infer_signature
+
+        alias = _norm_arm(tmp_path, normalization_type="robust_percentile")
+        canonical = _norm_arm(tmp_path, normalization_type="percentile")
+        none = _norm_arm(tmp_path, normalization_type="none")
+        assert compute_infer_signature(alias) == compute_infer_signature(canonical)
+        assert compute_infer_signature(alias) != compute_infer_signature(none), (
+            "control: the signature must still see the normalizer at all"
+        )
+
+    def test_predict_no_longer_spells_the_fold(self):
+        """The copy that was deleted from ``_normalize_like_training``."""
+        import inspect
+        import re
+
+        from spectramr.pipelines import infer as infer_mod
+
+        src = inspect.getsource(infer_mod._normalize_like_training)
+        code_lines = [line.split("#", 1)[0] for line in src.splitlines()]
+        assert not [
+            line for line in code_lines if re.search(r"""==\s*['"]robust_percentile['"]""", line)
+        ], "predict folds robust_percentile itself again"
 
 
 class TestInferenceRefusesToReshapeTheAcquisition:
@@ -720,21 +840,21 @@ class TestInferenceRefusesToReshapeTheAcquisition:
 
     def test_matching_channels_pass_through(self, tmp_path):
         """Regression guard: the agreeing case must stay a no-op."""
-        from mriforge.pipelines.infer import _adapt_channels
+        from spectramr.pipelines.infer import _adapt_channels
 
         config = _norm_arm(tmp_path)
         tensor = torch.rand(1, 2, 8, 8)
         assert torch.equal(_adapt_channels(tensor, 2, config), tensor)
 
     def test_too_few_channels_raises_instead_of_zero_padding(self, tmp_path):
-        from mriforge.pipelines.infer import _adapt_channels
+        from spectramr.pipelines.infer import _adapt_channels
 
         config = _norm_arm(tmp_path)
         with pytest.raises(DimensionMismatchError, match="fabricates channels"):
             _adapt_channels(torch.rand(1, 1, 8, 8), 4, config)
 
     def test_too_many_channels_raises_instead_of_narrowing(self, tmp_path):
-        from mriforge.pipelines.infer import _adapt_channels
+        from spectramr.pipelines.infer import _adapt_channels
 
         config = _norm_arm(tmp_path)
         with pytest.raises(DimensionMismatchError, match="narrowing down discards them"):
@@ -742,7 +862,7 @@ class TestInferenceRefusesToReshapeTheAcquisition:
 
     def test_an_even_multicoil_count_raises_instead_of_rss(self, tmp_path):
         """The branch that looked like physics: 8ch -> 2ch via IFFT/RSS/FFT."""
-        from mriforge.pipelines.infer import _adapt_channels
+        from spectramr.pipelines.infer import _adapt_channels
 
         config = _norm_arm(tmp_path)
         with pytest.raises(DimensionMismatchError, match=r"data\.coils\.processing_mode"):
@@ -772,7 +892,7 @@ class TestPreprocessTensorMatchesTraining:
 
     def test_preprocess_skips_normalization_when_kspace_is_normalized(self, tmp_path):
         """58/58 cohort arms are in this state; the old code windowed 46 of them."""
-        from mriforge.pipelines.infer import _preprocess_tensor
+        from spectramr.pipelines.infer import _preprocess_tensor
 
         config = _norm_arm(
             tmp_path,
@@ -791,11 +911,11 @@ class TestPreprocessTensorMatchesTraining:
         """Same tensor, same declared arm, same numbers as the training chain."""
         import torchio as tio
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
-        from mriforge.pipelines.infer import _preprocess_tensor
+        from spectramr.pipelines.infer import _preprocess_tensor
 
         config = _norm_arm(
             tmp_path,
@@ -839,7 +959,7 @@ class TestFailuresAreClassifiedByBlastRadius:
 
     @staticmethod
     def _run(monkeypatch, raiser, n_files: int, results: dict):
-        import mriforge.pipelines.infer as infer_mod
+        import spectramr.pipelines.infer as infer_mod
 
         seen: list[Path] = []
 
@@ -870,7 +990,7 @@ class TestFailuresAreClassifiedByBlastRadius:
         ``_normalize_like_training`` resolves the image-normalization spec out
         of ``data.processing``, so an unrecognised ``normalization_type`` fails
         identically on every input. The resolver raises a bare ``ValueError``,
-        which is *not* a ``MRIForgeError``; the pipeline retypes it to
+        which is *not* a ``SpectraMRError``; the pipeline retypes it to
         ``ConfigurationError`` precisely so it is classified here rather than
         swallowed once per file by the per-file handler.
         """
@@ -886,7 +1006,7 @@ class TestFailuresAreClassifiedByBlastRadius:
         )
 
     def test_it_does_not_retry_the_same_verdict_on_every_remaining_file(self, monkeypatch) -> None:
-        import mriforge.pipelines.infer as infer_mod
+        import spectramr.pipelines.infer as infer_mod
 
         seen: list[Path] = []
 
@@ -966,7 +1086,7 @@ class TestInferEmitsTheReportArtifactContract:
     def _metrics_block(self):
         import yaml
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         path = Path(__file__).resolve().parents[3] / self.ARM
         if not path.exists():
@@ -980,10 +1100,10 @@ class TestInferEmitsTheReportArtifactContract:
         If `infer` grew its own resolver, a report could name a different metric
         set than the training run it is compared against, and nothing would fail.
         """
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.pipelines import infer as infer_mod
 
         block = self._metrics_block()
         expected = MetricsMixin._extract_metrics_from_config(MetricsMixin(), block)
@@ -999,8 +1119,8 @@ class TestInferEmitsTheReportArtifactContract:
         reference-free, this test says so out loud instead of the behaviour
         changing silently.
         """
-        from mriforge.core.metrics.registry import MetricsRegistry
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.core.metrics.registry import MetricsRegistry
+        from spectramr.pipelines import infer as infer_mod
 
         declared = infer_mod._declared_metrics(SimpleNamespace(metrics=self._metrics_block()))
         assert all(MetricsRegistry.requires_reference(m) for m in declared), {
@@ -1008,7 +1128,7 @@ class TestInferEmitsTheReportArtifactContract:
         }
 
     def test_every_processed_case_is_offered_to_the_evaluator(self, tmp_path):
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.pipelines import infer as infer_mod
 
         seen = []
 
@@ -1054,7 +1174,7 @@ class TestInferEmitsTheReportArtifactContract:
         """
         import inspect
 
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.pipelines import infer as infer_mod
 
         src = inspect.getsource(infer_mod.run_inference_pipeline)
         write_at = src.find("evaluator.write(")
@@ -1070,8 +1190,277 @@ class TestInferEmitsTheReportArtifactContract:
         """The docstring promises "metrics"; a skip must not read as absence."""
         import inspect
 
-        from mriforge.pipelines import infer as infer_mod
+        from spectramr.pipelines import infer as infer_mod
 
         src = inspect.getsource(infer_mod.run_inference_pipeline)
         assert 'results["metrics"]' in src
         assert 'results["metrics_skipped"]' in src
+
+
+# ---- resolve_inference_settings: the artifact beside the checkpoint wins (2026-09-03, #1379) ----
+
+
+class TestResolveInferenceSettings:
+    @staticmethod
+    def _reference_yaml():
+        import pathlib
+
+        import spectramr.config.schemas as _schemas
+
+        return pathlib.Path(_schemas.__file__).parent / "templates" / "v1.0_reference.yaml"
+
+    @staticmethod
+    def _run_dir_with_artifact(tmp_path, yaml_path):
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.validation.resolved_config_artifact import (
+            write_resolved_config,
+        )
+
+        run = tmp_path / "run"
+        run.mkdir()
+        write_resolved_config(run, TrainingSettings.from_yaml(str(yaml_path)), run_id="t")
+        ckpt = run / "best.pt"
+        ckpt.write_bytes(b"")
+        return ckpt
+
+    def test_artifact_beside_the_checkpoint_wins_over_the_yaml(self, tmp_path):
+        from spectramr.pipelines.infer import resolve_inference_settings
+
+        yaml_path = self._reference_yaml()
+        ckpt = self._run_dir_with_artifact(tmp_path, yaml_path)
+        settings, source = resolve_inference_settings(yaml_path, ckpt)
+        assert source["kind"] == "resolved_config" and source["path"].endswith(
+            "resolved_config.json"
+        )
+        assert "diverging_blocks" not in source
+        assert settings.model.model_type
+
+    def test_from_yaml_forces_the_yaml(self, tmp_path):
+        from spectramr.pipelines.infer import resolve_inference_settings
+
+        yaml_path = self._reference_yaml()
+        ckpt = self._run_dir_with_artifact(tmp_path, yaml_path)
+        _, source = resolve_inference_settings(yaml_path, ckpt, from_yaml=True)
+        assert source["kind"] == "yaml" and source["resolved_config"] is not None
+
+    def test_neither_source_raises_with_guidance(self, tmp_path):
+        from spectramr.pipelines.infer import resolve_inference_settings
+
+        ckpt = tmp_path / "best.pt"
+        ckpt.write_bytes(b"")
+        with pytest.raises(FileNotFoundError, match="resolved_config.json"):
+            resolve_inference_settings(None, ckpt)
+        with pytest.raises(FileNotFoundError, match="--from-yaml was set"):
+            resolve_inference_settings(None, ckpt, from_yaml=True)
+
+    def test_a_disagreeing_yaml_is_reported_not_used(self, tmp_path, caplog):
+        import logging
+
+        import yaml as _yaml
+
+        from spectramr.pipelines.infer import resolve_inference_settings
+
+        yaml_path = self._reference_yaml()
+        ckpt = self._run_dir_with_artifact(tmp_path, yaml_path)
+        doc = _yaml.safe_load(yaml_path.read_text())
+        doc["optimization"]["optimizer"]["learning_rate"] = 0.31337
+        other = tmp_path / "other.yaml"
+        other.write_text(_yaml.safe_dump(doc, sort_keys=False))
+        with caplog.at_level(logging.WARNING):
+            settings, source = resolve_inference_settings(other, ckpt)
+        assert source["kind"] == "resolved_config"
+        assert "optimization" in source["diverging_blocks"]
+        assert settings.optimization.optimizer.learning_rate != 0.31337
+        assert any("disagree" in r.message for r in caplog.records)
+
+    def test_an_artifact_without_the_declared_block_yields_to_the_yaml(self, tmp_path, caplog):
+        """Every run directory written before the block: the documented
+        ``infer --config`` command keeps working, and the source says why."""
+        import json
+        import logging
+
+        from spectramr.pipelines.infer import _describe_inference_source, resolve_inference_settings
+
+        run = tmp_path / "run"
+        run.mkdir()
+        (run / "resolved_config.json").write_text(
+            json.dumps({"model": {"model_type": "unet"}, "_ledger": {}})
+        )
+        ckpt = run / "best.pt"
+        ckpt.write_bytes(b"")
+        yaml_path = self._reference_yaml()
+        with caplog.at_level(logging.WARNING):
+            settings, source = resolve_inference_settings(yaml_path, ckpt)
+        assert source["kind"] == "yaml" and source["resolved_config_predates_declared"] is True
+        assert settings.model.model_type
+        assert any("predates" in r.message for r in caplog.records)
+        assert (
+            _describe_inference_source(yaml_path, ckpt, False)["resolved_config_predates_declared"]
+            is True
+        )
+        with pytest.raises(FileNotFoundError, match="predates"):
+            resolve_inference_settings(None, ckpt)
+
+
+# ---------------------------------------------------------------------------
+# physics.data_consistency.apply_at_predict: what the pipeline attaches
+# ---------------------------------------------------------------------------
+
+
+class TestPredictDataConsistencyInputs:
+    """``_process_single_file`` hands the strategy the mask and the measurement.
+
+    The projection itself is the strategy's (``PredictDataConsistency``); the
+    pipeline's job is to attach what this path can honestly supply -- the
+    input's ``mask`` HDF5 dataset and, on a k-space route, the preprocessed
+    input as the measurement -- and to attach NOTHING when the knob is off.
+    """
+
+    @staticmethod
+    def _config(dataset_type="kspace"):
+        return SimpleNamespace(data=SimpleNamespace(dataset_type=dataset_type))
+
+    @staticmethod
+    def _h5(tmp_path, with_mask: bool, n_slices: int = 2):
+        h5py = pytest.importorskip("h5py")
+        import numpy as np
+
+        p = tmp_path / "case.h5"
+        with h5py.File(p, "w") as f:
+            f.create_dataset("kspace", data=np.ones((n_slices, 2, 8, 8), dtype=np.float32))
+            if with_mask:
+                mask = np.zeros((n_slices, 8, 8), dtype=np.float32)
+                mask[..., ::2] = 1.0
+                f.create_dataset("mask", data=mask)
+        return p
+
+    def test_off_attaches_nothing_and_never_opens_the_file(self, tmp_path):
+        from spectramr.pipelines import infer as infer_mod
+
+        strategy = SimpleNamespace(predict_dc=None)
+        missing = tmp_path / "never_read.h5"
+        assert (
+            infer_mod._predict_dc_inputs(strategy, missing, torch.zeros(2, 2, 8, 8), self._config())
+            is None
+        )
+        assert infer_mod._dc_batch_kwargs(None, torch.zeros(1, 2, 8, 8), 0, 1) == {}
+
+    def test_on_reads_the_mask_through_the_io_ssot(self, tmp_path):
+        from spectramr.pipelines import infer as infer_mod
+
+        p = self._h5(tmp_path, with_mask=True)
+        found = infer_mod._predict_dc_inputs(
+            SimpleNamespace(predict_dc=object()), p, torch.zeros(2, 2, 8, 8), self._config()
+        )
+        assert found is not None
+        assert tuple(found["mask"].shape) == (2, 8, 8)
+        assert found["measurement_is_input"] is True and found["num_samples"] == 2
+
+    def test_an_absent_mask_is_reported_as_none_not_as_another_dataset(self, tmp_path):
+        from spectramr.pipelines import infer as infer_mod
+
+        p = self._h5(tmp_path, with_mask=False)
+        found = infer_mod._predict_dc_inputs(
+            SimpleNamespace(predict_dc=object()), p, torch.zeros(2, 2, 8, 8), self._config()
+        )
+        assert found is not None and found["mask"] is None
+
+    def test_an_image_route_has_no_measurement_to_attach(self, tmp_path):
+        from spectramr.pipelines import infer as infer_mod
+
+        p = self._h5(tmp_path, with_mask=True)
+        found = infer_mod._predict_dc_inputs(
+            SimpleNamespace(predict_dc=object()), p, torch.zeros(2, 2, 8, 8), self._config("nifti")
+        )
+        assert found is not None and found["measurement_is_input"] is False
+        kwargs = infer_mod._dc_batch_kwargs(found, torch.zeros(1, 2, 8, 8), 0, 1)
+        assert kwargs["measured_kspace"] is None and kwargs["mask"] is not None
+
+    def test_a_per_slice_mask_is_sliced_with_the_batch(self):
+        from spectramr.pipelines import infer as infer_mod
+
+        mask = torch.arange(4.0).view(4, 1, 1).expand(4, 8, 8)
+        found = {"mask": mask, "measurement_is_input": True, "num_samples": 4}
+        batch = torch.zeros(2, 2, 8, 8)
+        kwargs = infer_mod._dc_batch_kwargs(found, batch, 2, 4)
+        assert torch.equal(kwargs["mask"], mask[2:4])
+        assert kwargs["measured_kspace"] is batch, "the measurement IS the model's input"
+
+    def test_a_plane_mask_is_passed_whole(self):
+        from spectramr.pipelines import infer as infer_mod
+
+        mask = torch.ones(8, 8)
+        found = {"mask": mask, "measurement_is_input": True, "num_samples": 4}
+        assert infer_mod._dc_batch_kwargs(found, torch.zeros(2, 2, 8, 8), 2, 4)["mask"] is mask
+
+    def test_process_single_file_forwards_them_per_batch_when_on(self, tmp_path, monkeypatch):
+        from spectramr.pipelines import infer as infer_mod
+
+        seen: list[dict] = []
+
+        class _Strategy:
+            predict_dc = object()
+
+            def infer_single(self, batch, **kwargs):
+                seen.append({"batch": batch, **kwargs})
+                return batch
+
+        p = self._h5(tmp_path, with_mask=True, n_slices=3)
+        monkeypatch.setattr(infer_mod, "_load_input", lambda f, d: torch.rand(3, 2, 8, 8))
+        monkeypatch.setattr(infer_mod, "_preprocess_tensor", lambda t, c, d, m: t)
+        monkeypatch.setattr(infer_mod, "_save_output", lambda *a, **k: None)
+        infer_mod._process_single_file(
+            p,
+            tmp_path,
+            MockModel(),
+            _Strategy(),
+            torch.device("cpu"),
+            self._config(),
+            batch_size=2,
+            results={"outputs": [], "num_processed": 0},
+        )
+        assert [tuple(s["batch"].shape) for s in seen] == [(2, 2, 8, 8), (1, 2, 8, 8)]
+        assert [tuple(s["mask"].shape) for s in seen] == [(2, 8, 8), (1, 8, 8)]
+        assert all(s["measured_kspace"] is s["batch"] for s in seen)
+
+    def test_process_single_file_passes_nothing_when_off(self, tmp_path, monkeypatch):
+        """The off state is byte-identical: a strategy without kwargs still works."""
+        from spectramr.pipelines import infer as infer_mod
+
+        class _NoKwargs:
+            predict_dc = None
+
+            def infer_single(self, batch):
+                return batch
+
+        monkeypatch.setattr(infer_mod, "_load_input", lambda f, d: torch.rand(2, 2, 8, 8))
+        monkeypatch.setattr(infer_mod, "_preprocess_tensor", lambda t, c, d, m: t)
+        monkeypatch.setattr(infer_mod, "_save_output", lambda *a, **k: None)
+        results = {"outputs": [], "num_processed": 0}
+        infer_mod._process_single_file(
+            tmp_path / "x.npy",
+            tmp_path,
+            MockModel(),
+            _NoKwargs(),
+            torch.device("cpu"),
+            self._config(),
+            batch_size=2,
+            results=results,
+        )
+        assert results["num_processed"] == 1
+
+    def test_the_run_stamps_the_provenance_beside_config_source(self):
+        """Result dict and run summary both say whether DC was projected."""
+        import inspect
+
+        from spectramr.pipelines import infer as infer_mod
+
+        src = inspect.getsource(infer_mod.run_inference_pipeline)
+        assert (
+            src.count('results["data_consistency_at_predict"] = strategy.predict_dc_provenance()')
+            == 2
+        )
+        summary_call = src[src.index("write_inference_run_summary(") :]
+        assert (
+            '"data_consistency_at_predict": results["data_consistency_at_predict"]' in summary_call
+        )

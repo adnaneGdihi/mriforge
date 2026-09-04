@@ -24,7 +24,7 @@ from torch.utils.data import DataLoader, TensorDataset
 os.environ["FORCE_COLOR"] = "1"
 
 # --- Bootstrap the colored formatter on the root logger ---
-from mriforge.infrastructure.services.logging_service import ColoredConsoleFormatter
+from spectramr.infrastructure.services.logging_service import ColoredConsoleFormatter
 
 _fmt = ColoredConsoleFormatter(use_color=True)
 _handler = logging.StreamHandler(sys.stderr)
@@ -56,7 +56,7 @@ def main():
     # ── 2. Model ──────────────────────────────────────────────────────
     logger.info("Building model: standard_unet (2→2 channels)")
     try:
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
         factory = ModelFactory()
         model = factory.create_generator(
             model_type="standard_unet",

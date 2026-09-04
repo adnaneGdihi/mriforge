@@ -22,7 +22,7 @@ settings = hypothesis.settings
 st = pytest.importorskip("hypothesis.strategies", reason="hypothesis not installed")
 
 # Module under test
-from mriforge.models.layers.complex_layers import (
+from spectramr.models.layers.complex_layers import (
     ComplexBatchNorm2d,
     ComplexLinear,
     ComplexReLU,

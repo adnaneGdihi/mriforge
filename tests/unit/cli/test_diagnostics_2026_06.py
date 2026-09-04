@@ -1,4 +1,4 @@
-"""Tests for ``mriforge doctor`` (cluster environment diagnostics).
+"""Tests for ``spectramr doctor`` (cluster environment diagnostics).
 
 2026-06-11 CLI enrichment. ``doctor`` is a cluster pre-flight tool: it prints
 torch/CUDA/device/cache info and doubles as a gate (``--require-cuda``,
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import argparse
 
-from mriforge.cli import diagnostics
+from spectramr.cli import diagnostics
 
 
 def test_collect_diagnostics_has_expected_shape():
@@ -22,7 +22,7 @@ def test_collect_diagnostics_has_expected_shape():
 
 def test_render_diagnostics_is_human_readable():
     text = diagnostics.render_diagnostics(diagnostics.collect_diagnostics())
-    assert "mriforge doctor" in text
+    assert "spectramr doctor" in text
     assert "torch" in text
     assert "cache_root" in text
 

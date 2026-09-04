@@ -1,6 +1,6 @@
 """Tests for k-space regularizers.
 
-Targets ``mriforge.models.losses.regularizers.HermitianSymmetryLoss``.
+Targets ``spectramr.models.losses.regularizers.HermitianSymmetryLoss``.
 
 Regression: for a CENTERED k-space (DC at index N/2) the Hermitian partner
 of sample ``i`` is sample ``N − i`` (DC maps to itself). A plain ``flip``
@@ -16,8 +16,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.fft_ops import fft2c  # noqa: E402
-from mriforge.models.losses.regularizers import HermitianSymmetryLoss  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c  # noqa: E402
+from spectramr.models.losses.regularizers import HermitianSymmetryLoss  # noqa: E402
 
 
 def test_real_image_kspace_is_hermitian_symmetric() -> None:

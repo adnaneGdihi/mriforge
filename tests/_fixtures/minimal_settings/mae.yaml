@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster
+# UNVERIFIED: validate via spectramr audit on cluster
 # Minimal settings fixture for the mae/ssl family.
 # Covers strategy keys: mae, ssl
 # Both keys resolve to MAEPretrainingStrategy (STRATEGY_CLASS_PATHS).
@@ -18,12 +18,12 @@ metadata:
     - pretraining
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.pretraining.MAEPretrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.pretraining.MAEPretrainingStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: pretraining
-  output_dir: /tmp/mriforge_test/mae
+  output_dir: /tmp/spectramr_test/mae
 
 data:
   coil_processing_mode: rss

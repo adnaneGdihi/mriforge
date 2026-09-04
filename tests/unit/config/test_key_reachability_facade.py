@@ -17,16 +17,16 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config import (
+from spectramr.config import (
     key_reachability as facade,
 )
-from mriforge.config import (
+from spectramr.config import (
     key_reachability_collect as collect,
 )
-from mriforge.config import (
+from spectramr.config import (
     key_reachability_index as index,
 )
-from mriforge.config import (
+from spectramr.config import (
     key_reachability_model as model,
 )
 
@@ -104,4 +104,4 @@ def test_the_new_modules_are_inside_the_analysed_tree() -> None:
     """
     scanned = {rel for _path, rel, _read_zone in index._source_files()}
     for mod in (facade, collect, index, model):
-        assert f"src/mriforge/config/{Path(mod.__file__).stem}.py" in scanned
+        assert f"src/spectramr/config/{Path(mod.__file__).stem}.py" in scanned

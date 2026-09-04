@@ -5,14 +5,14 @@ Tests that the complete flow works:
 2. Build data loaders (train/val)
 3. Verify collation strategy is applied consistently
 
-Author: MRIForge Team
+Author: spectraMR Team
 Date: 2026-02-15
 """
 
 import pytest
 
-from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+from spectramr.config.settings import TrainingSettings
 
 
 class TestDataLoaderWithCollation:
@@ -33,7 +33,7 @@ optimization:
 logging:
   enable_tensorboard: false
 training:
-  strategy_class: "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+  strategy_class: "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
 model:
   model_type: "standard_unet"
 """
@@ -61,7 +61,7 @@ optimization:
 logging:
   enable_tensorboard: false
 training:
-  strategy_class: "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+  strategy_class: "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
 model:
   model_type: "standard_unet"
 """
@@ -102,7 +102,7 @@ optimization:
 logging:
   enable_tensorboard: false
 training:
-  strategy_class: "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+  strategy_class: "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
 model:
   model_type: "standard_unet"
 """

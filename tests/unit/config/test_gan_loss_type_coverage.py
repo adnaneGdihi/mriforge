@@ -24,13 +24,13 @@ import torch.nn as nn
 
 def _make_gan_settings(gan_loss_type: str, extra_gan_kwargs: dict | None = None):
     """Build minimal TrainingSettings with a GAN loss config."""
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.config.schemas.logging import LoggingConfigSchema
-    from mriforge.config.schemas.loss import GANLossesConfig, LossConfigSchema
-    from mriforge.config.schemas.metrics import MetricsConfigSchema
-    from mriforge.config.schemas.model import ModelConfigSchema
-    from mriforge.config.schemas.optimization import OptimizationConfigSchema
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.logging import LoggingConfigSchema
+    from spectramr.config.schemas.loss import GANLossesConfig, LossConfigSchema
+    from spectramr.config.schemas.metrics import MetricsConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.optimization import OptimizationConfigSchema
+    from spectramr.config.settings import TrainingSettings
 
     gan_kwargs = {
         "gan_loss_type": gan_loss_type,
@@ -52,7 +52,7 @@ def _make_gan_settings(gan_loss_type: str, extra_gan_kwargs: dict | None = None)
 
 def _invoke_build_composite_gan(settings):
     """Run only the composite GAN build step and return the losses dict."""
-    from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+    from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
     builder = LossBuilder(config=settings, device="cpu")
     builder._build_composite_gan(
@@ -114,7 +114,7 @@ class TestGANLossTypeExecution:
         no silent fallback). A clear raise is the correct outcome; the forbidden one
         is a silently-produced 'standard' module the config never asked for.
         """
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         settings = _make_gan_settings("unknown_nonexistent_loss_type_xyz")
         try:
@@ -157,7 +157,7 @@ class TestGANLossEnumVsRegistryMap:
 
     def test_all_enum_values_in_registry_map(self):
         """Every GANLossType.value must appear in adv_registry_map (case-lowered)."""
-        from mriforge.config.schemas.enums import GANLossType
+        from spectramr.config.schemas.enums import GANLossType
 
         enum_values = {m.value.lower() for m in GANLossType}
         missing = enum_values - set(self.ADV_REGISTRY_MAP.keys())
@@ -173,7 +173,7 @@ class TestGANLossEnumVsRegistryMap:
     def test_all_registry_values_are_registered_losses(self):
         """Every target registry name in adv_registry_map must exist in loss registry
         (excluding known-unimplemented sentinel entries)."""
-        from mriforge.models.losses.registry import list_available
+        from spectramr.models.losses.registry import list_available
 
         registered = set(list_available())
         for map_key, registry_name in self.ADV_REGISTRY_MAP.items():
@@ -188,7 +188,7 @@ class TestGANLossEnumVsRegistryMap:
 
     def test_known_builder_gaps_are_tracked(self):
         """Builder gaps must be explicitly tracked so they cannot silently accumulate."""
-        from mriforge.config.schemas.enums import GANLossType
+        from spectramr.config.schemas.enums import GANLossType
 
         enum_values = {m.value.lower() for m in GANLossType}
         # Any enum value mapped to a sentinel target is a KNOWN gap
@@ -215,7 +215,7 @@ class TestGANFeatureMatchingExclusion:
 
     def test_zero_feature_matching_does_not_contribute(self):
         """When feature_matching=0, the composite GAN should not receive a feat-match term."""
-        from mriforge.config.schemas.loss import GANLossesConfig
+        from spectramr.config.schemas.loss import GANLossesConfig
 
         # feature_matching=0 means "disable"
         gan_cfg = GANLossesConfig(
@@ -230,7 +230,7 @@ class TestGANFeatureMatchingExclusion:
 
     def test_nonzero_feature_matching_is_preserved(self):
         """feature_matching>0 must be preserved in the config."""
-        from mriforge.config.schemas.loss import GANLossesConfig
+        from spectramr.config.schemas.loss import GANLossesConfig
 
         gan_cfg = GANLossesConfig(
             gan_loss_type="standard",
@@ -248,14 +248,14 @@ class TestGANLabelSmoothing:
     """GANLossesConfig.label_smoothing must be passed to create_loss()."""
 
     def test_label_smoothing_accepted_by_schema(self):
-        from mriforge.config.schemas.loss import GANLossesConfig
+        from spectramr.config.schemas.loss import GANLossesConfig
 
         cfg = GANLossesConfig(label_smoothing=0.1)
         assert cfg.label_smoothing == pytest.approx(0.1)
 
     def test_default_label_smoothing_is_zero(self):
         """Default should be 0.0 (off) to avoid silent accuracy degradation."""
-        from mriforge.config.schemas.loss import GANLossesConfig
+        from spectramr.config.schemas.loss import GANLossesConfig
 
         cfg = GANLossesConfig()
         assert cfg.label_smoothing == pytest.approx(0.0), (

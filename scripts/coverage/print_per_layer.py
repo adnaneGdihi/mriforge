@@ -39,11 +39,11 @@ from typing import NamedTuple
 
 #: Package root component. Coverage writes ``<class filename=...>`` RELATIVE to
 #: the ``<source>`` root, and this repo's ``[tool.coverage.run] source`` is
-#: ``src/mriforge`` — so filenames normally arrive already package-relative
+#: ``src/spectramr`` — so filenames normally arrive already package-relative
 #: (``infrastructure/physics/x.py``) with no prefix to strip. A run configured
-#: with ``source = ["src"]`` instead yields ``mriforge/infrastructure/...``.
+#: with ``source = ["src"]`` instead yields ``spectramr/infrastructure/...``.
 #: Both shapes must map to the same layer; see ``_layer_of``.
-_PACKAGE = "mriforge"
+_PACKAGE = "spectramr"
 
 
 class LayerRow(NamedTuple):
@@ -61,20 +61,20 @@ def _layer_of(filename: str) -> str:
     """Map a class filename to its two-component layer label.
 
     Rules:
-    - Strip a leading ``mriforge/`` component **only if it is actually there**.
+    - Strip a leading ``spectramr/`` component **only if it is actually there**.
     - Keep the next two components if they are both directory parts.
     - If only one component remains (top-level file), use that filename.
 
     Examples::
 
         infrastructure/physics/fft_ops.py          -> infrastructure/physics
-        mriforge/infrastructure/physics/fft_ops.py  -> infrastructure/physics
+        spectramr/infrastructure/physics/fft_ops.py  -> infrastructure/physics
         models/generators/unet.py                  -> models/generators
         main.py                                    -> main.py
         cli/app.py                                 -> cli/app.py
 
     The conditional strip is load-bearing. This function used to drop
-    ``parts[0]`` unconditionally, but with ``source = ["src/mriforge"]`` the XML
+    ``parts[0]`` unconditionally, but with ``source = ["src/spectramr"]`` the XML
     carries no package prefix, so it was eating a **real** layer: every
     ``infrastructure/training/strategies/*`` file was labelled
     ``training/strategies``, ``cli/app.py`` collapsed to ``app.py``, and
@@ -86,7 +86,7 @@ def _layer_of(filename: str) -> str:
         return "(unknown)"
     sub = parts[1:] if parts[0] == _PACKAGE else parts
     if len(sub) == 0:
-        # The filename was exactly 'mriforge' — nothing under it to name.
+        # The filename was exactly 'spectramr' — nothing under it to name.
         return parts[0]
     if len(sub) == 1:
         # top-level file like 'main.py'

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.primary_ideal import (
+from spectramr.infrastructure.physics.primary_ideal import (
     quadratic_component,
     vanishing_ideal_residual,
 )

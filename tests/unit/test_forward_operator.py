@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.forward_operator import (
+from spectramr.infrastructure.physics.forward_operator import (
     DataConsistencyLayer,
     MultiCoilForwardOperator,
     NullSpaceProjection,

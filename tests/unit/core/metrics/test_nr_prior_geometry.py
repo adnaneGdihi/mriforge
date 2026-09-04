@@ -25,9 +25,9 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics import get_metric
-from mriforge.core.metrics.context import MetricContext
-from mriforge.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
+from spectramr.core.metrics import get_metric
+from spectramr.core.metrics.context import MetricContext
+from spectramr.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
 
 
 # --------------------------------------------------------------------------- #
@@ -124,8 +124,8 @@ def test_registered_with_direction(key: str, hib: bool) -> None:
 
 
 def test_import_fires_all_registrations() -> None:
-    import mriforge.core.metrics.nr_prior_geometry as mod  # noqa: F401
-    from mriforge.core.metrics.registry import MetricsRegistry
+    import spectramr.core.metrics.nr_prior_geometry as mod  # noqa: F401
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     for key in ("pmmd", "dpst", "fitc", "ksdp", "pfld", "hallucination_index"):
         assert MetricsRegistry.is_registered(key)

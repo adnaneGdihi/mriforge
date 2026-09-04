@@ -1,6 +1,6 @@
 """Unit tests for time-segmented multi-frequency-interpolation NUFFT.
 
-Targets :mod:`mriforge.infrastructure.physics.nufft.time_segmented_nufft`.
+Targets :mod:`spectramr.infrastructure.physics.nufft.time_segmented_nufft`.
 
 Regression focus:
 
@@ -25,7 +25,7 @@ import torch
 
 pytest.importorskip("torchkbnufft")
 
-from mriforge.infrastructure.physics.nufft.time_segmented_nufft import (  # noqa: E402
+from spectramr.infrastructure.physics.nufft.time_segmented_nufft import (  # noqa: E402
     TimeSegmentedNUFFT,
 )
 

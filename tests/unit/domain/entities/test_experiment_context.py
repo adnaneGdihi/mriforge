@@ -6,12 +6,12 @@ import dataclasses
 
 import pytest
 
-from mriforge.domain.entities import (
+from spectramr.domain.entities import (
     DataProfile,
     PhysicsProfile,
     ResolvedExperimentContext,
 )
-from mriforge.models.capabilities import (
+from spectramr.models.capabilities import (
     LossCapabilities,
     ModelCapabilities,
     StrategyCapabilities,

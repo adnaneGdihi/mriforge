@@ -13,7 +13,7 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.phase_contrast_flow_strategy import (
+from spectramr.infrastructure.training.strategies.phase_contrast_flow_strategy import (
     PhaseContrastFlowStrategy,
     decode_velocity_four_point,
     encode_velocity_four_point,
@@ -87,8 +87,8 @@ def _batch(**extra: object) -> dict:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -103,7 +103,7 @@ def test_data_block_is_mounted_not_silently_dropped() -> None:
     no error at all, and the strategy would read defaults and train the wrong
     physics. The mount is the load-bearing step, so it gets its own test.
     """
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert "phase_contrast" in DataConfigSchema.model_fields
     data = DataConfigSchema(phase_contrast={"enabled": True, "venc": 2.5})
@@ -111,7 +111,7 @@ def test_data_block_is_mounted_not_silently_dropped() -> None:
 
 
 def test_strategy_is_flow_tagged_for_the_ledger() -> None:
-    from mriforge.config.schemas.enums import Regime, Task
+    from spectramr.config.schemas.enums import Regime, Task
 
     caps = PhaseContrastFlowStrategy.__dict__["capabilities"]
     assert caps.workflows == frozenset({Regime.FLOW})
@@ -164,7 +164,7 @@ def test_recovers_a_known_velocity_field() -> None:
     says nothing about whether the physical field was recovered.
     """
     torch.manual_seed(0)
-    from mriforge.models.losses.flow_losses import PhaseContrastVelocityLoss
+    from spectramr.models.losses.flow_losses import PhaseContrastVelocityLoss
 
     target = _velocity()
     estimate = torch.zeros_like(target, requires_grad=True)
@@ -206,8 +206,8 @@ def test_loss_reduces() -> None:
 
 def test_builder_image_losses_folded_via_seam() -> None:
     """Without the fold, losses.image_losses is an inert decoy (pitfall #16)."""
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = _strategy()
     strat.env.losses = {"l1": CharbonnierLoss(), "hfen": HFENLoss()}
@@ -235,7 +235,7 @@ def test_losses_are_called_by_keyword_not_position() -> None:
     via the generic ComposedLoss path it would silently take the wrong tensors —
     and voxel_area, which has no __init__ to carry it, would never arrive at all.
     """
-    from mriforge.models.losses import flow_losses
+    from spectramr.models.losses import flow_losses
 
     seen: dict[str, object] = {}
     original = flow_losses.ThroughPlaneFluxConservationLoss.forward
@@ -332,7 +332,7 @@ def test_compute_losses_accepts_a_canonical_trainingbatch() -> None:
     This also pins that BatchAdapter can carry a flow batch at all: it REQUIRES
     canonical ('input', 'target'), which is why the velocity field rides `target`.
     """
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     out = _strategy()._compute_losses_impl(
@@ -355,7 +355,7 @@ def test_flux_loss_does_not_broadcast_across_the_batch() -> None:
     Asserted by recording the tensor the loss receives. A value-only assertion
     would not catch it — the contaminated loss is a perfectly ordinary number.
     """
-    from mriforge.models.losses import flow_losses
+    from spectramr.models.losses import flow_losses
 
     seen: dict[str, torch.Tensor] = {}
     original = flow_losses.ThroughPlaneFluxConservationLoss.forward

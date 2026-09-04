@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.high_frequency_residual_loss import (
+from spectramr.models.losses.high_frequency_residual_loss import (
     HighFrequencyResidualLoss,
     _gaussian_lowpass,
 )
@@ -92,7 +92,7 @@ def test_all_loss_types_return_finite_scalar(loss_type: str) -> None:
 def test_loss_is_registered_in_registry() -> None:
     """The ``@register_loss`` decorator wired the class into the loss registry."""
     # Importing the package triggers the decorator chain. Look up the name.
-    from mriforge.models.losses import list_available
+    from spectramr.models.losses import list_available
 
     names = list_available()
     assert "high_frequency_residual" in names or "HighFrequencyResidualLoss" in names

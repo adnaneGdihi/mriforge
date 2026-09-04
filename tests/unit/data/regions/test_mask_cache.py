@@ -22,7 +22,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.regions.mask_cache import (  # noqa: E402
+from spectramr.data.regions.mask_cache import (  # noqa: E402
     CACHE_FORMAT_VERSION,
     LABELS_KEY,
     REPORT_FILENAME,
@@ -34,7 +34,7 @@ from mriforge.data.regions.mask_cache import (  # noqa: E402
     load_region_cache,
     write_volume_cache,
 )
-from mriforge.data.regions.synthseg_labels import TissueClass  # noqa: E402
+from spectramr.data.regions.synthseg_labels import TissueClass  # noqa: E402
 
 # Real FreeSurfer ids, not ordinals.
 FS_CORTEX, FS_WM, FS_HIPPOCAMPUS, FS_THALAMUS = 3, 2, 17, 10
@@ -231,7 +231,7 @@ class TestTheWriterRefusesWhatItCannotStore:
             )
 
     def test_an_undeclared_label_is_refused(self, tmp_path) -> None:
-        from mriforge.data.regions.synthseg_labels import UnmappedSynthSegLabelError
+        from spectramr.data.regions.synthseg_labels import UnmappedSynthSegLabelError
 
         vol = torch.zeros(2, 4, 4, dtype=torch.int64)
         vol[0, 0, 0] = 9999

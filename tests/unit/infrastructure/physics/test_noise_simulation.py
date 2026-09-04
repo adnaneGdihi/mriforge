@@ -1,6 +1,6 @@
 """Property tests for ``NoiseSimulator``.
 
-Targets ``mriforge.infrastructure.physics.noise_simulation``. Verifies the SNR
+Targets ``spectramr.infrastructure.physics.noise_simulation``. Verifies the SNR
 contract: doubling the linear SNR (i.e. +6 dB) halves the noise standard
 deviation, within Monte-Carlo tolerance over a large constant signal.
 """
@@ -12,7 +12,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.noise_simulation import NoiseSimulator
+from spectramr.infrastructure.physics.noise_simulation import NoiseSimulator
 
 
 def _measured_noise_sigma(

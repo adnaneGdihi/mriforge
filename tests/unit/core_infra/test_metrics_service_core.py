@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
 
 class TestMetricsTracker:
@@ -88,7 +88,7 @@ class TestMetricsTracker:
             assert rows[1]["loss_d"] == "0.2"
             assert rows[1]["loss_g"] == "0.3"
 
-    @patch("mriforge.infrastructure.services.metrics_tracker.compute_metric")
+    @patch("spectramr.infrastructure.services.metrics_tracker.compute_metric")
     def test_compute_image_metrics_delegation(self, mock_compute_metric, tracker):
         """Test that metric computation correctly delegates to SSOT registry."""
         mock_compute_metric.return_value = 42.0
@@ -128,7 +128,7 @@ class TestMetricsTracker:
         norm3 = tracker._normalize_images(t3)
         assert torch.all(norm3 == 0)
 
-    @patch("mriforge.infrastructure.services.metrics_tracker.Image.fromarray")
+    @patch("spectramr.infrastructure.services.metrics_tracker.Image.fromarray")
     def test_save_images_batch(self, mock_fromarray, tracker):
         """Test saving a batch of images writes to disk correctly."""
         mock_img = MagicMock()

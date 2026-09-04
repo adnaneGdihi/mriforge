@@ -43,8 +43,8 @@ det = _load_detector()
 
 
 def _plant(tmp_path: Path, files: dict[str, str]) -> Path:
-    """Write a synthetic ``src/mriforge/`` tree and return its scan root."""
-    src_root = tmp_path / "src" / "mriforge"
+    """Write a synthetic ``src/spectramr/`` tree and return its scan root."""
+    src_root = tmp_path / "src" / "spectramr"
     for rel, body in files.items():
         target = src_root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -67,25 +67,25 @@ def _function_local(module: str) -> str:
 
 # (source layer, forbidden module, why the rule exists)
 FORBIDDEN = [
-    ("infrastructure", "mriforge.pipelines.train"),
-    ("infrastructure", "mriforge.cli.app"),
+    ("infrastructure", "spectramr.pipelines.train"),
+    ("infrastructure", "spectramr.cli.app"),
     # infrastructure -> application: a rule NEITHER checker had before #1398.
-    ("infrastructure", "mriforge.application.use_cases.train_use_case"),
-    ("application", "mriforge.pipelines.hpo"),
-    ("application", "mriforge.cli.app"),
-    ("pipelines", "mriforge.cli.app"),
+    ("infrastructure", "spectramr.application.use_cases.train_use_case"),
+    ("application", "spectramr.pipelines.hpo"),
+    ("application", "spectramr.cli.app"),
+    ("pipelines", "spectramr.cli.app"),
 ]
 
 # Imports that are legal in the same layers -- a detector that fires on these is
 # worse than none, because every real finding then reads as noise.
 ALLOWED = [
-    ("infrastructure", "mriforge.models.registry"),
-    ("infrastructure", "mriforge.core.compute_device"),
-    ("infrastructure", "mriforge.domain.services.services"),
-    ("application", "mriforge.infrastructure.di.di_container"),
-    ("application", "mriforge.models.registry"),
-    ("pipelines", "mriforge.application.use_cases.train_use_case"),
-    ("pipelines", "mriforge.infrastructure.di.di_container"),
+    ("infrastructure", "spectramr.models.registry"),
+    ("infrastructure", "spectramr.core.compute_device"),
+    ("infrastructure", "spectramr.domain.services.services"),
+    ("application", "spectramr.infrastructure.di.di_container"),
+    ("application", "spectramr.models.registry"),
+    ("pipelines", "spectramr.application.use_cases.train_use_case"),
+    ("pipelines", "spectramr.infrastructure.di.di_container"),
 ]
 
 SHAPES = {"top_level": _top_level, "function_local": _function_local}
@@ -97,7 +97,7 @@ def test_detects_forbidden_import(tmp_path, layer: str, module: str, shape: str)
     """Every forbidden edge is caught, in both the col-0 and the indented shape."""
     rel = f"{layer}/planted.py"
     found = _scan(_plant(tmp_path, {rel: SHAPES[shape](module)}))
-    assert (f"mriforge/{rel}", module) in found, (
+    assert (f"spectramr/{rel}", module) in found, (
         f"{shape} import of {module} from {layer}/ was NOT detected; found={found}"
     )
 
@@ -115,7 +115,7 @@ def test_detects_plain_import_statement(tmp_path, layer: str, module: str) -> No
     """``import x.y`` has no symbol list; it must be caught like ``from x import y``."""
     rel = f"{layer}/planted.py"
     found = _scan(_plant(tmp_path, {rel: f"import {module}\n"}))
-    assert (f"mriforge/{rel}", module) in found
+    assert (f"spectramr/{rel}", module) in found
 
 
 @pytest.mark.parametrize("shape", list(SHAPES))
@@ -129,7 +129,7 @@ def test_removing_the_rule_lets_the_plant_through(
     If the plant still fails with its rule deleted, something else is catching it
     and the rule is not the thing under test.
     """
-    table = {k: v for k, v in det.LAYER_FORBIDDEN.items() if k != f"mriforge.{layer}"}
+    table = {k: v for k, v in det.LAYER_FORBIDDEN.items() if k != f"spectramr.{layer}"}
     monkeypatch.setattr(det, "LAYER_FORBIDDEN", table)
     rel = f"{layer}/planted.py"
     assert _scan(_plant(tmp_path, {rel: SHAPES[shape](module)})) == set()
@@ -144,7 +144,7 @@ def test_narrowing_the_rule_lets_the_plant_through(
     Distinguishes "the layer is audited" from "this specific edge is audited" --
     without it, one over-broad entry would score every edge in the layer green.
     """
-    key = f"mriforge.{layer}"
+    key = f"spectramr.{layer}"
     target = ".".join(module.split(".")[:2])
     table = dict(det.LAYER_FORBIDDEN)
     table[key] = [f for f in table[key] if f != target]
@@ -157,7 +157,7 @@ def test_outer_layers_are_actually_in_the_table() -> None:
     """The election is void if the winner never gained the loser's source layers."""
     missing = [
         layer
-        for layer in ("mriforge.infrastructure", "mriforge.application", "mriforge.pipelines")
+        for layer in ("spectramr.infrastructure", "spectramr.application", "spectramr.pipelines")
         if layer not in det.LAYER_FORBIDDEN
     ]
     assert not missing, (
@@ -172,17 +172,17 @@ def test_the_real_hpo_violation_is_the_function_local_shape() -> None:
     If these ever move to column 0 the deleted greps would have caught them, and
     this test should be re-read rather than re-baselined.
     """
-    src = _REPO_ROOT / "src" / "mriforge" / "application" / "use_cases" / "hpo_use_case.py"
+    src = _REPO_ROOT / "src" / "spectramr" / "application" / "use_cases" / "hpo_use_case.py"
     if not src.exists():  # pragma: no cover - file renamed/removed
         pytest.skip(f"{src} no longer exists")
     offenders = [
         line
         for line in src.read_text(encoding="utf-8").splitlines()
-        if "mriforge.pipelines" in line and ("import " in line)
+        if "spectramr.pipelines" in line and ("import " in line)
     ]
     assert offenders, "the recorded #1398 imports vanished -- un-baseline them"
     assert all(line.startswith(" ") for line in offenders), (
-        f"a column-0 mriforge.pipelines import appeared in {src.name}: {offenders}"
+        f"a column-0 spectramr.pipelines import appeared in {src.name}: {offenders}"
     )
 
 
@@ -217,7 +217,7 @@ def test_detects_nonpackage_import(tmp_path, root: str, shape: str) -> None:
     """Every non-wheel tree is caught, in all four import shapes."""
     module = f"{root}.some_module"
     found = _scan_np(_plant(tmp_path, {"cli/planted.py": NONPACKAGE_SHAPES[shape](module)}))
-    assert ("mriforge/cli/planted.py", module) in found, (
+    assert ("spectramr/cli/planted.py", module) in found, (
         f"{shape} import of {module} was NOT detected; found={found}"
     )
 
@@ -226,7 +226,7 @@ def test_detects_nonpackage_import(tmp_path, root: str, shape: str) -> None:
 def test_the_bare_root_name_is_caught_not_only_a_submodule(tmp_path, root: str) -> None:
     """``import tools`` with no dot must fire; the match is on the first segment."""
     found = _scan_np(_plant(tmp_path, {"cli/planted.py": f"import {root}\n"}))
-    assert ("mriforge/cli/planted.py", root) in found
+    assert ("spectramr/cli/planted.py", root) in found
 
 
 @pytest.mark.parametrize("shape", list(NONPACKAGE_SHAPES))
@@ -234,11 +234,11 @@ def test_the_bare_root_name_is_caught_not_only_a_submodule(tmp_path, root: str) 
 def test_the_in_package_namesake_is_not_a_violation(tmp_path, root: str, shape: str) -> None:
     """Negative control, and the reason the match is first-segment-only.
 
-    ``src/mriforge/tools/`` genuinely exists, and ``mriforge.tools`` is a perfectly
+    ``src/spectramr/tools/`` genuinely exists, and ``spectramr.tools`` is a perfectly
     legal import. A substring or ``endswith`` match would conflate the two and
     make every in-package import of it read as a wheel-breaking violation.
     """
-    module = f"mriforge.{root}.some_module"
+    module = f"spectramr.{root}.some_module"
     body = NONPACKAGE_SHAPES[shape](module)
     assert _scan_np(_plant(tmp_path, {"cli/planted.py": body})) == set()
 
@@ -273,7 +273,7 @@ def test_a_relative_import_of_the_namesake_is_not_a_violation(
     ``ImportFrom.module`` is the bare name for a relative import, which is
     exactly the string the first-segment match looks for -- so the naive scanner
     condemned ``from .tools import x``, a legal in-package import of the real
-    ``src/mriforge/tools/``. A relative import cannot reach a repo-root tree by
+    ``src/spectramr/tools/``. A relative import cannot reach a repo-root tree by
     construction, so ``absolute_only`` skips them.
     """
     body = RELATIVE_SHAPES[shape](root)
@@ -285,7 +285,7 @@ def test_a_relative_import_of_the_namesake_is_not_a_violation(
         f"from .{root} ", f"from {root} "
     )
     assert _scan_np(_plant(tmp_path, {"cli/pkg/planted.py": absolute})) == {
-        ("mriforge/cli/pkg/planted.py", root)
+        ("spectramr/cli/pkg/planted.py", root)
     }
 
 
@@ -300,7 +300,7 @@ def test_dropping_the_level_skip_makes_the_relative_plant_fire(tmp_path, monkeyp
     monkeypatch.setattr(det, "_collect_imports", lambda tree, **kw: real(tree))
     body = "from .tools import thing\n"
     assert _scan_np(_plant(tmp_path, {"cli/pkg/planted.py": body})) == {
-        ("mriforge/cli/pkg/planted.py", "tools")
+        ("spectramr/cli/pkg/planted.py", "tools")
     }
 
 
@@ -313,15 +313,15 @@ def test_a_name_that_merely_looks_like_a_root_is_not_caught(tmp_path) -> None:
 def test_the_scan_reaches_every_layer_not_only_cli(tmp_path) -> None:
     """The rule is tree-wide: it keys on no layer, unlike LAYER_FORBIDDEN.
 
-    A file in a directory absent from LAYER_FORBIDDEN (``mriforge/core``'s
+    A file in a directory absent from LAYER_FORBIDDEN (``spectramr/core``'s
     siblings, plugin trees) must still be scanned, or the rule silently applies
     to a subset of the package.
     """
     planted = {f"{d}/planted.py": _top_level("scripts.ci.thing") for d in ("core", "unlisted")}
     found = _scan_np(_plant(tmp_path, planted))
     assert found == {
-        ("mriforge/core/planted.py", "scripts.ci.thing"),
-        ("mriforge/unlisted/planted.py", "scripts.ci.thing"),
+        ("spectramr/core/planted.py", "scripts.ci.thing"),
+        ("spectramr/unlisted/planted.py", "scripts.ci.thing"),
     }
 
 
@@ -330,10 +330,10 @@ def test_the_recorded_app_py_sites_are_the_function_local_shape() -> None:
 
     Both live hits are indented, so no ``^``-anchored grep in
     ``check_layering.sh`` could ever have seen them -- and the AST table could
-    not either, because it is keyed entirely on ``mriforge.*`` prefixes and
+    not either, because it is keyed entirely on ``spectramr.*`` prefixes and
     ``tools`` is not one.
     """
-    src = _REPO_ROOT / "src" / "mriforge" / "cli" / "app.py"
+    src = _REPO_ROOT / "src" / "spectramr" / "cli" / "app.py"
     if not src.exists():  # pragma: no cover - file renamed/removed
         pytest.skip(f"{src} no longer exists")
     offenders = [

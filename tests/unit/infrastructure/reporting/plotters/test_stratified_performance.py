@@ -7,7 +7,7 @@ and rendering.
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import stratified_performance
+from spectramr.infrastructure.reporting.plotters import stratified_performance
 
 
 def _stratified() -> pd.DataFrame:
@@ -37,7 +37,7 @@ def test_stratified_performance_renders(tmp_path):
 
 
 def test_stratified_performance_uses_student_t_helper(monkeypatch, tmp_path):
-    import mriforge.infrastructure.reporting.plotters.stratified_performance as mod
+    import spectramr.infrastructure.reporting.plotters.stratified_performance as mod
 
     calls = {"n": 0}
     real = mod.t_ci_half_width

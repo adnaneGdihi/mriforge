@@ -28,8 +28,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import AcquisitionParamsSchema
-from mriforge.config.schemas.training.pmps import (
+from spectramr.config.schemas.data import AcquisitionParamsSchema
+from spectramr.config.schemas.training.pmps import (
     AcquisitionParam,
     ProtocolSamplingConfig,
 )

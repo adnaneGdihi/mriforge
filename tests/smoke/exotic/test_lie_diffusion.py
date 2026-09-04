@@ -8,7 +8,7 @@ Verifies:
 import pytest
 import torch
 
-from mriforge.models.generative.lie_diffusion import SO3, LieDiffusion
+from spectramr.models.generative.lie_diffusion import SO3, LieDiffusion
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

@@ -21,7 +21,7 @@ matplotlib.use("Agg")
 
 import pytest
 
-from mriforge.infrastructure.reporting.advanced_reporting import (
+from spectramr.infrastructure.reporting.advanced_reporting import (
     ComparativeReport,
     create_comparative_report,
 )
@@ -182,7 +182,7 @@ def test_aggregator_handles_inconsistent_metric_keys(tmp_path):
 def test_discover_artifacts_finds_report_cases_dir(tmp_path):
     """``discover_artifacts`` exposes the recorded ``report_cases/`` directory."""
 
-    from mriforge.infrastructure.reporting.aggregator import discover_artifacts
+    from spectramr.infrastructure.reporting.aggregator import discover_artifacts
 
     # No report_cases dir → None.
     arts = discover_artifacts(tmp_path)
@@ -205,7 +205,7 @@ def test_aggregate_folds_final_metrics_json(tmp_path):
     because the split already encodes it. Regression: the aggregator used to
     look only for ``final_eval.json``, which the training loop never writes."""
 
-    from mriforge.infrastructure.reporting.aggregator import aggregate
+    from spectramr.infrastructure.reporting.aggregator import aggregate
 
     (tmp_path / "final_metrics.json").write_text(json.dumps({
         "schema_version": "1",
@@ -229,7 +229,7 @@ def test_aggregate_folds_run_summary_facts(tmp_path):
     ``split='run'`` rows — this is what lets the headline Pareto (cost axis
     ``params_m``) and the computational profile fire on real runs."""
 
-    from mriforge.infrastructure.reporting.aggregator import aggregate
+    from spectramr.infrastructure.reporting.aggregator import aggregate
 
     (tmp_path / "run_summary.json").write_text(json.dumps({
         "run_id": "arm-20260701-abc",
@@ -251,7 +251,7 @@ def test_aggregate_folds_run_summary_facts(tmp_path):
 def test_aggregate_accepts_run_summary_under_logs(tmp_path):
     """Historic layout kept ``run_summary.json`` under ``logs/`` — still found."""
 
-    from mriforge.infrastructure.reporting.aggregator import discover_artifacts
+    from spectramr.infrastructure.reporting.aggregator import discover_artifacts
 
     logs = tmp_path / "logs"
     logs.mkdir()
@@ -264,7 +264,7 @@ def test_aggregate_survives_corrupt_summary_jsons(tmp_path, caplog):
     """A present-but-corrupt JSON logs a warning and contributes no rows —
     it must never crash the end-of-run report."""
 
-    from mriforge.infrastructure.reporting.aggregator import aggregate
+    from spectramr.infrastructure.reporting.aggregator import aggregate
 
     (tmp_path / "final_metrics.json").write_text("{not json")
     (tmp_path / "run_summary.json").write_text("[1,")
@@ -279,7 +279,7 @@ def test_aggregate_survives_corrupt_summary_jsons(tmp_path, caplog):
 def test_final_metrics_skips_non_numeric_values(tmp_path):
     """Strings / nulls / bools in final_metrics.json are skipped, not coerced."""
 
-    from mriforge.infrastructure.reporting.aggregator import aggregate
+    from spectramr.infrastructure.reporting.aggregator import aggregate
 
     (tmp_path / "final_metrics.json").write_text(json.dumps({
         "best": {"ssim_best": 0.9, "note_best": "n/a", "flag_best": True},
@@ -296,7 +296,7 @@ def test_melt_drops_all_nan_metric_columns(tmp_path):
     never surfaces as a phantom all-NaN series in fig_1_2_learning_curves."""
     import pandas as pd
 
-    from mriforge.infrastructure.reporting.aggregator import _melt_metrics_csv
+    from spectramr.infrastructure.reporting.aggregator import _melt_metrics_csv
 
     csv = tmp_path / "training_metrics.csv"
     pd.DataFrame({
@@ -320,7 +320,7 @@ def test_optional_future_aggregator_module(tmp_path):
     """Smoke check that any future ``aggregator`` module exposes an ``aggregate``
     entry-point and that ``aggregate([])`` returns a falsy empty aggregate."""
 
-    aggregator = pytest.importorskip("mriforge.infrastructure.reporting.aggregator")
+    aggregator = pytest.importorskip("spectramr.infrastructure.reporting.aggregator")
     aggregate = getattr(aggregator, "aggregate", None)
     if aggregate is None:
         pytest.skip("aggregator module exists but has no aggregate() entry-point")

@@ -25,7 +25,7 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.pipelines.train import _run_validation  # noqa: E402
+from spectramr.pipelines.train import _run_validation  # noqa: E402
 
 
 def _logging_cfg() -> SimpleNamespace:

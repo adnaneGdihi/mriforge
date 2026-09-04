@@ -8,8 +8,8 @@ import torch
 # Add src to path
 sys.path.append(os.getcwd())
 
-from mriforge.core.metrics.medical import MedicalMetrics
-from mriforge.shared.utils.sampling_masks import create_sampling_mask
+from spectramr.core.metrics.medical import MedicalMetrics
+from spectramr.shared.utils.sampling_masks import create_sampling_mask
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

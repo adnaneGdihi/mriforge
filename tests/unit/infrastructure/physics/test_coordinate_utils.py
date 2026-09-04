@@ -1,6 +1,6 @@
 """Tests for coordinate-sampling utilities (INR helpers).
 
-Targets ``mriforge.infrastructure.physics.coordinate_utils``. The
+Targets ``spectramr.infrastructure.physics.coordinate_utils``. The
 ``CoordinateSampler`` provides regular-grid, random-uniform, and
 ROI-restricted coordinate sampling for INR training.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.coordinate_utils import CoordinateSampler
+from spectramr.infrastructure.physics.coordinate_utils import CoordinateSampler
 
 
 # ---------------------------------------------------------------------------

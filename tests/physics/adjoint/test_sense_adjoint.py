@@ -41,7 +41,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
+from spectramr.infrastructure.physics.fft_ops import sense_adjoint, sense_forward
 from tests.utils.phantoms import random_complex
 from tests.utils.tolerances import tol_for
 
@@ -180,7 +180,7 @@ def test_sense_dot_product_adjoint(
 @pytest.mark.parametrize("shape", _SHAPES, ids=["x".join(str(d) for d in s) for s in _SHAPES])
 def test_sense_no_smaps_is_fft2c(shape: tuple[int, ...]) -> None:
     """sense_forward(x, smaps=None, mask=None) ≡ fft2c(x) (no-smaps path)."""
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     B, C, H, W = shape
     gen = torch.Generator()

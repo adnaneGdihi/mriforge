@@ -9,14 +9,14 @@ Tests the full MRI signal equation forward degradation operator:
 
 import torch
 
-from mriforge.infrastructure.physics.complex_forward_operator import (
+from spectramr.infrastructure.physics.complex_forward_operator import (
     ComplexForwardOperator,
     add_complex_noise,
     apply_b0_phase,
     apply_coil_sensitivity,
     apply_sampling_mask,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 
 class TestApplyCoilSensitivity:

@@ -5,8 +5,8 @@ from pathlib import Path
 
 import torch
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
 
 class TestCheckpointSerialization(unittest.TestCase):

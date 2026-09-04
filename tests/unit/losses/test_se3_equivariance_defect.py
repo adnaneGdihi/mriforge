@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
-from mriforge.models.losses.se3_equivariance_defect import SE3EquivarianceDefectLoss
+from spectramr.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
+from spectramr.models.losses.se3_equivariance_defect import SE3EquivarianceDefectLoss
 from tests.utils.optional_backends import requires_cuda_for_mamba
 
 
@@ -22,7 +22,7 @@ def equivariant_block() -> SE3LieAlgebraMambaBlock:
 
 
 def test_registered_in_loss_registry() -> None:
-    from mriforge.models.losses.registry import LossRegistry, create_loss
+    from spectramr.models.losses.registry import LossRegistry, create_loss
 
     assert "se3_equivariance_defect" in LossRegistry.list_available()
     loss = create_loss("se3_equivariance_defect")

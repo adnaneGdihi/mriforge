@@ -13,10 +13,10 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.enums import TrackingService
-from mriforge.config.schemas.logging import LoggingConfigSchema
-from mriforge.infrastructure.services import tensorboard_writer as tbw
-from mriforge.infrastructure.services.tensorboard_writer import (
+from spectramr.config.schemas.enums import TrackingService
+from spectramr.config.schemas.logging import LoggingConfigSchema
+from spectramr.infrastructure.services import tensorboard_writer as tbw
+from spectramr.infrastructure.services.tensorboard_writer import (
     TensorBoardWriter,
     resolve_event_dir,
 )

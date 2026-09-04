@@ -2,7 +2,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.base.base_model import BaseDiscriminator, BaseGenerator
+from spectramr.models.base.base_model import BaseDiscriminator, BaseGenerator
 
 
 class ConcreteGenerator(BaseGenerator):

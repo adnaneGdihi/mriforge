@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.inr.siren import FiLMLayer, SIRENWithFiLM
+from spectramr.models.inr.siren import FiLMLayer, SIRENWithFiLM
 
 
 def test_film_layer_is_identity_at_init() -> None:

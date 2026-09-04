@@ -32,7 +32,7 @@ def device() -> torch.device:
 @pytest.fixture
 def phantom_small(device: torch.device) -> torch.Tensor:
     """16×16 Shepp-Logan phantom for fast testing."""
-    from mriforge.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
+    from spectramr.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
 
     return shepp_logan_2d(size=16, device=device)
 
@@ -40,7 +40,7 @@ def phantom_small(device: torch.device) -> torch.Tensor:
 @pytest.fixture
 def phantom_medium(device: torch.device) -> torch.Tensor:
     """32×32 Shepp-Logan phantom for moderate tests."""
-    from mriforge.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
+    from spectramr.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
 
     return shepp_logan_2d(size=32, device=device)
 
@@ -48,7 +48,7 @@ def phantom_medium(device: torch.device) -> torch.Tensor:
 @pytest.fixture
 def b0_small(device: torch.device) -> torch.Tensor:
     """16×16 B₀ map with moderate inhomogeneity."""
-    from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+    from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
         simulate_halbach_b0,
     )
 
@@ -58,7 +58,7 @@ def b0_small(device: torch.device) -> torch.Tensor:
 @pytest.fixture
 def b0_medium(device: torch.device) -> torch.Tensor:
     """32×32 B₀ map with moderate inhomogeneity."""
-    from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+    from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
         simulate_halbach_b0,
     )
 
@@ -89,7 +89,7 @@ class TestSheppLogan:
         assert not torch.is_complex(phantom_small)
 
     def test_larger_resolution(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import shepp_logan_2d
 
         img = shepp_logan_2d(128, device=device)
         assert img.shape == (1, 1, 128, 128)
@@ -108,7 +108,7 @@ class TestHalbachB0:
         assert b0_small.shape == (1, 1, 16, 16)
 
     def test_centre_field_range(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             simulate_halbach_b0,
         )
 
@@ -118,7 +118,7 @@ class TestHalbachB0:
         assert b0.abs().max() > 100.0  # Should be non-trivial
 
     def test_off_centre_stronger(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             simulate_halbach_b0,
         )
 
@@ -131,7 +131,7 @@ class TestHalbachB0:
         assert b0_off.abs().max() > b0_centre.abs().max()
 
     def test_reproducible(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             simulate_halbach_b0,
         )
 
@@ -150,7 +150,7 @@ class TestTSESignalModel:
 
     def test_no_b0_roundtrip(self, device: torch.device) -> None:
         """With zero B₀, signal model should match DFT (approximately)."""
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             TSESignalModel,
             shepp_logan_2d,
         )
@@ -173,7 +173,7 @@ class TestTSESignalModel:
         assert kspace.abs().max() > 0.0
 
     def test_paired_data_shapes(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             TSESignalModel,
             shepp_logan_2d,
             simulate_halbach_b0,
@@ -193,7 +193,7 @@ class TestTSESignalModel:
         assert not torch.allclose(k1, k2)
 
     def test_noise_adds_variation(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.signal_models.tse_b0_model import (
+        from spectramr.infrastructure.physics.signal_models.tse_b0_model import (
             TSESignalModel,
             shepp_logan_2d,
         )
@@ -221,7 +221,7 @@ class TestB0Mapping:
 
     def test_known_phase_recovery(self, device: torch.device) -> None:
         """If we impose a known phase, the B₀ map should recover it."""
-        from mriforge.infrastructure.physics.b0_mapping import estimate_b0_tikhonov
+        from spectramr.infrastructure.physics.b0_mapping import estimate_b0_tikhonov
 
         H, W = 32, 32
         t_shift = 100e-6  # seconds
@@ -247,7 +247,7 @@ class TestB0Mapping:
         assert error_hz < 50.0, f"Mean B₀ error {error_hz:.1f} Hz too large"
 
     def test_output_shape(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.b0_mapping import estimate_b0_tikhonov
+        from spectramr.infrastructure.physics.b0_mapping import estimate_b0_tikhonov
 
         phi = torch.randn(1, 1, 16, 16, device=device)
         b0 = estimate_b0_tikhonov(phi, t_shift=100e-6)
@@ -255,7 +255,7 @@ class TestB0Mapping:
 
     def test_map_b0_pipeline(self, device: torch.device) -> None:
         """Test full pipeline: two complex images → B₀ map."""
-        from mriforge.infrastructure.physics.b0_mapping import map_b0
+        from spectramr.infrastructure.physics.b0_mapping import map_b0
 
         H, W = 16, 16
         # Two images with known phase relationship
@@ -281,7 +281,7 @@ class TestSphericalHarmonics:
 
     def test_exact_quadratic_fit(self, device: torch.device) -> None:
         """A quadratic field should be perfectly fitted by order-2 SH."""
-        from mriforge.infrastructure.physics.spherical_harmonics import (
+        from spectramr.infrastructure.physics.spherical_harmonics import (
             fit_spherical_harmonics,
         )
 
@@ -300,7 +300,7 @@ class TestSphericalHarmonics:
 
     def test_masked_fit_extrapolates(self, device: torch.device) -> None:
         """Fitting with a mask should still produce values outside the mask."""
-        from mriforge.infrastructure.physics.spherical_harmonics import (
+        from spectramr.infrastructure.physics.spherical_harmonics import (
             fit_spherical_harmonics,
         )
 
@@ -324,7 +324,7 @@ class TestSphericalHarmonics:
         assert fitted.squeeze()[outside].abs().max() > 0.0
 
     def test_coefficients_count(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.spherical_harmonics import (
+        from spectramr.infrastructure.physics.spherical_harmonics import (
             fit_spherical_harmonics,
         )
 
@@ -349,10 +349,10 @@ class TestCPR:
 
     def test_zero_b0_matches_fft(self, device: torch.device) -> None:
         """With B₀=0, CPR should approximate standard FFT reconstruction."""
-        from mriforge.infrastructure.physics.conjugate_phase import (
+        from spectramr.infrastructure.physics.conjugate_phase import (
             ConjugatePhaseReconstructor,
         )
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         H, W = 16, 16
         # Create a simple test image
@@ -375,10 +375,10 @@ class TestCPR:
         assert nrmse < 0.3, f"NRMSE {nrmse:.3f} too high for zero B₀"
 
     def test_output_shape(self, device: torch.device) -> None:
-        from mriforge.infrastructure.physics.conjugate_phase import (
+        from spectramr.infrastructure.physics.conjugate_phase import (
             ConjugatePhaseReconstructor,
         )
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         H, W = 16, 16
         image = torch.randn(1, 1, H, W, device=device, dtype=torch.complex64)
@@ -404,7 +404,7 @@ class TestSplitBregman:
 
     def test_identity_recovery(self, device: torch.device) -> None:
         """With identity encoding (E=I), should recover input."""
-        from mriforge.infrastructure.physics.optimizers.split_bregman import (
+        from spectramr.infrastructure.physics.optimizers.split_bregman import (
             SplitBregmanSolver,
         )
 
@@ -428,7 +428,7 @@ class TestSplitBregman:
 
     def test_tv_denoising(self, device: torch.device) -> None:
         """TV regularisation should smooth noisy input."""
-        from mriforge.infrastructure.physics.optimizers.split_bregman import (
+        from spectramr.infrastructure.physics.optimizers.split_bregman import (
             SplitBregmanSolver,
         )
 
@@ -469,7 +469,7 @@ class TestEncodingMatrix:
 
     def test_adjoint_consistency(self, device: torch.device) -> None:
         """Test that <Ex, y> ≈ <x, E†y> (adjoint property)."""
-        from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+        from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
 
         N = 8
         enc = EncodingMatrixBuilder(
@@ -501,8 +501,8 @@ class TestIterativeRecon:
 
     def test_fft_baseline_runs(self, device: torch.device) -> None:
         """FFT mode should run without errors."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.infrastructure.physics.iterative_recon import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.iterative_recon import (
             IterativeReconstructor,
             ReconMethod,
         )
@@ -527,8 +527,8 @@ class TestIterativeRecon:
 
     def test_cpr_iterative_runs(self, device: torch.device) -> None:
         """CPR mode should run 2 iterations without errors."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.infrastructure.physics.iterative_recon import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.iterative_recon import (
             IterativeReconstructor,
             ReconMethod,
         )

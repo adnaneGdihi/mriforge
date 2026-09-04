@@ -13,11 +13,11 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
-from mriforge.infrastructure.training.optimizer_resolution import (
+from spectramr.infrastructure.training.optimizer_resolution import (
     OptimizerConfigurationError,
     resolve_optimizer_spec,
 )
@@ -32,8 +32,8 @@ def _registry_names() -> set[str]:
     ``OPTIMIZER_ALIASES`` normalises them onto a canonical entry, so testing
     both spellings tests the same class twice.
     """
-    from mriforge.config.schemas.enums import OPTIMIZER_NAMES
-    from mriforge.infrastructure.training.optimizer_registry import OptimizerRegistry
+    from spectramr.config.schemas.enums import OPTIMIZER_NAMES
+    from spectramr.infrastructure.training.optimizer_registry import OptimizerRegistry
 
     return set(OptimizerRegistry.list_available()) & OPTIMIZER_NAMES
 
@@ -242,7 +242,7 @@ class TestGradScalerIsNoLongerFabricated:
     """
 
     def test_it_is_a_chainable_no_op(self):
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -252,7 +252,7 @@ class TestGradScalerIsNoLongerFabricated:
         assert builder._scaler is None
 
     def test_it_does_not_touch_an_explicitly_set_scaler(self):
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -267,7 +267,7 @@ class TestGradScalerIsNoLongerFabricated:
         about which scaler a resume restores."""
         import inspect
 
-        from mriforge.infrastructure.builders.directors import checkpoint_director
+        from spectramr.infrastructure.builders.directors import checkpoint_director
 
         source = inspect.getsource(checkpoint_director)
         assert source.count("def _resolve_scaler") == 1
@@ -282,7 +282,7 @@ class TestTheStandInDoesNotDivergeFromTheSchema:
     """
 
     def test_the_real_schema_resolves_the_same_spec_as_the_stand_in(self) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         real = OptimizationConfigSchema(
             optimizer={"type": "adamw", "learning_rate": 5e-5, "eps": 1e-4}
@@ -294,7 +294,7 @@ class TestTheStandInDoesNotDivergeFromTheSchema:
     def test_the_stand_in_mirrors_where_the_schema_puts_each_knob(self) -> None:
         """Anti-drift: a knob added to `_OPTIMIZER_KNOBS` that the schema does
         NOT carry on `optimizer:` would make the stand-in a fiction."""
-        from mriforge.config.schemas.optimization import (
+        from spectramr.config.schemas.optimization import (
             OptimizationConfigSchema,
             OptimizerConfigSchema,
         )
@@ -367,7 +367,7 @@ class TestCreateSingleOptimizerHonoursTheRegistryTable:
         and never saw it. A dropped knob leaves the arm on library defaults
         while the call site reads as though it configured them.
         """
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.infrastructure.training.optimizer_registry import (
             accepted_optimizer_kwargs,
         )
 

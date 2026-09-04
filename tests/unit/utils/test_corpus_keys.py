@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.renames import RENAMES
+from spectramr.config.schemas.renames import RENAMES
 from tests.utils.corpus_keys import legacy_spellings, read_key, spelling_used
 
 # A record that is genuinely `fold` today. Resolved from the table rather than

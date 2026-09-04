@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.performance_optimizer import (
+from spectramr.infrastructure.performance_optimizer import (
     MemoryEfficientTrainer,
     PerformanceOptimizer,
     get_performance_optimizer,
@@ -22,7 +22,7 @@ class DummyModel(nn.Module):
         return self.seq(self.conv(x))
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_performance_optimizer_init(mock_resolve):
     config = {
         "amp": {"enabled": True},
@@ -36,7 +36,7 @@ def test_performance_optimizer_init(mock_resolve):
     assert opt.scaler is not None
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_auto_tune_batch_size_returns_max_without_cuda(mock_resolve):
     """Without CUDA, auto_tune short-circuits to max_batch_size. Regression guard
     for the single-guard cleanup (the duplicate ``if not cuda: return`` removed)."""
@@ -46,7 +46,7 @@ def test_auto_tune_batch_size_returns_max_without_cuda(mock_resolve):
     assert opt.auto_tune_batch_size(DummyModel(), max_batch_size=17) == 17
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_apply_gradient_checkpointing(mock_resolve):
     config = {"gradient_checkpointing": {"enabled": True}}
     opt = PerformanceOptimizer(config)
@@ -67,7 +67,7 @@ def test_apply_gradient_checkpointing(mock_resolve):
     assert cm.applied is True
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_optimize_memory_usage(mock_resolve):
     config = {"memory_optimization": {"enabled": True}}
     opt = PerformanceOptimizer(config)
@@ -79,12 +79,12 @@ def test_optimize_memory_usage(mock_resolve):
     opt.optimize_memory_usage(model)
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 @patch(
-    "mriforge.infrastructure.performance_optimizer.torch.cuda.is_available",
+    "spectramr.infrastructure.performance_optimizer.torch.cuda.is_available",
     return_value=False,
 )
-@patch("mriforge.infrastructure.performance_optimizer.psutil.virtual_memory")
+@patch("spectramr.infrastructure.performance_optimizer.psutil.virtual_memory")
 def test_get_memory_stats_cpu(mock_vm, mock_cuda, mock_resolve):
     mock_mem = MagicMock()
     mock_mem.percent = 50.0
@@ -100,9 +100,9 @@ def test_get_memory_stats_cpu(mock_vm, mock_cuda, mock_resolve):
     assert len(opt.memory_history) == 1
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 @patch(
-    "mriforge.infrastructure.performance_optimizer.torch.cuda.is_available",
+    "spectramr.infrastructure.performance_optimizer.torch.cuda.is_available",
     return_value=False,
 )
 def test_profile_model(mock_cuda, mock_resolve):
@@ -117,9 +117,9 @@ def test_profile_model(mock_cuda, mock_resolve):
     assert len(opt.metrics_history) == 1
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 @patch(
-    "mriforge.infrastructure.performance_optimizer.torch.cuda.is_available",
+    "spectramr.infrastructure.performance_optimizer.torch.cuda.is_available",
     return_value=False,
 )
 def test_auto_tune_batch_size_cpu(mock_cuda, mock_resolve):
@@ -130,7 +130,7 @@ def test_auto_tune_batch_size_cpu(mock_cuda, mock_resolve):
     assert res == 16
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_optimize_model_for_inference(mock_resolve):
     opt = PerformanceOptimizer()
     model = DummyModel()
@@ -139,7 +139,7 @@ def test_optimize_model_for_inference(mock_resolve):
     assert not model.training
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_memory_efficient_trainer_gradient_flow(mock_resolve):
     # CRITICAL AUDIT: Check gradient flow through the training step
     config = {
@@ -177,11 +177,11 @@ def test_memory_efficient_trainer_gradient_flow(mock_resolve):
     assert model[0].weight.grad is None
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_autocast_context_uses_device_type_no_deprecation(mock_resolve):
     """INFRA-MISC-001: autocast_context must call torch.amp.autocast with a
     device_type so it does not emit the deprecated no-arg DeprecationWarning
-    (promoted to an error for mriforge.*).
+    (promoted to an error for spectramr.*).
     """
     import warnings
 
@@ -195,14 +195,14 @@ def test_autocast_context_uses_device_type_no_deprecation(mock_resolve):
             pass  # must not raise a DeprecationWarning
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_autocast_context_passes_resolved_device_type(mock_resolve):
     """INFRA-MISC-001: the resolved device.type is forwarded to torch.amp.autocast."""
     config = {"amp": {"enabled": True}}
     opt = PerformanceOptimizer(config)
 
     with patch(
-        "mriforge.infrastructure.performance_optimizer.torch.amp.autocast"
+        "spectramr.infrastructure.performance_optimizer.torch.amp.autocast"
     ) as mock_autocast:
         with opt.autocast_context():
             pass
@@ -210,7 +210,7 @@ def test_autocast_context_passes_resolved_device_type(mock_resolve):
     mock_autocast.assert_called_once_with(opt.device.type)
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_memory_efficient_trainer_zero_grad_set_to_none(mock_resolve):
     """INFRA-MISC-002: training_step must call zero_grad(set_to_none=True)."""
     config = {"amp": {"enabled": False}}
@@ -238,10 +238,10 @@ def test_performance_monitor():
     assert dummy_task() == "done"
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_get_performance_optimizer_singleton(mock_resolve):
     # test caching behavior. The getter is deprecated (dormant module,
-    # 2026-07-01) and the repo's filterwarnings promotes mriforge
+    # 2026-07-01) and the repo's filterwarnings promotes spectramr
     # DeprecationWarnings to errors — consume it explicitly.
     with pytest.warns(DeprecationWarning, match="dormant"):
         opt1 = get_performance_optimizer()
@@ -250,7 +250,7 @@ def test_get_performance_optimizer_singleton(mock_resolve):
     assert opt1 is opt2
 
 
-@patch("mriforge.infrastructure.performance_optimizer.resolve_service")
+@patch("spectramr.infrastructure.performance_optimizer.resolve_service")
 def test_get_performance_optimizer_is_deprecated(mock_resolve):
     """2026-07-01: the module is dormant (no training-path consumer); the
     getter must warn and point adopters at the live ModelBuilder.compile()
@@ -276,6 +276,6 @@ def test_create_optimized_data_loader_is_deleted():
 def test_module_no_longer_imports_dataloader():
     """The import went with the method; a lingering one invites a re-add and
     would be flagged by scripts/ci/check_dataloader_construction_ssot.py."""
-    from mriforge.infrastructure import performance_optimizer
+    from spectramr.infrastructure import performance_optimizer
 
     assert not hasattr(performance_optimizer, "DataLoader")

@@ -15,10 +15,10 @@ from pathlib import Path
 def test_main_has_args_func_fallback() -> None:
     src = (
         Path(__file__).resolve().parents[3]
-        / "src" / "mriforge" / "cli" / "app.py"
+        / "src" / "spectramr" / "cli" / "app.py"
     ).read_text()
     assert 'hasattr(args, "func")' in src or "hasattr(args, 'func')" in src, (
-        "src/mriforge/cli/app.py:main no longer guards `args.func`. A subcommand "
+        "src/spectramr/cli/app.py:main no longer guards `args.func`. A subcommand "
         "parser that omits set_defaults(func=...) would crash with "
         "AttributeError — see audit 15 F5."
     )

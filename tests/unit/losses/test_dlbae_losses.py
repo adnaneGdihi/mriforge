@@ -1,7 +1,7 @@
 r"""Unit tests for the DL-BAE objective terms.
 
-Targets ``mriforge.models.losses.image.multifield_data_consistency`` and
-``mriforge.models.losses.dispersion_monotonicity_loss``.
+Targets ``spectramr.models.losses.image.multifield_data_consistency`` and
+``spectramr.models.losses.dispersion_monotonicity_loss``.
 
 The data-consistency term is what forces one field-invariant latent to explain
 *every* field, so it must genuinely aggregate across the field axis rather than
@@ -15,8 +15,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.dispersion_monotonicity_loss import DispersionMonotonicity
-from mriforge.models.losses.image.multifield_data_consistency import (
+from spectramr.models.losses.dispersion_monotonicity_loss import DispersionMonotonicity
+from spectramr.models.losses.image.multifield_data_consistency import (
     MultiFieldDataConsistency,
 )
 

@@ -1,6 +1,6 @@
 """Tests for ``BlochConsistencyLoss``.
 
-Targets ``mriforge.models.losses.bloch_consistency_loss``. The loss anchors
+Targets ``spectramr.models.losses.bloch_consistency_loss``. The loss anchors
 generator-predicted tissue parameters to observed contrast images by
 re-synthesising the contrast through ``MultiPhysicsBlochLayer`` and
 comparing against the measured target.
@@ -17,8 +17,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.multi_physics_bloch import MultiPhysicsBlochLayer
-from mriforge.models.losses.bloch_consistency_loss import BlochConsistencyLoss
+from spectramr.infrastructure.physics.multi_physics_bloch import MultiPhysicsBlochLayer
+from spectramr.models.losses.bloch_consistency_loss import BlochConsistencyLoss
 
 
 # ---------------------------------------------------------------------------
@@ -135,6 +135,6 @@ def test_forward_shape_mismatch_raises() -> None:
 
 def test_bloch_consistency_registered() -> None:
     """``bloch_consistency`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "bloch_consistency" in list_available()

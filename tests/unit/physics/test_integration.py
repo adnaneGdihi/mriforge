@@ -22,12 +22,12 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.integration import (
+from spectramr.infrastructure.physics.integration import (
     BlochEquationSolver,
     CoilSensitivityEstimator,
     create_physics_operator,
 )
-from mriforge.infrastructure.physics.implementations import FFT2DOperator
+from spectramr.infrastructure.physics.implementations import FFT2DOperator
 
 
 def _kspace_real_last(b: int, c: int, h: int, w: int) -> torch.Tensor:
@@ -117,6 +117,6 @@ class TestCreatePhysicsOperatorRegistry:
             create_physics_operator("totally_unknown_operator")
 
     def test_registration_fires_on_import(self):
-        from mriforge.infrastructure.physics.registry import list_operators
+        from spectramr.infrastructure.physics.registry import list_operators
 
         assert "fft2d" in list_operators()

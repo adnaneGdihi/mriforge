@@ -1,7 +1,7 @@
 """PMPS Phase-0 tests — Bloch round-trip at 64 mT + concomitant correction.
 
 These tests exercise the concomitant-aware Bloch forward pass added in
-:mod:`mriforge.infrastructure.physics.differentiable_bloch` for the PMPS
+:mod:`spectramr.infrastructure.physics.differentiable_bloch` for the PMPS
 plan (Phase 0 = Idea 1).
 
 What we verify here:
@@ -26,11 +26,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.differentiable_bloch import (  # noqa: E402
+from spectramr.infrastructure.physics.differentiable_bloch import (  # noqa: E402
     DifferentiableBlochLayer,
     _resolve_include_concomitant,
 )
-from mriforge.infrastructure.physics.maxwell_concomitant import (  # noqa: E402
+from spectramr.infrastructure.physics.maxwell_concomitant import (  # noqa: E402
     maxwell_concomitant_field_hz,
 )
 

@@ -14,17 +14,17 @@ import pathlib
 
 import torch
 
-from mriforge.infrastructure.training.mixed_precision import (
+from spectramr.infrastructure.training.mixed_precision import (
     MixedPrecisionIntegrationHelper,
 )
 
 _SOURCE = pathlib.Path(
-    "src/mriforge/infrastructure/training/mixed_precision.py"
+    "src/spectramr/infrastructure/training/mixed_precision.py"
 )
 
 
 def _config(**over: object):
-    from mriforge.infrastructure.training.mixed_precision import MixedPrecisionConfig
+    from spectramr.infrastructure.training.mixed_precision import MixedPrecisionConfig
 
     return MixedPrecisionConfig(**over)
 

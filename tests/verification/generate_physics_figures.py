@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-from mriforge.shared.utils.mask_generator import MaskGenerator, MaskType
+from spectramr.shared.utils.mask_generator import MaskGenerator, MaskType
 
 
 def save_mask_figure(mask, name, acceleration, output_dir):

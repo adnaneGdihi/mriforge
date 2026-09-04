@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.gradient_entropy_loss import GradientEntropyLoss
+from spectramr.models.losses.gradient_entropy_loss import GradientEntropyLoss
 
 
 def test_returns_scalar_requiring_grad_and_backward():
@@ -45,7 +45,7 @@ def test_accepts_complex_input_via_magnitude():
 
 
 def test_registered_in_image_domain():
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.registry import create_loss
 
     inst = create_loss("gradient_entropy")
     assert isinstance(inst, GradientEntropyLoss)

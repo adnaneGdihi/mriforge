@@ -1,6 +1,6 @@
 """Tests for ``ClinicalTrustAnalyzer`` and the noise-floor estimator.
 
-Targets ``mriforge.infrastructure.physics.clinical_trust_analyzer``.
+Targets ``spectramr.infrastructure.physics.clinical_trust_analyzer``.
 
 Categories:
 
@@ -19,12 +19,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+from spectramr.infrastructure.physics.clinical_trust_analyzer import (
     ClinicalTrustAnalyzer,
     TrustAnalysisResult,
     estimate_noise_floor,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 # ---------------------------------------------------------------------------

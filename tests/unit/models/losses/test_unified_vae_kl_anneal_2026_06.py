@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import types
 
-from mriforge.models.losses.computers.unified_vae import UnifiedVAELossComputer
+from spectramr.models.losses.computers.unified_vae import UnifiedVAELossComputer
 
 
 def _computer(vae_ns) -> UnifiedVAELossComputer:

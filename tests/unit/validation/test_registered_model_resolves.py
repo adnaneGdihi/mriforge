@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.config_health_checker import (  # noqa: E402
+from spectramr.infrastructure.validation.config_health_checker import (  # noqa: E402
     ConfigHealthChecker,
 )
 
@@ -63,7 +63,7 @@ def test_abstract_class_is_rejected(monkeypatch) -> None:
     """A registry entry pointing at an abstract class fails the resolve check."""
     import abc
 
-    from mriforge.models import registry as reg
+    from spectramr.models import registry as reg
 
     class _AbstractModel(abc.ABC):
         @abc.abstractmethod

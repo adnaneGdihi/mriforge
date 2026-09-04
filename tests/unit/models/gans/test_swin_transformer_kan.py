@@ -1,4 +1,4 @@
-"""Regression tests for ``mriforge.models.gans.swin_transformer_kan``.
+"""Regression tests for ``spectramr.models.gans.swin_transformer_kan``.
 
 The registered ``swin_kan_transformer`` headline mechanisms are the KAN
 feed-forward and the windowed attention. Both constructors used to wrap
@@ -15,13 +15,13 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.gans.swin_transformer_kan import (  # noqa: E402
+from spectramr.models.gans.swin_transformer_kan import (  # noqa: E402
     KANFeedForward,
     KanSwinBlock,
     SimpleWindowAttention,
     SwinKANGAN,
 )
-from mriforge.models.layers.kan.kan_convs.kans.kan import KAN  # noqa: E402
+from spectramr.models.layers.kan.kan_convs.kans.kan import KAN  # noqa: E402
 
 
 class TestKANFeedForwardMechanismFires:
@@ -49,7 +49,7 @@ class TestKANFeedForwardMechanismFires:
             raise RuntimeError("KAN construction failed")
 
         monkeypatch.setattr(
-            "mriforge.models.gans.swin_transformer_kan.KAN",
+            "spectramr.models.gans.swin_transformer_kan.KAN",
             _boom,
         )
         with pytest.raises(RuntimeError, match="KAN construction failed"):

@@ -29,12 +29,12 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies import ib_vf_strategy
-from mriforge.infrastructure.training.strategies.ib_vf_strategy import (
+from spectramr.infrastructure.training.strategies import ib_vf_strategy
+from spectramr.infrastructure.training.strategies.ib_vf_strategy import (
     IBVFTrainingStrategy,
 )
-from mriforge.models.encoders.nav_encoder_1d import NavEncoder1D
-from mriforge.models.losses.infonce_critic import InfoNCECritic
+from spectramr.models.encoders.nav_encoder_1d import NavEncoder1D
+from spectramr.models.losses.infonce_critic import InfoNCECritic
 
 
 def _env_with_opt() -> types.SimpleNamespace:
@@ -140,7 +140,7 @@ def test_ib_vf_block_coerces_from_raw_dict():
     'beta_plus'" once the misplaced ``infonce_critic`` image-loss was removed
     (cluster smoke 20260605, job 7095209). This pins that the loader-shaped
     dict round-trips through the SSOT schema the strategy coerces to."""
-    from mriforge.config.schemas.training.vf_advanced import IBVFConfig
+    from spectramr.config.schemas.training.vf_advanced import IBVFConfig
 
     raw = {
         "beta_plus": 1.0,

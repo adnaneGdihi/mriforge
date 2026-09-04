@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.operator_id.operator_posterior import (  # noqa: E402
+from spectramr.models.operator_id.operator_posterior import (  # noqa: E402
     laplace_posterior,
     operator_posterior_std,
     sample_operators,

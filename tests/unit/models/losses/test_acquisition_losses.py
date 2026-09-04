@@ -14,11 +14,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.acquisition_losses import (
+from spectramr.models.losses.acquisition_losses import (
     GradientHardwareComplianceLoss,
     HamiltonianEnergyConservationLoss,
 )
-from mriforge.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.registry import LossRegistry, create_loss
 
 
 def test_losses_registered_as_physics_domain():

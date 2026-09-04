@@ -20,10 +20,10 @@ import logging
 import pytest
 import torch
 
-from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
     ColdDiffusionInferenceStrategy,
 )
-from mriforge.models.diffusion.kspace_process import PhysicsInformedColdDiffusion
+from spectramr.models.diffusion.kspace_process import PhysicsInformedColdDiffusion
 
 REVERSE_MODES = ("additive", "replace_freeze", "replace_freeze_dc")
 
@@ -146,7 +146,7 @@ class TestSamplerDeterminism:
         Re/Im channels, which under-reads the modulus by up to sqrt(2) and so
         asserted a bound the clamp was never actually enforcing (issue #1281).
         """
-        from mriforge.models.diffusion.kspace_process import paired_magnitude
+        from spectramr.models.diffusion.kspace_process import paired_magnitude
 
         measurement, mask = _inputs()
         diffusion = _diffusion(

@@ -125,7 +125,7 @@ class _LossAutoMock(MagicMock):
 
 def _build_env(strategy_key: str, device: torch.device) -> MagicMock:
     """Thin re-use of the convergence env builder pattern."""
-    from mriforge.infrastructure.training.builders.optimization_builder import (
+    from spectramr.infrastructure.training.builders.optimization_builder import (
         OptimizationBuilder,
     )
 
@@ -232,7 +232,7 @@ def _build_env(strategy_key: str, device: torch.device) -> MagicMock:
 def _load_strategy(key: str) -> type | None:
     """Load strategy class or return None on ImportError."""
     try:
-        from mriforge.infrastructure.training.strategy_factory import (  # noqa: PLC0415
+        from spectramr.infrastructure.training.strategy_factory import (  # noqa: PLC0415
             TrainingStrategyFactory,
         )
 

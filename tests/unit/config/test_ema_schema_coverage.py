@@ -61,13 +61,13 @@ KNOWN_EMA_SCHEMA_ONLY = {
 
 
 def _make_minimal_settings_with_ema(**ema_kwargs):
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.config.schemas.ema import EMAConfigSchema
-    from mriforge.config.schemas.logging import LoggingConfigSchema
-    from mriforge.config.schemas.metrics import MetricsConfigSchema
-    from mriforge.config.schemas.model import ModelConfigSchema
-    from mriforge.config.schemas.optimization import OptimizationConfigSchema
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.ema import EMAConfigSchema
+    from spectramr.config.schemas.logging import LoggingConfigSchema
+    from spectramr.config.schemas.metrics import MetricsConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.optimization import OptimizationConfigSchema
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(
         model=ModelConfigSchema(),
@@ -89,7 +89,7 @@ class TestEMASchemaFieldCoverage:
 
     def test_no_new_ema_schema_only_fields(self):
         """All EMAConfigSchema fields must be either CONSUMED or KNOWN_EMA_SCHEMA_ONLY."""
-        from mriforge.config.schemas.ema import EMAConfigSchema
+        from spectramr.config.schemas.ema import EMAConfigSchema
 
         all_fields = set(EMAConfigSchema.model_fields.keys())
         all_known = CONSUMED_EMA_FIELDS | KNOWN_EMA_SCHEMA_ONLY
@@ -105,8 +105,8 @@ class TestEMASchemaFieldCoverage:
         """Pinning count of EMA schema-only fields — should only decrease."""
         import inspect
 
-        from mriforge.config.schemas.ema import EMAConfigSchema
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.config.schemas.ema import EMAConfigSchema
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         src = inspect.getsource(ModelBuilder.build_ema)
         all_fields = set(EMAConfigSchema.model_fields.keys())
@@ -128,7 +128,7 @@ class TestEMASchemaFieldCoverage:
 
     def test_known_schema_only_fields_exist_in_schema(self):
         """KNOWN_EMA_SCHEMA_ONLY must reference real schema fields (no stale entries)."""
-        from mriforge.config.schemas.ema import EMAConfigSchema
+        from spectramr.config.schemas.ema import EMAConfigSchema
 
         all_fields = set(EMAConfigSchema.model_fields.keys())
         stale = KNOWN_EMA_SCHEMA_ONLY - all_fields
@@ -148,7 +148,7 @@ class TestEMABuilderExecution:
 
     def test_ema_disabled_creates_nothing(self):
         """build_ema() with enabled=False must not create ModelEma."""
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         cfg = _make_minimal_settings_with_ema(enabled=False)
         builder = ModelBuilder(config=cfg, device="cpu")
@@ -171,7 +171,7 @@ class TestEMABuilderExecution:
         """build_ema() with enabled=True must create a ModelEma wrapper."""
         import torch.nn as nn
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         cfg = _make_minimal_settings_with_ema(enabled=True, decay=0.999)
         builder = ModelBuilder(config=cfg, device="cpu")
@@ -191,7 +191,7 @@ class TestEMABuilderExecution:
         """The `decay` field must be forwarded to ModelEma, not hardcoded."""
         import torch.nn as nn
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         cfg = _make_minimal_settings_with_ema(enabled=True, decay=0.99)
         builder = ModelBuilder(config=cfg, device="cpu")
@@ -222,7 +222,7 @@ class TestEMABuilderExecution:
         """
         import inspect
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         src = inspect.getsource(ModelBuilder.build_ema)
         assert "update_frequency" not in src, (
@@ -297,7 +297,7 @@ class TestValidationSchemaFieldCoverage:
 
     def test_all_validation_fields_classified(self):
         """All ValidationConfigSchema fields must be in CONSUMED or SCHEMA_ONLY."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         all_fields = set(ValidationConfigSchema.model_fields.keys())
         known = self.CONSUMED_VALIDATION_FIELDS | self.KNOWN_SCHEMA_ONLY_VALIDATION

@@ -24,35 +24,35 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.adversarial_robustness_strategy import (
+from spectramr.infrastructure.training.strategies.adversarial_robustness_strategy import (
     AdversarialRobustnessStrategy,
 )
-from mriforge.infrastructure.training.strategies.bloch_consistent_denoising_strategy import (
+from spectramr.infrastructure.training.strategies.bloch_consistent_denoising_strategy import (
     BlochConsistentDenoisingStrategy,
 )
-from mriforge.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
     CrossContrastKspaceDiffusionStrategy,
 )
-from mriforge.infrastructure.training.strategies.field_probe_coupled_strategy import (
+from spectramr.infrastructure.training.strategies.field_probe_coupled_strategy import (
     FieldProbeCoupledStrategy,
 )
-from mriforge.infrastructure.training.strategies.girf_aware_strategy import (
+from spectramr.infrastructure.training.strategies.girf_aware_strategy import (
     GIRFAwareStrategy,
 )
-from mriforge.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
-from mriforge.infrastructure.training.strategies.bald_acquisition_strategy import (
+from spectramr.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
+from spectramr.infrastructure.training.strategies.bald_acquisition_strategy import (
     BALDAcquisitionStrategy,
 )
-from mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy import (
+from spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy import (
     InverseBlochPhaseStrategy,
 )
-from mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
+from spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
     SyntheticPathologyAugStrategy,
 )
-from mriforge.infrastructure.training.strategies.edm_training_strategy import (
+from spectramr.infrastructure.training.strategies.edm_training_strategy import (
     EDMTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.kspace_inr_strategy import (
+from spectramr.infrastructure.training.strategies.kspace_inr_strategy import (
     KSpaceINRStrategy,
 )
 

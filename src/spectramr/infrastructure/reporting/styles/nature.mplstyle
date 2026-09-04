@@ -1,0 +1,39 @@
+# Nature-style Matplotlib defaults for spectramr reports.
+# Loaded by spectramr.infrastructure.reporting.style.use_default_style("nature").
+font.family: sans-serif
+font.sans-serif: Helvetica, Arial, DejaVu Sans, Bitstream Vera Sans
+font.size: 7
+axes.labelsize: 7
+axes.titlesize: 7
+xtick.labelsize: 6
+ytick.labelsize: 6
+legend.fontsize: 6
+figure.titlesize: 8
+
+axes.linewidth: 0.5
+axes.edgecolor: 222222
+axes.spines.top: False
+axes.spines.right: False
+axes.grid: False
+
+xtick.direction: out
+ytick.direction: out
+xtick.major.width: 0.5
+ytick.major.width: 0.5
+xtick.major.size: 2.5
+ytick.major.size: 2.5
+
+lines.linewidth: 1.0
+lines.markersize: 3.0
+errorbar.capsize: 1.5
+
+legend.frameon: False
+
+savefig.format: pdf
+savefig.bbox: tight
+savefig.pad_inches: 0.01
+savefig.dpi: 600
+
+axes.prop_cycle: cycler('color', ['000000', 'E69F00', '56B4E9', '009E73', 'F0E442', '0072B2', 'D55E00', 'CC79A7'])
+
+image.cmap: viridis

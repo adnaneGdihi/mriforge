@@ -15,16 +15,16 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.schemas.training.hamiltonian_acquisition import (
+from spectramr.config.schemas.training.hamiltonian_acquisition import (
     HamiltonianAcquisitionConfig,
 )
-from mriforge.infrastructure.training.strategies.hamiltonian_acquisition_strategy import (
+from spectramr.infrastructure.training.strategies.hamiltonian_acquisition_strategy import (
     HamiltonianAcquisitionStrategy,
 )
-from mriforge.models.acquisition.hamiltonian_trajectory_generator import (
+from spectramr.models.acquisition.hamiltonian_trajectory_generator import (
     HamiltonianTrajectoryGenerator,
 )
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: F401  (import side effects)
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: F401  (import side effects)
 
 
 def _loss_comp(name, weight=1.0, enabled=True):

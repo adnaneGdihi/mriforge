@@ -13,10 +13,10 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.chd import dkw_slack
-from mriforge.infrastructure.calibration.score_registry import resolve_calibration_score
-from mriforge.infrastructure.calibration.scores import kappa_residual, null_energy
-from mriforge.infrastructure.calibration.trust_certificate import (
+from spectramr.infrastructure.calibration.chd import dkw_slack
+from spectramr.infrastructure.calibration.score_registry import resolve_calibration_score
+from spectramr.infrastructure.calibration.scores import kappa_residual, null_energy
+from spectramr.infrastructure.calibration.trust_certificate import (
     TrustCalibrationArtifact,
     confident_fabrication_flag,
     fit_trust_calibration,

@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.diffusion.samplers import get_sampler, list_available
-from mriforge.models.diffusion.samplers.posterior_samplers import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.diffusion.samplers import get_sampler, list_available
+from spectramr.models.diffusion.samplers.posterior_samplers import (
     DDSReconSampler,
     DDSSampler,
     DPSSampler,

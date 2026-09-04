@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     MetaEvaluationPipeline,
     resolve_eval_mode,
 )
-from mriforge.core.metrics.meta_evaluation.pipeline import MetaEvaluationPipeline as Pipe
-from mriforge.core.metrics.meta_evaluation.simulator import SimulatorConfig
+from spectramr.core.metrics.meta_evaluation.pipeline import MetaEvaluationPipeline as Pipe
+from spectramr.core.metrics.meta_evaluation.simulator import SimulatorConfig
 
 
 def _pipeline(**kw) -> MetaEvaluationPipeline:
@@ -120,7 +120,7 @@ def test_transfer_certificate_joint_tv_failure_is_logged_not_swallowed(
     # marginal-max TV, which UNDER-estimates the joint TV and certifies MORE pairs
     # (an optimistic certificate). The fallback must still produce a certificate
     # (never abort) BUT the downgrade must be AUDITABLE — a named warning.
-    import mriforge.core.metrics.meta_evaluation.pipeline as pipeline_mod
+    import spectramr.core.metrics.meta_evaluation.pipeline as pipeline_mod
 
     def _boom(*_a, **_k):
         raise RuntimeError("joint estimator exploded")

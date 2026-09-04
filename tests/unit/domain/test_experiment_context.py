@@ -6,7 +6,7 @@ import dataclasses
 
 import pytest
 
-from mriforge.domain.entities.experiment_context import (
+from spectramr.domain.entities.experiment_context import (
     DataProfile,
     PhysicsProfile,
     ResolvedExperimentContext,

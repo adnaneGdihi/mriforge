@@ -24,8 +24,8 @@ from collections.abc import Callable
 
 import torchio as tio
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-from mriforge.data.transforms.augmentation_factory import TorchIOAugmentationFactory
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.data.transforms.augmentation_factory import TorchIOAugmentationFactory
 
 BuildFn = Callable[[AugmentationConfigSchema, str], "tio.Compose | None"]
 

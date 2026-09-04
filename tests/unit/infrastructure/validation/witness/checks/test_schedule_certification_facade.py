@@ -19,15 +19,15 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.validation.witness import get_witness_registry
-from mriforge.infrastructure.validation.witness.checks import (
+from spectramr.infrastructure.validation.witness import get_witness_registry
+from spectramr.infrastructure.validation.witness.checks import (
     schedule_allocation_checks,
     schedule_nesting_checks,
 )
-from mriforge.infrastructure.validation.witness.checks import (
+from spectramr.infrastructure.validation.witness.checks import (
     schedule_certification_checks as facade,
 )
-from mriforge.infrastructure.validation.witness.checks import (
+from spectramr.infrastructure.validation.witness.checks import (
     schedule_certification_common as common,
 )
 

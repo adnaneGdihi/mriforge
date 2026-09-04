@@ -16,7 +16,7 @@ import pathlib
 
 import pytest
 
-from mriforge.config.schemas.loader import (
+from spectramr.config.schemas.loader import (
     _derive_coil_processing_from_legacy,
     _sync_coil_processing_to_legacy,
 )
@@ -185,7 +185,7 @@ def test_sync_creates_data_block_when_absent():
 
 
 def test_sync_does_not_warn():
-    """The sync must be silent — mriforge.* DeprecationWarnings are errors in
+    """The sync must be silent — spectramr.* DeprecationWarnings are errors in
     tests, so a warning here would break every legacy config that loads."""
     import warnings
 
@@ -223,7 +223,7 @@ def test_no_shipped_arm_pairs_m4raw_with_svd():
     while the YAML advertised compression. Now it fails loud, which means any arm
     still carrying the pairing is a train-time crash rather than a quiet lie.
 
-    This sweep is the guard: ``mriforge audit`` is Tier 0/1 static and does NOT
+    This sweep is the guard: ``spectramr audit`` is Tier 0/1 static and does NOT
     catch the pairing, so without it a regrown arm passes pre-flight and dies
     only after cluster submission.
     """

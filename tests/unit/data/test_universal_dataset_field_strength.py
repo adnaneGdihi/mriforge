@@ -24,7 +24,7 @@ import pytest
 torch = pytest.importorskip("torch")
 tio = pytest.importorskip("torchio")
 
-from mriforge.data.datasets.universal_dataset import (  # noqa: E402
+from spectramr.data.datasets.universal_dataset import (  # noqa: E402
     UniversalMRIDataset,
     resolve_field_strength,
 )

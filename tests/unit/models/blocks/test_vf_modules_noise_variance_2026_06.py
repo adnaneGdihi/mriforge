@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.blocks.vf_modules import NoiseVarianceEstimator
+from spectramr.models.blocks.vf_modules import NoiseVarianceEstimator
 
 
 def test_vectorized_matches_per_batch_loop() -> None:

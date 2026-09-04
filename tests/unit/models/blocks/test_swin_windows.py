@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.swin_windows import (
+from spectramr.models.blocks.swin_windows import (
     ShiftedWindowMaskCache,
     build_shifted_window_mask,
     padded_resolution,

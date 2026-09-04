@@ -33,7 +33,7 @@ class _Subj(dict):
 
 
 def test_scout_transform_emits_separate_scout_preserving_input() -> None:
-    from mriforge.data.transforms.scout_acquisition import ScoutAcquisitionTransform
+    from spectramr.data.transforms.scout_acquisition import ScoutAcquisitionTransform
 
     inp = torch.randn(1, 64, 64)
     subj = _Subj({"input": _Img(inp.clone())})
@@ -55,7 +55,7 @@ def test_scout_transform_emits_separate_scout_preserving_input() -> None:
 
 
 def test_reconstruction_mixin_propagates_scout_key() -> None:
-    from mriforge.infrastructure.training.strategies.mixins import reconstruction
+    from spectramr.infrastructure.training.strategies.mixins import reconstruction
 
     src = inspect.getsource(reconstruction)
     assert '"scout": ["scout"]' in src

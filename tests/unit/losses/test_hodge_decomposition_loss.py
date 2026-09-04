@@ -11,10 +11,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.hodge_decomposition_loss import (
+from spectramr.models.losses.hodge_decomposition_loss import (
     HodgeDecompositionLoss,
 )
-from mriforge.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.registry import LossRegistry, create_loss
 
 
 def _grid(h: int = 16, w: int = 16) -> tuple[torch.Tensor, torch.Tensor]:

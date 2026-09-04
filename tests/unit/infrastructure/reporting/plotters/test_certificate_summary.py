@@ -9,7 +9,7 @@ data-present and data-absent branches must render.
 
 import json
 
-from mriforge.infrastructure.reporting.plotters import certificate_summary
+from spectramr.infrastructure.reporting.plotters import certificate_summary
 
 
 def test_certificate_summary_renders_with_r1(tmp_path):

@@ -13,10 +13,10 @@ import types
 
 import pytest
 
-from mriforge.config.schemas.training.hamiltonian_acquisition import (
+from spectramr.config.schemas.training.hamiltonian_acquisition import (
     HamiltonianAcquisitionConfig,
 )
-from mriforge.infrastructure.training.strategies.hamiltonian_acquisition_strategy import (  # noqa: E501
+from spectramr.infrastructure.training.strategies.hamiltonian_acquisition_strategy import (  # noqa: E501
     HamiltonianAcquisitionStrategy,
 )
 

@@ -43,7 +43,7 @@ def test_phase2_signature_module_exists_and_computes() -> None:
     load. Until CheckpointService and DataPipelineDirector are wired in,
     those remain xfail. But the building block they depend on lives now.
     """
-    from mriforge.data.transforms.signature import compute_transform_signature
+    from spectramr.data.transforms.signature import compute_transform_signature
 
     sig = compute_transform_signature(None)
     assert isinstance(sig, str)
@@ -55,7 +55,7 @@ def test_phase2_signature_module_exists_and_computes() -> None:
 def test_phase2_diff_signatures_helper_exists() -> None:
     """``diff_signatures`` is what ``modes.infer.strict_train_parity``
     will consult at inference load. Pin the API surface."""
-    from mriforge.data.transforms.signature import diff_signatures
+    from spectramr.data.transforms.signature import diff_signatures
 
     assert diff_signatures(None, None) is None
     assert diff_signatures("a" * 64, "a" * 64) is None
@@ -65,8 +65,8 @@ def test_phase2_diff_signatures_helper_exists() -> None:
 def test_phase2_inference_tiling_module_exists() -> None:
     """Grid tiling wrappers exist — paradigm strategies can opt in
     via ``supports_grid_tiling: bool``."""
-    from mriforge.data.builders.inference_tiling import build_grid_inference_handle
-    from mriforge.data.builders.inference_tiling_audit import (
+    from spectramr.data.builders.inference_tiling import build_grid_inference_handle
+    from spectramr.data.builders.inference_tiling_audit import (
         check_grid_tiling_supported,
     )
 
@@ -88,8 +88,8 @@ def test_compute_infer_signature_hashes_the_val_chain() -> None:
     """
     import tempfile
 
-    from mriforge.config.schemas.data import DataConfigSchema, DataSourceConfigSchema
-    from mriforge.data.transforms.signature import compute_infer_signature
+    from spectramr.config.schemas.data import DataConfigSchema, DataSourceConfigSchema
+    from spectramr.data.transforms.signature import compute_infer_signature
 
     with tempfile.TemporaryDirectory() as td:
         data = DataConfigSchema(
@@ -120,14 +120,14 @@ def test_checkpoint_records_transform_signature(tmp_path) -> None:
     in the saved state dict alongside model weights.
 
     The signature is consulted at inference load time by
-    :func:`mriforge.data.transforms.signature.diff_signatures` (when
+    :func:`spectramr.data.transforms.signature.diff_signatures` (when
     ``modes.infer.strict_train_parity: true``).
     """
     import torch
     from torch import nn
 
-    from mriforge.data.transforms.signature import compute_transform_signature
-    from mriforge.infrastructure.services.checkpoint_service import (
+    from spectramr.data.transforms.signature import compute_transform_signature
+    from spectramr.infrastructure.services.checkpoint_service import (
         CheckpointService,
     )
 
@@ -144,7 +144,7 @@ def test_checkpoint_records_transform_signature(tmp_path) -> None:
     signature = compute_transform_signature([t])
     assert len(signature) == 64
 
-    from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+    from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
     cfg = CheckpointConfigSchema(checkpoint_dir=str(tmp_path), format="pth")
     svc = CheckpointService(cfg)
@@ -172,11 +172,11 @@ def test_checkpoint_omits_signature_when_not_provided(tmp_path) -> None:
     import torch
     from torch import nn
 
-    from mriforge.infrastructure.services.checkpoint_service import (
+    from spectramr.infrastructure.services.checkpoint_service import (
         CheckpointService,
     )
 
-    from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+    from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
     model = nn.Linear(4, 4)
     cfg = CheckpointConfigSchema(checkpoint_dir=str(tmp_path), format="pth")
@@ -200,7 +200,7 @@ def test_inference_dataset_class_still_exists() -> None:
     failure (the class disappears or is removed) so we notice when
     the parity story changes.
     """
-    from mriforge.data.datasets.inference_dataset import InferenceDataset
+    from spectramr.data.datasets.inference_dataset import InferenceDataset
 
     assert InferenceDataset is not None, (
         "InferenceDataset removed? Phase 2 migration may be in progress — "
@@ -213,7 +213,7 @@ def test_train_and_val_transform_builders_exist() -> None:
     via two methods on TorchIOTransformBuilder. The Phase-3 schema
     (data.modes.*) will subsume this by adding ``build_transforms(mode=...)``.
     """
-    from mriforge.data.builders.torchio_transform_builder import TorchIOTransformBuilder
+    from spectramr.data.builders.torchio_transform_builder import TorchIOTransformBuilder
 
     assert hasattr(TorchIOTransformBuilder, "build_train_transforms")
     assert hasattr(TorchIOTransformBuilder, "build_val_transforms")

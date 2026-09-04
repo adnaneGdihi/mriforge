@@ -26,7 +26,7 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-STRATEGY = REPO / "src" / "mriforge" / "infrastructure" / "training" / "strategies" / "pma_varnet_strategy.py"
+STRATEGY = REPO / "src" / "spectramr" / "infrastructure" / "training" / "strategies" / "pma_varnet_strategy.py"
 
 
 def _read() -> str:

@@ -9,15 +9,15 @@ from __future__ import annotations
 
 import os
 
-os.environ.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+os.environ.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
 
 import math
 
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.physics.subpixel_registration import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.subpixel_registration import (
     estimate_subpixel_shifts,
     fourier_shift,
 )
@@ -238,7 +238,7 @@ class TestNDimAndPhysicalUnits:
         """`fft_ops` has no centred 3-D transform, so the convention is extended
         inside this module. That is only safe if the 2-D case is IDENTICAL to the
         SSOT, otherwise the codebase would carry two centring conventions."""
-        from mriforge.infrastructure.physics.subpixel_registration import (
+        from spectramr.infrastructure.physics.subpixel_registration import (
             centred_fft,
         )
 
@@ -309,7 +309,7 @@ def test_centred_transforms_are_public_and_round_trip() -> None:
     """``band_partition`` needs the same centring convention. Exporting these
     rather than re-deriving them is what keeps ONE convention in the tree: a
     second, subtly different centred FFT is how a codebase ends up with two."""
-    from mriforge.infrastructure.physics.subpixel_registration import (
+    from spectramr.infrastructure.physics.subpixel_registration import (
         centred_fft,
         centred_freqs,
         centred_ifft,

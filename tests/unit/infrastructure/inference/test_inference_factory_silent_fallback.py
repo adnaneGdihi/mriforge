@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.inference.inference_factory import (
+from spectramr.infrastructure.inference.inference_factory import (
     InferenceStrategyFactory,
 )
 
@@ -56,7 +56,7 @@ def test_unknown_strategy_error_lists_known_types() -> None:
 
 def test_ssl_strategy_is_now_registered() -> None:
     """SSLInferenceStrategy is reachable via the canonical factory path."""
-    from mriforge.infrastructure.inference.ssl_inference_strategy import (
+    from spectramr.infrastructure.inference.ssl_inference_strategy import (
         SSLInferenceStrategy,
     )
 
@@ -66,7 +66,7 @@ def test_ssl_strategy_is_now_registered() -> None:
     # entries are present by source inspection.
     import inspect
 
-    from mriforge.infrastructure.inference import inference_factory
+    from spectramr.infrastructure.inference import inference_factory
 
     src = inspect.getsource(inference_factory)
     assert "SSLInferenceStrategy" in src
@@ -77,13 +77,13 @@ def test_ssl_strategy_is_now_registered() -> None:
 
 def test_multi_inference_strategy_is_now_registered() -> None:
     """MultiInferenceStrategy is reachable via the canonical factory path."""
-    from mriforge.infrastructure.inference.multi_inference_strategy import (
+    from spectramr.infrastructure.inference.multi_inference_strategy import (
         MultiInferenceStrategy,
     )
 
     import inspect
 
-    from mriforge.infrastructure.inference import inference_factory
+    from spectramr.infrastructure.inference import inference_factory
 
     src = inspect.getsource(inference_factory)
     assert "MultiInferenceStrategy" in src
@@ -101,7 +101,7 @@ def test_known_strategy_type_instantiates() -> None:
         strategy_type="reconstruction",
     )
     # It must be a real BaseInferenceStrategy subclass instance.
-    from mriforge.infrastructure.inference.base_inference_strategy import (
+    from spectramr.infrastructure.inference.base_inference_strategy import (
         BaseInferenceStrategy,
     )
 

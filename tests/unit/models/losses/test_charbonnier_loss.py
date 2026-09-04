@@ -1,6 +1,6 @@
 """Tests for ``CharbonnierLoss``.
 
-Targets ``mriforge.models.losses.charbonnier_loss``. The Charbonnier penalty
+Targets ``spectramr.models.losses.charbonnier_loss``. The Charbonnier penalty
 is a smooth-L1 surrogate: ``sqrt((pred - target)² + ε²)``. It approaches
 L1 for large residuals and L2 for small ones — bounded gradient at zero.
 Standard pixel-loss for SR / unrolled MRI reconstruction.
@@ -13,7 +13,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
 
 # ---------------------------------------------------------------------------
@@ -161,7 +161,7 @@ def test_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_loss_registered_under_alias() -> None:
     """The ``@register_loss`` decorator registers the canonical name."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     available = list_available()
     assert "charbonnier" in available, (

@@ -1,6 +1,6 @@
 r"""Tests for ``BlochSignalSynthesisConsistencyLoss``.
 
-Targets ``mriforge.models.losses.bloch_signal_synthesis_consistency_loss``
+Targets ``spectramr.models.losses.bloch_signal_synthesis_consistency_loss``
 (idea 10 §10.2 / §10.6).
 
 Plan acceptance criterion (§10.6):
@@ -25,7 +25,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.bloch_signal_synthesis_consistency_loss import (
+from spectramr.models.losses.bloch_signal_synthesis_consistency_loss import (
     BlochSignalSynthesisConsistencyLoss,
     split_t1_t2_pd,
 )
@@ -228,6 +228,6 @@ def test_gradient_flows_to_all_three_maps() -> None:
 
 def test_registered() -> None:
     """``bloch_signal_synthesis_consistency`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "bloch_signal_synthesis_consistency" in list_available()

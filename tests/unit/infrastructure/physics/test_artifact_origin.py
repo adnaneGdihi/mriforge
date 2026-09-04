@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from mriforge.config.schemas.enums import ArtifactOrigin
-from mriforge.infrastructure.physics.digital_twin_extensions import (
+from spectramr.config.schemas.enums import ArtifactOrigin
+from spectramr.infrastructure.physics.digital_twin_extensions import (
     DEGRADATION_REGISTRY,
     get_degradation_origin,
     list_degradations,

@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-from mriforge.models.generators.kspace_cold_diffusion_generator import FourierBridgeNetwork
-from mriforge.models.reconstruction.unet import UNetConfig
+from spectramr.models.generators.kspace_cold_diffusion_generator import FourierBridgeNetwork
+from spectramr.models.reconstruction.unet import UNetConfig
 
 
 def test_fourier_bridge_network_complex_input_handling():

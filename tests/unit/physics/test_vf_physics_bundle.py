@@ -89,15 +89,15 @@ class TestDigitalTwinExtensionsCanary:
     """Canary — import + basic list check."""
 
     def test_import(self):
-        from mriforge.infrastructure.physics import digital_twin_extensions  # noqa: F401
+        from spectramr.infrastructure.physics import digital_twin_extensions  # noqa: F401
 
     def test_list_degradations_nonempty(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import list_degradations
+        from spectramr.infrastructure.physics.digital_twin_extensions import list_degradations
         names = list_degradations()
         assert len(names) > 0
 
     def test_apply_degradation_unknown_raises(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import apply_degradation
+        from spectramr.infrastructure.physics.digital_twin_extensions import apply_degradation
         x = _real_image()
         with pytest.raises(KeyError, match="Unknown degradation"):
             apply_degradation("not_a_real_degradation", x, theta=0.5)
@@ -109,7 +109,7 @@ class TestDegradeSamplingShape:
     """Sanity-shape: sampling degradations preserve shape."""
 
     def test_cartesian_undersamp_shape(self, H, W):
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_cartesian_undersampling,
         )
         x = _complex_image(B=1, C=1, H=H, W=W)
@@ -117,7 +117,7 @@ class TestDegradeSamplingShape:
         assert out.shape == x.shape
 
     def test_variable_density_2d_shape(self, H, W):
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_variable_density_2d,
         )
         x = _complex_image(B=1, C=1, H=H, W=W)
@@ -125,7 +125,7 @@ class TestDegradeSamplingShape:
         assert out.shape == x.shape
 
     def test_radial_undersamp_shape(self, H, W):
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_radial_undersampling,
         )
         x = _complex_image(B=1, C=1, H=H, W=W)
@@ -139,7 +139,7 @@ class TestDegradeNoise:
 
     def test_complex_gaussian_theta_zero_identity(self):
         """theta=0 → nearly no noise."""
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_complex_gaussian_noise,
         )
         x = _real_image()
@@ -148,13 +148,13 @@ class TestDegradeNoise:
         assert out.shape == xc.shape
 
     def test_rician_theta_zero_identity(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_rician_noise
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_rician_noise
         x = _real_image()
         out = degrade_rician_noise(x, theta=0.0, seed=0)
         assert torch.allclose(out, x.abs(), atol=1e-5)
 
     def test_rician_theta_one_noisy(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_rician_noise
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_rician_noise
         x = _real_image()
         out = degrade_rician_noise(x, theta=1.0, seed=0)
         # Rician noise should change the image
@@ -166,45 +166,45 @@ class TestDegradeFieldEffects:
     """D8, D11, D12, D13, D17, D18, D20 field/geometric degradations."""
 
     def test_nyquist_ghost_theta_zero_unchanged(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_nyquist_ghost
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_nyquist_ghost
         x = _complex_image()
         out = degrade_nyquist_ghost(x, theta=0.0)
         # theta=0 → zero phase → output should match input
         assert torch.allclose(out.abs(), x.abs(), atol=1e-5)
 
     def test_nyquist_ghost_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_nyquist_ghost
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_nyquist_ghost
         x = _complex_image(B=2, C=1)
         out = degrade_nyquist_ghost(x, theta=0.5)
         assert out.shape == x.shape
 
     def test_bias_field_theta_zero_identity(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_bias_field
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_bias_field
         x = _complex_image()
         out = degrade_bias_field(x, theta=0.0, seed=0)
         # theta=0 → log_b=0 → bias=1 → identity
         assert torch.allclose(out.abs(), x.abs(), atol=1e-5)
 
     def test_bias_field_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_bias_field
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_bias_field
         x = _complex_image(B=2, C=1)
         out = degrade_bias_field(x, theta=0.5, seed=99)
         assert out.shape == x.shape
 
     def test_t2star_blur_theta_zero_identity(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_t2star_blur
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_t2star_blur
         x = _real_image()
         out = degrade_t2star_blur(x, theta=0.0)
         assert torch.allclose(out, x.float(), atol=1e-5)
 
     def test_t2star_blur_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_t2star_blur
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_t2star_blur
         x = _real_image(B=2, C=3)
         out = degrade_t2star_blur(x, theta=0.5)
         assert out.shape == x.shape
 
     def test_slice_pve_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_slice_thickness_pve,
         )
         x = _real_image(B=2, C=2)
@@ -212,7 +212,7 @@ class TestDegradeFieldEffects:
         assert out.shape == x.shape
 
     def test_coil_miscal_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_coil_sensitivity_miscal,
         )
         x = _complex_image(B=2, C=1)
@@ -220,19 +220,19 @@ class TestDegradeFieldEffects:
         assert out.shape == x.shape
 
     def test_geometric_warp_theta_zero_nearidentity(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_geometric_warp
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_geometric_warp
         x = _complex_image()
         out = degrade_geometric_warp(x, theta=0.0, seed=0)
         assert out.shape == x.shape
 
     def test_susceptibility_raises_bad_b0_axis(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_susceptibility
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_susceptibility
         x = _complex_image()
         with pytest.raises(ValueError, match="b0_axis must be"):
             degrade_susceptibility(x, theta=0.5, b0_axis="z")
 
     def test_susceptibility_raises_bad_slice_plane(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_susceptibility
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_susceptibility
         x = _complex_image()
         with pytest.raises(ValueError, match="slice_plane must be"):
             degrade_susceptibility(x, theta=0.5, slice_plane="transverse")
@@ -243,20 +243,20 @@ class TestDegradeMotion:
     """D7, pulsatile motion — shape and determinism."""
 
     def test_pulsatile_motion_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
         x = _complex_image(B=2, C=1)
         out = degrade_pulsatile_motion(x, theta=0.5, seed=0)
         assert out.shape == x.shape
 
     def test_pulsatile_motion_theta_zero_near_identity(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
         x = _complex_image()
         out = degrade_pulsatile_motion(x, theta=0.0, seed=0)
         # theta=0 → amp=0 → grid_sample(x, identity_grid)
         assert torch.allclose(out.abs(), x.abs(), atol=1e-4)
 
     def test_pulsatile_deterministic(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_pulsatile_motion
         x = _complex_image()
         out1 = degrade_pulsatile_motion(x, theta=0.5, seed=123)
         out2 = degrade_pulsatile_motion(x, theta=0.5, seed=123)
@@ -268,32 +268,32 @@ class TestDegradeWave3:
     """Wave-3 (partial Fourier, IQ ghost, stimulated echo, slice profile)."""
 
     def test_partial_fourier_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_partial_fourier
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_partial_fourier
         x = _complex_image(B=1, C=1, H=16, W=16)
         out = degrade_partial_fourier(x, theta=0.5, axis="ky")
         assert out.shape == x.shape
 
     def test_partial_fourier_invalid_axis_raises(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_partial_fourier
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_partial_fourier
         x = _complex_image()
         with pytest.raises(ValueError, match="axis must be"):
             degrade_partial_fourier(x, theta=0.5, axis="kz")
 
     def test_iq_ghost_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_iq_ghost
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_iq_ghost
         x = _complex_image(B=2, C=1)
         out = degrade_iq_ghost(x, theta=0.5, seed=0)
         assert out.shape == x.shape
 
     def test_stimulated_echo_shape(self):
-        from mriforge.infrastructure.physics.digital_twin_extensions import degrade_stimulated_echo
+        from spectramr.infrastructure.physics.digital_twin_extensions import degrade_stimulated_echo
         x = _complex_image(B=1, C=1)
         out = degrade_stimulated_echo(x, theta=0.5, seed=0)
         assert out.shape == x.shape
 
     def test_slice_profile_axis_removed(self):
         """#245: D27 (slice_profile) was a byte-for-byte duplicate of D12."""
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             list_degradations,
         )
 
@@ -311,7 +311,7 @@ class TestApplyDegradationRegistry:
         "partial_fourier", "iq_ghost", "stimulated_echo",
     ])
     def test_apply_degradation_runs(self, name):
-        from mriforge.infrastructure.physics.digital_twin_extensions import apply_degradation
+        from spectramr.infrastructure.physics.digital_twin_extensions import apply_degradation
         x = _real_image(B=1, C=1, H=16, W=16)
         out = apply_degradation(name, x, theta=0.3, seed=1)
         assert out.shape == x.shape
@@ -325,12 +325,12 @@ class TestApplyDegradationRegistry:
 @pytest.mark.physics
 class TestGNLUnwarpingOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
+        from spectramr.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
         op = GNLUnwarpingOperator(im_size=(16, 16))
         assert op is not None
 
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
+        from spectramr.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
         op = GNLUnwarpingOperator(im_size=(_H, _W))
         image = _real_image(B=2)
         flow = torch.zeros(1, 2, _H, _W)
@@ -338,7 +338,7 @@ class TestGNLUnwarpingOperatorCanary:
         assert out.shape == image.shape
 
     def test_zero_flow_near_identity(self):
-        from mriforge.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
+        from spectramr.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
         op = GNLUnwarpingOperator(im_size=(_H, _W))
         image = _real_image()
         flow = torch.zeros(1, 2, _H, _W)
@@ -347,7 +347,7 @@ class TestGNLUnwarpingOperatorCanary:
         assert torch.allclose(out, image, atol=1e-5)
 
     def test_estimate_deformation_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
+        from spectramr.infrastructure.physics.vf_corrections import GNLUnwarpingOperator
         op = GNLUnwarpingOperator(im_size=(_H, _W))
         N = 6
         true_pos = torch.rand(N, 2)
@@ -359,12 +359,12 @@ class TestGNLUnwarpingOperatorCanary:
 @pytest.mark.physics
 class TestBiasFieldCorrectorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_corrections import BiasFieldCorrector
+        from spectramr.infrastructure.physics.vf_corrections import BiasFieldCorrector
         bc = BiasFieldCorrector(smooth_sigma=3.0)
         assert bc is not None
 
     def test_uniform_bias_preserves_signal(self):
-        from mriforge.infrastructure.physics.vf_corrections import BiasFieldCorrector
+        from spectramr.infrastructure.physics.vf_corrections import BiasFieldCorrector
         bc = BiasFieldCorrector(smooth_sigma=3.0)
         image = _real_image()
         bias = torch.ones(1, 1, _H, _W)
@@ -373,7 +373,7 @@ class TestBiasFieldCorrectorCanary:
 
     def test_zero_bias_raises_or_clips(self):
         """All-zero bias should not produce NaN (corrector clamps min to 1e-4)."""
-        from mriforge.infrastructure.physics.vf_corrections import BiasFieldCorrector
+        from spectramr.infrastructure.physics.vf_corrections import BiasFieldCorrector
         bc = BiasFieldCorrector(smooth_sigma=3.0)
         image = _real_image()
         bias = torch.zeros(1, 1, _H, _W)
@@ -384,14 +384,14 @@ class TestBiasFieldCorrectorCanary:
 @pytest.mark.physics
 class TestAnalyticalPSFSolverCanary:
     def test_import_and_estimate_psf_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import AnalyticalPSFSolver
+        from spectramr.infrastructure.physics.vf_corrections import AnalyticalPSFSolver
         solver = AnalyticalPSFSolver(cross_size=6, cross_width=2)
         marker_image = _real_image()
         psf = solver.estimate_psf(marker_image, cross_center=(_H // 2, _W // 2))
         assert psf.shape == (1, 1, _H, _W)
 
     def test_deconvolve_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import AnalyticalPSFSolver
+        from spectramr.infrastructure.physics.vf_corrections import AnalyticalPSFSolver
         solver = AnalyticalPSFSolver()
         image = _real_image(B=2, C=1)
         psf = torch.zeros(1, 1, _H, _W)
@@ -403,12 +403,12 @@ class TestAnalyticalPSFSolverCanary:
 @pytest.mark.physics
 class TestEPINyquistGhostCorrectorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
+        from spectramr.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
         op = EPINyquistGhostCorrector(im_size=(_H, _W))
         assert op is not None
 
     def test_zero_phase_error_identity(self):
-        from mriforge.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
+        from spectramr.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
         op = EPINyquistGhostCorrector(im_size=(_H, _W))
         kspace = _complex_image(B=1, C=1)
         phi0 = torch.zeros(1)
@@ -418,7 +418,7 @@ class TestEPINyquistGhostCorrectorCanary:
         assert torch.allclose(out, kspace)
 
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
+        from spectramr.infrastructure.physics.vf_corrections import EPINyquistGhostCorrector
         op = EPINyquistGhostCorrector(im_size=(_H, _W))
         kspace = _complex_image(B=2, C=1)
         phi0 = torch.zeros(2)
@@ -430,12 +430,12 @@ class TestEPINyquistGhostCorrectorCanary:
 @pytest.mark.physics
 class TestSENSEGFactorCalibratorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_corrections import SENSEGFactorCalibrator
+        from spectramr.infrastructure.physics.vf_corrections import SENSEGFactorCalibrator
         cal = SENSEGFactorCalibrator(num_coils=4, acceleration=2)
         assert cal is not None
 
     def test_compute_g_factor_shape_and_nonneg(self):
-        from mriforge.infrastructure.physics.vf_corrections import SENSEGFactorCalibrator
+        from spectramr.infrastructure.physics.vf_corrections import SENSEGFactorCalibrator
         C = 4
         cal = SENSEGFactorCalibrator(num_coils=C, acceleration=2)
         # Random complex coil sensitivities
@@ -453,14 +453,14 @@ class TestSENSEGFactorCalibratorCanary:
 @pytest.mark.physics
 class TestRespiratoryBinningAveragerCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import RespiratoryBinningAverager
+        from spectramr.infrastructure.physics.vf_corrections import RespiratoryBinningAverager
         avg = RespiratoryBinningAverager(num_bins=4)
         frames = _real_image(B=4, C=1)  # 4 bins
         out = avg(frames)
         assert out.shape == (1, 1, _H, _W)
 
     def test_bin_by_phase(self):
-        from mriforge.infrastructure.physics.vf_corrections import RespiratoryBinningAverager
+        from spectramr.infrastructure.physics.vf_corrections import RespiratoryBinningAverager
         avg = RespiratoryBinningAverager(num_bins=4)
         N = 20
         kspace_lines = torch.randn(N, _W)
@@ -473,7 +473,7 @@ class TestRespiratoryBinningAveragerCanary:
 @pytest.mark.physics
 class TestSubVoxelSuperResolutionCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_corrections import SubVoxelSuperResolution
+        from spectramr.infrastructure.physics.vf_corrections import SubVoxelSuperResolution
         sr = SubVoxelSuperResolution(upscale_factor=2, num_iters=2)
         N = 4
         H_lr, W_lr = 8, 8
@@ -491,7 +491,7 @@ class TestSubVoxelSuperResolutionCanary:
 @pytest.mark.physics
 class TestMarkerB0FromDisplacementCanary:
     def test_import_and_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB0FromDisplacement
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB0FromDisplacement
         N_markers = 3
         true_pos = torch.rand(N_markers, 2)
         op = MarkerB0FromDisplacement(true_pos, pe_bandwidth=30.0)
@@ -502,7 +502,7 @@ class TestMarkerB0FromDisplacementCanary:
         assert b0.shape == (1, 1, _H, _W)
 
     def test_zero_image_gives_zero_b0(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB0FromDisplacement
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB0FromDisplacement
         true_pos = torch.tensor([[4.0, 4.0]])
         op = MarkerB0FromDisplacement(true_pos)
         zero_image = torch.zeros(1, 1, _H, _W)
@@ -515,7 +515,7 @@ class TestMarkerB0FromDisplacementCanary:
 @pytest.mark.physics
 class TestMarkerB0FromDualEchoCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
         op = MarkerB0FromDualEcho(delta_te=0.00246)
         echo1 = _complex_image()
         echo2 = _complex_image()
@@ -523,14 +523,14 @@ class TestMarkerB0FromDualEchoCanary:
         assert b0.shape == echo1.shape
 
     def test_identical_echoes_zero_b0(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
         op = MarkerB0FromDualEcho(delta_te=0.001)
         echo = _complex_image()
         b0 = op(echo, echo)
         assert torch.allclose(b0, torch.zeros_like(b0), atol=1e-5)
 
     def test_mask_applied(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB0FromDualEcho
         op = MarkerB0FromDualEcho(delta_te=0.001)
         echo1 = _complex_image()
         echo2 = _complex_image()
@@ -544,7 +544,7 @@ class TestMarkerB0FromDualEchoCanary:
 @pytest.mark.physics
 class TestMarkerB1TransmitDoubleAngleCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import (
+        from spectramr.infrastructure.physics.vf_field_extraction import (
             MarkerB1TransmitDoubleAngle,
         )
         op = MarkerB1TransmitDoubleAngle(t1_marker=300.0, tr=50.0, nominal_alpha=30.0)
@@ -555,7 +555,7 @@ class TestMarkerB1TransmitDoubleAngleCanary:
 
     def test_equal_signals_gives_alpha_pi_over_3(self):
         """S_2α / (2·S_α) = 0.5 → arccos(0.5) = π/3 for 30° nominal."""
-        from mriforge.infrastructure.physics.vf_field_extraction import (
+        from spectramr.infrastructure.physics.vf_field_extraction import (
             MarkerB1TransmitDoubleAngle,
         )
         op = MarkerB1TransmitDoubleAngle(nominal_alpha=30.0)
@@ -567,7 +567,7 @@ class TestMarkerB1TransmitDoubleAngleCanary:
 @pytest.mark.physics
 class TestMarkerB1TransmitAFICanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB1TransmitAFI
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB1TransmitAFI
         op = MarkerB1TransmitAFI(t1_marker=300.0, tr1=20.0, tr2=100.0)
         s1 = _real_image()
         s2 = _real_image()
@@ -578,14 +578,14 @@ class TestMarkerB1TransmitAFICanary:
 @pytest.mark.physics
 class TestMarkerB1ReceiveInversionCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB1ReceiveInversion
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB1ReceiveInversion
         op = MarkerB1ReceiveInversion()
         signal = _real_image()
         b1_minus = op(signal)
         assert b1_minus.shape == signal.shape
 
     def test_mask_zeroes_outside(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import MarkerB1ReceiveInversion
+        from spectramr.infrastructure.physics.vf_field_extraction import MarkerB1ReceiveInversion
         op = MarkerB1ReceiveInversion()
         signal = _real_image()
         mask = _vf_mask()
@@ -597,7 +597,7 @@ class TestMarkerB1ReceiveInversionCanary:
 @pytest.mark.physics
 class TestLarmorDriftTrackerCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import LarmorDriftTracker
+        from spectramr.infrastructure.physics.vf_field_extraction import LarmorDriftTracker
         tracker = LarmorDriftTracker(reference_freq_hz=0.0)
         N = 32
         signal = torch.complex(torch.randn(N), torch.randn(N))
@@ -609,7 +609,7 @@ class TestLarmorDriftTrackerCanary:
 @pytest.mark.physics
 class TestSusceptibilityB0SolverCanary:
     def test_forward_shape_and_finite(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import SusceptibilityB0Solver
+        from spectramr.infrastructure.physics.vf_field_extraction import SusceptibilityB0Solver
         solver = SusceptibilityB0Solver(b0_tesla=0.064)
         chi_map = torch.zeros(1, 1, _H, _W)
         chi_map[0, 0, 4:8, 4:8] = 9.05  # ppm step
@@ -618,7 +618,7 @@ class TestSusceptibilityB0SolverCanary:
         assert torch.isfinite(b0_hz).all()
 
     def test_zero_chi_gives_small_b0(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import SusceptibilityB0Solver
+        from spectramr.infrastructure.physics.vf_field_extraction import SusceptibilityB0Solver
         solver = SusceptibilityB0Solver()
         chi_map = torch.zeros(1, 1, _H, _W)
         b0_hz = solver(chi_map)
@@ -628,7 +628,7 @@ class TestSusceptibilityB0SolverCanary:
 @pytest.mark.physics
 class TestBlochSiegertB1EstimatorCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import BlochSiegertB1Estimator
+        from spectramr.infrastructure.physics.vf_field_extraction import BlochSiegertB1Estimator
         est = BlochSiegertB1Estimator(omega_off_hz=4000.0)
         s_pos = _complex_image()
         s_neg = _complex_image()
@@ -636,7 +636,7 @@ class TestBlochSiegertB1EstimatorCanary:
         assert b1.shape == s_pos.shape
 
     def test_identical_signals_gives_nonneg(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import BlochSiegertB1Estimator
+        from spectramr.infrastructure.physics.vf_field_extraction import BlochSiegertB1Estimator
         est = BlochSiegertB1Estimator()
         s = _complex_image()
         b1 = est(s, s)
@@ -646,7 +646,7 @@ class TestBlochSiegertB1EstimatorCanary:
 @pytest.mark.physics
 class TestSSFPBandingB0EstimatorCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import SSFPBandingB0Estimator
+        from spectramr.infrastructure.physics.vf_field_extraction import SSFPBandingB0Estimator
         est = SSFPBandingB0Estimator(tr_s=0.005)
         ssfp = _real_image()
         mask = _vf_mask()
@@ -657,7 +657,7 @@ class TestSSFPBandingB0EstimatorCanary:
 @pytest.mark.physics
 class TestSTEAMSpinEchoB1EstimatorCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import STEAMSpinEchoB1Estimator
+        from spectramr.infrastructure.physics.vf_field_extraction import STEAMSpinEchoB1Estimator
         est = STEAMSpinEchoB1Estimator(nominal_flip_deg=90.0)
         steam = _real_image()
         se = _real_image()
@@ -666,7 +666,7 @@ class TestSTEAMSpinEchoB1EstimatorCanary:
 
     def test_ratio_half_gives_near_unity_b1(self):
         """For 90° nominal: STE/SE = sin²(45°) = 0.5 → actual = π/2 → scale = 1.0."""
-        from mriforge.infrastructure.physics.vf_field_extraction import STEAMSpinEchoB1Estimator
+        from spectramr.infrastructure.physics.vf_field_extraction import STEAMSpinEchoB1Estimator
         est = STEAMSpinEchoB1Estimator(nominal_flip_deg=90.0)
         se = torch.ones(1, 1, _H, _W)
         steam = se * 0.5  # ratio = 0.5 → arcsin(√0.5) = π/4 → actual = π/2
@@ -677,7 +677,7 @@ class TestSTEAMSpinEchoB1EstimatorCanary:
 @pytest.mark.physics
 class TestK0PhaseDriftTrackerCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import K0PhaseDriftTracker
+        from spectramr.infrastructure.physics.vf_field_extraction import K0PhaseDriftTracker
         tracker = K0PhaseDriftTracker(te=0.01)
         T = 8
         ks_ts = _complex_image(B=T, C=1)
@@ -685,7 +685,7 @@ class TestK0PhaseDriftTrackerCanary:
         assert drift.shape[0] == T or drift.numel() == T
 
     def test_constant_phase_zero_drift(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import K0PhaseDriftTracker
+        from spectramr.infrastructure.physics.vf_field_extraction import K0PhaseDriftTracker
         tracker = K0PhaseDriftTracker(te=0.01)
         T = 4
         # All timepoints identical → no drift
@@ -698,7 +698,7 @@ class TestK0PhaseDriftTrackerCanary:
 @pytest.mark.physics
 class TestPhaseUnwrappingSeedCanary:
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_field_extraction import PhaseUnwrappingSeed
+        from spectramr.infrastructure.physics.vf_field_extraction import PhaseUnwrappingSeed
         op = PhaseUnwrappingSeed(known_b0_at_marker=0.0, te=0.01)
         wrapped = torch.zeros(1, 1, _H, _W)
         mask = _vf_mask()
@@ -707,7 +707,7 @@ class TestPhaseUnwrappingSeedCanary:
 
     def test_already_unwrapped_unchanged(self):
         """If phase is well within [-π, π] and no wraps, the result should be near-identical."""
-        from mriforge.infrastructure.physics.vf_field_extraction import PhaseUnwrappingSeed
+        from spectramr.infrastructure.physics.vf_field_extraction import PhaseUnwrappingSeed
         op = PhaseUnwrappingSeed(known_b0_at_marker=0.0, te=0.01)
         # Small-amplitude field, no wraps
         phase = 0.1 * torch.sin(torch.linspace(0, 1, _H)).view(-1, 1).expand(_H, _W)
@@ -726,19 +726,19 @@ class TestPhaseUnwrappingSeedCanary:
 @pytest.mark.physics
 class TestT2StarDecayOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
         op = T2StarDecayOperator()
         assert op is not None
 
     def test_none_t2star_map_identity(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
         op = T2StarDecayOperator()
         x = _real_image()
         out = op(x)
         assert torch.allclose(out, x)
 
     def test_with_t2star_map_shape(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
         t2s = torch.full((1, 1, _H, _W), 0.05)  # 50 ms
         op = T2StarDecayOperator(t2star_map=t2s, readout_duration=5e-3)
         x = _real_image()
@@ -748,7 +748,7 @@ class TestT2StarDecayOperatorCanary:
         assert (out <= x + 1e-6).all()
 
     def test_multisegment_output_count(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
         t2s = torch.full((1, 1, _H, _W), 0.05)
         op = T2StarDecayOperator(t2star_map=t2s, num_segments=3)
         x = _real_image()
@@ -757,7 +757,7 @@ class TestT2StarDecayOperatorCanary:
 
     def test_set_t2star_raises_on_missing(self):
         """Calling forward without T2* map (none set) returns identity — not raises."""
-        from mriforge.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import T2StarDecayOperator
         op = T2StarDecayOperator()
         x = _real_image()
         # Should return identity (no map set)
@@ -768,26 +768,26 @@ class TestT2StarDecayOperatorCanary:
 @pytest.mark.physics
 class TestTGVConstraintOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
         op = TGVConstraintOperator(num_iters=2)
         assert op is not None
 
     def test_forward_shape_single_channel(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
         op = TGVConstraintOperator(num_iters=2)
         x = _real_image(B=1, C=1)
         out = op(x)
         assert out.shape == x.shape
 
     def test_forward_shape_multi_channel(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
         op = TGVConstraintOperator(num_iters=2)
         x = _real_image(B=1, C=3)
         out = op(x)
         assert out.shape == x.shape
 
     def test_with_marker_grad_and_mask(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import TGVConstraintOperator
         op = TGVConstraintOperator(num_iters=2)
         x = _real_image(B=1, C=1)
         marker_grad = torch.zeros(1, 2, _H, _W)
@@ -799,14 +799,14 @@ class TestTGVConstraintOperatorCanary:
 @pytest.mark.physics
 class TestVarianceWeightedTGVCanary:
     def test_forward_no_variance_map(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
+        from spectramr.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
         op = VarianceWeightedTGV(num_iters=2)
         x = _real_image(B=1, C=1)
         out = op(x)
         assert out.shape == x.shape
 
     def test_forward_with_variance_map(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
+        from spectramr.infrastructure.physics.vf_physics_operators import VarianceWeightedTGV
         op = VarianceWeightedTGV(num_iters=2)
         x = _real_image(B=1, C=1)
         variance_map = torch.ones_like(x) * 0.1
@@ -817,12 +817,12 @@ class TestVarianceWeightedTGVCanary:
 @pytest.mark.physics
 class TestLplusSOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import LplusSOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import LplusSOperator
         op = LplusSOperator(rank=2, num_iters=3)
         assert op is not None
 
     def test_forward_returns_two_tensors(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import LplusSOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import LplusSOperator
         op = LplusSOperator(rank=2, num_iters=2)
         B, T = 1, 4
         x = torch.rand(B, T, _H, _W)
@@ -831,7 +831,7 @@ class TestLplusSOperatorCanary:
         assert S.shape == x.shape
 
     def test_L_plus_S_approx_input(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import LplusSOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import LplusSOperator
         op = LplusSOperator(rank=4, lambda_s=0.0, num_iters=5)
         B, T = 1, 4
         x = torch.rand(B, T, _H, _W)
@@ -840,7 +840,7 @@ class TestLplusSOperatorCanary:
         assert (L + S).shape == x.shape
 
     def test_adjoint_identity(self):
-        from mriforge.infrastructure.physics.vf_physics_operators import LplusSOperator
+        from spectramr.infrastructure.physics.vf_physics_operators import LplusSOperator
         op = LplusSOperator()
         y = torch.rand(1, 4, _H, _W)
         grad_L, grad_S = op.adjoint(y)
@@ -856,14 +856,14 @@ class TestLplusSOperatorCanary:
 @pytest.mark.physics
 class TestMarkerPriorProjectionCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators import MarkerPriorProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerPriorProjection
         mask = _vf_mask()
         prior = _real_image()
         op = MarkerPriorProjection(mask, prior)
         assert op is not None
 
     def test_marker_region_pinned(self):
-        from mriforge.infrastructure.physics.vf_operators import MarkerPriorProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerPriorProjection
         mask = _vf_mask()
         prior = torch.ones(1, 1, _H, _W)
         op = MarkerPriorProjection(mask, prior)
@@ -874,7 +874,7 @@ class TestMarkerPriorProjectionCanary:
         assert torch.allclose(marker_region, torch.ones_like(marker_region))
 
     def test_outside_marker_unchanged(self):
-        from mriforge.infrastructure.physics.vf_operators import MarkerPriorProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerPriorProjection
         mask = _vf_mask()
         prior = _real_image()
         op = MarkerPriorProjection(mask, prior)
@@ -888,14 +888,14 @@ class TestMarkerPriorProjectionCanary:
 @pytest.mark.physics
 class TestMarkerKSpaceDCProjectionCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
         mask = _vf_mask()
         prior = _real_image()
         op = MarkerKSpaceDCProjection(mask, prior)
         assert op is not None
 
     def test_forward_shape_and_complex(self):
-        from mriforge.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
+        from spectramr.infrastructure.physics.vf_operators import MarkerKSpaceDCProjection
         mask = _vf_mask()
         prior = _real_image()
         op = MarkerKSpaceDCProjection(mask, prior)
@@ -908,12 +908,12 @@ class TestMarkerKSpaceDCProjectionCanary:
 @pytest.mark.physics
 class TestRigidKinematicOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators import RigidKinematicOperator
+        from spectramr.infrastructure.physics.vf_operators import RigidKinematicOperator
         op = RigidKinematicOperator(im_size=(_H, _W))
         assert op is not None
 
     def test_zero_motion_identity(self):
-        from mriforge.infrastructure.physics.vf_operators import RigidKinematicOperator
+        from spectramr.infrastructure.physics.vf_operators import RigidKinematicOperator
         op = RigidKinematicOperator(im_size=(_H, _W))
         kspace = _complex_image(B=1, C=1)
         motion_params = torch.zeros(1, 3, _H)
@@ -921,7 +921,7 @@ class TestRigidKinematicOperatorCanary:
         assert torch.allclose(out, kspace)
 
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_operators import RigidKinematicOperator
+        from spectramr.infrastructure.physics.vf_operators import RigidKinematicOperator
         op = RigidKinematicOperator(im_size=(_H, _W))
         kspace = _complex_image(B=2, C=1)
         motion_params = torch.randn(2, 3, _H) * 0.01
@@ -933,14 +933,14 @@ class TestRigidKinematicOperatorCanary:
 @pytest.mark.physics
 class TestB0PhaseOperatorCanary:
     def test_none_b0_identity(self):
-        from mriforge.infrastructure.physics.vf_operators import B0PhaseOperator
+        from spectramr.infrastructure.physics.vf_operators import B0PhaseOperator
         op = B0PhaseOperator(b0_map=None, te=0.01)
         x = _complex_image()
         out = op(x)
         assert torch.allclose(out, x)
 
     def test_with_b0_map_shape(self):
-        from mriforge.infrastructure.physics.vf_operators import B0PhaseOperator
+        from spectramr.infrastructure.physics.vf_operators import B0PhaseOperator
         b0 = _b0_map()
         op = B0PhaseOperator(b0_map=b0, te=0.01)
         x = _complex_image()
@@ -949,7 +949,7 @@ class TestB0PhaseOperatorCanary:
         assert torch.is_complex(out)
 
     def test_zero_b0_identity(self):
-        from mriforge.infrastructure.physics.vf_operators import B0PhaseOperator
+        from spectramr.infrastructure.physics.vf_operators import B0PhaseOperator
         b0 = torch.zeros(1, 1, _H, _W)
         op = B0PhaseOperator(b0_map=b0, te=0.01)
         x = _complex_image()
@@ -960,12 +960,12 @@ class TestB0PhaseOperatorCanary:
 @pytest.mark.physics
 class TestGeometricWarpOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators import GeometricWarpOperator
+        from spectramr.infrastructure.physics.vf_operators import GeometricWarpOperator
         op = GeometricWarpOperator(im_size=(_H, _W))
         assert op is not None
 
     def test_zero_flow_identity(self):
-        from mriforge.infrastructure.physics.vf_operators import GeometricWarpOperator
+        from spectramr.infrastructure.physics.vf_operators import GeometricWarpOperator
         op = GeometricWarpOperator(im_size=(_H, _W))
         x = _real_image(B=2)
         flow = torch.zeros(2, 2, _H, _W)
@@ -973,7 +973,7 @@ class TestGeometricWarpOperatorCanary:
         assert torch.allclose(out, x, atol=1e-5)
 
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_operators import GeometricWarpOperator
+        from spectramr.infrastructure.physics.vf_operators import GeometricWarpOperator
         op = GeometricWarpOperator(im_size=(_H, _W))
         x = _real_image(B=1, C=2)
         flow = torch.randn(1, 2, _H, _W) * 0.5
@@ -984,12 +984,12 @@ class TestGeometricWarpOperatorCanary:
 @pytest.mark.physics
 class TestToeplitzPSFOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators import ToeplitzPSFOperator
+        from spectramr.infrastructure.physics.vf_operators import ToeplitzPSFOperator
         op = ToeplitzPSFOperator(kernel_size=5)
         assert op is not None
 
     def test_delta_psf_identity(self):
-        from mriforge.infrastructure.physics.vf_operators import ToeplitzPSFOperator
+        from spectramr.infrastructure.physics.vf_operators import ToeplitzPSFOperator
         op = ToeplitzPSFOperator(kernel_size=5)
         # Default init is a delta PSF; forward should be near-identity
         x = _real_image(B=1, C=1)
@@ -997,14 +997,14 @@ class TestToeplitzPSFOperatorCanary:
         assert out.shape == x.shape
 
     def test_adjoint_shape(self):
-        from mriforge.infrastructure.physics.vf_operators import ToeplitzPSFOperator
+        from spectramr.infrastructure.physics.vf_operators import ToeplitzPSFOperator
         op = ToeplitzPSFOperator(kernel_size=5)
         x = _real_image(B=2, C=1)
         out = op.adjoint(x)
         assert out.shape == x.shape
 
     def test_set_psf_accepted(self):
-        from mriforge.infrastructure.physics.vf_operators import ToeplitzPSFOperator
+        from spectramr.infrastructure.physics.vf_operators import ToeplitzPSFOperator
         op = ToeplitzPSFOperator(kernel_size=5)
         psf = torch.zeros(1, 1, 5, 5)
         psf[0, 0, 2, 2] = 1.0
@@ -1022,12 +1022,12 @@ class TestToeplitzPSFOperatorCanary:
 @pytest.mark.physics
 class TestRFModulationOperatorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import RFModulationOperator
+        from spectramr.infrastructure.physics.vf_operators_extended import RFModulationOperator
         op = RFModulationOperator(num_coils=1)
         assert op is not None
 
     def test_forward_single_coil_shape(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import RFModulationOperator
+        from spectramr.infrastructure.physics.vf_operators_extended import RFModulationOperator
         op = RFModulationOperator(num_coils=1)
         image = _real_image(B=2, C=1)
         b1_plus = _b1_map(B=2)
@@ -1036,7 +1036,7 @@ class TestRFModulationOperatorCanary:
         assert out.shape == image.shape
 
     def test_unit_b1_maps_preserve_magnitude(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import RFModulationOperator
+        from spectramr.infrastructure.physics.vf_operators_extended import RFModulationOperator
         op = RFModulationOperator(num_coils=1)
         image = _real_image()
         b1_ones = torch.ones(1, 1, _H, _W)
@@ -1044,7 +1044,7 @@ class TestRFModulationOperatorCanary:
         assert torch.allclose(out, image)
 
     def test_adjoint_shape(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import RFModulationOperator
+        from spectramr.infrastructure.physics.vf_operators_extended import RFModulationOperator
         op = RFModulationOperator(num_coils=1)
         coil_images = _real_image()
         b1_plus = _b1_map()
@@ -1056,12 +1056,12 @@ class TestRFModulationOperatorCanary:
 @pytest.mark.physics
 class TestNUFFTTrajectoryCalibratorCanary:
     def test_import_and_construct(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
         cal = NUFFTTrajectoryCalibrator(im_size=(_H, _W))
         assert cal is not None
 
     def test_compute_phase_correction_shape(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
         cal = NUFFTTrajectoryCalibrator(im_size=(_H, _W))
         delays = torch.zeros(2)
         correction = cal.compute_phase_correction(delays)
@@ -1069,7 +1069,7 @@ class TestNUFFTTrajectoryCalibratorCanary:
         assert torch.is_complex(correction)
 
     def test_zero_delays_identity_correction(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
         cal = NUFFTTrajectoryCalibrator(im_size=(_H, _W))
         delays = torch.zeros(2)
         correction = cal.compute_phase_correction(delays)
@@ -1077,7 +1077,7 @@ class TestNUFFTTrajectoryCalibratorCanary:
         assert torch.allclose(correction.abs(), torch.ones_like(correction.abs()), atol=1e-5)
 
     def test_forward_shape(self):
-        from mriforge.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
+        from spectramr.infrastructure.physics.vf_operators_extended import NUFFTTrajectoryCalibrator
         cal = NUFFTTrajectoryCalibrator(im_size=(_H, _W))
         kspace = _complex_image(B=1, C=1)
         out = cal(kspace)

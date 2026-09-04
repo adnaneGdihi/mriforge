@@ -18,7 +18,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.generators.pretrained_vae_adapter import (
+from spectramr.models.generators.pretrained_vae_adapter import (
     PretrainedSDVAEAdapter,
     reduce_from_rgb,
     replicate_to_rgb,
@@ -201,7 +201,7 @@ def test_vae_load_failure_names_the_cause_and_the_knob(monkeypatch):
     """
     import types
 
-    from mriforge.models.generators import pretrained_vae_adapter as mod
+    from spectramr.models.generators import pretrained_vae_adapter as mod
 
     class _Boom:
         @staticmethod

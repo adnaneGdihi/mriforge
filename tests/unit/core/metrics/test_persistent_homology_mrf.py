@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative.persistent_homology_mrf import (
+from spectramr.core.metrics.quantitative.persistent_homology_mrf import (
     MRFParameterStabilityMetric,
     PersistenceDiameterMetric,
     TopologicalMaskCertificate,

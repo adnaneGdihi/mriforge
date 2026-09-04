@@ -1,6 +1,6 @@
 r"""Tests for ``ConcomitantPhaseOperator``.
 
-Targets ``mriforge.infrastructure.physics.concomitant_phase_operator`` —
+Targets ``spectramr.infrastructure.physics.concomitant_phase_operator`` —
 idea 1 (CAUR) of ``TODO/integration_plan_ulf_cheap_fast_mri.md``.
 
 Plan acceptance criterion (§1.6):
@@ -29,7 +29,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.concomitant_phase_operator import (
+from spectramr.infrastructure.physics.concomitant_phase_operator import (
     ConcomitantPhaseOperator,
 )
 

@@ -13,8 +13,8 @@ from pathlib import Path
 
 import pytest
 
-import mriforge.cli.manifest_dispatch as md
-from mriforge.cli.manifest_dispatch import (
+import spectramr.cli.manifest_dispatch as md
+from spectramr.cli.manifest_dispatch import (
     compute_iter_cap_overrides,
     resolve_manifest_config,
 )

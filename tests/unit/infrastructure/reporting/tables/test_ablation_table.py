@@ -7,7 +7,7 @@ no ``full`` reference method, must return ``None`` rather than raise.
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.tables.ablation_table import make
+from spectramr.infrastructure.reporting.tables.ablation_table import make
 
 
 def _cohort() -> pd.DataFrame:

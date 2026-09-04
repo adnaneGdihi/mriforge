@@ -1,6 +1,6 @@
 """Tests for ``DevicePolicy`` and convenience factories.
 
-Targets ``mriforge.infrastructure.services.device_policy``. Centralized
+Targets ``spectramr.infrastructure.services.device_policy``. Centralized
 device-resolution policy that replaces scattered ``.to(device)`` calls.
 We exercise the CPU + AUTO branches plus the data-movement helpers —
 CUDA-specific paths are GPU-marked and skipped on CPU runners.
@@ -17,8 +17,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.core.compute_device import AcceleratorRequiredError
-from mriforge.infrastructure.services.device_policy import (
+from spectramr.core.compute_device import AcceleratorRequiredError
+from spectramr.infrastructure.services.device_policy import (
     DevicePolicy,
     DevicePolicyConfig,
     DevicePolicyType,

@@ -8,9 +8,9 @@ import pytest
 import torch
 import yaml
 
-from mriforge.infrastructure.physics.chain_fitter import FitResult
-from mriforge.infrastructure.physics.degradation_chain import ChainLink, DegradationChain
-from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+from spectramr.infrastructure.physics.chain_fitter import FitResult
+from spectramr.infrastructure.physics.degradation_chain import ChainLink, DegradationChain
+from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
     require_quality_matching_config,
     write_calibration_artifact,
 )
@@ -35,14 +35,14 @@ def _result(method: str = "differential_evolution") -> FitResult:
 
 
 def test_strategy_is_registered():
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "quality_matching" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
 
 
 def test_registered_path_actually_resolves_to_a_class():
     """A registry entry pointing at a bad path is dead on arrival at runtime."""
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     path = TrainingStrategyFactory.STRATEGY_CLASS_PATHS["quality_matching"]
     module_path, _, cls_name = path.rpartition(".")
@@ -137,7 +137,7 @@ def test_emitted_twin_config_is_accepted_by_the_real_simulator(tmp_path):
     A YAML block that looks right but is rejected at simulator construction would
     make every downstream arm fail at startup.
     """
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 
@@ -168,7 +168,7 @@ def test_calibration_artifact_creates_a_missing_output_dir(tmp_path):
 
 
 def _target_cfg(**kw):
-    from mriforge.config.schemas.training.quality_matching import QualityTargetConfig
+    from spectramr.config.schemas.training.quality_matching import QualityTargetConfig
 
     base = {
         "source": "literal",
@@ -180,7 +180,7 @@ def _target_cfg(**kw):
 
 
 def test_literal_target_returns_the_declared_overrides():
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         resolve_target,
     )
 
@@ -193,7 +193,7 @@ def test_cohort_target_is_the_median_over_the_cohort(monkeypatch):
     An advertised source that nothing reads is an unwired knob (pitfall #15), so
     this drives the real code path with a stubbed volume loader.
     """
-    from mriforge.infrastructure.training.strategies import (
+    from spectramr.infrastructure.training.strategies import (
         quality_matching_strategy as qms,
     )
 
@@ -214,7 +214,7 @@ def test_cohort_target_is_the_median_over_the_cohort(monkeypatch):
 
 def test_cohort_target_applies_overrides_on_top(monkeypatch):
     """The documented ablation pattern: inherit the cohort fit, pin one attribute."""
-    from mriforge.infrastructure.training.strategies import (
+    from spectramr.infrastructure.training.strategies import (
         quality_matching_strategy as qms,
     )
 
@@ -238,7 +238,7 @@ def test_cohort_target_applies_overrides_on_top(monkeypatch):
 
 
 def test_cohort_target_without_paths_raises():
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         resolve_target,
     )
 
@@ -254,7 +254,7 @@ def test_cohort_volume_paths_raises_on_an_unreadable_manifest(tmp_path):
     sake. Silently treating that as an empty cohort would fit a chain against
     nothing.
     """
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -267,7 +267,7 @@ def test_cohort_volume_paths_reads_a_real_manifest(tmp_path):
 
     manifest = tmp_path / "lq.json"
     manifest.write_text(json.dumps([{"path": "/data/a.h5"}, {"path": "/data/b.h5"}]))
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -288,7 +288,7 @@ def test_the_registered_strategy_actually_calls_fit_chain():
     """
     import inspect
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         QualityMatchingStrategy,
         run_quality_matching,
     )
@@ -310,13 +310,13 @@ def test_run_quality_matching_fits_and_writes_for_a_literal_target(tmp_path):
     """End-to-end through the real orchestration, with no training harness."""
     import torch
 
-    from mriforge.config.schemas.training.quality_matching import QualityMatchingConfig
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.config.schemas.training.quality_matching import QualityMatchingConfig
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.physics.quality_descriptors import measure_attributes
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.physics.quality_descriptors import measure_attributes
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         run_quality_matching,
     )
 
@@ -356,7 +356,7 @@ def test_run_quality_matching_fits_and_writes_for_a_literal_target(tmp_path):
 def test_extract_hq_volume_raises_rather_than_guessing():
     import torch
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         extract_hq_volume,
     )
 
@@ -376,7 +376,7 @@ def test_cohort_volume_paths_raises_when_no_record_carries_a_path(tmp_path):
 
     manifest = tmp_path / "lq.json"
     manifest.write_text(json.dumps([{"subject": "s1"}, {"subject": "s2"}]))
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -398,8 +398,8 @@ def test_match_spacing_raises_when_no_header_is_reachable():
     """No header on the batch AND no manifest -> RAISE, never assume 1 mm."""
     import torch
 
-    from mriforge.config.schemas.training.quality_matching import QualityMatchingConfig
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.config.schemas.training.quality_matching import QualityMatchingConfig
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         run_quality_matching,
     )
 
@@ -427,16 +427,16 @@ def test_match_spacing_imposes_the_grid_and_records_both_spacings(tmp_path):
     """
     import torch
 
-    from mriforge.config.schemas.training.quality_matching import QualityMatchingConfig
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.config.schemas.training.quality_matching import QualityMatchingConfig
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.physics.quality_descriptors import (
+    from spectramr.infrastructure.physics.quality_descriptors import (
         measure_attributes,
         resample_to_spacing,
     )
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         run_quality_matching,
     )
 
@@ -479,7 +479,7 @@ def test_extract_hq_header_returns_none_rather_than_raising():
     # Whether a header is REQUIRED is match_spacing's decision, not this helper's.
     import torch
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         extract_hq_header,
     )
 
@@ -514,11 +514,11 @@ def test_synthesise_pairs_writes_readable_pairs_and_a_v4_manifest(tmp_path):
     """
     import json
 
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         synthesise_pairs,
     )
 
@@ -546,13 +546,13 @@ def test_synthesised_input_is_actually_degraded_relative_to_its_target(tmp_path)
     """The pair must differ. Writing the clean volume twice would train an identity."""
     import json
 
-    from mriforge.core.metrics.registry import get_metric
-    from mriforge.data.io_strategies import NiftiStrategy
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.core.metrics.registry import get_metric
+    from spectramr.data.io_strategies import NiftiStrategy
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         synthesise_pairs,
     )
 
@@ -574,12 +574,12 @@ def test_synthesis_uses_a_distinct_realisation_per_volume(tmp_path):
     """One artefact realisation reused across subjects teaches THAT artefact."""
     import json
 
-    from mriforge.data.io_strategies import NiftiStrategy
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.data.io_strategies import NiftiStrategy
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         synthesise_pairs,
     )
 
@@ -595,11 +595,11 @@ def test_synthesis_uses_a_distinct_realisation_per_volume(tmp_path):
 
 
 def test_synthesise_pairs_rejects_an_empty_source_list(tmp_path):
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         synthesise_pairs,
     )
 
@@ -653,8 +653,8 @@ def test_acquisition_prior_reaches_the_fit_and_is_recorded(tmp_path):
 
     import torch
 
-    from mriforge.config.schemas.training.quality_matching import QualityMatchingConfig
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.config.schemas.training.quality_matching import QualityMatchingConfig
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         run_quality_matching,
     )
 
@@ -698,8 +698,8 @@ def test_prior_raises_rather_than_guessing_a_field_strength(tmp_path):
 
     import torch
 
-    from mriforge.config.schemas.training.quality_matching import QualityMatchingConfig
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.config.schemas.training.quality_matching import QualityMatchingConfig
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         run_quality_matching,
     )
 
@@ -764,7 +764,7 @@ def _mrix_manifest(tmp_path, *, paired: bool):
 
 
 def test_select_field_returns_only_that_field(tmp_path):
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field,
     )
 
@@ -774,7 +774,7 @@ def test_select_field_returns_only_that_field(tmp_path):
 
 
 def test_select_field_raises_and_lists_what_is_available(tmp_path):
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field,
     )
 
@@ -788,7 +788,7 @@ def test_select_field_raises_and_lists_what_is_available(tmp_path):
 
 
 def test_select_field_pairs_matches_subjects_across_fields(tmp_path):
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field_pairs,
     )
 
@@ -806,7 +806,7 @@ def test_retrospective_cohort_yields_no_pairs_and_says_why(tmp_path):
     Mislabelling a retrospective cohort as paired is the easy mistake; the message
     has to name the fix.
     """
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field_pairs,
     )
 
@@ -817,7 +817,7 @@ def test_retrospective_cohort_yields_no_pairs_and_says_why(tmp_path):
 def test_select_field_pairs_honours_the_contrast_filter(tmp_path):
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field_pairs,
     )
 
@@ -844,7 +844,7 @@ def test_select_field_pairs_honours_the_contrast_filter(tmp_path):
 def test_paired_agreement_is_perfect_for_an_identical_volume():
     import torch
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         paired_agreement,
     )
 
@@ -856,7 +856,7 @@ def test_paired_agreement_is_perfect_for_an_identical_volume():
 def test_paired_agreement_falls_for_a_wrong_volume():
     import torch
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         paired_agreement,
     )
 
@@ -905,7 +905,7 @@ def test_explicit_pairs_invert_the_restoration_naming(tmp_path):
     produce a confident calibration, because the attributes would already nearly
     match.
     """
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_explicit_pairs,
     )
 
@@ -917,7 +917,7 @@ def test_explicit_pairs_invert_the_restoration_naming(tmp_path):
 
 
 def test_explicit_pairs_drop_one_sided_records(tmp_path):
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_explicit_pairs,
     )
 
@@ -928,7 +928,7 @@ def test_explicit_pairs_drop_one_sided_records(tmp_path):
 def test_explicit_pairs_raise_when_nothing_is_complete(tmp_path):
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_explicit_pairs,
     )
 
@@ -943,7 +943,7 @@ def test_explicit_pairs_raise_when_nothing_is_complete(tmp_path):
 def test_explicit_pairs_honour_contrast(tmp_path):
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_explicit_pairs,
     )
 
@@ -962,7 +962,7 @@ def test_explicit_pairs_honour_contrast(tmp_path):
 
 def test_explicit_layout_needs_no_field_strengths():
     """field_keyed needs two fields; explicit reads them off the records."""
-    from mriforge.config.schemas.training.quality_matching import QualityTargetConfig
+    from spectramr.config.schemas.training.quality_matching import QualityTargetConfig
 
     cfg = QualityTargetConfig(
         source="cohort",
@@ -988,7 +988,7 @@ def test_cluster_manifest_paths_resolve_against_data_root(tmp_path):
     """
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -1020,7 +1020,7 @@ def test_relative_record_without_data_root_raises(tmp_path):
     """Silently returning a basename is the dangerous outcome, so it must raise."""
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -1033,7 +1033,7 @@ def test_relative_record_without_data_root_raises(tmp_path):
 def test_absolute_keys_win_over_relative_ones(tmp_path):
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         cohort_volume_paths,
     )
 
@@ -1052,7 +1052,7 @@ def test_absolute_keys_win_over_relative_ones(tmp_path):
 def test_field_selection_also_resolves_relative_paths(tmp_path):
     import json
 
-    from mriforge.infrastructure.training.strategies.quality_matching_strategy import (
+    from spectramr.infrastructure.training.strategies.quality_matching_strategy import (
         select_field,
     )
 
@@ -1093,13 +1093,13 @@ class TestHqManifestReachesTheFit:
     """
 
     def test_the_legacy_flat_spelling_still_reaches_the_canonical_path(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(index_path="data/manifests/m4raw_train.json")
         assert cfg.source.index_path == "data/manifests/m4raw_train.json"
 
     def test_the_canonical_spelling_reaches_it_too(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(source={"index_path": "data/manifests/x.json"})
         assert cfg.source.index_path == "data/manifests/x.json"
@@ -1110,7 +1110,7 @@ class TestHqManifestReachesTheFit:
         `test_renames.py::TestNoStringKeyedReadsOfFoldedNames` fails if the
         `getattr` shape is reintroduced; this records what it cost.
         """
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(index_path="data/manifests/m4raw_train.json")
         assert getattr(cfg, "index_path", None) is None
@@ -1118,6 +1118,6 @@ class TestHqManifestReachesTheFit:
     def test_an_undeclared_manifest_is_none_not_a_default(self) -> None:
         """Anti-vacuity: the field must be absent when the arm declares nothing,
         so the raise-when-unreachable branch can still fire."""
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         assert DataConfigSchema().source.index_path is None

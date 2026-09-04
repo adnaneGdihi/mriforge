@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.motion_equivariance import (
+from spectramr.infrastructure.physics.motion_equivariance import (
     MotionEquivarianceResolver,
     is_motion_equivariant,
     motion_equivariance_defect,

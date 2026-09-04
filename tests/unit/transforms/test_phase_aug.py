@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.phase_aug import PhaseSimulator, apply_synthetic_phase
+from spectramr.data.transforms.phase_aug import PhaseSimulator, apply_synthetic_phase
 
 
 # ── Canary ──────────────────────────────────────────────────────────────────

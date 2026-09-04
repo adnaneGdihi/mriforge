@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.losses.pde_losses import HelmholtzPDELoss
+from spectramr.models.losses.pde_losses import HelmholtzPDELoss
 
 
 def test_helmholtz_pde_loss():

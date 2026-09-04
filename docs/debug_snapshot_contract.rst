@@ -284,7 +284,7 @@ The provenance block
 
 ``snapshot.json`` carries a top-level ``provenance`` key (and ``snapshot.txt`` a
 rendered copy) built by
-:func:`mriforge.infrastructure.training.snapshot_provenance.build_snapshot_provenance`.
+:func:`spectramr.infrastructure.training.snapshot_provenance.build_snapshot_provenance`.
 It records two halves side by side, and **a divergence between them is the
 finding**::
 

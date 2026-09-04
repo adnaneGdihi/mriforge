@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.schemas.training.strategy_knobs_2026_06 import (
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.strategy_knobs_2026_06 import (
     CorticalConformalFMRIReconTrainingConfigSchema,
     HRFManifoldDiffusionTrainingConfigSchema,
     InverseBlochPhaseTrainingConfigSchema,

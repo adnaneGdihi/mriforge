@@ -7,7 +7,7 @@ errors in downstream Conv2d operations.
 
 import torch
 
-from mriforge.models.generators.hilbert_mamba_generators import (
+from spectramr.models.generators.hilbert_mamba_generators import (
     _squeeze_volume_to_2d,
     _unsqueeze_to_volume,
 )

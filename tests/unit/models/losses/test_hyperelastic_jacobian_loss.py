@@ -12,10 +12,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.hyperelastic_jacobian_loss import (  # noqa: E402
+from spectramr.models.losses.hyperelastic_jacobian_loss import (  # noqa: E402
     HyperelasticJacobianLoss,
 )
-from mriforge.models.losses.registry import list_available  # noqa: E402
+from spectramr.models.losses.registry import list_available  # noqa: E402
 
 
 def test_registered() -> None:

@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.generative.beta_vae_gan import BetaVAEGAN
+from spectramr.models.generative.beta_vae_gan import BetaVAEGAN
 
 from ._vae_base import assert_gradient_flows, assert_recon_shape, assert_registered
 

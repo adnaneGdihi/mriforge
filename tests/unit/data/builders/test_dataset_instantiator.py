@@ -13,8 +13,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.data import DataConfigSchema as _DataSchema
-from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+from spectramr.config.schemas.data import DataConfigSchema as _DataSchema
+from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 from tests.utils.data_config_stub import DataConfigStub as _Cfg
 
 
@@ -77,16 +77,17 @@ def _m4raw_cfg(**overrides) -> SimpleNamespace:
         "log_scaling": False,
         "validation_split": 0,
         "target_mode": _DataSchema.model_fields["target_mode"].default,
-        "nex_target_exclude_input": _DataSchema.model_fields[
-            "nex_target_exclude_input"
-        ].default,
+        "nex_target_exclude_input": _DataSchema.model_fields["nex_target_exclude_input"].default,
+        "nex_fallback": _DataSchema.model_fields["nex_fallback"].default,
+        "use_repetitions": _DataSchema.model_fields["use_repetitions"].default,
+        "slice_level_records": _DataSchema.model_fields["slice_level_records"].default,
     }
     base.update(overrides)
     return _Cfg(**base)
 
 
 def _capture_m4raw(monkeypatch) -> dict:
-    import mriforge.data.datasets.m4raw_dataset as m4raw_mod
+    import spectramr.data.datasets.m4raw_dataset as m4raw_mod
 
     cap: dict = {}
     monkeypatch.setattr(
@@ -145,7 +146,80 @@ def test_m4raw_threads_nex_target_exclude_input(monkeypatch) -> None:
     assert cap["nex_target_exclude_input"] is True
 
 
-@pytest.mark.parametrize("missing", ["target_mode", "nex_target_exclude_input"])
+def test_m4raw_threads_nex_fallback(monkeypatch) -> None:
+    """The leave-one-out fallback policy reaches the dataset (cohort review T0.1)."""
+    cap = _capture_m4raw(monkeypatch)
+    DatasetInstantiator._create_m4raw_repetition(
+        _m4raw_cfg(nex_target_exclude_input=True, nex_fallback="all_reps"),
+        [{"primary_path": "/x/a.h5"}],
+        [{"primary_path": "/x/b.h5"}],
+        None,
+        None,
+    )
+    assert cap["nex_fallback"] == "all_reps"
+
+
+def test_m4raw_threads_slice_level_records(monkeypatch) -> None:
+    """The slice-level index knob reaches the dataset (#1757)."""
+    cap = _capture_m4raw(monkeypatch)
+    DatasetInstantiator._create_m4raw_repetition(
+        _m4raw_cfg(slice_level_records=True),
+        [{"primary_path": "/x/a.h5"}],
+        [{"primary_path": "/x/b.h5"}],
+        None,
+        None,
+    )
+    assert cap["slice_level_records"] is True
+
+
+def test_m4raw_slice_level_records_defaults_off_from_the_schema(monkeypatch) -> None:
+    """An arm that says nothing keeps the per-group index: the value threaded
+    is the schema default, read from the schema."""
+    cap = _capture_m4raw(monkeypatch)
+    DatasetInstantiator._create_m4raw_repetition(
+        _m4raw_cfg(),
+        [{"primary_path": "/x/a.h5"}],
+        [{"primary_path": "/x/b.h5"}],
+        None,
+        None,
+    )
+    assert cap["slice_level_records"] == _DataSchema.model_fields["slice_level_records"].default
+    assert cap["slice_level_records"] is False  # anti-vacuity: pin today's value
+
+
+def test_m4raw_use_repetitions_none_means_the_route_default_true(monkeypatch) -> None:
+    """The schema default is None ("the route decides"); on the m4raw route that
+    is True. This pins the zero-behaviour-change contract for the 46 corpus arms
+    that never declare the knob: before the wiring the literal was ``True``."""
+    cap = _capture_m4raw(monkeypatch)
+    DatasetInstantiator._create_m4raw_repetition(
+        _m4raw_cfg(),  # use_repetitions absent -> schema default None
+        [{"primary_path": "/x/a.h5"}],
+        [{"primary_path": "/x/b.h5"}],
+        None,
+        None,
+    )
+    assert _DataSchema.model_fields["use_repetitions"].default is None  # anti-vacuity
+    assert cap["use_repetitions"] is True
+
+
+@pytest.mark.parametrize("declared", [True, False])
+def test_m4raw_honours_an_explicit_use_repetitions(monkeypatch, declared) -> None:
+    """An explicit value is read, not overwritten by the old literal (#668)."""
+    cap = _capture_m4raw(monkeypatch)
+    DatasetInstantiator._create_m4raw_repetition(
+        _m4raw_cfg(use_repetitions=declared),
+        [{"primary_path": "/x/a.h5"}],
+        [{"primary_path": "/x/b.h5"}],
+        None,
+        None,
+    )
+    assert cap["use_repetitions"] is declared
+
+
+@pytest.mark.parametrize(
+    "missing", ["target_mode", "nex_target_exclude_input", "nex_fallback", "use_repetitions"]
+)
 def test_m4raw_nex_knob_missing_from_receiver_fails_loud(monkeypatch, missing) -> None:
     """A receiver without the field must RAISE, never resolve to a default.
 
@@ -193,9 +267,7 @@ def _write_bart(directory, name, arr):
     import numpy as np
 
     dims = list(arr.shape)
-    (directory / f"{name}.hdr").write_text(
-        "# Dimensions\n" + " ".join(str(d) for d in dims) + "\n"
-    )
+    (directory / f"{name}.hdr").write_text("# Dimensions\n" + " ".join(str(d) for d in dims) + "\n")
     arr.astype(np.complex64).flatten(order="F").tofile(directory / f"{name}.cfl")
 
 
@@ -220,8 +292,8 @@ def test_bart_kspace_builds_train_val_datasets(tmp_path) -> None:
     """A valid bart config + on-disk .cfl/.hdr yields two BartKspaceDataset."""
     import numpy as np
 
-    from mriforge.config.schemas.data import BartConfigSchema
-    from mriforge.data.datasets.bart_dataset import BartKspaceDataset
+    from spectramr.config.schemas.data import BartConfigSchema
+    from spectramr.data.datasets.bart_dataset import BartKspaceDataset
 
     for name in ("a", "b"):
         _write_bart(tmp_path, name, np.ones((4, 4, 1), dtype=np.complex64))
@@ -258,7 +330,7 @@ def test_bart_kspace_manifest_branch_honors_file_pattern(tmp_path) -> None:
 
     import numpy as np
 
-    from mriforge.config.schemas.data import BartConfigSchema
+    from spectramr.config.schemas.data import BartConfigSchema
 
     root = tmp_path / "raw"
     root.mkdir()
@@ -419,9 +491,7 @@ def test_create_mrixfields_ulf_source_regroups_so_val_keeps_ulf_field() -> None:
         mrixfields_slice_mode="central",
         validation_split=0.25,
     )
-    train_ds, val_ds = DatasetInstantiator._create_mrixfields(
-        cfg, train_idx, val_idx, None, None
-    )
+    train_ds, val_ds = DatasetInstantiator._create_mrixfields(cfg, train_idx, val_idx, None, None)
     # group-aware re-split rescued val: complete groups incl. 0.1 T -> ulf_source pairs
     assert len(val_ds) > 0, "val regrouped to complete groups must yield ULF->HF pairs"
     assert len(train_ds) > 0
@@ -454,9 +524,7 @@ def test_create_mrixfields_fixed_target_regroups_val() -> None:
         mrixfields_slice_mode="central",
         validation_split=0.25,
     )
-    train_ds, val_ds = DatasetInstantiator._create_mrixfields(
-        cfg, train_idx, val_idx, None, None
-    )
+    train_ds, val_ds = DatasetInstantiator._create_mrixfields(cfg, train_idx, val_idx, None, None)
     assert len(val_ds) > 0 and len(train_ds) > 0
 
 
@@ -519,7 +587,7 @@ def _capture_universal(monkeypatch):
             captured.setdefault("indices", []).append(index)
             captured.setdefault("kwargs", []).append(kwargs)
 
-    import mriforge.data.builders.dataset_instantiator as di
+    import spectramr.data.builders.dataset_instantiator as di
 
     monkeypatch.setattr(di, "UniversalMRIDataset", _Capture)
     return captured
@@ -538,9 +606,7 @@ def test_create_nifti_universal_threads_contrast_map_when_enabled(monkeypatch):
     captured = _capture_universal(monkeypatch)
     cfg = _Cfg(
         dataset_type="nifti_paired",
-        multi_contrast=SimpleNamespace(
-            enabled=True, contrast_map={"T1w": 0, "T2w": 1, "FLAIR": 2}
-        ),
+        multi_contrast=SimpleNamespace(enabled=True, contrast_map={"T1w": 0, "T2w": 1, "FLAIR": 2}),
     )
     idx = [
         {
@@ -733,19 +799,17 @@ def _patch_volumetric_universal(monkeypatch):
         def __getitem__(self, i):  # pragma: no cover — shape metadata avoids load
             raise AssertionError("should not load when records carry shape")
 
-    import mriforge.data.builders.dataset_instantiator as di
+    import spectramr.data.builders.dataset_instantiator as di
 
     monkeypatch.setattr(di, "UniversalMRIDataset", _StubVol)
 
 
 def test_create_nifti_universal_slice_2d_wraps(monkeypatch) -> None:
     _patch_volumetric_universal(monkeypatch)
-    from mriforge.data.datasets.slice_dataset import SliceVolumeDataset
+    from spectramr.data.datasets.slice_dataset import SliceVolumeDataset
 
     cfg = _Cfg(dataset_type="nifti_paired", slice_2d=True)
-    idx = [
-        {"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 3]}
-    ]
+    idx = [{"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 3]}]
     tr, va = DatasetInstantiator._create_nifti_universal(cfg, idx, idx, None, None)
     assert isinstance(tr, SliceVolumeDataset) and isinstance(va, SliceVolumeDataset)
     assert len(tr) == 3  # depth-3 volume → 3 slices
@@ -753,12 +817,10 @@ def test_create_nifti_universal_slice_2d_wraps(monkeypatch) -> None:
 
 def test_create_nifti_universal_slice_2d_default_does_not_wrap(monkeypatch) -> None:
     _patch_volumetric_universal(monkeypatch)
-    from mriforge.data.datasets.slice_dataset import SliceVolumeDataset
+    from spectramr.data.datasets.slice_dataset import SliceVolumeDataset
 
     cfg = _Cfg(dataset_type="nifti_paired")  # slice_2d absent → False
-    idx = [
-        {"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 3]}
-    ]
+    idx = [{"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 3]}]
     tr, _ = DatasetInstantiator._create_nifti_universal(cfg, idx, idx, None, None)
     assert not isinstance(tr, SliceVolumeDataset)
 
@@ -767,9 +829,7 @@ def test_create_nifti_universal_slice_2d_slab_depth_from_patch(monkeypatch) -> N
     # patch_size depth 3 → 3-slice slabs for a 3D slab model
     _patch_volumetric_universal(monkeypatch)
     cfg = _Cfg(dataset_type="nifti_paired", slice_2d=True, patch_size=(128, 128, 3))
-    idx = [
-        {"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 6]}
-    ]
+    idx = [{"primary_path": "u", "target_path": "h", "file_id": "s", "shape": [1, 4, 4, 6]}]
     tr, _ = DatasetInstantiator._create_nifti_universal(cfg, idx, idx, None, None)
     assert tr.slab_depth == 3
     assert len(tr) == 2  # depth 6 / slab 3 = 2 windows
@@ -865,9 +925,7 @@ def test_create_mrixfields_threads_rescale_per_image_to_BOTH_splits() -> None:
             validation_split=0.25,
             **extra,
         )
-        return DatasetInstantiator._create_mrixfields(
-            cfg, full[:split], full[split:], None, None
-        )
+        return DatasetInstantiator._create_mrixfields(cfg, full[:split], full[split:], None, None)
 
     # Absent from the stub -> schema default (False), not a crash.
     train_ds, val_ds = _build()
@@ -908,7 +966,7 @@ class TestDatasetTypeVocabularyIsReachable:
 
     @staticmethod
     def _stub_creators(monkeypatch):
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         for attr in [a for a in dir(DatasetInstantiator) if a.startswith("_create_")]:
             monkeypatch.setattr(
@@ -919,8 +977,8 @@ class TestDatasetTypeVocabularyIsReachable:
             )
 
     def test_every_canonical_type_reaches_a_branch(self, monkeypatch):
-        from mriforge.config.schemas.data import CANONICAL_DATASET_TYPES
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.config.schemas.data import CANONICAL_DATASET_TYPES
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         self._stub_creators(monkeypatch)
         unreachable = []
@@ -934,12 +992,12 @@ class TestDatasetTypeVocabularyIsReachable:
                 # Any OTHER failure means the branch was entered, which is all
                 # this invariant claims.
                 pass
-        assert (
-            not unreachable
-        ), f"canonical dataset_type(s) with no construction branch: {unreachable}"
+        assert not unreachable, (
+            f"canonical dataset_type(s) with no construction branch: {unreachable}"
+        )
 
     def test_an_unknown_type_still_raises(self, monkeypatch):
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         self._stub_creators(monkeypatch)
         with pytest.raises(ValueError, match="is not recognised"):
@@ -954,11 +1012,11 @@ class TestDatasetTypeVocabularyIsReachable:
         servable types -- while advertising ten alias spellings that can never
         reach this point.
         """
-        from mriforge.config.schemas.data import (
+        from spectramr.config.schemas.data import (
             CANONICAL_DATASET_TYPES,
             DATASET_TYPE_ALIASES,
         )
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         self._stub_creators(monkeypatch)
         with pytest.raises(ValueError) as exc:
@@ -970,9 +1028,7 @@ class TestDatasetTypeVocabularyIsReachable:
             assert t in msg, f"canonical type {t!r} missing from the error message"
         for alias in DATASET_TYPE_ALIASES:
             if alias not in CANONICAL_DATASET_TYPES:
-                assert (
-                    f" {alias}," not in msg
-                ), f"unreachable alias {alias!r} advertised"
+                assert f" {alias}," not in msg, f"unreachable alias {alias!r} advertised"
 
 
 class TestCineHeterogeneousFrameGuard:
@@ -986,7 +1042,7 @@ class TestCineHeterogeneousFrameGuard:
 
     @staticmethod
     def _cfg(batch_size: int, total_frames: int | None, root):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         return DataConfigSchema.model_validate(
             {
@@ -1002,12 +1058,10 @@ class TestCineHeterogeneousFrameGuard:
         )
 
     def test_batched_cine_without_total_frames_raises(self, tmp_path):
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         with pytest.raises(ValueError) as exc:
-            DatasetInstantiator.create_datasets(
-                self._cfg(4, None, tmp_path), [], [], None, None
-            )
+            DatasetInstantiator.create_datasets(self._cfg(4, None, tmp_path), [], [], None, None)
         msg = str(exc.value)
         assert "total_frames" in msg
         # Both escapes must be named, plus why the third does not exist yet.
@@ -1020,18 +1074,93 @@ class TestCineHeterogeneousFrameGuard:
 
     def test_batch_size_one_is_allowed_without_total_frames(self, tmp_path):
         """Serial serving handles a heterogeneous cohort fine -- do not block it."""
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         with pytest.raises(FileNotFoundError, match="Cine index empty"):
-            DatasetInstantiator.create_datasets(
-                self._cfg(1, None, tmp_path), [], [], None, None
-            )
+            DatasetInstantiator.create_datasets(self._cfg(1, None, tmp_path), [], [], None, None)
 
     def test_total_frames_lifts_the_batch_restriction(self, tmp_path):
         """Declaring the count is the assertion that makes stacking safe."""
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
         with pytest.raises(FileNotFoundError, match="Cine index empty"):
-            DatasetInstantiator.create_datasets(
-                self._cfg(4, 12, tmp_path), [], [], None, None
-            )
+            DatasetInstantiator.create_datasets(self._cfg(4, 12, tmp_path), [], [], None, None)
+
+
+def test_create_mrixfields_multi_field_regroups_group_aware() -> None:
+    """REGRESSION: ``multi_field`` must be in ``_create_mrixfields``'s regroup tuple.
+
+    Driving ``_create_mrixfields`` is the point. A sibling test that called
+    ``_regroup_mrixfields_multi_source`` directly proved the FUNCTION groups correctly
+    and stayed green when ``"multi_field"`` was deleted from the tuple at the call site
+    -- the three-of-four-sites shape this policy's ``_TUPLE_POLICIES`` owner exists to
+    prevent, one file further out.
+
+    Two claims, one call:
+
+    1. **The regroup runs.** On the field-SORTED manifest a flat 80/20 record slice puts
+       every field below 7 T in train, so val carries no 0.1 T. ``_build_multi_field``
+       raises on a declared field no record holds, so an un-regrouped val cannot build
+       at all -- ``len(val_ds) > 0`` is only reachable through the regroup.
+    2. **It runs with ``group_by_subject=True``.** Two contrasts per subject make the
+       coarse (``subject_id``) and fine (``subject|contrast``) keys distinguishable: on
+       the fine key a subject's T1w can land in train and its T2w in val.
+
+       ``validation_split`` is load-bearing here and was chosen by measurement, not by
+       taste. ``_regroup_mrixfields_multi_source`` splits GROUP KEYS in manifest order,
+       so at 0.25 the eight fine keys cut cleanly between subjects (val = ``s4|T1w`` +
+       ``s4|T2w``) and BOTH keys keep subjects whole -- the assertion below passes under
+       the fine key too, and the test is blind. At 0.4 the boundary lands mid-subject
+       (val = ``s3|T2w``, ``s4|*``), stranding ``s3``. Measured across 0.2-0.5, only
+       0.375 and 0.4 discriminate. The coarse key spans at NO fraction, which is the
+       invariant; this fraction is simply one where the fine key visibly does not.
+    """
+    fields = [0.1, 1.5, 3.0, 5.0, 7.0]
+    full = [
+        {
+            "subject_id": s,
+            "contrast": c,
+            "pairing_group": f"{s}|{c}",
+            "primary_path": f"{s}_{c}_{f}",
+            "field_strength": f,
+        }
+        for f in fields  # field-major: mirrors mrixfields2026_train.json's ordering
+        for s in ("s1", "s2", "s3", "s4")
+        for c in ("T1w", "T2w")
+    ]
+    cut = int(0.8 * len(full))
+    train_idx, val_idx = full[:cut], full[cut:]
+    assert {r["field_strength"] for r in val_idx} == {7.0}, "fixture must strand 0.1 T"
+    # Second precondition, for claim 2: at this fraction the FINE key must strand a
+    # subject, or the disjointness assertion below passes under both keys and cannot
+    # tell them apart. Executed rather than asserted in prose -- a rounding change in
+    # split_index would otherwise re-blind the test silently (0.25 measured blind).
+    val_split = 0.4  # see the docstring: 0.25 is measured blind. ONE owner -- the
+    # precondition below and the cfg further down must probe the SAME fraction, or
+    # re-blinding the cfg leaves the precondition testing a fraction nothing uses.
+    _ft, _fv, _ = DatasetInstantiator._regroup_mrixfields_multi_source(
+        train_idx, val_idx, None, val_split, group_by_subject=False, explicit_val=False
+    )
+    assert {r["subject_id"] for r in _ft} & {r["subject_id"] for r in _fv}, (
+        "fixture no longer discriminates group_by_subject; re-measure the fraction"
+    )
+
+    cfg = _Cfg(
+        dataset_type="mrixfields",
+        mrixfields_pairing_policy="multi_field",
+        mrixfields_fields=[1.5, 3.0, 5.0, 7.0],
+        mrixfields_heldout_fields=[0.1],
+        mrixfields_target_field=None,
+        # central keeps construction lazy so the fake paths are never opened; all_slices
+        # (the default) foreground-scans every volume and would hit the missing files.
+        mrixfields_slice_mode="central",
+        validation_split=val_split,
+    )
+    train_ds, val_ds = DatasetInstantiator._create_mrixfields(cfg, train_idx, val_idx, None, None)
+    assert len(train_ds) > 0
+    assert len(val_ds) > 0, "val can only build a stack if the regroup restored 0.1 T"
+
+    def _subjects(ds) -> set[str]:
+        return {recs[0]["subject_id"] for recs, _judge in ds._tuples}
+
+    assert not (_subjects(train_ds) & _subjects(val_ds)), "subject leaked across the split"

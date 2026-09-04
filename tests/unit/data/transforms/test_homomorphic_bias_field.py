@@ -1,6 +1,6 @@
 """Tests for ``HomomorphicBiasFieldDecomposition``.
 
-Targets ``mriforge.data.transforms.homomorphic_bias_field``. Decomposes a
+Targets ``spectramr.data.transforms.homomorphic_bias_field``. Decomposes a
 ULF magnitude image into ``log_anatomy`` (high-frequency) and
 ``log_bias`` (low-frequency) components via Retinex-style filtering.
 
@@ -21,7 +21,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.homomorphic_bias_field import (
+from spectramr.data.transforms.homomorphic_bias_field import (
     HomomorphicBiasFieldDecomposition,
     reconstruct_from_log_components,
 )

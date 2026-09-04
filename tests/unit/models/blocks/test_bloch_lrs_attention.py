@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.bloch_lrs_attention import BlochLRSAttention
+from spectramr.models.blocks.bloch_lrs_attention import BlochLRSAttention
 
 
 def test_forward_shape_preserved() -> None:

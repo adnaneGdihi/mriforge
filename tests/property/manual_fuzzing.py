@@ -5,7 +5,7 @@ import sys
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.gan_loss_library import R1RegularizationLoss, StandardGANLoss
+from spectramr.models.losses.gan_loss_library import R1RegularizationLoss, StandardGANLoss
 
 # Setup Basic Logging
 logging.basicConfig(

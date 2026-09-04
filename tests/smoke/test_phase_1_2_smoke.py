@@ -26,7 +26,7 @@ def test_bias_field_generator():
     logger.info("=" * 70)
 
     try:
-        from mriforge.models.generators.disentangled_mri import BiasFieldGenerator
+        from spectramr.models.generators.disentangled_mri import BiasFieldGenerator
 
         # Test polynomial-3 variant
         logger.info("Creating BiasFieldGenerator (polynomial_3)...")
@@ -64,7 +64,7 @@ def test_generator_with_new_heads():
     logger.info("=" * 70)
 
     try:
-        from mriforge.models.generators.disentangled_mri import Generator
+        from spectramr.models.generators.disentangled_mri import Generator
 
         logger.info("Creating Generator with tissue param output...")
         gen = Generator(
@@ -124,7 +124,7 @@ def test_dists_loss():
     logger.info("=" * 70)
 
     try:
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
 
         logger.info("Creating DISTS loss...")
         dists = DISTS(backbone="vgg19", requires_grad=False)

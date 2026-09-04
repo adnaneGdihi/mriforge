@@ -1,6 +1,6 @@
 """Tests for B0 phase-shift utility.
 
-Targets ``mriforge.infrastructure.physics.b0_utils``. Small but important
+Targets ``spectramr.infrastructure.physics.b0_utils``. Small but important
 utility — applies B0-induced phase accumulation to a real-stacked
 k-space signal.
 """
@@ -12,7 +12,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.b0_utils import apply_b0_phase_shift
+from spectramr.infrastructure.physics.b0_utils import apply_b0_phase_shift
 
 
 def test_no_time_vector_returns_signal_unchanged() -> None:

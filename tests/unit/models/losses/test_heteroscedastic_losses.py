@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.heteroscedastic_losses import (
+from spectramr.models.losses.heteroscedastic_losses import (
     HeteroscedasticULFLoss,
     heteroscedastic_nll,
     heteroscedastic_ulf_loss,
@@ -101,7 +101,7 @@ def test_registered_class_splits_two_channels() -> None:
 
 
 def test_registered_via_framework_create_loss() -> None:
-    from mriforge.models.losses import create_loss
+    from spectramr.models.losses import create_loss
 
     assert isinstance(create_loss("heteroscedastic_ulf"), HeteroscedasticULFLoss)
 

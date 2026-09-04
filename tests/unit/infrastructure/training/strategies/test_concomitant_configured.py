@@ -20,10 +20,10 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.concomitant_aware_recon_strategy import (
+from spectramr.infrastructure.training.strategies.concomitant_aware_recon_strategy import (
     ConcomitantAwareReconStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 

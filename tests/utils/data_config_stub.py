@@ -65,7 +65,7 @@ _BLOCK_SCHEMAS: dict[str, str] = {
 }
 
 # Legacy flat kwarg -> (sub-block, canonical leaf). Mirrors the `fold` records in
-# ``mriforge.config.schemas.renames``; kept as data so a call site that still says
+# ``spectramr.config.schemas.renames``; kept as data so a call site that still says
 # ``batch_size=2`` lands where the reader looks.
 FLAT_TO_CANONICAL: dict[str, tuple[str, str]] = {
     # loader
@@ -99,6 +99,8 @@ FLAT_TO_CANONICAL: dict[str, tuple[str, str]] = {
     "expose_field_strength_target": ("expose", "field_strength_target"),
     # mrixfields
     "mrixfields_pairing_policy": ("mrixfields", "pairing_policy"),
+    "mrixfields_fields": ("mrixfields", "fields"),
+    "mrixfields_heldout_fields": ("mrixfields", "heldout_fields"),
     "mrixfields_target_field": ("mrixfields", "target_field"),
     "mrixfields_slice_mode": ("mrixfields", "slice_mode"),
     "mrixfields_rescale_per_image": ("mrixfields", "rescale_per_image"),
@@ -157,7 +159,7 @@ FLAT_TO_CANONICAL: dict[str, tuple[str, str]] = {
 
 def nested_blocks(**override: Any) -> dict[str, Any]:
     """Every phase-9 sub-block, instantiated at its real schema defaults."""
-    import mriforge.config.schemas.data as _data
+    import spectramr.config.schemas.data as _data
 
     blocks: dict[str, Any] = {
         name: getattr(_data, cls)() for name, cls in _BLOCK_SCHEMAS.items()
@@ -182,7 +184,7 @@ class DataConfigStub(SimpleNamespace):
         # sets `self.undersampling = a_conf` (four of them, e.g.
         # data_pipeline_director.py:341). A stand-in that omits it models a
         # receiver that does not exist and fails for the wrong reason.
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         blocks.setdefault("undersampling", AccelerationConfigSchema())
         for flat, (block, leaf) in FLAT_TO_CANONICAL.items():

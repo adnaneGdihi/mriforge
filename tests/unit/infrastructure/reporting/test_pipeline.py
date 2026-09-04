@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.reporting import pipeline as pipe
+from spectramr.infrastructure.reporting import pipeline as pipe
 from tests.utils.corpus import tracked_yamls
 
 
@@ -64,7 +64,7 @@ def test_inprogress_conformal_arms_use_a_preset_backed_task():
 
     import yaml as _yaml
 
-    from mriforge.config.schemas.enums import ReportTask
+    from spectramr.config.schemas.enums import ReportTask
 
     conformal = (
         pathlib.Path(__file__).resolve().parents[4]
@@ -85,7 +85,7 @@ def test_inprogress_conformal_arms_use_a_preset_backed_task():
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting import plotters
 
 
 def test_dispatch_emits_multiple_formats(tmp_path):
@@ -130,7 +130,7 @@ def test_dispatch_does_not_crash_on_unmigrated_plotter_kwargs(tmp_path):
 
 import numpy as np
 
-from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
 
 
 def test_generate_report_autoloads_cases(tmp_path):
@@ -187,7 +187,7 @@ def test_generate_report_accepts_panel_labels(tmp_path):
         panel_labels=False,
     )
     assert res["figures"].get("fig_1_2_learning_curves") is not None
-    from mriforge.infrastructure.reporting import style
+    from spectramr.infrastructure.reporting import style
 
     style.set_panel_labels(True)  # restore
 
@@ -355,7 +355,7 @@ def test_qc_figures_gate_strips_them(tmp_path):
 def test_generate_report_emits_qc_html(tmp_path):
     import numpy as np
 
-    from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+    from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
 
     logs = tmp_path / "logs"
     logs.mkdir()
@@ -417,7 +417,7 @@ def test_generate_report_html_off(tmp_path):
 def _seed_qc_run(tmp_path, *, with_volume=False):
     import numpy as np
 
-    from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+    from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
 
     logs = tmp_path / "logs"
     logs.mkdir(exist_ok=True)
@@ -680,7 +680,7 @@ class TestSkippedFiguresAreAccountedForNotDropped:
         Conflating the two is the failure this whole change exists to prevent:
         a crashing figure would read as an expected absence on the predict path.
         """
-        from mriforge.infrastructure.reporting.plotters import (
+        from spectramr.infrastructure.reporting.plotters import (
             SKIP_NO_DATA,
             SKIP_RAISED,
             FigureOutcome,

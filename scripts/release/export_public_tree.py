@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Export the public MRIForge tree from a pinned commit.
+"""Export the public spectraMR tree from a pinned commit.
 
 Both halves of the export are pinned to that SHA: the candidate file list comes
 from ``git ls-tree``, and the allowlist that selects from it is read with
@@ -25,7 +25,13 @@ that could *add* a path would reintroduce the invisible one. They exist because
 that must ship, so "everything under tests/ except these" has no allow-only
 spelling.
 
-Two ratchets close rather than open, both reported as errors under --strict:
+A third mechanism decides CONTENT rather than membership: ``--overlay`` names a
+directory whose files **replace** their exported counterparts. It is replace-only
+and never adds a path, so the allowlist remains the single answer to "what ships"
+and the overlay answers only "what does this shipped file contain". See
+``read_overlay``.
+
+Three ratchets close rather than open, all reported as errors under --strict:
 
 * a top-level root matched by nothing is listed, so dropping a whole directory
   is always a stated decision rather than an oversight;
@@ -33,7 +39,10 @@ Two ratchets close rather than open, both reported as errors under --strict:
   when it ships no file; a denial is dead when it removes none. The rule is
   symmetric on purpose: a denial kept after its target stopped existing reads
   as a stated exclusion while excluding nothing. The same rule the rename guard
-  applies to its ALLOWED_ROOTS.
+  applies to its ALLOWED_ROOTS;
+* an overlay file that replaces no shipped path is **dead** by the same symmetry --
+  it reads as a stated substitution while substituting nothing, and the file it was
+  meant to correct ships uncorrected.
 """
 
 from __future__ import annotations
@@ -48,7 +57,9 @@ from pathlib import Path
 
 
 def git(*args: str, cwd: Path, binary: bool = False):
-    out = subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True).stdout
+    out = subprocess.run(
+        ["git", *args], cwd=cwd, check=True, capture_output=True
+    ).stdout
     return out if binary else out.decode("utf-8", "surrogateescape")
 
 
@@ -72,7 +83,9 @@ def parse_allowlist(text: str, origin: str) -> tuple[list[str], list[str]]:
     return allows, denies
 
 
-def read_allowlist(repo: Path, resolved: str, rel: Path, from_worktree: bool) -> tuple[str, str]:
+def read_allowlist(
+    repo: Path, resolved: str, rel: Path, from_worktree: bool
+) -> tuple[str, str]:
     """Return (text, origin) for the allowlist, pinned to ``resolved`` by default.
 
     This closes a provenance hole rather than tidying one. Every blob written by
@@ -115,30 +128,34 @@ def matches(rel: str, pattern: str) -> bool:
     return fnmatch.fnmatch(rel, pattern)
 
 
-OVERLAY_PREFIX = "scripts/release/public_overlay/"
-"""Files stored OUTSIDE ``.github/`` in this repo and mapped into place on export.
+def read_overlay(repo: Path, resolved: str, overlay_root: str) -> dict[str, bytes]:
+    """Read the public overlay, pinned to ``resolved`` like everything else.
 
-A public CI lane cannot simply be an allowlisted copy of the private one: the
-blocking lane here runs five corpus-dependent gates over 647 experiment arms,
-and none of that ships. Nor can the public variants sit in ``.github/workflows/``,
-because GitHub would then run them HERE too, duplicating every check on every
-private PR. So they live under this prefix -- inert in this repo, since Actions
-only reads workflows from the repository root -- and the export maps
-``scripts/release/public_overlay/X`` to ``X``.
+    An overlay file at ``<overlay_root>/<path>`` REPLACES the content of the exported
+    ``<path>``. It exists for the handful of files that are correct on this branch and
+    wrong in the distribution -- the docs sidebar being the clearest case, because the
+    published site's ``toctree`` must name only pages that ship, while this tree's must
+    also reach ``docs/api/`` (175 pages), ``docs/contributing/`` and
+    ``cluster_verification``. Those are two different documents for two different sites,
+    not one invariant with two owners.
 
-Applied AFTER the allowlist, and reported separately: an overlay is a write path
-into the distribution that the allowlist never sees, so it must never be able to
-land quietly. An overlay that lands on top of an allowlisted file is called out
-by name rather than merged in silence.
-"""
+    **Replace-only, never add.** An overlay whose target is not already shipping is
+    reported as dead rather than written. This is the same fail-closed direction the
+    allowlist enforces: if the overlay could ADD a path, it would become a second way to
+    publish a file, and the allowlist would stop being the single answer to "what ships".
+    The overlay decides only what a shipped file CONTAINS.
 
-
-def overlay_destination(rel: str) -> str:
-    """Map an overlay source path to its destination, refusing an escape."""
-    dest = rel[len(OVERLAY_PREFIX) :]
-    if not dest or dest.startswith("/") or ".." in Path(dest).parts:
-        raise SystemExit(f"overlay path escapes the export tree: {rel}")
-    return dest
+    Before this existed the substitution was done by hand in the published repository,
+    which is how a 105-line ``docs/index.rst`` came to live there and nowhere else --
+    invisible to this branch, and destroyed by the next export.
+    """
+    listing = git("ls-tree", "-r", "-z", "--name-only", f"{resolved}:{overlay_root}",
+                  cwd=repo).split("\0")
+    return {
+        rel: git("show", f"{resolved}:{overlay_root}/{rel}", cwd=repo, binary=True)
+        for rel in listing
+        if rel
+    }
 
 
 def main() -> int:
@@ -153,6 +170,9 @@ def main() -> int:
         help="read the allowlist from the working tree instead of --sha "
         "(unpinned: the export is then not reproducible from the SHA alone)",
     )
+    ap.add_argument("--overlay", default="scripts/release/public_overlay",
+                    help="repo-relative directory whose files REPLACE their exported "
+                         "counterparts (replace-only; never adds a path)")
     ap.add_argument("--strict", action="store_true", help="exit 2 on any dead allowance")
     args = ap.parse_args()
 
@@ -195,10 +215,16 @@ def main() -> int:
     denied: list[str] = []
     used_allow: set[str] = set()
     used_deny: set[str] = set()
-    overlay_sources = [r for r in tracked if r.startswith(OVERLAY_PREFIX)]
+    overlay_sources: list[str] = []
     for rel in tracked:
-        if rel.startswith(OVERLAY_PREFIX):
-            # Never shipped at its storage path -- it ships at its mapped path.
+        if rel == args.overlay or rel.startswith(f"{args.overlay}/"):
+            # Overlay storage is outside the allowlist's jurisdiction -- the allowlist
+            # never inspects the overlay -- so it is skipped BEFORE the allowlist is
+            # consulted. Without this a bare `scripts/release/` allowance publishes the
+            # overlay tree at its STORAGE path as well as at its mapped path: the same
+            # bytes twice under two names, and the storage copy is the one nothing reads.
+            # It is neither shipped nor `excluded`; it is content that ships elsewhere.
+            overlay_sources.append(rel)
             continue
         allowed_by = next((p for p in allows if matches(rel, p)), None)
         if allowed_by is None:
@@ -218,17 +244,25 @@ def main() -> int:
         f"!{p}" for p in denies if p not in used_deny
     ]
     excluded = set(tracked) - set(shipped) - set(overlay_sources)
-    # The overlay's DESTINATION roots are present in the distribution even though
-    # no allowlisted path put them there, so a root the overlay populates is not
-    # a dropped root. Reporting ".github" as dropped while shipping
-    # .github/workflows/ is exactly the over-claim this release exists to remove.
-    overlay_dest_roots = {overlay_destination(r).split("/")[0] for r in overlay_sources}
-    present_roots = {s.split("/")[0] for s in shipped} | overlay_dest_roots
-    dropped_roots = sorted({r.split("/")[0] for r in excluded} - present_roots)
+    dropped_roots = sorted({r.split("/")[0] for r in excluded} - {s.split("/")[0] for s in shipped})
 
     if args.out.exists():
         raise SystemExit(f"{args.out} exists -- refusing to write into a non-empty tree")
     args.out.mkdir(parents=True)
+
+    try:
+        overlay = read_overlay(repo, resolved, args.overlay)
+    except subprocess.CalledProcessError:
+        overlay = {}          # no overlay directory at this SHA
+    dead_overlay = sorted(set(overlay) - set(shipped))
+    overlaid: list[str] = []
+    # An overlay whose content EQUALS the tracked blob it replaces. The dead-overlay
+    # ratchet cannot see this shape -- the target ships, so the substitution is
+    # structurally valid -- and today the two copies agree, so nothing looks wrong. The
+    # first edit to the tracked file is then silently discarded in the export and the
+    # published page freezes, with no gate red. One invariant, one owner: the overlay
+    # copy is only entitled to exist while it says something different.
+    redundant_overlay: list[str] = []
 
     manifest = []
     submodules = []
@@ -240,11 +274,18 @@ def main() -> int:
             # A gitlink carries no content. Record the pinned commit and let
             # .gitmodules describe it; extracting it would vendor third-party
             # code the licence review treats as a pointer.
-            submodules.append(
-                {"path": rel, "commit": git("rev-parse", f"{resolved}:{rel}", cwd=repo).strip()}
-            )
+            submodules.append({"path": rel, "commit": git("rev-parse", f"{resolved}:{rel}", cwd=repo).strip()})
             continue
         blob = git("show", f"{resolved}:{rel}", cwd=repo, binary=True)
+        if rel in overlay:
+            if overlay[rel] == blob:
+                redundant_overlay.append(rel)
+            # Substituted BEFORE the manifest hash is taken, so `sha256` describes
+            # what is on disk rather than what git holds. A manifest that hashed the
+            # pre-overlay blob would be a provenance claim about a file the export
+            # does not contain.
+            blob = overlay[rel]
+            overlaid.append(rel)
         if mode == "120000":
             dest.symlink_to(blob.decode("utf-8", "surrogateescape"))
         else:
@@ -252,46 +293,8 @@ def main() -> int:
             if mode == "100755":
                 dest.chmod(0o755)
         manifest.append(
-            {
-                "path": rel,
-                "mode": mode,
-                "size": len(blob),
-                "sha256": hashlib.sha256(blob).hexdigest(),
-            }
-        )
-
-    overlaid: list[str] = []
-    clobbered: list[str] = []
-    shipped_set = set(shipped)
-    for rel in overlay_sources:
-        mode = entries[rel]
-        if mode == "160000":
-            raise SystemExit(f"overlay source is a submodule, not a file: {rel}")
-        dest_rel = overlay_destination(rel)
-        if dest_rel in shipped_set:
-            clobbered.append(dest_rel)
-            # One row per file on disk: drop the superseded allowlisted entry so
-            # file_count keeps matching the tree. The replacement is recorded in
-            # overlay_clobbered_allowlisted, so nothing goes unreported.
-            manifest[:] = [m for m in manifest if m["path"] != dest_rel]
-        dest = args.out / dest_rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        blob = git("show", f"{resolved}:{rel}", cwd=repo, binary=True)
-        if mode == "120000":
-            dest.symlink_to(blob.decode("utf-8", "surrogateescape"))
-        else:
-            dest.write_bytes(blob)
-            if mode == "100755":
-                dest.chmod(0o755)
-        overlaid.append(dest_rel)
-        manifest.append(
-            {
-                "path": dest_rel,
-                "mode": mode,
-                "size": len(blob),
-                "sha256": hashlib.sha256(blob).hexdigest(),
-                "overlay_source": rel,
-            }
+            {"path": rel, "mode": mode, "size": len(blob),
+             "sha256": hashlib.sha256(blob).hexdigest()}
         )
 
     (args.out / "EXPORT_MANIFEST.json").write_text(
@@ -306,10 +309,12 @@ def main() -> int:
                 "excluded_count": len(excluded),
                 "submodules": submodules,
                 "dropped_top_level_roots": dropped_roots,
-                "overlay_prefix": OVERLAY_PREFIX,
-                "overlaid_paths": sorted(overlaid),
-                "overlay_clobbered_allowlisted": sorted(clobbered),
                 "dead_allowlist_patterns": dead,
+                "overlay_root": args.overlay,
+                "overlaid_paths": sorted(overlaid),
+                "dead_overlay_files": dead_overlay,
+                "redundant_overlay_files": sorted(redundant_overlay),
+                "overlay_source_paths": sorted(overlay_sources),
                 "denied_patterns": denies,
                 "denied_paths": sorted(denied),
                 "files": manifest,
@@ -331,17 +336,32 @@ def main() -> int:
     print(f"excluded   : {len(excluded)}")
     print(f"denied     : {len(denied)} path(s) removed by {len(denies)} denial(s)")
     print(f"bytes      : {sum(m['size'] for m in manifest):,}")
+    print(f"overlaid   : {len(overlaid)} file(s) replaced from {args.overlay}/")
+    # Every path, not just the count. An overlay substitution is VALID whenever
+    # its target ships, so the dead-overlay ratchet cannot flag one you did not
+    # intend -- a stray `README.md` at the overlay root silently replaced the
+    # project README, and only the count being 2 instead of 1 gave it away.
+    for p_ in sorted(overlaid):
+        print(f"           : {p_}")
     print(f"submodules : {len(submodules)} (recorded as pinned commits, not vendored)")
     print(f"dropped roots ({len(dropped_roots)}): {', '.join(dropped_roots) or '-'}")
-    print(f"overlaid   : {len(overlaid)} file(s) mapped from {OVERLAY_PREFIX}")
-    for dest_rel in sorted(overlaid):
-        print(f"           + {dest_rel}")
-    if clobbered:
-        # Loud on purpose: this is the one way the overlay can hide a change,
-        # by quietly replacing a file the allowlist reviewed.
-        print(f"OVERLAY OVERWROTE {len(clobbered)} allowlisted path(s):")
-        for dest_rel in clobbered:
-            print(f"  ! {dest_rel}")
+    if dead_overlay:
+        # Symmetric with a dead allowance: an overlay that replaces nothing reads as a
+        # stated substitution while substituting nothing, and the file it was meant to
+        # correct ships uncorrected.
+        print(f"DEAD OVERLAY ({len(dead_overlay)}) -- these replace no shipped path:")
+        for p_ in dead_overlay:
+            print(f"  {p_}")
+        if args.strict:
+            return 2
+
+    if redundant_overlay:
+        print(f"REDUNDANT OVERLAY ({len(redundant_overlay)}) -- identical to the tracked file:")
+        for p_ in redundant_overlay:
+            print(f"  {p_}")
+        if args.strict:
+            return 2
+
     if dead:
         print(f"DEAD PATTERNS ({len(dead)}) -- delete these from the allowlist:")
         for p in dead:

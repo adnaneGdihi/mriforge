@@ -13,7 +13,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.tables import triple_emit
+from spectramr.infrastructure.reporting.tables import triple_emit
 
 
 @pytest.fixture()

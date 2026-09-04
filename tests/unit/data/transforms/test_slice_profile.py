@@ -1,6 +1,6 @@
 """Tests for ``SliceProfileTransform``.
 
-Targets ``mriforge.data.transforms.slice_profile``. Physically realistic
+Targets ``spectramr.data.transforms.slice_profile``. Physically realistic
 slice-profile blur + decimation along the through-plane axis, with
 three profile shapes (apodised sinc, Gauss, Shinnar-Le Roux).
 
@@ -23,7 +23,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.slice_profile import (
+from spectramr.data.transforms.slice_profile import (
     SliceProfileTransform,
     _convolve_along_axis,
     _gauss_kernel,
@@ -219,21 +219,21 @@ class TestSliceProfileIsConfigDeclarable:
     """
 
     def test_is_registered_under_the_short_name(self):
-        from mriforge.data.transforms.registry import get_transform
+        from spectramr.data.transforms.registry import get_transform
 
         assert get_transform("slice_profile").cls is SliceProfileTransform
 
     def test_it_declares_that_it_adds_no_keys(self):
         """It rewrites ``input``/``target`` in place rather than adding a key,
         so an empty ``produces`` is the honest declaration -- not an oversight."""
-        from mriforge.data.transforms.registry import get_transform
+        from spectramr.data.transforms.registry import get_transform
 
         assert get_transform("slice_profile").produces == ()
 
     def test_it_builds_with_the_kwargs_the_committed_arm_declares(self):
         """Pinned against the arm, not against the signature: a default that
         drifts away from what the corpus writes is the failure this catches."""
-        from mriforge.data.transforms.registry import build_transform
+        from spectramr.data.transforms.registry import build_transform
 
         t = build_transform("slice_profile", **_ARM_KWARGS)
         assert isinstance(t, SliceProfileTransform)
@@ -244,8 +244,8 @@ class TestSliceProfileIsConfigDeclarable:
     def test_a_declared_arm_reaches_the_built_chain(self, which):
         """The seam. Registry membership goes green the moment the decorator
         runs, while nothing constructs it -- which is the state this fixes."""
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformBuilder,
             TorchIOTransformConfig,
         )
@@ -268,10 +268,10 @@ class TestSliceProfileIsConfigDeclarable:
         """One canonical spelling. The dotted path never resolved and must not
         start now -- two spellings for one transform is the drift the registry
         exists to end. The error names the short name to migrate to."""
-        from mriforge.data.transforms.registry import get_transform
+        from spectramr.data.transforms.registry import get_transform
 
         with pytest.raises(KeyError) as exc:
-            get_transform("mriforge.data.transforms.slice_profile.SliceProfileTransform")
+            get_transform("spectramr.data.transforms.slice_profile.SliceProfileTransform")
         assert "slice_profile" in str(exc.value)
 
 
@@ -287,7 +287,7 @@ class TestSliceProfileActsOnlyOnZ:
     def _impulse_response(**kwargs):
         import torchio as tio
 
-        from mriforge.data.transforms.registry import build_transform
+        from spectramr.data.transforms.registry import build_transform
 
         vol = torch.zeros(1, 8, 8, 16)
         vol[0, 4, 4, 8] = 1.0
@@ -322,7 +322,7 @@ class TestSliceProfileActsOnlyOnZ:
         require ``target`` to exist."""
         import torchio as tio
 
-        from mriforge.data.transforms.registry import build_transform
+        from spectramr.data.transforms.registry import build_transform
 
         t = build_transform("slice_profile", keys=["input", "target"])
         s = tio.Subject(input=tio.ScalarImage(tensor=torch.rand(1, 4, 4, 8)))

@@ -6,14 +6,14 @@ Verifies that:
 3. Validation works properly
 4. Backward compatibility maintained (configs without collation field)
 
-Author: MRIForge Team
+Author: spectraMR Team
 Date: 2026-02-15
 """
 
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 BASE_CONFIG = """config_version: '1.0'
 data:
@@ -27,7 +27,7 @@ optimization:
 logging:
   enable_tensorboard: false
 training:
-  strategy_class: "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+  strategy_class: "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
 model:
   model_type: "standard_unet"
 """

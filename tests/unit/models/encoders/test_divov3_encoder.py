@@ -2,9 +2,9 @@
 
 It did not, for an unknown length of time. Line 20 read
 ``from ...utils.metaclass import ModuleABCMeta`` -- a relative import resolving to
-``mriforge.utils.metaclass``, a package that has not existed since the 2026-05
-``src`` -> ``mriforge`` refactor (the metaclass lives at
-``mriforge.shared.utils.metaclass``, which is what every other caller imports).
+``spectramr.utils.metaclass``, a package that has not existed since the 2026-05
+``src`` -> ``spectramr`` refactor (the metaclass lives at
+``spectramr.shared.utils.metaclass``, which is what every other caller imports).
 
 Nothing noticed because the model-discovery walk swallowed the ImportError at DEBUG
 (``init_registry``), so the module simply vanished from the catalog on every run. The
@@ -19,7 +19,7 @@ import importlib
 
 def test_the_module_imports() -> None:
     """A module that cannot be imported registers nothing and is dead weight."""
-    mod = importlib.import_module("mriforge.models.encoders.divov3_encoder")
+    mod = importlib.import_module("spectramr.models.encoders.divov3_encoder")
     assert mod is not None
 
 
@@ -34,7 +34,7 @@ def test_the_discovery_walk_reports_no_import_failures() -> None:
     this a no-op and the assertion would grade whatever ``_IMPORT_FAILURES`` happened to
     hold from an earlier test, not a real discovery pass.
     """
-    from mriforge.models.init_registry import (
+    from spectramr.models.init_registry import (
         get_registry_import_failures,
         populate_model_registry,
     )

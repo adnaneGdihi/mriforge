@@ -20,8 +20,8 @@ class TestCheckpointRecoveryDeterminism(unittest.TestCase):
 
     def test_finds_highest_step_not_latest_mtime(self):
         """Verify recovery uses step number, not filesystem timestamp."""
-        from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-        from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+        from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+        from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
         config = CheckpointConfigSchema(
             checkpoint_dir=str(self.tmp_path),
@@ -49,8 +49,8 @@ class TestCheckpointRecoveryDeterminism(unittest.TestCase):
 
     def test_handles_epoch_checkpoints(self):
         """Verify epoch checkpoints are handled correctly."""
-        from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-        from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+        from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+        from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
         config = CheckpointConfigSchema(
             checkpoint_dir=str(self.tmp_path),
@@ -73,8 +73,8 @@ class TestCheckpointRecoveryDeterminism(unittest.TestCase):
 
     def test_mixed_epoch_step_checkpoints(self):
         """Verify step checkpoints are correctly compared with epoch checkpoints."""
-        from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-        from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+        from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+        from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
         config = CheckpointConfigSchema(
             checkpoint_dir=str(self.tmp_path),

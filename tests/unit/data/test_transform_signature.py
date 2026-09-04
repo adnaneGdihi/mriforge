@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.data.transforms.signature`.
+"""Tests for :mod:`spectramr.data.transforms.signature`.
 
 The Phase-2 parity contract depends on a stable hash. These tests
 pin the behavior that:
@@ -12,7 +12,7 @@ pin the behavior that:
 """
 from __future__ import annotations
 
-from mriforge.data.transforms.signature import (
+from spectramr.data.transforms.signature import (
     compute_transform_signature,
     diff_signatures,
 )
@@ -123,7 +123,7 @@ def test_augmentations_preserved_when_drop_augmentations_false() -> None:
 
 
 def test_repo_specific_augmentations_dropped() -> None:
-    """MRIForge's own augmentation classes (PhaseAugmentation,
+    """spectraMR's own augmentation classes (PhaseAugmentation,
     RealisticDegradations, etc.) are also stripped from parity diffs."""
     train = [
         _make_transform("RescaleIntensity", out_min_max=(0, 1)),

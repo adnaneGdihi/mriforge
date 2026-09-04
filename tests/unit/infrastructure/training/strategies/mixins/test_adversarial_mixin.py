@@ -23,8 +23,8 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins import adversarial
-from mriforge.infrastructure.training.strategies.mixins.adversarial import (
+from spectramr.infrastructure.training.strategies.mixins import adversarial
+from spectramr.infrastructure.training.strategies.mixins.adversarial import (
     AdversarialMixin,
 )
 

@@ -25,10 +25,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies import (  # noqa: E402
+from spectramr.infrastructure.training.strategies import (  # noqa: E402
     vf_admm_strategy as mod,
 )
-from mriforge.infrastructure.training.strategies.vf_admm_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.vf_admm_strategy import (  # noqa: E402
     ConcreteVFADMMStrategy,
 )
 
@@ -61,7 +61,7 @@ def _run_setup(monkeypatch: pytest.MonkeyPatch) -> ConcreteVFADMMStrategy:
     monkeypatch.setattr(mod, "create_loss", lambda *a, **k: _IdentityModule())
     monkeypatch.setattr(mod, "NoiseVarianceEstimator", _IdentityModule)
     # UnifiedReconstructionLossComputer is imported lazily inside the method.
-    import mriforge.models.losses.computers.unified_diffusion_reconstruction as urc
+    import spectramr.models.losses.computers.unified_diffusion_reconstruction as urc
 
     monkeypatch.setattr(
         urc, "UnifiedReconstructionLossComputer", lambda *a, **k: object()
@@ -125,6 +125,13 @@ def test_compute_losses_threads_undersampling_mask() -> None:
 
 
 def test_validation_threads_undersampling_mask() -> None:
-    """Val path must thread the mask too (else val DC differs from train)."""
-    src = inspect.getsource(ConcreteVFADMMStrategy.validation_step)
+    """Val path must thread the mask too (else val DC differs from train).
+
+    Since the VF review (2026-09-03) the validation forward lives in
+    ``_score_at_current_twin``, the one corrupt-reconstruct-score pass that
+    ``validation_step`` runs for the in-distribution rate and for every
+    out-of-distribution rate; the mask must reach the generator there.
+    """
+    src = inspect.getsource(ConcreteVFADMMStrategy._score_at_current_twin)
     assert "undersampling_mask_kwargs(self.simulator)" in src
+    assert "_score_at_current_twin(" in inspect.getsource(ConcreteVFADMMStrategy.validation_step)

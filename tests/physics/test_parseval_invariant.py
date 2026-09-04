@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def test_parseval_theorem_ortho():

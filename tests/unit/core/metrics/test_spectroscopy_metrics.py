@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.spectroscopy_metrics import SpectralLinewidth
+from spectramr.core.metrics.spectroscopy_metrics import SpectralLinewidth
 
 # ---------------------------------------------------------------------------
 # Canary
@@ -153,7 +153,7 @@ def test_wrong_ndim_raises():
 
 import inspect as _inspect  # noqa: E402
 
-from mriforge.core.metrics.spectroscopy_metrics import (  # noqa: E402
+from spectramr.core.metrics.spectroscopy_metrics import (  # noqa: E402
     CRLB,
     FrequencyDomainSNR,
 )

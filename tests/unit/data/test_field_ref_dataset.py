@@ -13,7 +13,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.field_ref_dataset import (
+from spectramr.data.datasets.field_ref_dataset import (
     FieldRefDataset,
     build_field_ref_index,
 )
@@ -90,7 +90,7 @@ def test_dataset_emits_target_and_b0_map(tmp_path):
 def test_schema_defaults_disabled_and_requires_a_field_map():
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.data import DataConfigSchema, FieldRefConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema, FieldRefConfigSchema
 
     assert FieldRefConfigSchema().enabled is False
     assert DataConfigSchema().field_ref.enabled is False
@@ -99,7 +99,7 @@ def test_schema_defaults_disabled_and_requires_a_field_map():
 
 
 def test_field_ref_is_an_accepted_dataset_type():
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert DataConfigSchema(dataset_type="field_ref").dataset_type == "field_ref"
 
@@ -107,7 +107,7 @@ def test_field_ref_is_an_accepted_dataset_type():
 def test_dispatch_requires_enabled():
     from types import SimpleNamespace
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
     config = DataConfigStub(
         dataset_type="field_ref",
@@ -130,7 +130,7 @@ def test_dry_iter_returns_length_correct_stub_subjects() -> None:
     """
     import torchio as tio
 
-    from mriforge.data.datasets.field_ref_dataset import FieldRefDataset
+    from spectramr.data.datasets.field_ref_dataset import FieldRefDataset
 
     ds = FieldRefDataset.__new__(FieldRefDataset)
     ds.index = [{}, {}, {}]

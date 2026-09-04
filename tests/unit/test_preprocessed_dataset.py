@@ -20,7 +20,7 @@ settings = hypothesis.settings
 st = pytest.importorskip("hypothesis.strategies", reason="hypothesis not installed")
 HealthCheck = hypothesis.HealthCheck
 
-from mriforge.data.datasets.preprocessed_dataset import (
+from spectramr.data.datasets.preprocessed_dataset import (
     PreprocessedMRIDataset,
     TaskType,
     create_preprocessed_dataloader,

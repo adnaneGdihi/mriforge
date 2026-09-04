@@ -24,10 +24,10 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.low_rank_sparse_strategy import (
+from spectramr.infrastructure.training.strategies.low_rank_sparse_strategy import (
     LowRankSparseStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 

@@ -1,6 +1,6 @@
 r"""Tests for k-space trajectory generators.
 
-Targets ``mriforge.infrastructure.physics.kspace_trajectory_generator``.
+Targets ``spectramr.infrastructure.physics.kspace_trajectory_generator``.
 
 Categories:
 
@@ -21,7 +21,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.kspace_trajectory_generator import (
+from spectramr.infrastructure.physics.kspace_trajectory_generator import (
     TRAJECTORY_REGISTRY,
     archimedean_spiral,
     cartesian_sequential,

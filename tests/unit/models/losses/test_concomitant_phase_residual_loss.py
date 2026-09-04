@@ -1,6 +1,6 @@
 """Tests for ``ConcomitantPhaseResidualLoss``.
 
-Targets ``mriforge.models.losses.concomitant_phase_residual_loss``. CAUR /
+Targets ``spectramr.models.losses.concomitant_phase_residual_loss``. CAUR /
 idea 1 §1.2 residual ridge penalty.
 
 Categories:
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.concomitant_phase_residual_loss import (
+from spectramr.models.losses.concomitant_phase_residual_loss import (
     ConcomitantPhaseResidualLoss,
 )
 
@@ -117,6 +117,6 @@ def test_target_argument_ignored() -> None:
 
 def test_registered() -> None:
     """``concomitant_phase_residual`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "concomitant_phase_residual" in list_available()

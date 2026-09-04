@@ -7,7 +7,7 @@ validation, where full 3D NIfTI volumes are returned instead of 2D patches.
 
 import torch
 
-from mriforge.models.generators.hilbert_mamba_generators import (
+from spectramr.models.generators.hilbert_mamba_generators import (
     _squeeze_volume_to_2d,
     _unsqueeze_to_volume,
 )

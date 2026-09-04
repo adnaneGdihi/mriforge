@@ -12,9 +12,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.multi_acquisition import MultiAcquisitionSimulator
-from mriforge.models.generators.vf_field_generators import BSSFPB0Regressor
-from mriforge.models.registry import get_model_capabilities
+from spectramr.infrastructure.physics.multi_acquisition import MultiAcquisitionSimulator
+from spectramr.models.generators.vf_field_generators import BSSFPB0Regressor
+from spectramr.models.registry import get_model_capabilities
 
 
 def test_registered_with_hz_field_units():

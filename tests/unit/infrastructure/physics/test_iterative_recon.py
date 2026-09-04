@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.iterative_recon import (
+from spectramr.infrastructure.physics.iterative_recon import (
     IterativeReconstructor,
     ReconMethod,
     ReconParams,

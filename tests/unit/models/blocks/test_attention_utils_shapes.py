@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.attention_utils import (
+from spectramr.models.blocks.attention_utils import (
     AttentionBackend,
     AttentionConfig,
     AttentionWrapper,

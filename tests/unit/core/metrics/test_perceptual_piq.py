@@ -16,7 +16,7 @@ import pytest
 torch = pytest.importorskip("torch")
 pytest.importorskip("piq")
 
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def _pair(h=96, w=96, noise=0.0, seed=0):

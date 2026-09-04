@@ -8,7 +8,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.config_health_checker import (  # noqa: E402
+from spectramr.infrastructure.validation.config_health_checker import (  # noqa: E402
     ConfigHealthChecker,
 )
 

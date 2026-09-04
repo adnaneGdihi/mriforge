@@ -1,6 +1,6 @@
 """Tests for ``DPMixin``.
 
-Targets ``mriforge.infrastructure.training.strategies.mixins.dp_mixin``.
+Targets ``spectramr.infrastructure.training.strategies.mixins.dp_mixin``.
 
 PR-7 (H5) — DP-SGD wraps a strategy's backward pass with per-sample
 clipping + Gaussian noise + Rényi-DP accounting.
@@ -23,7 +23,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.dp_mixin import DPMixin
+from spectramr.infrastructure.training.strategies.mixins.dp_mixin import DPMixin
 
 
 class _Host(DPMixin):
@@ -122,7 +122,7 @@ def test_post_process_with_zero_noise_equals_clipped_mean() -> None:
     per_sample = torch.randn(8, 4)
     out = host.dp_post_process_per_sample_grads(per_sample)
     # Compute the same operation manually for comparison.
-    from mriforge.infrastructure.services.privacy.dp_sgd import clip_per_sample_grad
+    from spectramr.infrastructure.services.privacy.dp_sgd import clip_per_sample_grad
 
     expected_mean = clip_per_sample_grad(per_sample, 1.0).mean(dim=0)
     # Loose tolerance: a tiny bit of noise is added.

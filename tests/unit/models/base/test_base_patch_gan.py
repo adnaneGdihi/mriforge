@@ -2,7 +2,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.base.base_patch_gan import BasePatchGAN
+from spectramr.models.base.base_patch_gan import BasePatchGAN
 
 
 class ConcretePatchGAN(BasePatchGAN):

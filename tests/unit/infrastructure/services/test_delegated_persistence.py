@@ -27,9 +27,9 @@ class TestDelegatedPersistence(unittest.TestCase):
         self.modules_patcher = patch.dict(
             sys.modules,
             {
-                "mriforge.infrastructure.services": MagicMock(),
-                "mriforge.infrastructure.services.iteration_counter_service": MagicMock(),
-                "mriforge.domain.entities.training_session": MagicMock(),
+                "spectramr.infrastructure.services": MagicMock(),
+                "spectramr.infrastructure.services.iteration_counter_service": MagicMock(),
+                "spectramr.domain.entities.training_session": MagicMock(),
                 "torch": MagicMock(),
                 "torch.distributions": MagicMock(),
                 "torch.distributions.chi2": MagicMock(),
@@ -56,7 +56,7 @@ class TestDelegatedPersistence(unittest.TestCase):
 
         self.checkpoint_delegate_cls = import_file(
             "checkpoint_delegate",
-            "src/mriforge/infrastructure/services/persistence/checkpoint_delegate.py",
+            "src/spectramr/infrastructure/services/persistence/checkpoint_delegate.py",
         ).CheckpointDelegate
 
         # MetricsDelegate deleted with #710: it had no production caller, only
@@ -66,7 +66,7 @@ class TestDelegatedPersistence(unittest.TestCase):
 
         self.training_log_delegate_cls = import_file(
             "training_log_delegate",
-            "src/mriforge/infrastructure/services/persistence/training_log_delegate.py",
+            "src/spectramr/infrastructure/services/persistence/training_log_delegate.py",
         ).TrainingLogDelegate
 
         # Instantiate delegates

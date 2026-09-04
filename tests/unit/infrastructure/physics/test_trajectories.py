@@ -1,6 +1,6 @@
 """Unit tests for the non-Cartesian trajectory factory.
 
-Targets :mod:`mriforge.infrastructure.physics.trajectories`. The module
+Targets :mod:`spectramr.infrastructure.physics.trajectories`. The module
 provides analytic generators for radial / spiral / EPI trajectories
 used by the NUFFT pipeline. Coordinates must live in ``[-π, π]`` and
 the density-compensation function (DCF) must be non-zero everywhere so
@@ -16,7 +16,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.trajectories import (
+from spectramr.infrastructure.physics.trajectories import (
     TrajectoryFactory,
     get_trajectory,
 )

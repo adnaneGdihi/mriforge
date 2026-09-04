@@ -11,7 +11,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.multi_acquisition import (
+from spectramr.infrastructure.physics.multi_acquisition import (
     PAIRED_METHODS,
     MultiAcquisitionSimulator,
     invert_afi,
@@ -229,7 +229,7 @@ def _hr_image(b: int = 3, h: int = 128, w: int = 128) -> torch.Tensor:
 
 
 def _sim(**kw):
-    from mriforge.infrastructure.physics.multi_acquisition import (
+    from spectramr.infrastructure.physics.multi_acquisition import (
         MultiAcquisitionSimulator,
     )
 
@@ -267,7 +267,7 @@ def test_marker_carries_the_same_offsets_as_the_anatomy() -> None:
     """The mechanism-fires probe at the physics layer: registering the fiducial
     against the un-shifted reference must reproduce the simulator's own shifts
     without ever reading them."""
-    from mriforge.infrastructure.physics.subpixel_registration import (
+    from spectramr.infrastructure.physics.subpixel_registration import (
         estimate_subpixel_shifts,
     )
 
@@ -293,7 +293,7 @@ def test_marker_reference_is_stable_across_calls() -> None:
 def test_marker_on_a_non_subvoxel_method_raises() -> None:
     """Advertising the fiducial where nothing registers it would be an inert
     knob (CLAUDE.md #15)."""
-    from mriforge.infrastructure.physics.multi_acquisition import (
+    from spectramr.infrastructure.physics.multi_acquisition import (
         MultiAcquisitionSimulator,
     )
 
@@ -325,7 +325,7 @@ def test_physical_marker_geometry_reaches_the_simulator() -> None:
     ignored the two fields would be identical and every ULF arm would silently
     carry a marker 3x too fine to survive at 64mT.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     pixel_mode = _sim(marker_enabled=True, marker_sigma=2.0)
     physical = _sim(

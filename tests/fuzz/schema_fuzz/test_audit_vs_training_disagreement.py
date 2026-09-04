@@ -2,8 +2,8 @@
 
 Defect predicate
 ----------------
-A configuration is a *disagreement* if ``mriforge audit <yaml>`` exits 0
-(schema + Tier-1 static checks pass) but ``mriforge train --dry-run`` exits
+A configuration is a *disagreement* if ``spectramr audit <yaml>`` exits 0
+(schema + Tier-1 static checks pass) but ``spectramr train --dry-run`` exits
 non-zero (the pipeline rejects the config at runtime).
 
 The reverse (audit fails ∧ dry-run succeeds) is not captured here — those
@@ -16,8 +16,8 @@ the *JSON Schema* emitted by ``TrainingSettings.model_json_schema()``.
 Each drawn dict is:
 
 1. Written to a temp YAML file.
-2. Run through ``mriforge audit`` via subprocess.
-3. If audit exits 0, run ``mriforge train --dry-run`` via subprocess.
+2. Run through ``spectramr audit`` via subprocess.
+3. If audit exits 0, run ``spectramr train --dry-run`` via subprocess.
 4. If dry-run exits non-zero the pair (audit_stdout, train_stderr) is
    persisted to the regression corpus for later replay.
 
@@ -43,7 +43,7 @@ Both ensure collection silently skips when the libraries are absent.
 Notes
 -----
 * This test runs the CLI via subprocess, which means it activates the
-  installed ``mriforge`` package (not a mocked version).  It is
+  installed ``spectramr`` package (not a mocked version).  It is
   intentionally slow and is marked ``@pytest.mark.fuzz`` so the default
   ``make test`` target does not pick it up.
 * The ``@settings(max_examples=50, ...)`` default is conservative; on the
@@ -112,7 +112,7 @@ def _get_training_schema() -> dict:
     if _TRAINING_SCHEMA is not None:
         return _TRAINING_SCHEMA
     try:
-        from mriforge.config.settings import TrainingSettings  # noqa: PLC0415
+        from spectramr.config.settings import TrainingSettings  # noqa: PLC0415
         _TRAINING_SCHEMA = TrainingSettings.model_json_schema()
     except Exception as exc:  # pragma: no cover
         pytest.skip(f"Could not load TrainingSettings schema: {exc}")
@@ -123,15 +123,15 @@ def _get_training_schema() -> dict:
 # Subprocess helpers
 # ---------------------------------------------------------------------------
 
-def _mriforge_cmd() -> list[str]:
-    """Return the base mriforge CLI invocation for the current interpreter."""
-    return [sys.executable, "-m", "mriforge.cli"]
+def _spectramr_cmd() -> list[str]:
+    """Return the base spectramr CLI invocation for the current interpreter."""
+    return [sys.executable, "-m", "spectramr.cli"]
 
 
 def _run_audit(yaml_path: str) -> tuple[int, str, str]:
-    """Run ``mriforge audit <yaml>``.  Returns (returncode, stdout, stderr)."""
+    """Run ``spectramr audit <yaml>``.  Returns (returncode, stdout, stderr)."""
     result = subprocess.run(
-        [*_mriforge_cmd(), "audit", yaml_path],
+        [*_spectramr_cmd(), "audit", yaml_path],
         capture_output=True,
         text=True,
         timeout=120,
@@ -140,11 +140,11 @@ def _run_audit(yaml_path: str) -> tuple[int, str, str]:
 
 
 def _run_train_dry_run(yaml_path: str) -> tuple[int, str, str]:
-    """Run ``mriforge train --config <yaml> --dry_run``.
+    """Run ``spectramr train --config <yaml> --dry_run``.
     Returns (returncode, stdout, stderr).
     """
     result = subprocess.run(
-        [*_mriforge_cmd(), "train", "--config", yaml_path, "--dry_run"],
+        [*_spectramr_cmd(), "train", "--config", yaml_path, "--dry_run"],
         capture_output=True,
         text=True,
         timeout=300,

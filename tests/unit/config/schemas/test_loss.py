@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import SignalDomain
-from mriforge.config.schemas.loss import LOSS_LIST_DOMAINS, LossConfigSchema
+from spectramr.config.schemas.enums import SignalDomain
+from spectramr.config.schemas.loss import LOSS_LIST_DOMAINS, LossConfigSchema
 
 
 class TestLossListDomainsIsTheSSOT:
@@ -136,7 +136,7 @@ class TestOutputDomainLegalSet:
     """
 
     def test_every_buildable_domain_is_accepted(self) -> None:
-        from mriforge.config.schemas.loss import LOSS_LIST_DOMAINS
+        from spectramr.config.schemas.loss import LOSS_LIST_DOMAINS
 
         for domain in LOSS_LIST_DOMAINS.values():
             LossConfigSchema(output_domain=domain.value)
@@ -367,8 +367,8 @@ class TestReconstructionRetiredSpellingsRaise:
         how the original collision hid. If `content_consistency` were aliased the
         same way, the split would be cosmetic and the crash would return.
         """
-        from mriforge.models.losses.registry import LossRegistry
-        from mriforge.models.losses.weights import canonical_loss_name
+        from spectramr.models.losses.registry import LossRegistry
+        from spectramr.models.losses.weights import canonical_loss_name
 
         assert canonical_loss_name("content_consistency") == "content_consistency"
         assert "content_consistency" not in LossRegistry._aliases

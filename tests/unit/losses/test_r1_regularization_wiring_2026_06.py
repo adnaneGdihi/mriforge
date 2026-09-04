@@ -18,7 +18,7 @@ import types
 
 import torch
 
-from mriforge.models.losses.computers.unified_gan import UnifiedGANLossComputer
+from spectramr.models.losses.computers.unified_gan import UnifiedGANLossComputer
 
 
 class _GanLosses:

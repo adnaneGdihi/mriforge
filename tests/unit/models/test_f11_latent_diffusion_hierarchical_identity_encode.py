@@ -29,7 +29,7 @@ import torch
 
 @pytest.fixture
 def model():
-    from mriforge.models.generators.generative_variants import (
+    from spectramr.models.generators.generative_variants import (
         LatentDiffusionHierarchical,
     )
     # Use in_channels=2 to match the smoke-test config (complex

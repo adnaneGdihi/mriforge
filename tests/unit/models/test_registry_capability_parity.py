@@ -28,8 +28,8 @@ from collections import defaultdict
 
 import pytest
 
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 #: Fields describing what the CLASS can do. ``training_mode`` is intentionally absent:
 #: it is a registration fact (which training loop the name routes to), not a property of

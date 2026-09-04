@@ -10,7 +10,7 @@ from tests.utils.config_block_stub import block_stub
 
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 

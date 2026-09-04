@@ -1,8 +1,8 @@
 r"""Unit tests for the LCAH and DL-BAE training objectives.
 
 Targets the module-level loss functions of
-``mriforge.infrastructure.training.strategies.hypernetwork_strategy`` (M3) and
-``mriforge.infrastructure.training.strategies.dispersion_bloch_ae_strategy`` (M4).
+``spectramr.infrastructure.training.strategies.hypernetwork_strategy`` (M3) and
+``spectramr.infrastructure.training.strategies.dispersion_bloch_ae_strategy`` (M4).
 
 Both strategies keep their science in a module-level function so it is testable
 without constructing a trainer -- the same seam as ``bloch_field`` and
@@ -14,18 +14,18 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.dispersion_bloch_ae_strategy import (
+from spectramr.infrastructure.training.strategies.dispersion_bloch_ae_strategy import (
     compute_dispersion_bloch_ae_loss,
 )
-from mriforge.infrastructure.training.strategies.hypernetwork_strategy import (
+from spectramr.infrastructure.training.strategies.hypernetwork_strategy import (
     compute_lcah_loss,
 )
-from mriforge.models.encoders.lcah_encoder import LCAHEncoder
-from mriforge.models.losses.dispersion_monotonicity_loss import DispersionMonotonicity
-from mriforge.models.losses.image.multifield_data_consistency import (
+from spectramr.models.encoders.lcah_encoder import LCAHEncoder
+from spectramr.models.losses.dispersion_monotonicity_loss import DispersionMonotonicity
+from spectramr.models.losses.image.multifield_data_consistency import (
     MultiFieldDataConsistency,
 )
-from mriforge.models.physics_ae.disp_bloch_ae import DispersionBlochAutoencoder
+from spectramr.models.physics_ae.disp_bloch_ae import DispersionBlochAutoencoder
 
 pytestmark = pytest.mark.unit
 

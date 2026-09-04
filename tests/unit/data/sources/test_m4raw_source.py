@@ -8,7 +8,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.sources.m4raw_source import M4RawSource  # noqa: E402
+from spectramr.data.sources.m4raw_source import M4RawSource  # noqa: E402
 
 
 class TestSingletonGroupsAreRefused:
@@ -19,7 +19,7 @@ class TestSingletonGroupsAreRefused:
 
     def test_a_singleton_only_tree_raises(self, tmp_path, monkeypatch) -> None:
         monkeypatch.setattr(
-            "mriforge.data.sources.m4raw_source.discover_repetition_groups",
+            "spectramr.data.sources.m4raw_source.discover_repetition_groups",
             lambda *_a, **_k: [[Path("a01.h5")], [Path("b01.h5")]],
         )
         with pytest.raises(FileNotFoundError, match="graded against noise"):
@@ -27,7 +27,7 @@ class TestSingletonGroupsAreRefused:
 
     def test_singletons_are_dropped_and_counted(self, tmp_path, monkeypatch) -> None:
         monkeypatch.setattr(
-            "mriforge.data.sources.m4raw_source.discover_repetition_groups",
+            "spectramr.data.sources.m4raw_source.discover_repetition_groups",
             lambda *_a, **_k: [
                 [Path("2022_T101.h5"), Path("2022_T102.h5")],
                 [Path("solo_T101.h5")],
@@ -42,7 +42,7 @@ class TestSliceSelection:
     @pytest.fixture
     def src(self, tmp_path, monkeypatch):
         monkeypatch.setattr(
-            "mriforge.data.sources.m4raw_source.discover_repetition_groups",
+            "spectramr.data.sources.m4raw_source.discover_repetition_groups",
             lambda *_a, **_k: [[Path("2022_T101.h5"), Path("2022_T102.h5")]],
         )
         return M4RawSource(tmp_path, slices_per_volume=5)
@@ -71,7 +71,7 @@ class TestNoPathologyRegions:
         axis -- if the leaderboard does not move between full and brain here, the
         region machinery has a problem that has nothing to do with lesions."""
         monkeypatch.setattr(
-            "mriforge.data.sources.m4raw_source.discover_repetition_groups",
+            "spectramr.data.sources.m4raw_source.discover_repetition_groups",
             lambda *_a, **_k: [[Path("2022_T101.h5"), Path("2022_T102.h5")]],
         )
         src = M4RawSource(tmp_path)
@@ -106,7 +106,7 @@ def _write_m4raw_h5(path, *, n_slices: int = 3, n_coils: int = 4, hw: int = 32) 
 
 def test_iter_yields_a_well_formed_slice(tmp_path) -> None:
     """The reference must be [1, H, W] magnitude -- not the (1, C, H, W) coil stack."""
-    from mriforge.data.sources.m4raw_source import M4RawSource
+    from spectramr.data.sources.m4raw_source import M4RawSource
 
     for rep in ("01", "02"):
         _write_m4raw_h5(tmp_path / f"2022101301_FLAIR{rep}.h5")

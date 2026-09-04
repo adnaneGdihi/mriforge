@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.koopman_operator import koopman_continuous_propagate
-from mriforge.models.generators.koopman_field_propagator import KoopmanFieldPropagator
+from spectramr.infrastructure.physics.koopman_operator import koopman_continuous_propagate
+from spectramr.models.generators.koopman_field_propagator import KoopmanFieldPropagator
 
 
 def _net(**kw) -> KoopmanFieldPropagator:
@@ -127,8 +127,8 @@ def test_rejects_complex() -> None:
 
 
 def test_synthetic_forward_probe_passes_for_both_arms() -> None:
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.forward_probe import synthetic_forward_probe
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.forward_probe import synthetic_forward_probe
 
     for arm in ("b310_koopman", "b310_ablate_nonlinear"):
         cfg = TrainingSettings.from_yaml(
@@ -139,8 +139,8 @@ def test_synthetic_forward_probe_passes_for_both_arms() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "koopman_field_propagator" in MODEL_REGISTRY

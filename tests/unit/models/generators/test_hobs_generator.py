@@ -9,7 +9,7 @@ still smoke-passed).
 import pytest
 import torch
 
-from mriforge.models.generators.hobs_generator import HoBSGenerator
+from spectramr.models.generators.hobs_generator import HoBSGenerator
 
 
 def _tiny_model() -> HoBSGenerator:

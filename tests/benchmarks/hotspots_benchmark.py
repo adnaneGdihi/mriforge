@@ -11,8 +11,8 @@ import torchio as tio
 # Add project root to sys.path
 sys.path.insert(0, os.getcwd())
 
-from mriforge.data.io_strategies import FastMRIH5Strategy
-from mriforge.data.transforms.geometric import SmartGeometricStandardization
+from spectramr.data.io_strategies import FastMRIH5Strategy
+from spectramr.data.transforms.geometric import SmartGeometricStandardization
 
 
 def benchmark_fastmri_h5_strategy():

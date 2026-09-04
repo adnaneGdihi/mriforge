@@ -22,16 +22,16 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     MetaEvaluationPipeline,
     SimulatorConfig,
 )
-from mriforge.core.metrics.meta_evaluation.simulator import (
+from spectramr.core.metrics.meta_evaluation.simulator import (
     degrade_gamma,
     degrade_gaussian_noise,
     degrade_rician_noise,
 )
-from mriforge.core.metrics.meta_evaluation.tables import (
+from spectramr.core.metrics.meta_evaluation.tables import (
     write_all_tables,
     write_correlation_csv,
     write_leaderboard_latex,
@@ -104,7 +104,7 @@ def small_output(clean_volumes, metric_set):
 
 
 def test_metric_trajectories_writes_png(small_output, tmp_path: Path) -> None:
-    from mriforge.core.metrics.meta_evaluation.figures import metric_trajectories
+    from spectramr.core.metrics.meta_evaluation.figures import metric_trajectories
 
     path = metric_trajectories(small_output, tmp_path)
     assert path is not None
@@ -112,7 +112,7 @@ def test_metric_trajectories_writes_png(small_output, tmp_path: Path) -> None:
 
 
 def test_metric_correlation_clustering_writes_png(small_output, tmp_path: Path) -> None:
-    from mriforge.core.metrics.meta_evaluation.figures import (
+    from spectramr.core.metrics.meta_evaluation.figures import (
         metric_correlation_clustering,
     )
 
@@ -122,7 +122,7 @@ def test_metric_correlation_clustering_writes_png(small_output, tmp_path: Path) 
 
 
 def test_sensitivity_scatter_writes_png(small_output, tmp_path: Path) -> None:
-    from mriforge.core.metrics.meta_evaluation.figures import sensitivity_scatter
+    from spectramr.core.metrics.meta_evaluation.figures import sensitivity_scatter
 
     path = sensitivity_scatter(small_output, tmp_path)
     assert path is not None
@@ -130,7 +130,7 @@ def test_sensitivity_scatter_writes_png(small_output, tmp_path: Path) -> None:
 
 
 def test_degradation_mosaic_writes_png(small_output, tmp_path: Path) -> None:
-    from mriforge.core.metrics.meta_evaluation.figures import degradation_mosaic
+    from spectramr.core.metrics.meta_evaluation.figures import degradation_mosaic
 
     path = degradation_mosaic(small_output, tmp_path)
     assert path is not None
@@ -290,7 +290,7 @@ def test_write_all_tables_raises_when_a_table_fails(
     A *missing* results file is the one failure nobody notices -- you cannot see
     the table that isn't there. Strict mode is the default so the run stops.
     """
-    from mriforge.core.metrics.meta_evaluation import tables as tables_mod
+    from spectramr.core.metrics.meta_evaluation import tables as tables_mod
 
     def _boom(_output, _path):
         raise RuntimeError("disk on fire")
@@ -305,7 +305,7 @@ def test_write_all_tables_non_strict_reports_every_failure(
     small_output, tmp_path: Path, monkeypatch
 ) -> None:
     """Non-strict still writes the healthy tables and never fabricates the broken one."""
-    from mriforge.core.metrics.meta_evaluation import tables as tables_mod
+    from spectramr.core.metrics.meta_evaluation import tables as tables_mod
 
     def _boom(_output, _path):
         raise RuntimeError("disk on fire")

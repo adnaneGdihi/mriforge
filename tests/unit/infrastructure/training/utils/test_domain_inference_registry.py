@@ -20,7 +20,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.utils.domain_inference import (
+from spectramr.infrastructure.training.utils.domain_inference import (
     KNOWN_IMAGE_OUTPUT_MODELS,
     KNOWN_KSPACE_OUTPUT_MODELS,
     _registry_output_domain,
@@ -52,7 +52,7 @@ class TestLooksLikeKspace:
     def test_kspace_magnitude_detected(self) -> None:
         import torch
 
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         ksp = fft2c(self._disk().to(torch.complex64))
         assert looks_like_kspace(ksp.abs()) is True
@@ -135,7 +135,7 @@ def test_p2_registry_lookup_handles_missing_capabilities():
     """A registered model with no ``output_domain`` capability annotation
     returns ``None`` from the helper so the cascade falls through to P3+."""
     # Pick the first MODEL_REGISTRY entry that has no output_domain set
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     for name, entry in MODEL_REGISTRY.items():
         caps = entry.get("capabilities")
@@ -153,7 +153,7 @@ def test_p3_legacy_set_still_works_for_unannotated_models():
     """Models in KNOWN_KSPACE_OUTPUT_MODELS that lack decorator annotation
     still get classified correctly via the legacy set."""
     # Pick a known k-space model that is NOT annotated via decorator
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     candidates = [
         m
@@ -278,13 +278,13 @@ def test_diffusion_strategy_uses_domain_inference_not_input_type():
     import pathlib
 
     diffusion_src = pathlib.Path(
-        "src/mriforge/infrastructure/training/strategies/diffusion.py"
+        "src/spectramr/infrastructure/training/strategies/diffusion.py"
     ).read_text(encoding="utf-8")
 
     # The SSOT import must be present in the validation logging path.
     assert "needs_ifft_for_visualization" in diffusion_src, (
         "diffusion.py must import needs_ifft_for_visualization from "
-        "mriforge.infrastructure.training.utils.domain_inference for validation "
+        "spectramr.infrastructure.training.utils.domain_inference for validation "
         "image logging — see test rationale for the failure mode."
     )
 

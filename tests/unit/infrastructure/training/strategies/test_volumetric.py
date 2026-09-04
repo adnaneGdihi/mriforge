@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.volumetric import TRELLISTrainingStrategy
+from spectramr.infrastructure.training.strategies.volumetric import TRELLISTrainingStrategy
 
 
 @pytest.fixture
@@ -47,7 +47,7 @@ def strategy(mock_env):
     """Instantiate TRELLISTrainingStrategy (NEW API - env only)."""
     # Patch UnifiedReconstructionLossComputer
     with patch(
-        "mriforge.infrastructure.training.strategies.volumetric.UnifiedReconstructionLossComputer"
+        "spectramr.infrastructure.training.strategies.volumetric.UnifiedReconstructionLossComputer"
     ) as MockCalc:
         strategy = TRELLISTrainingStrategy(env=mock_env)
         return strategy

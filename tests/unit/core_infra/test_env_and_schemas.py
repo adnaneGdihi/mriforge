@@ -7,8 +7,8 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.config.env_resolver import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.config.env_resolver import (
     resolve_cache_root,
     resolve_data_root,
     resolve_device,
@@ -29,13 +29,13 @@ class TestEnvResolver:
         # Use tmp_path to mock Path.home() to avoid creating actual folders in ~/.cache during tests
         with patch.object(Path, "home", return_value=tmp_path):
             root = resolve_data_root()
-            assert root == tmp_path / ".cache" / "mriforge" / "data"
+            assert root == tmp_path / ".cache" / "spectramr" / "data"
             assert root.exists()
 
     def test_resolve_data_root_env_override(self, tmp_path):
         """Test explicit environment override for data root."""
         custom_dir = tmp_path / "custom_data"
-        with patch.dict(os.environ, {"MRIFORGE_DATA_ROOT": str(custom_dir)}):
+        with patch.dict(os.environ, {"SPECTRAMR_DATA_ROOT": str(custom_dir)}):
             root = resolve_data_root()
             assert root == custom_dir
             assert root.exists()
@@ -44,7 +44,7 @@ class TestEnvResolver:
         """Test default cache root resolution."""
         with patch.object(Path, "home", return_value=tmp_path):
             root = resolve_cache_root()
-            assert root == tmp_path / ".cache" / "mriforge" / "torch"
+            assert root == tmp_path / ".cache" / "spectramr" / "torch"
             assert root.exists()
 
     def test_resolve_cache_root_tmpdir(self, tmp_path):
@@ -52,7 +52,7 @@ class TestEnvResolver:
         cluster_tmp = tmp_path / "cluster_tmp"
         with patch.dict(os.environ, {"TMPDIR": str(cluster_tmp)}):
             root = resolve_cache_root()
-            assert root == cluster_tmp / "mriforge_cache"
+            assert root == cluster_tmp / "spectramr_cache"
             assert root.exists()
 
     def test_resolve_cache_root_explicit(self, tmp_path):
@@ -61,7 +61,7 @@ class TestEnvResolver:
         cluster_tmp = tmp_path / "cluster_tmp"
         with patch.dict(
             os.environ,
-            {"TMPDIR": str(cluster_tmp), "MRIFORGE_CACHE_ROOT": str(explicit_cache)},
+            {"TMPDIR": str(cluster_tmp), "SPECTRAMR_CACHE_ROOT": str(explicit_cache)},
         ):
             root = resolve_cache_root()
             assert root == explicit_cache
@@ -81,12 +81,12 @@ class TestEnvResolver:
     @pytest.mark.parametrize("device_str", ["cuda", "cpu", "auto", "CUDA", "AuTo"])
     def test_resolve_device_valid(self, device_str):
         """Test valid device overrides."""
-        with patch.dict(os.environ, {"MRIFORGE_DEVICE": device_str}):
+        with patch.dict(os.environ, {"SPECTRAMR_DEVICE": device_str}):
             assert resolve_device() == device_str.lower()
 
     def test_resolve_device_invalid(self):
         """Test invalid device raises ValueError."""
-        with patch.dict(os.environ, {"MRIFORGE_DEVICE": "tpu"}):
+        with patch.dict(os.environ, {"SPECTRAMR_DEVICE": "tpu"}):
             with pytest.raises(ValueError, match="Invalid device 'tpu'"):
                 resolve_device()
 

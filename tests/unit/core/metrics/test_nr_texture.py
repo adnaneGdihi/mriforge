@@ -1,6 +1,6 @@
 """Unit tests for the no-reference *texture* metric battery.
 
-Covers ``src/mriforge/core/metrics/nr_texture.py``. All tests are CPU-only,
+Covers ``src/spectramr/core/metrics/nr_texture.py``. All tests are CPU-only,
 fast, and deterministic (fixed ``torch.Generator`` seeds throughout). For each
 metric we assert:
 
@@ -22,8 +22,8 @@ import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812 - universal PyTorch idiom
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.registry import MetricsRegistry, get_metric
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.registry import MetricsRegistry, get_metric
 
 # ---------------------------------------------------------------------------
 # Synthetic fixtures (deterministic).
@@ -87,14 +87,14 @@ ALL_KEYS = ["wlms", "wpde", "pgle", "pid", "bemd_ier", "pcd", "savs"]
 
 
 def test_all_metrics_registered() -> None:
-    import mriforge.core.metrics.nr_texture  # noqa: F401  (fire registrations)
+    import spectramr.core.metrics.nr_texture  # noqa: F401  (fire registrations)
 
     for k in ALL_KEYS:
         assert MetricsRegistry.is_registered(k), f"{k} not registered"
 
 
 def test_contract_flags() -> None:
-    import mriforge.core.metrics.nr_texture  # noqa: F401
+    import spectramr.core.metrics.nr_texture  # noqa: F401
 
     for k in ALL_KEYS:
         assert MetricsRegistry.requires_reference(k) is False
@@ -105,7 +105,7 @@ def test_contract_flags() -> None:
 
 
 def test_self_declared_directions() -> None:
-    import mriforge.core.metrics.nr_texture as m
+    import spectramr.core.metrics.nr_texture as m
 
     classes = {
         "pgle": m.PatchGraphLaplacianEntropy,

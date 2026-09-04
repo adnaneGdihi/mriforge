@@ -83,7 +83,7 @@ def _make_minimal_env(cfg: MagicMock | None = None) -> MagicMock:
     """Return a MagicMock that satisfies TrainingEnvironment duck-typing checks."""
     import torch
 
-    from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+    from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
     if cfg is None:
         cfg = _make_minimal_config()
@@ -121,7 +121,7 @@ def test_minimal_config_actually_disables_snapshots() -> None:
     ``logging.snapshots``, whose leaves are truthy: the fixture silently
     resolved to snapshots ENABLED. Nothing failed, because nothing asked.
     """
-    from mriforge.infrastructure.training.debug_snapshot import _resolve_config
+    from spectramr.infrastructure.training.debug_snapshot import _resolve_config
 
     resolved = _resolve_config(_make_minimal_config().logging)
     assert resolved.enabled is False
@@ -137,7 +137,7 @@ def test_minimal_config_actually_disables_snapshots() -> None:
 @pytest.mark.unit
 def test_base_training_strategy_is_abstract() -> None:
     """BaseTrainingStrategy must not be directly instantiable."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     # BaseTrainingStrategy can't mark _compute_losses_impl @abstractmethod
     # (≈14 concrete strategies override _compute_losses / train_step instead),
@@ -153,7 +153,7 @@ def test_base_training_strategy_is_abstract() -> None:
 @pytest.mark.unit
 def test_base_training_strategy_compute_losses_impl_is_abstract() -> None:
     """_compute_losses_impl on BaseTrainingStrategy raises NotImplementedError."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     # Build a concrete subclass that only exists to instantiate the base
     # without triggering the full __init__ chain (heavy DI / AMP setup).
@@ -189,7 +189,7 @@ def test_base_training_strategy_compute_losses_impl_is_abstract() -> None:
 @pytest.mark.unit
 def test_lifecycle_hooks_signatures() -> None:
     """Public lifecycle hooks on BaseTrainingStrategy must accept the declared args."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     # Verify the hook signatures — at least check the parameter names exist.
     for method_name, required_params in [
@@ -209,7 +209,7 @@ def test_lifecycle_hooks_signatures() -> None:
 @pytest.mark.unit
 def test_lifecycle_hooks_are_callable() -> None:
     """Lifecycle hooks must be callable (not None / property)."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     for name in (
         "on_epoch_start",
@@ -231,7 +231,7 @@ def test_loss_result_to_dict_and_get_scalar() -> None:
     """LossResult.to_dict returns the losses dict; get_scalar handles missing keys."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.base import LossResult
+    from spectramr.infrastructure.training.strategies.base import LossResult
 
     t = torch.tensor(0.5)
     result = LossResult(
@@ -251,7 +251,7 @@ def test_loss_result_none_metrics_get_scalar() -> None:
     """LossResult.get_scalar returns default when metrics is None."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.base import LossResult
+    from spectramr.infrastructure.training.strategies.base import LossResult
 
     result = LossResult(losses={"g_total_loss": torch.tensor(1.0)}, metrics=None)
     assert result.get_scalar("anything", default=-1.0) == pytest.approx(-1.0)
@@ -265,7 +265,7 @@ def test_loss_result_none_metrics_get_scalar() -> None:
 @pytest.mark.unit
 def test_verify_strategy_config_raises_on_none_config() -> None:
     """_verify_strategy_config raises ValueError when self.config is None."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     with patch.object(BaseTrainingStrategy, "__init__", lambda self, **kw: None):
 
@@ -290,7 +290,7 @@ def test_apply_adapters_noop_when_no_chain() -> None:
     """apply_adapters must return input unchanged when no chain is registered."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     with patch.object(BaseTrainingStrategy, "__init__", lambda self, **kw: None):
 
@@ -326,7 +326,7 @@ def test_get_last_metrics_returns_on_device_values() -> None:
     """
     import torch
 
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     with patch.object(BaseTrainingStrategy, "__init__", lambda self, **kw: None):
 
@@ -360,7 +360,7 @@ def test_get_last_metrics_returns_on_device_values() -> None:
 @pytest.mark.unit
 def test_handled_training_errors_exported() -> None:
     """HANDLED_TRAINING_ERRORS must be a non-empty tuple of exception types."""
-    from mriforge.infrastructure.training.strategies.base import HANDLED_TRAINING_ERRORS
+    from spectramr.infrastructure.training.strategies.base import HANDLED_TRAINING_ERRORS
 
     assert isinstance(HANDLED_TRAINING_ERRORS, tuple)
     assert len(HANDLED_TRAINING_ERRORS) > 0
@@ -382,8 +382,8 @@ def test_strategy_exposes_loop_state_seam_defaulted_to_zero() -> None:
     curriculum diagnostic reads — replacing the frozen, perpetually-zero
     ``env.step``. The default-0 matters: a strategy constructed outside the loop
     (tests / scripting) must still read a sane iteration rather than crash."""
-    from mriforge.infrastructure.training.loop_state import LoopState
-    from mriforge.infrastructure.training.strategies.base import (
+    from spectramr.infrastructure.training.loop_state import LoopState
+    from spectramr.infrastructure.training.strategies.base import (
         BaseTrainingStrategy,
         TrainingStepStrategy,
     )
@@ -419,7 +419,7 @@ def test_strategy_exposes_loop_state_seam_defaulted_to_zero() -> None:
 def _sync(loss_computer: Any, loop_state: Any) -> Any:
     from types import SimpleNamespace
 
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     stub = SimpleNamespace(loss_computer=loss_computer, loop_state=loop_state)
     BaseTrainingStrategy.sync_scheduled_loss_weights(stub)
@@ -481,7 +481,7 @@ def test_base_declares_capabilities_exactly_once() -> None:
     import ast
     import inspect as _inspect
 
-    from mriforge.infrastructure.training.strategies import base as _base
+    from spectramr.infrastructure.training.strategies import base as _base
 
     tree = ast.parse(_inspect.getsource(_base))
     class_def = next(

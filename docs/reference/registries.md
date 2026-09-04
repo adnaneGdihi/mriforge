@@ -1,6 +1,6 @@
 # Registries
 
-MRIForge uses a registry-dispatcher pattern across **eight surfaces**.
+spectraMR uses a registry-dispatcher pattern across **eight surfaces**.
 Every registry maps a string name to a class or descriptor; YAML configs
 reference the name; the framework looks it up at load time. This page is
 the catalogue.
@@ -17,21 +17,21 @@ catches it.
 
 | Registry | Module | Decorator | YAML key |
 |---|---|---|---|
-| Models | `mriforge.models.registry` | `@register_model` | `model.model_type` |
-| Losses | `mriforge.models.losses.registry` | `@register_loss` | `losses.*_losses[*].name` |
-| Metrics | `mriforge.core.metrics` | `@register_metric` | `metrics.<name>` / `validation.metrics[*]` |
-| Datasets | `mriforge.data.datasets` | `@register_dataset` | `data.dataset_type` |
-| Strategies | `mriforge.infrastructure.training.strategy_factory.STRATEGY_CLASS_PATHS` | dict entry | `training.strategy_class` |
-| Training modes | `mriforge.config.validation_constants.VALID_TRAINING_MODES` + `TRAINING_MODE_CONSTRAINTS` | dict entry | `training.training_mode` |
-| Mask types | `mriforge.infrastructure.physics.sampling.MaskType` | enum value | `data.kspace_sampling_mask` |
-| Adapters | `mriforge.data.adapters.registry` | `@register_adapter` | `adapters.{pre_model, post_model, pre_loss_pred, ...}[*].name` |
+| Models | `spectramr.models.registry` | `@register_model` | `model.model_type` |
+| Losses | `spectramr.models.losses.registry` | `@register_loss` | `losses.*_losses[*].name` |
+| Metrics | `spectramr.core.metrics` | `@register_metric` | `metrics.<name>` / `validation.metrics[*]` |
+| Datasets | `spectramr.data.datasets` | `@register_dataset` | `data.dataset_type` |
+| Strategies | `spectramr.infrastructure.training.strategy_factory.STRATEGY_CLASS_PATHS` | dict entry | `training.strategy_class` |
+| Training modes | `spectramr.config.validation_constants.VALID_TRAINING_MODES` + `TRAINING_MODE_CONSTRAINTS` | dict entry | `training.training_mode` |
+| Mask types | `spectramr.infrastructure.physics.sampling.MaskType` | enum value | `data.kspace_sampling_mask` |
+| Adapters | `spectramr.data.adapters.registry` | `@register_adapter` | `adapters.{pre_model, post_model, pre_loss_pred, ...}[*].name` |
 
 ## Live catalogue
 
 To enumerate the entire live registry on your machine:
 
 ```bash
-python -m mriforge.cli list-features --module all --format markdown
+python -m spectramr.cli list-features --module all --format markdown
 ```
 
 This prints every registered name in every surface, grouped by category.
@@ -64,13 +64,13 @@ Losses (~159 entries):
 path. The factory imports the class at runtime via `importlib`.
 
 ```python
-# Excerpt: src/mriforge/infrastructure/training/strategy_factory.py
+# Excerpt: src/spectramr/infrastructure/training/strategy_factory.py
 STRATEGY_CLASS_PATHS = {
-    "gan": "mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy",
-    "diffusion": "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
-    "reconstruction": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
-    "vae": "mriforge.infrastructure.training.strategies.vae.VAETrainingStrategy",
-    "vqvae": "mriforge.infrastructure.training.strategies.vae.VQVAETrainingStrategy",
+    "gan": "spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy",
+    "diffusion": "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+    "reconstruction": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+    "vae": "spectramr.infrastructure.training.strategies.vae.VAETrainingStrategy",
+    "vqvae": "spectramr.infrastructure.training.strategies.vae.VQVAETrainingStrategy",
     ...
 }
 ```
@@ -82,7 +82,7 @@ Adding a new mode requires a coordinated change in three places
 ## Mask types — the operator-dispatch enum
 
 ```python
-# src/mriforge/infrastructure/physics/sampling.py
+# src/spectramr/infrastructure/physics/sampling.py
 class MaskType(str, Enum):
     CARTESIAN = "cartesian"
     VARIABLE_DENSITY = "variable_density"
@@ -106,7 +106,7 @@ declared under `adapters.pre_loss_pred:` bridges the gap. Adapters are
 themselves registered:
 
 ```python
-# src/mriforge/data/adapters/fourier.py
+# src/spectramr/data/adapters/fourier.py
 @register_adapter(
     name="ifft_kspace_to_image",
     bridges_from={"domain": "kspace"},
@@ -136,19 +136,19 @@ the live list):
 No adapter bridges `spatial_dims=2 → 1`. Fingerprint-style models that
 declare `spatial_dims=(1,)` (e.g. `mrf_tangent_score`) can't be used
 with 2D image datasets directly — the audit catches this. See
-[scripts/release/fix_audit_issues.py](https://github.com/adnaneGdihi/mriforge/blob/main/scripts/release/fix_audit_issues.py)
+[scripts/release/fix_audit_issues.py](https://github.com/adnaneGdihi/spectramr/blob/main/scripts/release/fix_audit_issues.py)
 for the flagged-not-auto-fixed reasoning.
 
 ## Programmatic access
 
 ```python
-import mriforge  # fires the clinical-use warning once
+import spectramr  # fires the clinical-use warning once
 
-from mriforge.models.registry import MODEL_REGISTRY
-from mriforge.models.losses.registry import LossRegistry
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
-from mriforge.data.adapters.registry import list_adapters
-from mriforge.infrastructure.physics.sampling import MaskType
+from spectramr.models.registry import MODEL_REGISTRY
+from spectramr.models.losses.registry import LossRegistry
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.data.adapters.registry import list_adapters
+from spectramr.infrastructure.physics.sampling import MaskType
 
 # Count what's available:
 print(f"{len(MODEL_REGISTRY)} models")

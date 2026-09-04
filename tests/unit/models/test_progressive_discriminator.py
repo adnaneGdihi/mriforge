@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.gans.progressive_discriminator import ProgressiveDiscriminator
+from spectramr.models.gans.progressive_discriminator import ProgressiveDiscriminator
 
 
 class TestProgressiveDiscriminator:

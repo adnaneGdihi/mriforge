@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.descriptors import (
+from spectramr.core.metrics.meta_evaluation.descriptors import (
     DescriptorConfig,
     haar_pyramid_energies,
     radial_spectral_profile,

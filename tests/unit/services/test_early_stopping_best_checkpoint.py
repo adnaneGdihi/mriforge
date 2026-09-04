@@ -12,8 +12,8 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.config.schemas.enums import MetricMode
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.config.schemas.enums import MetricMode
 
 
 class TestEarlyStoppingBestCheckpointIntegration:
@@ -26,7 +26,7 @@ class TestEarlyStoppingBestCheckpointIntegration:
         pairing it with MAX is the contradiction #712's validator rejects -- these
         tests exercise MAX *mechanics*, and the metric name was incidental.
         """
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         if metric is None:
             metric = "val_psnr" if str(mode).lower().endswith("max") else "val_loss"
@@ -134,7 +134,7 @@ class TestCheckpointDirectorSaveBest:
 
     def test_save_best_creates_checkpoint_best_pt(self, tmp_path):
         """save_best() should create checkpoint_best.pt."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -157,7 +157,7 @@ class TestCheckpointDirectorSaveBest:
 
     def test_save_best_contains_metadata(self, tmp_path):
         """Best checkpoint should contain is_best flag and metric info."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -185,7 +185,7 @@ class TestCheckpointDirectorSaveBest:
 
     def test_save_best_overwrites_previous(self, tmp_path):
         """Calling save_best() twice should overwrite the same file."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 

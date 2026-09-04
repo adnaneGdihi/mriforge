@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.enums import SignalDomain
+from spectramr.config.schemas.enums import SignalDomain
 
 
 def _values() -> set[str]:
@@ -25,7 +25,7 @@ def _values() -> set[str]:
 
 class TestEveryConsumerDrawsFromTheEnum:
     def test_workflow_profiles(self) -> None:
-        from mriforge.domain.workflows.profiles import WORKFLOW_PROFILES
+        from spectramr.domain.workflows.profiles import WORKFLOW_PROFILES
 
         used = {d for p in WORKFLOW_PROFILES.values() for d in p.signal_domains}
         unknown = sorted(used - _values())
@@ -35,7 +35,7 @@ class TestEveryConsumerDrawsFromTheEnum:
         )
 
     def test_dataset_signal_domains(self) -> None:
-        from mriforge.data.datasets.axis_exposure import DATASET_TYPE_SIGNAL_DOMAINS
+        from spectramr.data.datasets.axis_exposure import DATASET_TYPE_SIGNAL_DOMAINS
 
         used = {d for s in DATASET_TYPE_SIGNAL_DOMAINS.values() for d in s}
         unknown = sorted(used - _values())
@@ -48,7 +48,7 @@ class TestEveryConsumerDrawsFromTheEnum:
         a stale copy."""
         import typing
 
-        from mriforge.models.capabilities import Domain
+        from spectramr.models.capabilities import Domain
 
         literal = set(typing.get_args(Domain))
         assert literal == _values(), (
@@ -60,7 +60,7 @@ class TestEveryConsumerDrawsFromTheEnum:
     def test_loss_output_domain_accepts_exactly_the_enum(self) -> None:
         """The validator used a hardcoded 4-tuple; it now derives its legal set,
         so a spectroscopy arm can finally declare its own output domain."""
-        from mriforge.config.schemas.loss import LossConfigSchema
+        from spectramr.config.schemas.loss import LossConfigSchema
 
         for value in sorted(_values()):
             LossConfigSchema(output_domain=value)  # must not raise
@@ -76,7 +76,7 @@ class TestRepresentationsAreNotAcquiredSignals:
     to a profile."""
 
     def test_no_profile_claims_a_representation_domain(self) -> None:
-        from mriforge.domain.workflows.profiles import WORKFLOW_PROFILES
+        from spectramr.domain.workflows.profiles import WORKFLOW_PROFILES
 
         representations = {
             SignalDomain.LATENT.value,
@@ -93,9 +93,9 @@ class TestRepresentationsAreNotAcquiredSignals:
 
     def test_spectroscopy_can_now_express_its_own_domain(self) -> None:
         """The regression that motivated the whole change."""
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.config.schemas.loss import LossConfigSchema
-        from mriforge.domain.workflows.profiles import WORKFLOW_PROFILES
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.config.schemas.loss import LossConfigSchema
+        from spectramr.domain.workflows.profiles import WORKFLOW_PROFILES
 
         profile = WORKFLOW_PROFILES[Regime.SPECTROSCOPIC]
         assert profile.signal_domains == {SignalDomain.SPECTRUM.value}

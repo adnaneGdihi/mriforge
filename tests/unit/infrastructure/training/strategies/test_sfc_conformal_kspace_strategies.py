@@ -2,7 +2,7 @@
 
 Covers :class:`AdaptiveSFCHSSCStrategy` and
 :class:`ConformalDiffusionReconStrategy` in
-``mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies``.
+``spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies``.
 
 Regression focus (SFC #3): ``AdaptiveSFCHSSCStrategy._compute_losses_impl`` must
 introspect the generator's ``forward`` signature before passing the
@@ -17,11 +17,11 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
     AdaptiveSFCHSSCStrategy,
     ConformalDiffusionReconStrategy,
 )
-from mriforge.models.blocks.space_filling_curves import BeltramiSFCBlock
+from spectramr.models.blocks.space_filling_curves import BeltramiSFCBlock
 
 
 class _StubEnv:
@@ -138,7 +138,7 @@ class TestConformalDiffusionReconStrategy:
     when the batch lacks the keys it needs, not silently run plain MSE."""
 
     def _strategy(self) -> Any:
-        from mriforge.infrastructure.physics.data_consistency import (
+        from spectramr.infrastructure.physics.data_consistency import (
             ConformalDataConsistency,
         )
 

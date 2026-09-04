@@ -159,7 +159,6 @@ training:
   # mosaic_validation.py auto-discovery walks experiments/results/.
   output_dir: experiments/results/comprehensive_experiment_template
   num_workers: 4
-  enable_mixed_precision: false
   enable_gradient_checkpointing: false
   diffusion:
     timesteps: 1000
@@ -339,7 +338,7 @@ physics:
 validation:
   enabled: true
   # `validation.split` is deliberately absent: it is a real schema field with no
-  # reader in src/mriforge (issue #673), so declaring it here would advertise a
+  # reader in src/spectramr (issue #673), so declaring it here would advertise a
   # knob that does nothing. The live fraction is data.split.validation_fraction
   # above.
   validation_dir: null

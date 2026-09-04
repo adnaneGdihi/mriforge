@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.regions.region_registry import (
+from spectramr.data.regions.region_registry import (
     REGION_SPECS,
     RegionTier,
     control_id_for,

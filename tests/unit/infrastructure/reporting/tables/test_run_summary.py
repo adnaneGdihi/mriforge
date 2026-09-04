@@ -15,7 +15,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.tables import TABLES, run_summary
+from spectramr.infrastructure.reporting.tables import TABLES, run_summary
 
 
 def _frame() -> pd.DataFrame:
@@ -97,6 +97,6 @@ class TestThePublicationTablesCannotServeAsTheFloor:
     """Anti-vacuity: if these ever fill on a single run, the floor is redundant."""
 
     def test_main_results_is_empty_for_a_single_run(self, tmp_path):
-        from mriforge.infrastructure.reporting.tables import main_results
+        from spectramr.infrastructure.reporting.tables import main_results
 
         assert main_results.make(_frame(), tmp_path) is None

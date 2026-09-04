@@ -15,16 +15,16 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.group_actions import DihedralGroup
-from mriforge.infrastructure.training.strategies.equivariant_imaging_strategy import (
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.group_actions import DihedralGroup
+from spectramr.infrastructure.training.strategies.equivariant_imaging_strategy import (
     EquivariantImagingStrategy,
     equivariant_imaging_branches,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
-from mriforge.models.losses.equivariant_recon_loss import EquivariantSSLReconLoss
+from spectramr.models.losses.equivariant_recon_loss import EquivariantSSLReconLoss
 
 
 def _partial_mask(h: int, w: int):

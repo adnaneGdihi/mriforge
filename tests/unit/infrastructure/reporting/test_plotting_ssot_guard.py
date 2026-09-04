@@ -1,10 +1,10 @@
 """Plotting-SSOT ratchet guard.
 
-Figures must be produced ONLY inside ``src/mriforge/infrastructure/reporting/``
+Figures must be produced ONLY inside ``src/spectramr/infrastructure/reporting/``
 (the plotting SSOT), with two sanctioned second surfaces — the sim2rank
 meta-evaluation figures and dataset EDA — plus a frozen baseline of pre-existing
 emitters kept out of scope by the report-only consolidation. The test fails on any
-NEW figure-emitting call added elsewhere under ``src/mriforge/`` so plotting cannot
+NEW figure-emitting call added elsewhere under ``src/spectramr/`` so plotting cannot
 drift back out of the reporting pipeline (the ``no_new_*`` ratchet pattern).
 """
 
@@ -17,11 +17,11 @@ from pathlib import Path
 # trailing ``(`` so a docstring mentioning "savefig" is not a false positive.
 _EMIT = re.compile(r"\.(?:savefig|write_html|write_image)\s*\(|\bplt\.show\s*\(")
 
-_SRC = Path("src/mriforge")
+_SRC = Path("src/spectramr")
 _REPORTING = _SRC / "infrastructure" / "reporting"
 
 # Permanent exceptions: sim2rank meta-evaluation and dataset EDA are sanctioned
-# second surfaces (their own ``mriforge meta`` / EDA paths, never ``mriforge report``).
+# second surfaces (their own ``spectramr meta`` / EDA paths, never ``spectramr report``).
 _ALLOWED_DIRS = (
     _SRC / "core" / "metrics" / "meta_evaluation",
     _SRC / "data" / "eda",

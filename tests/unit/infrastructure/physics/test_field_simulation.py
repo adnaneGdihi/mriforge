@@ -1,6 +1,6 @@
 """Tests for ``B0MapSimulator`` and field-strength helpers.
 
-Targets ``mriforge.infrastructure.physics.field_simulation``. Generates
+Targets ``spectramr.infrastructure.physics.field_simulation``. Generates
 synthetic B0 inhomogeneity maps for multi-field-strength training.
 
 Categories:
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.field_simulation import (
+from spectramr.infrastructure.physics.field_simulation import (
     FIELD_STRENGTH_HZ_MAP,
     B0MapSimulator,
     FieldStrength,
@@ -278,7 +278,7 @@ def test_b0_augmentation_transform_maxwell_is_nonzero_at_ulf() -> None:
     Seeding identically before each call makes the random smooth-B0 base and the
     prob/smoothness draws identical, so any difference is the Maxwell term.
     """
-    from mriforge.infrastructure.physics.field_simulation import B0AugmentationTransform
+    from spectramr.infrastructure.physics.field_simulation import B0AugmentationTransform
 
     def _run(include_maxwell: bool) -> torch.Tensor:
         torch.manual_seed(7)

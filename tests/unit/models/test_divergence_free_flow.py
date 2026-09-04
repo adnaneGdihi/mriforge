@@ -1,7 +1,7 @@
 """Unit tests for the divergence-free flow-matching velocity field.
 
 Covers the streamfunction/curl blocks and the
-:class:`mriforge.models.generative.divergence_free_flow.DivergenceFreeFlow`
+:class:`spectramr.models.generative.divergence_free_flow.DivergenceFreeFlow`
 model: registry resolution, default constructibility, ndim/channel guards,
 forward shape, and the load-bearing divergence probe ``|div v|_inf`` near
 zero (machine precision on the staggered grid up to boundary padding).
@@ -14,12 +14,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.streamfunction import (
+from spectramr.models.blocks.streamfunction import (
     CurlOf3DVectorPotential,
     StreamfunctionTo2DVelocity,
 )
-from mriforge.models.generative.divergence_free_flow import DivergenceFreeFlow
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.generative.divergence_free_flow import DivergenceFreeFlow
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 
 def _divergence_2d(v: torch.Tensor) -> torch.Tensor:

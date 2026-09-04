@@ -1,6 +1,6 @@
 """Tests for ``PathNormalizer``.
 
-Targets ``mriforge.shared.utils.path_normalizer``. Verifies path resolution
+Targets ``spectramr.shared.utils.path_normalizer``. Verifies path resolution
 (relative-vs-absolute), environment-variable expansion, the cluster-
 prefix auto-remap, and the file/directory must-exist validators.
 
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.shared.utils.path_normalizer import PathNormalizer
+from spectramr.shared.utils.path_normalizer import PathNormalizer
 
 
 # ---------------------------------------------------------------------------
@@ -24,14 +24,14 @@ from mriforge.shared.utils.path_normalizer import PathNormalizer
 
 
 def test_project_root_uses_env_var(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    """``MRIFORGE_ROOT`` env var overrides the cwd default."""
-    monkeypatch.setenv("MRIFORGE_ROOT", str(tmp_path))
+    """``SPECTRAMR_ROOT`` env var overrides the cwd default."""
+    monkeypatch.setenv("SPECTRAMR_ROOT", str(tmp_path))
     assert PathNormalizer.get_project_root() == tmp_path.resolve()
 
 
 def test_project_root_falls_back_to_cwd(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Without ``MRIFORGE_ROOT``, returns ``Path.cwd()``."""
-    monkeypatch.delenv("MRIFORGE_ROOT", raising=False)
+    """Without ``SPECTRAMR_ROOT``, returns ``Path.cwd()``."""
+    monkeypatch.delenv("SPECTRAMR_ROOT", raising=False)
     assert PathNormalizer.get_project_root() == Path.cwd()
 
 
@@ -88,29 +88,29 @@ def test_cluster_prefix_auto_remap(tmp_path: Path, monkeypatch) -> None:
     remap rather than one machine's directory layout.
     """
     monkeypatch.setenv(
-        "MRIFORGE_LEGACY_CLUSTER_PREFIX", "/project/alpha_lab/researcher/mriforge/"
+        "SPECTRAMR_LEGACY_CLUSTER_PREFIX", "/project/alpha_lab/researcher/spectramr/"
     )
     out = PathNormalizer.normalize_and_validate(
-        "/project/alpha_lab/researcher/mriforge/databases/foo",
+        "/project/alpha_lab/researcher/spectramr/databases/foo",
         root_dir=tmp_path,
     )
     assert out == (tmp_path / "databases" / "foo").resolve()
 
 
 def test_cluster_prefix_remap_is_off_unless_configured(tmp_path: Path, monkeypatch) -> None:
-    """Unset (or empty) ``MRIFORGE_LEGACY_CLUSTER_PREFIX`` leaves absolute paths alone.
+    """Unset (or empty) ``SPECTRAMR_LEGACY_CLUSTER_PREFIX`` leaves absolute paths alone.
 
     This is the half the previous test silently asserted the opposite of. An
     absolute path is returned as given -- no site prefix is assumed on anyone's
     behalf, which is what makes the class safe to ship.
     """
-    monkeypatch.delenv("MRIFORGE_LEGACY_CLUSTER_PREFIX", raising=False)
-    untouched = "/project/alpha_lab/researcher/mriforge/databases/foo"
+    monkeypatch.delenv("SPECTRAMR_LEGACY_CLUSTER_PREFIX", raising=False)
+    untouched = "/project/alpha_lab/researcher/spectramr/databases/foo"
     assert PathNormalizer.normalize_and_validate(untouched, root_dir=tmp_path) == Path(
         untouched
     )
 
-    monkeypatch.setenv("MRIFORGE_LEGACY_CLUSTER_PREFIX", "")
+    monkeypatch.setenv("SPECTRAMR_LEGACY_CLUSTER_PREFIX", "")
     assert PathNormalizer.normalize_and_validate(untouched, root_dir=tmp_path) == Path(
         untouched
     )

@@ -1,6 +1,6 @@
 """Tests for ``PhysicsEngine``.
 
-Targets ``mriforge.infrastructure.physics.engine`` — the unified physics
+Targets ``spectramr.infrastructure.physics.engine`` — the unified physics
 facade.
 
 Categories:
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.engine import PhysicsEngine
+from spectramr.infrastructure.physics.engine import PhysicsEngine
 
 
 # ---------------------------------------------------------------------------

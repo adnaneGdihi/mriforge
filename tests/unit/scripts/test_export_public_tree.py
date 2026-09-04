@@ -18,6 +18,7 @@ top-level root that does not exist.
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import re
 import subprocess
@@ -568,12 +569,13 @@ def test_the_shipped_allowlist_carries_no_unbounded_glob() -> None:
 
 
 def _shipped_experiment_yamls() -> tuple[list[Path], Path]:
-    """The experiment YAMLs the export actually ships, and the repo root.
+    """The experiment YAMLs the real allowlist ships, and the repo root.
 
-    One owner for the derivation, called by both guards below. The two ask
-    different questions of the same set -- does it parse, does it audit -- and
-    a second copy of this block would drift the moment a denial changes, which
-    is precisely the divergence the shipped set exists to expose.
+    Extracted so the two guards below cannot drift about what "shipped" means
+    (non-negotiable 17). Derived from ``parse_allowlist``/``matches`` and
+    ``git ls-tree``, never from a directory listing: the exporter drives off a
+    pinned SHA, so an untracked YAML in ``experiments/`` is something a listing
+    would judge and the exporter would never see.
     """
     import importlib.util
 
@@ -595,12 +597,59 @@ def _shipped_experiment_yamls() -> tuple[list[Path], Path]:
         for rel in [p.relative_to(repo_root).as_posix()]
         if any(mod.matches(rel, a) for a in allows) and not any(mod.matches(rel, d) for d in denies)
     ]
+    # Anti-vacuity: an empty shipped set passes every assertion downstream, and is
+    # exactly what a mistyped allowance would produce.
     assert shipped, (
         "no experiment YAML ships at all -- either the allowlist stopped naming "
-        "experiments/templates/ or a denial cancelled every match; the guards "
-        "below would otherwise pass by having nothing to check"
+        "experiments/ or a denial cancelled every match; the guards would "
+        "otherwise pass by having nothing to check"
     )
     return shipped, repo_root
+
+
+def test_no_shipped_experiment_yaml_declares_a_key_the_schema_discards() -> None:
+    """A shipped arm must not teach a knob that does nothing.
+
+    ``extra="ignore"`` blocks drop an undeclared key at parse time with no error
+    and no warning: the YAML still shows it, the run never sees it, the arm trains
+    on the default (``docs/known_limitations.rst``). In an arm shipped as an
+    EXEMPLAR that is worse than in a private one -- it is the first configuration a
+    reader copies, and the key they copy is inert.
+
+    Two of the three exemplar arms were in exactly that state: 8 declarations
+    across 7 keys, including ``undersampling.acceleration_factor`` and
+    ``training.diffusion.num_timesteps`` -- the first two knobs anyone edits.
+    ``acceleration_factor`` resolved to the schema default of 4.0, which happened
+    to equal the 4 the arm intended, so it was right by luck rather than by
+    declaration.
+
+    Uses the repo's own detector rather than re-deriving the predicate; the
+    ledger's ``extra_ignore_dropped`` classification is the single owner of what
+    "discarded" means.
+    """
+    import importlib.util
+
+    shipped, repo_root = _shipped_experiment_yamls()
+    detector_path = repo_root / "scripts" / "ci" / "report_discarded_config_keys.py"
+    spec = importlib.util.spec_from_file_location("_discarded_keys_detector", detector_path)
+    assert spec is not None and spec.loader is not None
+    detector = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(detector)
+
+    offenders: dict[str, list[str]] = {}
+    for path in shipped:
+        found = detector.discarded_keys(path)
+        if found:
+            offenders[path.relative_to(repo_root).as_posix()] = sorted(
+                k for k, _ in found
+            )
+
+    assert not offenders, (
+        "shipped experiment YAML(s) declare keys the schema silently discards. "
+        "Delete the key, or declare it on the schema -- do not leave a shipped "
+        "exemplar teaching an inert knob:\n"
+        + "\n".join(f"  {f}:\n    " + ", ".join(v) for f, v in offenders.items())
+    )
 
 
 def _shipped_package_name(repo_root: Path) -> str:
@@ -688,6 +737,13 @@ def test_every_experiment_yaml_that_ships_actually_loads() -> None:
     """
     import importlib
 
+    # Shipped set derived once, in _shipped_experiment_yamls, so this guard and the
+    # discarded-key guard cannot drift about what "shipped" means (NN17). The package
+    # directory is renamed by Workstream A, and this module's own header says a gate is
+    # only a gate for the shape it was watched to fail on -- a hardcoded package name
+    # fails as a COLLECTION error, which reads as infrastructure breakage rather than as
+    # this guard firing. So _shipped_package_name derives it, and refuses an ambiguous
+    # answer rather than picking one.
     shipped, repo_root = _shipped_experiment_yamls()
     settings_mod = importlib.import_module(f"{_shipped_package_name(repo_root)}.config.settings")
 
@@ -1306,7 +1362,7 @@ def test_the_not_denied_plant_would_flag_if_that_path_were_denied() -> None:
 #
 #   * a link into a repository of this owner that is not published at all 404s
 #     for every reader -- visibly, unhelpfully wrong;
-#   * a link to the repo that IS published (`.../mriforge/issues/1497`) 404s
+#   * a link to the repo that IS published (`.../spectramr/issues/1497`) 404s
 #     only until the new repo's counter reaches 1497, at which point it starts
 #     resolving to an unrelated issue. That one never announces itself.
 #
@@ -1347,7 +1403,7 @@ def _numbered_link_pattern(owner: str) -> re.Pattern[str]:
 
 #: Strings the detector MUST flag, and the shape each one stands for.
 _MUST_FLAG_LINK = {
-    "an issue in the published repo": "see https://github.com/{owner}/mriforge/issues/1497 for why",
+    "an issue in the published repo": "see https://github.com/{owner}/spectramr/issues/1497 for why",
     # A repo OTHER than the published one -- deliberately not spelled with the
     # pre-rename package name, which `tests/architecture/test_no_stale_package_name.py`
     # owns and would (correctly) report as a stale-name hit in this file.
@@ -1355,8 +1411,8 @@ _MUST_FLAG_LINK = {
         '"issue": "https://github.com/{owner}/some-other-repo/issues/1585"'
     ),
     "a pull request": "found_by: https://github.com/{owner}/some-other-repo/pull/1584",
-    "an rst hyperlink target": "(`#1497 <https://github.com/{owner}/mriforge/issues/1497>`_)",
-    "a differently-cased owner": "https://github.com/{lower}/mriforge/issues/12",
+    "an rst hyperlink target": "(`#1497 <https://github.com/{owner}/spectramr/issues/1497>`_)",
+    "a differently-cased owner": "https://github.com/{lower}/spectramr/issues/12",
 }
 
 #: Strings the detector MUST NOT flag. Each is a real shape in the shipped tree.
@@ -1365,11 +1421,11 @@ _MUST_NOT_FLAG_LINK = {
         "adapted from https://github.com/quiqi/relu_kan/issues/3"
     ),
     "the unnumbered issue tracker from [project.urls]": (
-        'Issues = "https://github.com/{owner}/mriforge/issues"'
+        'Issues = "https://github.com/{owner}/spectramr/issues"'
     ),
-    "a repository url with no path": 'Repository = "https://github.com/{owner}/mriforge"',
+    "a repository url with no path": 'Repository = "https://github.com/{owner}/spectramr"',
     "a blob link, which survives a fresh history": (
-        "https://github.com/{owner}/mriforge/blob/main/CHANGELOG.md"
+        "https://github.com/{owner}/spectramr/blob/main/CHANGELOG.md"
     ),
     "a bare issue reference with no url": "the num_timesteps fold (#980) explains this",
 }
@@ -1499,184 +1555,310 @@ def test_no_shipped_file_links_to_a_numbered_issue_in_this_project() -> None:
     )
 
 
-# --------------------------------------------------------------------------- #
-# The overlay: files stored outside .github/ and mapped into place on export
+# ---------------------------------------------------------------------------
+# The overlay (non-negotiable 15)
 #
-# An overlay is a write path into the distribution that the ALLOWLIST NEVER SEES,
-# which is the one thing this script exists to prevent. So every property that
-# keeps it honest is planted here: that it lands where it claims, that it does
-# NOT also ship at its storage path, that it cannot escape the tree, that it is
-# named in the manifest, and above all that replacing a reviewed allowlisted file
-# is announced rather than merged in silence.
-# --------------------------------------------------------------------------- #
+# The overlay decides CONTENT; the allowlist decides MEMBERSHIP. Keeping those two
+# separate is the whole safety property, so each way of blurring them is planted.
+#
+# One plant is not hypothetical. The first version of the overlay shipped its own
+# README at ``public_overlay/README.md``, which replaced the PROJECT README -- the
+# published front page read "# Public overlay". The dead-overlay ratchet cannot
+# catch that, because ``README.md`` IS a shipped path: the substitution was valid,
+# just unintended. Only the run summary reporting two overlaid files when one was
+# placed gave it away, which is why the summary now prints every path.
+# ---------------------------------------------------------------------------
 
-OVERLAY = "scripts/release/public_overlay"
-
-
-def _with_overlay(repo: Path, **files: str) -> None:
-    """Commit files under the overlay prefix. Keys use __ for a path separator."""
-    for key, body in files.items():
-        rel = key.replace("__", "/")
-        dest = repo / OVERLAY / rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_text(body)
-    _git("add", "-A", cwd=repo)
-    _git("commit", "-qm", "overlay", cwd=repo)
+OVERLAY_DIR = "public_overlay"
 
 
-def test_an_overlay_file_lands_at_its_mapped_destination(repo: Path, tmp_path: Path) -> None:
-    _with_overlay(repo, **{".github__workflows__ci.yml": "on:\n  pull_request:\n"})
-    out = tmp_path / "out"
-    res = _export(repo, _allowlist(tmp_path, "src/"), out)
-    assert res.returncode == 0, res.stderr
-    assert (out / ".github/workflows/ci.yml").read_text() == "on:\n  pull_request:\n"
+def _stage_overlay(repo: Path, files: dict[str, str], root: str = OVERLAY_DIR) -> None:
+    """Write overlay files into the fixture repo and stage them.
 
-
-def test_an_overlay_source_does_not_also_ship_at_its_storage_path(
-    repo: Path, tmp_path: Path
-) -> None:
-    """Otherwise the distribution carries the file twice, at two paths.
-
-    ``scripts/release/`` is allowlisted in the real allowlist, so without the
-    skip the overlay directory would ship verbatim ALONGSIDE its mapped copy --
-    and a reader editing the visible one would change nothing.
+    Staged rather than committed: ``_export`` commits everything staged when it
+    commits the allowlist, so the overlay lands in the same pinned SHA the export
+    reads. Committing here as well would work but would hide that coupling.
     """
-    _with_overlay(repo, **{".github__workflows__ci.yml": "on:\n  pull_request:\n"})
+    for rel, text in files.items():
+        dest = repo / root / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(text)
+    _git("add", root, cwd=repo)
+
+
+def test_an_overlay_replaces_a_shipped_files_content(repo: Path, tmp_path: Path) -> None:
+    _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
     out = tmp_path / "out"
-    res = _export(repo, _allowlist(tmp_path, "src/", "scripts/"), out)
-    assert res.returncode == 0, res.stderr
-    assert not (out / OVERLAY).exists()
-    assert (out / ".github/workflows/ci.yml").exists()
+    proc = _export(
+        repo, _allowlist(tmp_path, "src/", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert (out / "src/pkg/mod.py").read_text() == "VALUE = 99\n"
 
 
-def test_an_overlay_file_is_recorded_in_the_manifest_with_its_source(
+def test_an_overlay_never_adds_a_path(repo: Path, tmp_path: Path) -> None:
+    """The direction that keeps the allowlist the single answer to 'what ships'.
+
+    If the overlay could add, it would be a second publication route and the
+    fail-closed allowlist would stop being the only one.
+    """
+    _stage_overlay(repo, {"secrets/token.txt": "LEAKED\n"})
+    out = tmp_path / "out"
+    proc = _export(
+        repo, _allowlist(tmp_path, "src/", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR
+    )
+    assert not (out / "secrets" / "token.txt").exists()
+    assert "DEAD OVERLAY" in proc.stdout
+
+
+def test_an_overlay_whose_target_does_not_ship_is_dead_and_fails_under_strict(
     repo: Path, tmp_path: Path
 ) -> None:
-    _with_overlay(repo, **{".github__workflows__ci.yml": "on:\n  pull_request:\n"})
-    out = tmp_path / "out"
-    _export(repo, _allowlist(tmp_path, "src/"), out)
-    m = _manifest(out)
-    assert m["overlaid_paths"] == [".github/workflows/ci.yml"]
-    row = next(r for r in m["files"] if r["path"] == ".github/workflows/ci.yml")
-    assert row["overlay_source"] == f"{OVERLAY}/.github/workflows/ci.yml"
+    _stage_overlay(repo, {"secrets/token.txt": "x\n"})
+    allow = _allowlist(tmp_path, "src/", OVERLAY_DIR + "/")
+
+    lenient = _export(repo, allow, tmp_path / "a", "--overlay", OVERLAY_DIR)
+    assert lenient.returncode == 0
+    assert "DEAD OVERLAY" in lenient.stdout
+
+    strict = _export(repo, allow, tmp_path / "b", "--overlay", OVERLAY_DIR, "--strict")
+    assert strict.returncode == 2, strict.stdout
 
 
-def test_overlaying_an_allowlisted_path_is_reported_not_silent(repo: Path, tmp_path: Path) -> None:
-    """The one way an overlay can hide a change: replacing a reviewed file."""
-    _with_overlay(repo, **{"README.md": "# replaced\n"})
-    out = tmp_path / "out"
-    res = _export(repo, _allowlist(tmp_path, "README.md"), out)
-    assert res.returncode == 0, res.stderr
-    assert (out / "README.md").read_text() == "# replaced\n"
-    assert "OVERLAY OVERWROTE 1 allowlisted path(s)" in res.stdout
-    assert _manifest(out)["overlay_clobbered_allowlisted"] == ["README.md"]
-
-
-def test_a_clobbered_path_has_exactly_one_manifest_row(repo: Path, tmp_path: Path) -> None:
-    """file_count must keep matching the files actually on disk."""
-    _with_overlay(repo, **{"README.md": "# replaced\n"})
-    out = tmp_path / "out"
-    _export(repo, _allowlist(tmp_path, "README.md"), out)
-    m = _manifest(out)
-    rows = [r for r in m["files"] if r["path"] == "README.md"]
-    assert len(rows) == 1
-    assert rows[0].get("overlay_source")
-    assert m["file_count"] == len(m["files"])
-
-
-def test_a_root_the_overlay_populates_is_not_reported_as_dropped(
+def test_the_manifest_hashes_what_is_on_disk_not_the_git_blob(
     repo: Path, tmp_path: Path
 ) -> None:
-    """Reporting `.github` dropped while shipping .github/workflows/ is a lie."""
-    _with_overlay(repo, **{".github__workflows__ci.yml": "on:\n  pull_request:\n"})
+    """The manifest is a provenance claim about the EXPORT, not about the commit.
+
+    Hashing the pre-overlay blob would describe a file the export does not contain.
+    """
+    replaced = "VALUE = 99\n"
+    _stage_overlay(repo, {"src/pkg/mod.py": replaced})
     out = tmp_path / "out"
-    res = _export(repo, _allowlist(tmp_path, "src/"), out)
-    assert ".github" not in _manifest(out)["dropped_top_level_roots"]
-    assert ".github" not in res.stdout.split("dropped roots")[1].split("\n")[0]
+    _export(repo, _allowlist(tmp_path, "src/", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR)
+
+    entry = next(f for f in _manifest(out)["files"] if f["path"] == "src/pkg/mod.py")
+    assert entry["sha256"] == hashlib.sha256(replaced.encode()).hexdigest()
+    assert entry["size"] == len(replaced)
 
 
-def test_a_root_nothing_ships_is_still_reported_as_dropped(repo: Path, tmp_path: Path) -> None:
-    """Negative control: the overlay must not blanket-silence the dropped report."""
-    _with_overlay(repo, **{".github__workflows__ci.yml": "on:\n  pull_request:\n"})
+def test_the_manifest_records_the_overlay_as_a_stated_decision(
+    repo: Path, tmp_path: Path
+) -> None:
+    _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
     out = tmp_path / "out"
-    _export(repo, _allowlist(tmp_path, "src/"), out)
-    assert "secrets" in _manifest(out)["dropped_top_level_roots"]
+    _export(repo, _allowlist(tmp_path, "src/", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR)
+
+    manifest = _manifest(out)
+    assert manifest["overlaid_paths"] == ["src/pkg/mod.py"]
+    assert manifest["dead_overlay_files"] == []
+    assert manifest["overlay_root"] == OVERLAY_DIR
 
 
-def test_an_overlay_path_that_escapes_the_tree_is_refused(repo: Path, tmp_path: Path) -> None:
-    """A `..` in the mapped destination would write outside --out."""
+def test_a_root_level_overlay_file_replaces_a_root_file_and_is_named_in_the_summary(
+    repo: Path, tmp_path: Path
+) -> None:
+    """The README collision, planted.
+
+    A file at the overlay ROOT maps to a file at the export root. That is the
+    mechanism working as designed, and it is also how the overlay's own README
+    silently became the project's. The ratchet cannot flag it -- the target ships,
+    so the substitution is valid -- so the guard is that the summary NAMES it.
+    """
+    _stage_overlay(repo, {"README.md": "# Public overlay\n"})
+    out = tmp_path / "out"
+    proc = _export(
+        repo, _allowlist(tmp_path, "README.md", OVERLAY_DIR + "/"), out, "--overlay", OVERLAY_DIR
+    )
+
+    assert (out / "README.md").read_text() == "# Public overlay\n"
+    assert "DEAD OVERLAY" not in proc.stdout, "a valid substitution, which is the trap"
+    assert "README.md" in proc.stdout, "an unintended substitution must at least be visible"
+
+
+def test_an_overlay_source_never_ships_at_its_storage_path(
+    repo: Path, tmp_path: Path
+) -> None:
+    """The overlay tree is content, not membership -- so it must not also ship as itself.
+
+    The real allowlist carries a bare ``scripts/release/`` allowance, which matched the
+    overlay's own storage paths and published them verbatim ALONGSIDE their mapped
+    copies: the same bytes at two paths, and the visible one is the copy nothing reads.
+
+    The differential is what pins it, rather than a hardcoded count that would only
+    describe this fixture: with the overlay ACTIVE the storage path leaves ``shipped``
+    and does NOT arrive in ``excluded``, because it is neither -- it is content that
+    ships elsewhere.
+    """
+    _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
+    allow = _allowlist(tmp_path, "src/", OVERLAY_DIR + "/")
+
+    # Overlay inactive: the storage tree is ordinary allowlisted content and ships.
+    off = _export(repo, allow, tmp_path / "off", "--overlay", "no_such_dir")
+    assert off.returncode == 0, off.stderr
+    m_off = _manifest(tmp_path / "off")
+    assert (tmp_path / "off" / OVERLAY_DIR / "src/pkg/mod.py").exists()
+
+    # Overlay active: the same path is skipped before the allowlist is consulted.
+    on = _export(repo, allow, tmp_path / "on", "--overlay", OVERLAY_DIR)
+    assert on.returncode == 0, on.stderr
+    m_on = _manifest(tmp_path / "on")
+
+    assert not (tmp_path / "on" / OVERLAY_DIR).exists(), "the overlay shipped at its storage path"
+    assert (tmp_path / "on" / "src/pkg/mod.py").read_text() == "VALUE = 99\n"
+    assert f"{OVERLAY_DIR}/src/pkg/mod.py" in m_on["overlay_source_paths"]
+    assert not any(r["path"].startswith(OVERLAY_DIR + "/") for r in m_on["files"])
+
+    assert m_on["file_count"] == m_off["file_count"] - 1, "one fewer file shipped"
+    assert m_on["excluded_count"] == m_off["excluded_count"], (
+        "the storage path was counted as excluded -- it is neither shipped nor "
+        "excluded, and counting it as excluded would misreport what the export dropped"
+    )
+
+
+def test_an_allowance_naming_only_the_overlay_root_is_dead(repo: Path, tmp_path: Path) -> None:
+    """The new semantics, made checkable rather than left as prose.
+
+    "The allowlist never inspects the overlay" used to be a comment. Now that overlay
+    storage is skipped BEFORE the allowlist is consulted, an allowance that names only
+    the overlay root cancels nothing and is reported dead -- which is the correct
+    guidance, because such a line is a claim the exporter no longer honours. The real
+    allowlist is unaffected: its ``scripts/release/`` allowance stays live on the four
+    other files it ships.
+    """
+    _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
+    allow = _allowlist(tmp_path, "src/", OVERLAY_DIR + "/")
+
+    lenient = _export(repo, allow, tmp_path / "a", "--overlay", OVERLAY_DIR)
+    assert lenient.returncode == 0
+    assert "DEAD PATTERNS" in lenient.stdout
+    assert OVERLAY_DIR + "/" in lenient.stdout
+
+    strict = _export(repo, allow, tmp_path / "b", "--overlay", OVERLAY_DIR, "--strict")
+    assert strict.returncode == 2, strict.stdout
+
+
+def test_an_overlay_identical_to_its_target_is_redundant_and_fails_under_strict(
+    repo: Path, tmp_path: Path
+) -> None:
+    """The blindness the dead-overlay ratchet has: a VALID substitution that changes nothing.
+
+    Dead-overlay fires when the target does not ship. Here the target ships and the
+    substitution succeeds -- it just writes the bytes that were already there. Nothing
+    looks wrong while the two copies agree, and the first edit to the tracked file is
+    then silently discarded in the export while the published copy freezes. Found in the
+    live configuration, not hypothesised: ``public_overlay/docs/index.rst`` was
+    byte-identical to ``docs/index.rst`` and no gate said so.
+    """
+    tracked = (repo / "src" / "pkg" / "mod.py").read_text()
+    _stage_overlay(repo, {"src/pkg/mod.py": tracked})
+    allow = _allowlist(tmp_path, "src/")
+
+    lenient = _export(repo, allow, tmp_path / "a", "--overlay", OVERLAY_DIR)
+    assert lenient.returncode == 0, lenient.stderr
+    assert "REDUNDANT OVERLAY" in lenient.stdout
+    assert _manifest(tmp_path / "a")["redundant_overlay_files"] == ["src/pkg/mod.py"]
+
+    strict = _export(repo, allow, tmp_path / "b", "--overlay", OVERLAY_DIR, "--strict")
+    assert strict.returncode == 2, strict.stdout
+
+
+def test_an_overlay_that_differs_is_not_reported_as_redundant(
+    repo: Path, tmp_path: Path
+) -> None:
+    """Negative control: the ratchet must not fire on the case the overlay exists for."""
+    _stage_overlay(repo, {"src/pkg/mod.py": "VALUE = 99\n"})
+    out = tmp_path / "out"
+    proc = _export(
+        repo, _allowlist(tmp_path, "src/"), out, "--overlay", OVERLAY_DIR, "--strict"
+    )
+    assert proc.returncode == 0, proc.stdout
+    assert "REDUNDANT OVERLAY" not in proc.stdout
+    assert _manifest(out)["redundant_overlay_files"] == []
+
+
+def test_an_absent_overlay_directory_is_not_an_error(repo: Path, tmp_path: Path) -> None:
+    """An export with no overlay is the normal case, not a degraded one."""
+    out = tmp_path / "out"
+    proc = _export(repo, _allowlist(tmp_path, "src/"), out, "--overlay", "no_such_dir", "--strict")
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert _manifest(out)["overlaid_paths"] == []
+
+
+def test_the_shipped_overlay_only_replaces_paths_the_shipped_allowlist_ships() -> None:
+    """The real overlay, against the real allowlist -- a negative control.
+
+    Bounds the live configuration rather than a fixture: every file under
+    ``scripts/release/public_overlay/`` must name a path the real allowlist ships,
+    or the next release export exits 2.
+    """
+    root = Path(__file__).resolve().parents[3]
+    overlay_root = root / "scripts" / "release" / "public_overlay"
+    if not overlay_root.is_dir():
+        pytest.skip("no overlay in this tree")
+
+    targets = sorted(
+        p.relative_to(overlay_root).as_posix() for p in overlay_root.rglob("*") if p.is_file()
+    )
+    assert targets, "an empty overlay directory should be deleted, not kept"
+    for rel in targets:
+        assert (root / rel).exists(), (
+            f"overlay file {rel} names a path that does not exist in this tree; "
+            "it would be reported as a DEAD OVERLAY at release time"
+        )
+
+
+def test_the_overlay_f821_baseline_is_derived_from_the_real_one() -> None:
+    """The overlay baseline must be its source minus exactly the unshipped rows.
+
+    A full-file overlay is a copy, and a copy is a second owner that nothing diffs
+    (non-negotiable 17). For a *derived* file the drift is checkable, so it is
+    checked here rather than trusted: the overlay must equal the real baseline with
+    every row whose path does not ship removed, and nothing else changed.
+
+    The row set cannot simply be dropped from the real baseline instead. Those names
+    still exist on this branch, so removing their rows would un-exempt them and
+    redden this tree's own gate -- and the ratchet may only ever move DOWN
+    (non-negotiable 20). Two file sets, two baselines, one derivation.
+    """
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location("_ept", SCRIPT)
+    repo_root = SCRIPT.resolve().parents[2]
+    overlay = repo_root / "scripts/release/public_overlay/scripts/ci/baselines/f821.txt"
+    source = repo_root / "scripts/ci/baselines/f821.txt"
+    if not overlay.exists():
+        pytest.skip("no f821 overlay in this tree")
+
+    spec = importlib.util.spec_from_file_location("_export_public_tree", SCRIPT)
+    assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(mod)
-    with pytest.raises(SystemExit):
-        mod.overlay_destination(f"{OVERLAY}/../escaped.yml")
+    allows, denies = mod.parse_allowlist(
+        REAL_ALLOWLIST.read_text(encoding="utf-8"), str(REAL_ALLOWLIST)
+    )
 
+    def ships(rel: str) -> bool:
+        return any(mod.matches(rel, a) for a in allows) and not any(
+            mod.matches(rel, d) for d in denies
+        )
 
-def test_an_overlay_executable_keeps_its_bit(repo: Path, tmp_path: Path) -> None:
-    rel = repo / OVERLAY / "bin"
-    rel.mkdir(parents=True)
-    (rel / "tool.sh").write_text("#!/bin/sh\necho hi\n")
-    (rel / "tool.sh").chmod(0o755)
-    _git("add", "-A", cwd=repo)
-    _git("commit", "-qm", "overlay exec", cwd=repo)
-    out = tmp_path / "out"
-    _export(repo, _allowlist(tmp_path, "src/"), out)
-    assert (out / "bin/tool.sh").stat().st_mode & 0o111
+    expected = []
+    dropped = []
+    for line in source.read_text(encoding="utf-8").splitlines(keepends=True):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            expected.append(line)
+            continue
+        parts = stripped.split("\t")
+        (expected if len(parts) < 2 or ships(parts[1]) else dropped).append(line)
 
-
-def test_no_overlay_directory_means_no_overlay_and_no_noise(repo: Path, tmp_path: Path) -> None:
-    """Negative control: the mechanism is inert when nothing uses it."""
-    out = tmp_path / "out"
-    res = _export(repo, _allowlist(tmp_path, "src/"), out)
-    assert res.returncode == 0, res.stderr
-    assert _manifest(out)["overlaid_paths"] == []
-    assert "OVERLAY OVERWROTE" not in res.stdout
-
-
-# --------------------------------------------------------------------------- #
-# Plants against the denied-path detector's PRECISION.
-#
-# The detector matches a denied path by basename as well as by full path, which
-# is what lets it see `ROOT / "docs" / "reference" / "x.md"`. The same looseness
-# makes a synthetic fixture file indistinguishable from a repository read, so
-# both directions are planted: the real shape must still be caught, and the
-# tmp_path shape must not be. Recall without precision is a gate people disable.
-# --------------------------------------------------------------------------- #
-
-_DENIED = ["docs/reference/gone.md"]
-
-
-def _constructed(source: str) -> list[str]:
-    return _denied_paths_constructed(source, _DENIED)
-
-
-def test_a_repo_rooted_path_to_a_denied_file_is_still_caught() -> None:
-    """Recall: the shape the gate exists for must keep failing."""
-    assert _constructed('p = ROOT / "docs" / "reference" / "gone.md"') == _DENIED
-
-
-def test_a_repo_rooted_full_path_literal_is_still_caught() -> None:
-    assert _constructed('p = Path("docs/reference/gone.md")') == _DENIED
-
-
-def test_a_tmp_path_rooted_file_of_the_same_basename_is_not_flagged() -> None:
-    """Precision: the test CREATES this file; it is not a repository read."""
-    assert _constructed('page = tmp_path / "gone.md"') == []
-
-
-def test_a_nested_tmp_path_chain_is_not_flagged() -> None:
-    """The root of the chain decides, not the nearest operand."""
-    assert _constructed('page = tmp_path / "reference" / "gone.md"') == []
-
-
-def test_a_prose_mention_alone_is_not_flagged() -> None:
-    """Unchanged behaviour, pinned: a docstring is not a path expression."""
-    assert _constructed('"""The page that regressed: docs/reference/gone.md."""') == []
-
-
-def test_a_denied_basename_under_a_non_synthetic_root_is_flagged() -> None:
-    """Negative control for the skip: only tmp fixtures are excused."""
-    assert _constructed('page = repo_root / "gone.md"') == _DENIED
+    # Anti-vacuity: if nothing is dropped the overlay is a pure copy and should be
+    # deleted, not maintained.
+    assert dropped, (
+        "every row of the real f821 baseline names a shipping path, so the overlay "
+        "copy has no reason to exist -- delete it and let the real baseline ship"
+    )
+    assert overlay.read_text(encoding="utf-8") == "".join(expected), (
+        "the f821 overlay has drifted from its source. Regenerate it as the real "
+        "baseline minus the rows whose path does not ship."
+    )

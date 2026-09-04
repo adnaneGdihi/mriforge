@@ -13,7 +13,7 @@ silently destroys the ``ColoredConsoleFormatter`` installed by
 log line in the process becomes uncolored regardless of TTY / TERM /
 ``FORCE_COLOR``.
 
-The bug surfaced 2026-05-17 on the cluster: ``python -m mriforge.cli
+The bug surfaced 2026-05-17 on the cluster: ``python -m spectramr.cli
 predict`` triggered ``InferencePipeline._setup_logging`` which called
 ``basicConfig(force=True)``, wiping colors for the rest of the run. The
 fix was to remove the ``basicConfig`` and just acquire a module
@@ -156,8 +156,8 @@ def test_inference_pipeline_setup_logging_no_longer_calls_basicconfig() -> None:
 def test_bootstrap_console_logging_installs_colored_handler() -> None:
     """``bootstrap_console_logging()`` puts a ColoredConsoleFormatter on root."""
     import logging
-    from mriforge.infrastructure.logging import bootstrap_console_logging
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.logging import bootstrap_console_logging
+    from spectramr.infrastructure.services.logging_service import (
         ColoredConsoleFormatter,
     )
 
@@ -185,8 +185,8 @@ def test_bootstrap_console_logging_installs_colored_handler() -> None:
 def test_bootstrap_console_logging_is_idempotent() -> None:
     """Calling the helper twice must not stack duplicate handlers."""
     import logging
-    from mriforge.infrastructure.logging import bootstrap_console_logging
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.logging import bootstrap_console_logging
+    from spectramr.infrastructure.services.logging_service import (
         ColoredConsoleFormatter,
     )
 
@@ -223,7 +223,7 @@ def test_bootstrap_console_logging_sets_root_level_to_info() -> None:
     lines visible.
     """
     import logging
-    from mriforge.infrastructure.logging import bootstrap_console_logging
+    from spectramr.infrastructure.logging import bootstrap_console_logging
 
     root = logging.getLogger()
     for h in list(root.handlers):
@@ -251,8 +251,8 @@ def test_bootstrap_console_logging_upgrades_existing_plain_handler() -> None:
     formatter in place.
     """
     import logging
-    from mriforge.infrastructure.logging import bootstrap_console_logging
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.logging import bootstrap_console_logging
+    from spectramr.infrastructure.services.logging_service import (
         ColoredConsoleFormatter,
     )
 
@@ -295,8 +295,8 @@ def test_bootstrap_console_logging_upgrades_existing_plain_handler() -> None:
 def test_bootstrap_console_logging_force_resets_handlers() -> None:
     """``force=True`` removes existing handlers before installing a fresh one."""
     import logging
-    from mriforge.infrastructure.logging import bootstrap_console_logging
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.logging import bootstrap_console_logging
+    from spectramr.infrastructure.services.logging_service import (
         ColoredConsoleFormatter,
     )
 
@@ -322,9 +322,9 @@ def test_bootstrap_console_logging_force_resets_handlers() -> None:
 
 
 def test_bootstrap_called_from_cli_app_main() -> None:
-    """Round-12 wiring: src/mriforge/cli/app.py::main() calls bootstrap_console_logging."""
+    """Round-12 wiring: src/spectramr/cli/app.py::main() calls bootstrap_console_logging."""
     import ast
-    path = REPO_ROOT / "src" / "mriforge" / "cli" / "app.py"
+    path = REPO_ROOT / "src" / "spectramr" / "cli" / "app.py"
     tree = ast.parse(path.read_text())
     main_fn: ast.FunctionDef | None = None
     for node in ast.walk(tree):
@@ -344,22 +344,22 @@ def test_bootstrap_called_from_cli_app_main() -> None:
                 break
     assert saw_call, (
         "F-LOG-COLOR round 12: src/cli/app.py::main() must call "
-        "bootstrap_console_logging() so 'python -m mriforge.cli <anything>' "
+        "bootstrap_console_logging() so 'python -m spectramr.cli <anything>' "
         "gets the colored handler installed. Without this wire, "
         "train/audit/predict/etc. all show plain output."
     )
 
 
 def test_bootstrap_called_from_main_py_main() -> None:
-    """Post-shim wiring (2026-05-29 entry-point unification + src→mriforge):
-    ``mriforge.main:main`` no longer owns a parser nor calls
+    """Post-shim wiring (2026-05-29 entry-point unification + src→spectramr):
+    ``spectramr.main:main`` no longer owns a parser nor calls
     ``bootstrap_console_logging`` directly — it is a deprecation shim that
-    delegates to ``mriforge.cli.app.main`` (which DOES bootstrap), so the
-    colored-logging guarantee for ``python -m mriforge.main train ...`` is
+    delegates to ``spectramr.cli.app.main`` (which DOES bootstrap), so the
+    colored-logging guarantee for ``python -m spectramr.main train ...`` is
     preserved transitively. This pins the delegation (the live SSOT) rather
     than the obsolete direct call."""
     import ast
-    path = REPO_ROOT / "src" / "mriforge" / "main.py"
+    path = REPO_ROOT / "src" / "spectramr" / "main.py"
     tree = ast.parse(path.read_text())
     main_fn: ast.FunctionDef | None = None
     for node in ast.walk(tree):
@@ -370,13 +370,13 @@ def test_bootstrap_called_from_main_py_main() -> None:
     # The shim must import + call cli.app's main (the delegation that bootstraps).
     imports_cli_main = any(
         isinstance(n, ast.ImportFrom)
-        and n.module == "mriforge.cli.app"
+        and n.module == "spectramr.cli.app"
         and any(alias.name == "main" for alias in n.names)
         for n in ast.walk(main_fn)
     )
     assert imports_cli_main, (
-        "mriforge.main:main() must delegate to mriforge.cli.app.main (which calls "
-        "bootstrap_console_logging) so 'python -m mriforge.main train ...' still "
+        "spectramr.main:main() must delegate to spectramr.cli.app.main (which calls "
+        "bootstrap_console_logging) so 'python -m spectramr.main train ...' still "
         "gets the colored handler. The shim no longer bootstraps directly."
     )
 
@@ -389,7 +389,7 @@ def test_logging_service_remains_color_ssot() -> None:
     F-LOG-COLOR fix above (removing basicConfig) leaves the system
     with no console handler at all — the wrong remedy.
     """
-    from mriforge.infrastructure.services.logging_service import (
+    from spectramr.infrastructure.services.logging_service import (
         ColoredConsoleFormatter,
     )
     assert ColoredConsoleFormatter is not None

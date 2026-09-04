@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.data.builders.manifest_index import build_index_from_manifest
+from spectramr.data.builders.manifest_index import build_index_from_manifest
 
 
 def _write_manifest(path: Path, data_root: Path, records: list[dict], file_type="bart"):

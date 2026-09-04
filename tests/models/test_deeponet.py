@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.generators.deeponet_generator import DeepONetGenerator
+from spectramr.models.generators.deeponet_generator import DeepONetGenerator
 
 
 def test_deeponet_initialization():

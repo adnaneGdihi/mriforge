@@ -18,8 +18,8 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.bootstrap import _resolve_checkpoint_config
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.bootstrap import _resolve_checkpoint_config
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
 
 def test_resolve_checkpoint_config_defaults_when_none() -> None:

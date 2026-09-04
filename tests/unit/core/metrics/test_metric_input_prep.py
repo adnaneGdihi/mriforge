@@ -14,7 +14,7 @@ per CLAUDE.md pitfall #9 (no silent fallbacks).
 import pytest
 import torch
 
-from mriforge.core.metrics.metric_input_prep import assert_finite_metric_input
+from spectramr.core.metrics.metric_input_prep import assert_finite_metric_input
 
 
 class TestAssertFiniteMetricInput:

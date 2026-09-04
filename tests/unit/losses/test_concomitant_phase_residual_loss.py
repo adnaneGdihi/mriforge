@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.concomitant_phase_residual_loss import (
+from spectramr.models.losses.concomitant_phase_residual_loss import (
     ConcomitantPhaseResidualLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 16, 16
 

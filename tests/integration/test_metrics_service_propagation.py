@@ -15,8 +15,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 class SimpleTestGenerator(nn.Module):

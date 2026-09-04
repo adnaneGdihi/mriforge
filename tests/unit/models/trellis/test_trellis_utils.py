@@ -9,7 +9,7 @@ from unittest.mock import patch
 import torch
 from torch import nn
 
-from mriforge.models.blocks.trellis_utils import (
+from spectramr.models.blocks.trellis_utils import (
     convert_module_to_f16,
     convert_module_to_f32,
     modulate,

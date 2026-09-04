@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.gradient import (
+from spectramr.core.metrics.meta_evaluation.gradient import (
     metric_gradient,
     spsa_gradient,
 )

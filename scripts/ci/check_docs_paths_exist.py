@@ -64,7 +64,7 @@ _PLACEHOLDER = ("<", ">", "...", "{", "}", "$", "*")
 # made the gate classify ``./scripts/run.sh`` as prose.
 _COMMAND_RE = re.compile(
     r"(?:^|[\s`(|])"
-    r"(?:(?:python3?|bash|sh|sbatch|srun|pytest|make|mriforge|uv run|pip install -e)\s"
+    r"(?:(?:python3?|bash|sh|sbatch|srun|pytest|make|spectramr|uv run|pip install -e)\s"
     r"|\./)"
 )
 

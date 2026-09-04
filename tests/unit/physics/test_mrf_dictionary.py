@@ -19,7 +19,7 @@ import torch
 @pytest.mark.physics
 def test_canary_mrf_dictionary_import():
     """Module imports and BlochDictionary can be instantiated."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 200.0),
         t2_range=(20.0, 40.0),
@@ -35,7 +35,7 @@ def test_canary_mrf_dictionary_import():
 @pytest.mark.physics
 def test_canary_mrf_generate_small():
     """generate() with a small dictionary and 2 time points completes."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 200.0),
         t2_range=(20.0, 40.0),
@@ -73,7 +73,7 @@ def test_canary_mrf_generate_small():
 )
 def test_mrf_match_output_shape(n_timepoints, h, w):
     """match() returns maps with [B, H, W] for image-format signals."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 300.0),
         t2_range=(20.0, 60.0),
@@ -98,7 +98,7 @@ def test_mrf_match_output_shape(n_timepoints, h, w):
 @pytest.mark.physics
 def test_mrf_match_1d_signals():
     """match() accepts flat [N, T] signals and returns flat [N] maps."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 300.0),
         t2_range=(20.0, 60.0),
@@ -120,7 +120,7 @@ def test_mrf_match_1d_signals():
 @pytest.mark.physics
 def test_mrf_project_signal_shape():
     """project_signal() returns same shape as input."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 300.0),
         t2_range=(20.0, 60.0),
@@ -145,7 +145,7 @@ def test_mrf_project_signal_shape():
 @pytest.mark.physics
 def test_mrf_edge_match_uniform_signal():
     """Matching a uniform signal tensor returns valid T1/T2 without error."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 300.0),
         t2_range=(20.0, 60.0),
@@ -165,7 +165,7 @@ def test_mrf_edge_match_uniform_signal():
 @pytest.mark.physics
 def test_mrf_edge_match_zero_signal():
     """Matching an all-zero signal tensor completes (norm denom is eps-guarded)."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(
         t1_range=(100.0, 300.0),
         t2_range=(20.0, 60.0),
@@ -189,7 +189,7 @@ def test_mrf_edge_match_zero_signal():
 @pytest.mark.physics
 def test_mrf_raises_if_match_called_before_generate():
     """match() must raise RuntimeError when called without generate()."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(device="cpu")
     signals = torch.randn(1, 2, 4, 4)
     with pytest.raises(RuntimeError, match="Dictionary not generated"):
@@ -199,7 +199,7 @@ def test_mrf_raises_if_match_called_before_generate():
 @pytest.mark.physics
 def test_mrf_raises_project_before_generate():
     """project_signal() must raise RuntimeError when dictionary is not built."""
-    from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+    from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
     bd = BlochDictionary(device="cpu")
     with pytest.raises(RuntimeError, match="Dictionary not generated"):
         bd.project_signal(torch.randn(1, 2, 4, 4))

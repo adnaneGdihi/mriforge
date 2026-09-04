@@ -16,11 +16,11 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.config.schemas.training.generative_refiner import GenerativeRefinerConfig
-from mriforge.infrastructure.training.strategies.field_guided_diffusion_strategy import (
+from spectramr.config.schemas.training.generative_refiner import GenerativeRefinerConfig
+from spectramr.infrastructure.training.strategies.field_guided_diffusion_strategy import (
     make_alphas_cumprod,
 )
-from mriforge.infrastructure.training.strategies.generative_refiner_strategy import (
+from spectramr.infrastructure.training.strategies.generative_refiner_strategy import (
     _FORWARD_OPERATORS,
     _wiener_band_op,
     _wiener_recoverable_noise,
@@ -224,7 +224,7 @@ def test_zero_guidance_is_deterministic_prior() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     paths = TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "generative_refiner" in paths

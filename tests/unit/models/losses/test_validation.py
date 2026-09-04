@@ -18,7 +18,7 @@ torch = pytest.importorskip("torch")  # noqa: E402
 
 import torch.nn as nn  # noqa: E402
 
-from mriforge.models.losses.validation import (  # noqa: E402
+from spectramr.models.losses.validation import (  # noqa: E402
     _strip_trailing_singletons,
     validate_loss_inputs,
 )
@@ -80,7 +80,7 @@ def test_nan_diagnostics_are_debug_gated(monkeypatch, caplog) -> None:
     pred[0, 0, 0, 0] = float("nan")
     target = torch.randn(2, 1, 4, 4)
 
-    logger_name = "mriforge.models.losses.validation"
+    logger_name = "spectramr.models.losses.validation"
     with caplog.at_level(logging.INFO, logger=logger_name):
         loss(pred, target)
     assert calls["count"] == 0, "NaN checks must not run on the default hot path"

@@ -75,8 +75,8 @@ class TestDummyConfigsLoadable:
 
     def test_training_strategy_resolvable(self, config_path):
         """Test that training strategy can be resolved from config (v6.0)."""
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         settings = TrainingSettings.from_yaml(str(config_path))
         factory = TrainingStrategyFactory()
@@ -100,7 +100,7 @@ class TestDummyConfigsValidation:
     )
     def test_config_creates_valid_settings(self, config_path):
         """Test that config can be loaded into TrainingSettings."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         try:
             settings = TrainingSettings.from_yaml(str(config_path))
@@ -115,7 +115,7 @@ class TestStrategyFactoryCompleteness:
 
     def test_factory_has_all_expected_strategies(self):
         """Test that factory registry contains all expected training strategies."""
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         factory = TrainingStrategyFactory()
         expected_strategies = [
@@ -137,7 +137,7 @@ class TestStrategyFactoryCompleteness:
 
     def test_all_strategies_are_loadable(self):
         """Test that all strategy classes can be loaded."""
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         factory = TrainingStrategyFactory()
 
@@ -155,7 +155,7 @@ class TestStrategyFactoryCompleteness:
 
     def test_strategy_classes_have_required_methods(self):
         """Test that strategy classes have expected interface."""
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         factory = TrainingStrategyFactory()
 
@@ -180,8 +180,8 @@ class TestDummyConfigsDryRun:
     )
     def test_dry_run_completes(self, config_path):
         """Test that dry run completes without error."""
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.pipelines import run_dry_training
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.pipelines import run_dry_training
 
         try:
             settings = TrainingSettings.from_yaml(str(config_path))
@@ -205,7 +205,7 @@ class TestDummyConfigsActualRun:
 
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         # Load and modify config for test
         with open(config_path) as f:
@@ -237,7 +237,7 @@ class TestDummyConfigsActualRun:
             settings = TrainingSettings.from_yaml(str(modified_config))
 
             # Import training function
-            from mriforge.pipelines.train import run_training_pipeline
+            from spectramr.pipelines.train import run_training_pipeline
 
             # Run training (this should complete quickly with 2 iterations)
             result = run_training_pipeline(settings)
@@ -271,7 +271,7 @@ class TestDummyConfigsActualRun:
 
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         # Use reconstruction config as reference
         config_path = DUMMY_CONFIG_DIR / "dummy_reconstruction.yaml"
@@ -304,7 +304,7 @@ class TestDummyConfigsActualRun:
 
         try:
             settings = TrainingSettings.from_yaml(str(modified_config))
-            from mriforge.pipelines.train import run_training_pipeline
+            from spectramr.pipelines.train import run_training_pipeline
 
             run_training_pipeline(settings)
 

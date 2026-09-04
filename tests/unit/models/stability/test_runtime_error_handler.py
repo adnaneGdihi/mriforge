@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.stability.runtime_error_handler import RuntimeErrorHandler
+from spectramr.models.stability.runtime_error_handler import RuntimeErrorHandler
 
 
 # ---------------------------------------------------------------------------

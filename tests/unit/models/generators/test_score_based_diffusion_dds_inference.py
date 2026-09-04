@@ -14,8 +14,8 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.generators.score_based_diffusion_generator import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.generators.score_based_diffusion_generator import (
     ScoreBasedDiffusionGenerator,
 )
 
@@ -59,8 +59,8 @@ def test_sample_reconstruction_routes_and_returns_finite():
 
 
 def test_get_sampler_dds_with_score_gen_is_call_compatible():
-    from mriforge.models.diffusion.samplers import get_sampler
-    from mriforge.models.diffusion.samplers.posterior_samplers import DDSReconSampler
+    from spectramr.models.diffusion.samplers import get_sampler
+    from spectramr.models.diffusion.samplers.posterior_samplers import DDSReconSampler
 
     gen = _tiny_score_gen("dds")
     sampler = get_sampler("dds", model=gen, num_timesteps=gen.timesteps, sampling_steps=4)
@@ -69,7 +69,7 @@ def test_get_sampler_dds_with_score_gen_is_call_compatible():
 
 def test_dynamic_dps_guidance_knobs_thread_to_sampler():
     """model_kwargs guidance_mode/sigma must reach the resolved DynamicDPSSampler."""
-    from mriforge.models.diffusion.samplers.posterior_samplers import DynamicDPSSampler
+    from spectramr.models.diffusion.samplers.posterior_samplers import DynamicDPSSampler
 
     gen = ScoreBasedDiffusionGenerator(
         denoising_model=nn.Conv2d(1, 1, 3, padding=1), timesteps=10, in_channels=1,
@@ -79,7 +79,7 @@ def test_dynamic_dps_guidance_knobs_thread_to_sampler():
     measurement, mask = _measurement()
     out = gen.sample(measurement=measurement, mask=mask)
     assert torch.isfinite(out).all()
-    from mriforge.models.diffusion.samplers import get_sampler
+    from spectramr.models.diffusion.samplers import get_sampler
 
     sampler = get_sampler("dynamic_dps", model=gen, num_timesteps=gen.timesteps, **gen._sampler_kwargs)
     assert isinstance(sampler, DynamicDPSSampler) and sampler.guidance_mode == "ncchi"
@@ -96,7 +96,7 @@ def test_diffusion_strategy_dispatches_dds_to_sample():
     gen.sample(measurement, mask) — not the unconditional generate()."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies import diffusion as diff
+    from spectramr.infrastructure.training.strategies import diffusion as diff
 
     assert "dds" in diff._POSTERIOR_RECON_SAMPLERS
     src = inspect.getsource(diff.DiffusionTrainingStrategy)

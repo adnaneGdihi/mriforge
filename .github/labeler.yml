@@ -10,34 +10,34 @@
 physics:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/infrastructure/physics/**
+          - src/spectramr/infrastructure/physics/**
           - tests/physics/**
 
 models:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/models/**
+          - src/spectramr/models/**
 
 losses:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/models/losses/**
+          - src/spectramr/models/losses/**
 
 data:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/data/**
+          - src/spectramr/data/**
 
 training:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/infrastructure/training/**
-          - src/mriforge/pipelines/train.py
+          - src/spectramr/infrastructure/training/**
+          - src/spectramr/pipelines/train.py
 
 config:
   - changed-files:
       - any-glob-to-any-file:
-          - src/mriforge/config/**
+          - src/spectramr/config/**
 
 experiments:
   - changed-files:

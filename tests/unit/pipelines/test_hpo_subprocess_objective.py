@@ -12,7 +12,7 @@ import csv
 import pytest
 import yaml
 
-from mriforge.pipelines.hpo import (
+from spectramr.pipelines.hpo import (
     _build_trial_yaml,
     _read_latest_metrics,
     _resolve_metric,

@@ -1,6 +1,6 @@
 """Tests for ``LogSpectralLoss``.
 
-Targets ``mriforge.models.losses.spectral_loss``. ``L1`` between log-magnitude
+Targets ``spectramr.models.losses.spectral_loss``. ``L1`` between log-magnitude
 spectra; works on both k-space and image inputs (FFT applied unless
 ``skip_fft=True``).
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.spectral_loss import LogSpectralLoss
+from spectramr.models.losses.spectral_loss import LogSpectralLoss
 
 
 # ---------------------------------------------------------------------------
@@ -133,6 +133,6 @@ def test_gradient_flows() -> None:
 
 def test_log_spectral_registered() -> None:
     """``log_spectral`` is in the registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "log_spectral" in list_available()

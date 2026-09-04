@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.universal_multitask import (
+from spectramr.models.generators.universal_multitask import (
     UniversalMultitaskDualContrastGenerator,
 )
 
@@ -80,7 +80,7 @@ class TestUniversalMultitaskDualContract:
         """The registry decoration must declare ``requires_paired_data``
         so the data pipeline / audit can reason about the channel layout
         without inspecting the class."""
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         entry = MODEL_REGISTRY.get("universal_multitask_dual")
         assert entry is not None, "model not registered"

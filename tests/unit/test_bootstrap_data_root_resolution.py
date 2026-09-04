@@ -2,10 +2,10 @@
 
 ``_validate_data_availability_at_startup`` used to raw-check
 ``Path(config.data.data_root).exists()`` (relative to CWD) plus an ad-hoc
-``MRIFORGE_DATA_ROOT/data_root`` join with a ``./databases`` default. That diverged
+``SPECTRAMR_DATA_ROOT/data_root`` join with a ``./databases`` default. That diverged
 from the dataset builder, which resolves a manifest's embedded ``data_root`` via
-``PathResolver`` (``src/mriforge/data/builders/manifest_index.py``): a config whose
-data the loader would locate (under ``PROJECT_ROOT`` / ``MRIFORGE_DATA_ROOT``) could
+``PathResolver`` (``src/spectramr/data/builders/manifest_index.py``): a config whose
+data the loader would locate (under ``PROJECT_ROOT`` / ``SPECTRAMR_DATA_ROOT``) could
 still fail the pre-flight with "Data root not found". The pre-flight now routes
 through ``PathResolver.resolve`` so the two agree. These tests exercise the pure
 path logic with a fake config (no DI, no data load).
@@ -17,7 +17,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.bootstrap import _validate_data_availability_at_startup
+from spectramr.bootstrap import _validate_data_availability_at_startup
 from tests.utils.data_config_stub import DataConfigStub
 
 
@@ -39,15 +39,15 @@ def test_resolves_relative_data_root_under_project_root(tmp_path, monkeypatch):
     the old raw Path.exists() (CWD-relative) would have raised."""
     (tmp_path / "site_data").mkdir()
     monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
     # must not raise
     _validate_data_availability_at_startup(_config("site_data"))
 
 
-def test_honors_mriforge_data_root_env(tmp_path, monkeypatch):
+def test_honors_spectramr_data_root_env(tmp_path, monkeypatch):
     (tmp_path / "site_data").mkdir()
     monkeypatch.delenv("PROJECT_ROOT", raising=False)
-    monkeypatch.setenv("MRIFORGE_DATA_ROOT", str(tmp_path))
+    monkeypatch.setenv("SPECTRAMR_DATA_ROOT", str(tmp_path))
     _validate_data_availability_at_startup(_config("site_data"))
 
 
@@ -55,6 +55,6 @@ def test_still_fails_loud_when_genuinely_absent(tmp_path, monkeypatch):
     """A data_root that resolves nowhere still raises (fail-loud preserved), and the
     message reports the resolved candidate for debuggability."""
     monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))  # empty root
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
     with pytest.raises(ValueError, match=r"Data root not found.*resolved:"):
         _validate_data_availability_at_startup(_config("definitely_absent_xyz"))

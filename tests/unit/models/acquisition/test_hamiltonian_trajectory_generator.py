@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.acquisition.hamiltonian_trajectory_generator import (
+from spectramr.models.acquisition.hamiltonian_trajectory_generator import (
     HamiltonianTrajectoryGenerator,
 )
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 
 def test_registered_in_model_registry():

@@ -14,7 +14,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.bootstrap import _validate_data_availability_at_startup
+from spectramr.bootstrap import _validate_data_availability_at_startup
 
 
 def _config_without_strategy_class() -> SimpleNamespace:

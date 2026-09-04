@@ -1,6 +1,6 @@
 """Tests for ``_extract_input_tensor`` (the dispatch helper).
 
-Targets ``mriforge.shared.utils.data_utils``. The ``get_sample_batch``
+Targets ``spectramr.shared.utils.data_utils``. The ``get_sample_batch``
 function depends on a config object and a director — exercising it
 requires heavy fixtures. Instead, we focus on ``_extract_input_tensor``,
 the pure-function dispatcher that handles the four documented batch
@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.shared.utils.data_utils import _extract_input_tensor
+from spectramr.shared.utils.data_utils import _extract_input_tensor
 
 
 # ---------------------------------------------------------------------------

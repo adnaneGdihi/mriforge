@@ -1,6 +1,6 @@
 """Unit tests for the ``nr_cross`` no-reference metric group.
 
-Covers :mod:`mriforge.core.metrics.nr_cross`:
+Covers :mod:`spectramr.core.metrics.nr_cross`:
 
 * ``ccsa`` — monotonicity (rises when a sibling-supported structure is erased
   from the reconstruction) + the "faithful < distorted" ordering anchor.
@@ -24,15 +24,15 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.nr_cross import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.nr_cross import (
     BlochReSynthesisConsistency,
     ConditionalCrossContrastPredictiveResidual,
     CrossContrastStructuralAgreement,
     NormativeCrossPatientDeviation,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
 
 H = W = 24
 
@@ -439,7 +439,7 @@ def test_ccpr_declares_prior_model_need() -> None:
     engine, the under-declaration made the metric read as a defect
     (``never_computed``) instead of the honest ``not_applicable``.
     """
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     needs = set(MetricsRegistry.needs("ccpr"))
     assert "prior_model" in needs, f"ccpr must declare prior_model; got {needs}"

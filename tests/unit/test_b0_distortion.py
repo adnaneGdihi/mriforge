@@ -1,7 +1,7 @@
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.realistic_degradations import (
+from spectramr.data.transforms.realistic_degradations import (
     B0GeometricDistortion,
     RandomB0Distortion,
 )

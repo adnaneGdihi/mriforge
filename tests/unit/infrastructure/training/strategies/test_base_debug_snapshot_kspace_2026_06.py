@@ -21,9 +21,9 @@ from types import SimpleNamespace
 
 import torch
 
-import mriforge.infrastructure.training.debug_snapshot as ds_mod
-import mriforge.infrastructure.training.utils.domain_inference as di_mod
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+import spectramr.infrastructure.training.debug_snapshot as ds_mod
+import spectramr.infrastructure.training.utils.domain_inference as di_mod
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):

@@ -9,10 +9,10 @@
 #
 # RATCHET MODEL
 # ------------
-# Before the src->mriforge rename this script greped ``src.pipelines`` over
+# Before the src->spectramr rename this script greped ``src.pipelines`` over
 # paths like ``src/infrastructure`` — post-rename neither the import prefix
 # nor the path exists, so every check PASSED VACUOUSLY. This rewrite scans
-# the REAL tree (``src/mriforge/...`` paths, ``(src.mriforge|mriforge)`` import
+# the REAL tree (``src/spectramr/...`` paths, ``(src.spectramr|spectramr)`` import
 # prefixes, ERE-safe physics exemption). Because the real tree carries a
 # handful of pre-existing violations (dependency-inversion debt owned by
 # WS-3/WS-6/WS-7), the script ratchets against a committed baseline:
@@ -98,9 +98,9 @@ emit() {
 log "scripts/ci/check_layering.sh — architectural-rule audit (ratcheted)"
 log "============================================================"
 
-# Import-prefix alternation: both the editable ``src.mriforge.*`` form and
-# the installed ``mriforge.*`` form.
-PKG='(src\.mriforge|mriforge)'
+# Import-prefix alternation: both the editable ``src.spectramr.*`` form and
+# the installed ``spectramr.*`` form.
+PKG='(src\.spectramr|spectramr)'
 
 # 1. Layer-direction rule: lower layers must never import from higher layers.
 #    cli/ -> pipelines/ -> application/ -> infrastructure/ -> models/, domain/ -> core/, config/
@@ -129,36 +129,36 @@ PKG='(src\.mriforge|mriforge)'
 # (the original used a PCRE ``(?!physics)`` lookahead that grep -E cannot honor).
 emit "no models|domain|core -> infrastructure/<non-physics> imports" \
     "$(grep -rEn --include='*.py' "^(from|import)[[:space:]]+${PKG}\.infrastructure\." \
-        src/mriforge/models src/mriforge/domain src/mriforge/core \
+        src/spectramr/models src/spectramr/domain src/spectramr/core \
         | grep -Ev ":(from|import) ${PKG}\.infrastructure\.physics" || true)"
 
 # 2. yaml.safe_load/load forbidden in service/orchestration dirs — build-time
-#    YAML routes through mriforge.config.io.
+#    YAML routes through spectramr.config.io.
 emit "no yaml.safe_load/load in services|coordination|orchestration|application" \
     "$(grep -rEn --include='*.py' "yaml\.(safe_load|load)\(" \
-        src/mriforge/application src/mriforge/infrastructure/services \
-        src/mriforge/infrastructure/coordination src/mriforge/infrastructure/orchestration || true)"
+        src/spectramr/application src/spectramr/infrastructure/services \
+        src/spectramr/infrastructure/coordination src/spectramr/infrastructure/orchestration || true)"
 
 # 3. Raw torch.fft.fftshift on complex k-space modules (fft2c/ifft2c handle
 #    centering). Spectral operators on real feature maps are exempt — scope is
 #    the canonical k-space modules only.
 emit "no torch.fft.fftshift in models/diffusion or core/metrics" \
     "$(grep -rEn --include='*.py' "torch\.fft\.fftshift\(" \
-        src/mriforge/models/diffusion src/mriforge/core/metrics || true)"
+        src/spectramr/models/diffusion src/spectramr/core/metrics || true)"
 
 # 4. Direct DataLoader instantiation: ELECTED AWAY (#1362, non-negotiable 17).
 #    The block here matched the literal name ``DataLoader``, so a real subclass --
 #    tio.SubjectsLoader -- was unseen, and with it the one construction site
 #    missing worker_init_fn. scripts/ci/check_dataloader_construction_ssot.py now
 #    owns this rule: it resolves the binding vocabulary instead of matching a name,
-#    and scans all of src/mriforge/ rather than these three directories.
+#    and scans all of src/spectramr/ rather than these three directories.
 
-# 5. @register_loss outside src/mriforge/models/losses/ (canonical-home rule).
+# 5. @register_loss outside src/spectramr/models/losses/ (canonical-home rule).
 emit "@register_loss only under models/losses/" \
     "$(grep -rEn --include='*.py' "^@register_loss\(" \
-        src/mriforge/infrastructure src/mriforge/models/ot src/mriforge/models/blocks \
-        src/mriforge/models/generators src/mriforge/data src/mriforge/application \
-        src/mriforge/pipelines src/mriforge/core || true)"
+        src/spectramr/infrastructure src/spectramr/models/ot src/spectramr/models/blocks \
+        src/spectramr/models/generators src/spectramr/data src/spectramr/application \
+        src/spectramr/pipelines src/spectramr/core || true)"
 
 log "============================================================"
 

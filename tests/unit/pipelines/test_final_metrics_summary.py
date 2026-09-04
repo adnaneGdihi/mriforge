@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.pipelines.train import _summarise_best_metrics_from_csv
+from spectramr.pipelines.train import _summarise_best_metrics_from_csv
 
 
 def _write_csv(path: Path, rows: list[dict[str, float]]) -> None:

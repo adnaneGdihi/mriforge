@@ -21,7 +21,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_base_schema(self):
         try:
-            from mriforge.config.schemas.base import BaseConfigSchema
+            from spectramr.config.schemas.base import BaseConfigSchema
 
             assert BaseConfigSchema is not None
         except ImportError:
@@ -30,7 +30,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_model_schema(self):
         try:
-            from mriforge.config.schemas.model import ModelConfigSchema
+            from spectramr.config.schemas.model import ModelConfigSchema
 
             assert ModelConfigSchema is not None
         except ImportError:
@@ -39,7 +39,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_data_schema(self):
         try:
-            from mriforge.config.schemas.data import DataConfigSchema
+            from spectramr.config.schemas.data import DataConfigSchema
 
             assert DataConfigSchema is not None
         except ImportError:
@@ -48,7 +48,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_training_schema(self):
         try:
-            from mriforge.config.schemas.training import TrainingModeConfigSchema
+            from spectramr.config.schemas.training import TrainingModeConfigSchema
 
             assert TrainingModeConfigSchema is not None
         except ImportError:
@@ -57,7 +57,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_optimization_schema(self):
         try:
-            from mriforge.config.schemas.optimization import OptimizationConfigSchema
+            from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
             assert OptimizationConfigSchema is not None
         except ImportError:
@@ -66,7 +66,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_loss_schema(self):
         try:
-            from mriforge.config.schemas.loss import LossConfigSchema
+            from spectramr.config.schemas.loss import LossConfigSchema
 
             assert LossConfigSchema is not None
         except ImportError:
@@ -75,7 +75,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_physics_schema(self):
         try:
-            from mriforge.config.schemas.physics import PhysicsConfigSchema
+            from spectramr.config.schemas.physics import PhysicsConfigSchema
 
             assert PhysicsConfigSchema is not None
         except ImportError:
@@ -84,7 +84,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_validation_schema(self):
         try:
-            from mriforge.config.schemas.validation import ValidationConfigSchema
+            from spectramr.config.schemas.validation import ValidationConfigSchema
 
             assert ValidationConfigSchema is not None
         except ImportError:
@@ -93,7 +93,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_checkpoint_schema(self):
         try:
-            from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+            from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
             assert CheckpointConfigSchema is not None
         except ImportError:
@@ -102,7 +102,7 @@ class TestCoreSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_logging_schema(self):
         try:
-            from mriforge.config.schemas.logging import LoggingConfigSchema
+            from spectramr.config.schemas.logging import LoggingConfigSchema
 
             assert LoggingConfigSchema is not None
         except ImportError:
@@ -116,7 +116,7 @@ class TestValidationRules:
     # @# pytest.mark.timeout(30)
     def test_validation_rules_import(self):
         try:
-            from mriforge.config.schemas.validation_rules import validate_config
+            from spectramr.config.schemas.validation_rules import validate_config
 
             assert validate_config is not None
         except ImportError:
@@ -124,7 +124,7 @@ class TestValidationRules:
 
     # @# pytest.mark.timeout(30)
     def test_validation_constants_import(self):
-        from mriforge.config.validation_constants import (
+        from spectramr.config.validation_constants import (
             VALID_MODEL_TYPES,
             VALID_TRAINING_MODES,
         )
@@ -135,7 +135,7 @@ class TestValidationRules:
     # @# pytest.mark.timeout(30)
     def test_validation_profiles_import(self):
         try:
-            from mriforge.config.schemas.validation_profiles import ValidationProfile
+            from spectramr.config.schemas.validation_profiles import ValidationProfile
 
             assert ValidationProfile is not None
         except ImportError:
@@ -149,7 +149,7 @@ class TestKnownDatasets:
     # @# pytest.mark.timeout(30)
     def test_known_datasets_import(self):
         try:
-            from mriforge.config.schemas.known_datasets import KNOWN_DATASETS
+            from spectramr.config.schemas.known_datasets import KNOWN_DATASETS
 
             assert KNOWN_DATASETS is not None
         except ImportError:
@@ -159,7 +159,7 @@ class TestKnownDatasets:
     def test_fastmri_in_known_datasets(self):
         """FastMRI should be a known dataset."""
         try:
-            from mriforge.config.schemas.known_datasets import KNOWN_DATASETS
+            from spectramr.config.schemas.known_datasets import KNOWN_DATASETS
         except ImportError:
             pytest.skip("KNOWN_DATASETS not available")
 
@@ -180,7 +180,7 @@ class TestSerializer:
     # @# pytest.mark.timeout(30)
     def test_serializer_import(self):
         try:
-            from mriforge.config.schemas.serializer import ConfigSerializer
+            from spectramr.config.schemas.serializer import ConfigSerializer
 
             assert ConfigSerializer is not None
         except ImportError:
@@ -189,7 +189,7 @@ class TestSerializer:
     # @# pytest.mark.timeout(30)
     def test_serializer_to_dict(self):
         """Serializer should convert config to dict."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema(patience=15)
 
@@ -210,7 +210,7 @@ class TestLoader:
     # @# pytest.mark.timeout(30)
     def test_loader_import(self):
         try:
-            from mriforge.config.schemas.loader import ConfigLoader
+            from spectramr.config.schemas.loader import ConfigLoader
 
             assert ConfigLoader is not None
         except ImportError:
@@ -256,14 +256,14 @@ class TestEnums:
 
     # @# pytest.mark.timeout(30)
     def test_enums_import(self):
-        from mriforge.config.schemas.enums import MetricMode, TrainingMode
+        from spectramr.config.schemas.enums import MetricMode, TrainingMode
 
         assert TrainingMode is not None
         assert MetricMode is not None
 
     # @# pytest.mark.timeout(30)
     def test_training_mode_values(self):
-        from mriforge.config.schemas.enums import TrainingMode
+        from spectramr.config.schemas.enums import TrainingMode
 
         # Should have common training modes
         modes = [m.value for m in TrainingMode]
@@ -272,7 +272,7 @@ class TestEnums:
 
     # @# pytest.mark.timeout(30)
     def test_metric_mode_values(self):
-        from mriforge.config.schemas.enums import MetricMode
+        from spectramr.config.schemas.enums import MetricMode
 
         # Should have min/max modes
         modes = [m.value for m in MetricMode]
@@ -288,7 +288,7 @@ class TestPhysicsSchema:
     # @# pytest.mark.timeout(30)
     def test_physics_defaults(self):
         try:
-            from mriforge.config.schemas.physics import PhysicsConfigSchema
+            from spectramr.config.schemas.physics import PhysicsConfigSchema
         except ImportError:
             pytest.skip("PhysicsConfigSchema not available")
 
@@ -300,7 +300,7 @@ class TestPhysicsSchema:
     # @# pytest.mark.timeout(30)
     def test_physics_data_consistency_enabled(self):
         try:
-            from mriforge.config.schemas.physics import PhysicsConfigSchema
+            from spectramr.config.schemas.physics import PhysicsConfigSchema
         except ImportError:
             pytest.skip("PhysicsConfigSchema not available")
 
@@ -317,7 +317,7 @@ class TestManifestSchema:
     # @# pytest.mark.timeout(30)
     def test_manifest_schema_import(self):
         try:
-            from mriforge.config.schemas.manifest_schema import ManifestSchema
+            from spectramr.config.schemas.manifest_schema import ManifestSchema
 
             assert ManifestSchema is not None
         except ImportError:
@@ -331,7 +331,7 @@ class TestMultiStageConfig:
     # @# pytest.mark.timeout(30)
     def test_multi_stage_validator_import(self):
         try:
-            from mriforge.config.schemas.multi_stage_config_validator import (
+            from spectramr.config.schemas.multi_stage_config_validator import (
                 MultiStageConfigValidator,
             )
 
@@ -347,7 +347,7 @@ class TestQuickConfig:
     # @# pytest.mark.timeout(30)
     def test_quick_config_import(self):
         try:
-            from mriforge.config.schemas.quick_config import QuickConfig
+            from spectramr.config.schemas.quick_config import QuickConfig
 
             assert QuickConfig is not None
         except ImportError:
@@ -361,7 +361,7 @@ class TestDefaultsProvider:
     # @# pytest.mark.timeout(30)
     def test_defaults_provider_import(self):
         try:
-            from mriforge.config.schemas.defaults_provider import DefaultsProvider
+            from spectramr.config.schemas.defaults_provider import DefaultsProvider
 
             assert DefaultsProvider is not None
         except ImportError:
@@ -375,7 +375,7 @@ class TestParadigmRegistry:
     # @# pytest.mark.timeout(30)
     def test_paradigm_registry_import(self):
         try:
-            from mriforge.config.schemas.paradigm_registry import ParadigmRegistry
+            from spectramr.config.schemas.paradigm_registry import ParadigmRegistry
 
             assert ParadigmRegistry is not None
         except ImportError:
@@ -389,7 +389,7 @@ class TestTrellisConfig:
     # @# pytest.mark.timeout(30)
     def test_trellis_config_import(self):
         try:
-            from mriforge.config.schemas.trellis import TrellisConfig
+            from spectramr.config.schemas.trellis import TrellisConfig
 
             assert TrellisConfig is not None
         except ImportError:

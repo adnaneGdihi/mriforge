@@ -10,7 +10,7 @@ step reads the later cascade levels as the oldest files on disk.
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 

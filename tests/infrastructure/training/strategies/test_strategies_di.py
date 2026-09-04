@@ -4,11 +4,11 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
-from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
 from tests.utils.config_block_stub import block_stub
 from tests.utils.data_config_stub import DataConfigStub
@@ -199,7 +199,7 @@ def MockDataConfig():  # noqa: N802 -- factory, so call sites are unchanged
 
 class MockDiffusionConfig:
     def __init__(self):
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         self.timesteps = 1000
         self.num_timesteps = 1000
@@ -235,19 +235,19 @@ class MockTrainingConfig:
 
 @pytest.fixture
 def mock_loss_computer():
-    with patch("mriforge.models.losses.computers.UnifiedGANLossComputer") as mock:
+    with patch("spectramr.models.losses.computers.UnifiedGANLossComputer") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_diffusion_loss_computer():
-    with patch("mriforge.models.losses.computers.UnifiedDiffusionLossComputer") as mock:
+    with patch("spectramr.models.losses.computers.UnifiedDiffusionLossComputer") as mock:
         yield mock
 
 
 @pytest.fixture
 def mock_vae_loss_computer():
-    with patch("mriforge.models.losses.computers.UnifiedVAELossComputer") as mock:
+    with patch("spectramr.models.losses.computers.UnifiedVAELossComputer") as mock:
         yield mock
 
 
@@ -290,7 +290,7 @@ def mock_state(mock_env):
     return state
 
 
-@patch("mriforge.infrastructure.di.di_container.resolve_service")
+@patch("spectramr.infrastructure.di.di_container.resolve_service")
 def test_gan_strategy_init(mock_resolve, mock_env, mock_state, mock_loss_computer):
     mock_resolve.return_value = MagicMock()  # LoggingService
 
@@ -306,7 +306,7 @@ def test_gan_strategy_init(mock_resolve, mock_env, mock_state, mock_loss_compute
     assert isinstance(strategy, BaseTrainingStrategy)
 
 
-@patch("mriforge.infrastructure.di.di_container.resolve_service")
+@patch("spectramr.infrastructure.di.di_container.resolve_service")
 def test_diffusion_strategy_init(
     mock_resolve, mock_env, mock_state, mock_diffusion_loss_computer
 ):
@@ -325,7 +325,7 @@ def test_diffusion_strategy_init(
     assert isinstance(strategy, BaseTrainingStrategy)
 
 
-@patch("mriforge.infrastructure.di.di_container.resolve_service")
+@patch("spectramr.infrastructure.di.di_container.resolve_service")
 def test_vae_strategy_init(mock_resolve, mock_env, mock_state, mock_vae_loss_computer):
     mock_resolve.return_value = MagicMock()
 

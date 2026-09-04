@@ -10,14 +10,14 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.strategy_knobs import (
+from spectramr.config.schemas.strategy_knobs import (
     build_strategy_knob_rule,
     known_knobs,
     register_strategy_knob_names,
     register_strategy_knobs,
     validate_strategy_knobs,
 )
-from mriforge.config.schemas.strictness import StrictSchema
+from spectramr.config.schemas.strictness import StrictSchema
 
 _FAKE = "tests.fake.SomeStrategy"
 
@@ -83,7 +83,7 @@ def test_declared_training_fields_are_allowed():
 
 
 def test_integrates_with_validator_registry():
-    from mriforge.config.schemas.validator_registry import ValidatorRegistry
+    from spectramr.config.schemas.validator_registry import ValidatorRegistry
 
     register_strategy_knob_names(_FAKE + ".registry", ["real_knob"])
     rule = build_strategy_knob_rule(severity="warning")

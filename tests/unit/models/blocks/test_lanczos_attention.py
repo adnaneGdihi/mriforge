@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.lanczos_attention import KrylovLanczosAttention
+from spectramr.models.blocks.lanczos_attention import KrylovLanczosAttention
 
 
 def test_forward_shape_preserved() -> None:

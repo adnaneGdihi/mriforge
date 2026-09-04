@@ -28,7 +28,7 @@ import ast
 import inspect
 from pathlib import Path
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 

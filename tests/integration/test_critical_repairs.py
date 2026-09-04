@@ -2,9 +2,9 @@ import unittest
 
 import torch
 
-from mriforge.models.generators.gflownet_generator import GFlowNetGenerator
-from mriforge.models.generators.spiking_unet import LIFNeuron
-from mriforge.models.generators.split_learning_unet import SplitServerDecoder
+from spectramr.models.generators.gflownet_generator import GFlowNetGenerator
+from spectramr.models.generators.spiking_unet import LIFNeuron
+from spectramr.models.generators.split_learning_unet import SplitServerDecoder
 
 
 class TestCriticalRepairs(unittest.TestCase):

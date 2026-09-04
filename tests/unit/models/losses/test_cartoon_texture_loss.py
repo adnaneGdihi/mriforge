@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
 
-from mriforge.models.losses.cartoon_texture_loss import (
+from spectramr.models.losses.cartoon_texture_loss import (
     CartoonTextureSafeLoss,
     _div,
     _grad_fwd,
@@ -141,8 +141,8 @@ def test_rejects_invalid_construction() -> None:
 
 
 def test_registered_and_creatable() -> None:
-    import mriforge.models.losses  # noqa: F401 — fire @register_loss decorators
-    from mriforge.models.losses.registry import LossRegistry
+    import spectramr.models.losses  # noqa: F401 — fire @register_loss decorators
+    from spectramr.models.losses.registry import LossRegistry
 
     assert "cartoon_texture_safe" in LossRegistry._custom_losses
     assert isinstance(LossRegistry.create("cartoon_texture_safe"), CartoonTextureSafeLoss)

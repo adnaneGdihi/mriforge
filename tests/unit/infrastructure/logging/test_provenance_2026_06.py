@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import datetime
 from types import SimpleNamespace
 
-from mriforge.infrastructure.logging import provenance as prov
+from spectramr.infrastructure.logging import provenance as prov
 
 
 # --------------------------------------------------------------------------- #
@@ -153,14 +153,14 @@ def test_collect_run_provenance_composite():
     assert rec["batch"]["per_device"] == 2
     assert "git" in rec and "env" in rec
     assert rec["run_id"].startswith("myrun-")
-    assert "launch" not in rec  # not started via `mriforge launch` → no key
+    assert "launch" not in rec  # not started via `spectramr launch` → no key
 
 
 def test_collect_run_provenance_folds_in_plugins(monkeypatch):
-    """Out-of-tree plugin sources (MRIFORGE_PLUGINS + config.plugins.paths) are
+    """Out-of-tree plugin sources (SPECTRAMR_PLUGINS + config.plugins.paths) are
     stamped into the record (pitfall #15c — the resolved knob is traceable).
     This was shipped untested; M3 closes the gap."""
-    monkeypatch.setenv("MRIFORGE_PLUGINS", "mypkg.models.foo")
+    monkeypatch.setenv("SPECTRAMR_PLUGINS", "mypkg.models.foo")
     config = SimpleNamespace(
         data=SimpleNamespace(loader=SimpleNamespace(batch_size=2)),
         optimization=SimpleNamespace(gradient=SimpleNamespace(accumulation_steps=1)),
@@ -176,11 +176,11 @@ def test_collect_run_provenance_folds_in_plugins(monkeypatch):
 
 
 def test_collect_run_provenance_folds_in_launch(monkeypatch):
-    """When started via ``mriforge launch`` (MRIFORGE_LAUNCH_* present), the
+    """When started via ``spectramr launch`` (SPECTRAMR_LAUNCH_* present), the
     resolved backend + resources are folded into the record (pitfall #15c)."""
-    monkeypatch.setenv("MRIFORGE_LAUNCH_BACKEND", "docker")
-    monkeypatch.setenv("MRIFORGE_LAUNCH_GPUS", "2")
-    monkeypatch.setenv("MRIFORGE_LAUNCH_ACCOUNT", "acct")
+    monkeypatch.setenv("SPECTRAMR_LAUNCH_BACKEND", "docker")
+    monkeypatch.setenv("SPECTRAMR_LAUNCH_GPUS", "2")
+    monkeypatch.setenv("SPECTRAMR_LAUNCH_ACCOUNT", "acct")
     config = SimpleNamespace(
         data=SimpleNamespace(loader=SimpleNamespace(batch_size=2)),
         optimization=SimpleNamespace(gradient=SimpleNamespace(accumulation_steps=1)),

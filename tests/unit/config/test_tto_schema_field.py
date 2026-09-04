@@ -24,8 +24,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.schemas.training.tto import TTOConfig
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.tto import TTOConfig
 
 
 def test_base_schema_declares_tto_field() -> None:

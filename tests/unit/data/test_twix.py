@@ -1,4 +1,4 @@
-"""Tests for the pure-Python Siemens TWIX ``.dat`` decoder (``mriforge.data.twix``).
+"""Tests for the pure-Python Siemens TWIX ``.dat`` decoder (``spectramr.data.twix``).
 
 TWIX is Siemens' bespoke raw-acquisition container; there is no public schema file,
 so these tests build *byte-valid* synthetic fixtures (a VD multi-RAID file and a VB
@@ -19,7 +19,7 @@ import struct
 import numpy as np
 import pytest
 
-from mriforge.data import twix
+from spectramr.data import twix
 
 # --- synthetic TWIX byte builders ---------------------------------------------------
 

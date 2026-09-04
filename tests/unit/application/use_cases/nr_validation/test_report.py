@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
-from mriforge.application.use_cases.nr_validation.report import (
+from spectramr.application.use_cases.nr_validation.report import (
     render_cards_markdown,
     write_cards_table,
     write_nr_validation_report,

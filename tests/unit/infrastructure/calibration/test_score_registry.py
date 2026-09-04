@@ -1,6 +1,6 @@
 """Unit tests for the calibration score registry.
 
-Targets ``mriforge.infrastructure.calibration.score_registry``.
+Targets ``spectramr.infrastructure.calibration.score_registry``.
 
 The registry is a thin dispatch layer that maps YAML keys to score
 callables. We verify:
@@ -28,7 +28,7 @@ pytestmark = pytest.mark.unit
 
 def test_canary_import_and_list() -> None:
     """Registry is importable and has built-in scores populated."""
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         list_calibration_scores,
         resolve_calibration_score,
     )
@@ -54,7 +54,7 @@ def test_canary_import_and_list() -> None:
     ["absolute_residual", "pixel_residual"],
 )
 def test_builtin_scores_return_same_shape(score_name: str) -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         resolve_calibration_score,
     )
 
@@ -68,7 +68,7 @@ def test_builtin_scores_return_same_shape(score_name: str) -> None:
 
 
 def test_absolute_residual_non_negative() -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         resolve_calibration_score,
     )
 
@@ -85,7 +85,7 @@ def test_absolute_residual_non_negative() -> None:
 
 
 def test_resolve_unknown_raises_key_error() -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         resolve_calibration_score,
     )
 
@@ -94,7 +94,7 @@ def test_resolve_unknown_raises_key_error() -> None:
 
 
 def test_resolve_empty_string_raises() -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         resolve_calibration_score,
     )
 
@@ -108,7 +108,7 @@ def test_resolve_empty_string_raises() -> None:
 
 
 def test_register_new_score_and_resolve() -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         CALIBRATION_SCORE_REGISTRY,
         register_calibration_score,
         resolve_calibration_score,
@@ -137,7 +137,7 @@ def test_register_new_score_and_resolve() -> None:
 
 
 def test_register_conflict_raises_value_error() -> None:
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         CALIBRATION_SCORE_REGISTRY,
         register_calibration_score,
     )
@@ -166,7 +166,7 @@ def test_physics_residual_registered_and_dispatches_kwargs() -> None:
     physics score needs the acquisition vector and contrast, which must flow
     through the ``**kwargs`` (``score_kwargs``) channel.
     """
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         list_calibration_scores,
         resolve_calibration_score,
     )
@@ -179,7 +179,7 @@ def test_physics_residual_registered_and_dispatches_kwargs() -> None:
     t2 = torch.tensor([[[[80.0, 120.0], [60.0, 100.0]]]])
     params = torch.cat([rho, t1, t2], dim=1)
 
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -200,7 +200,7 @@ def test_physics_residual_registered_and_dispatches_kwargs() -> None:
 
 def test_idempotent_reregistration_allowed() -> None:
     """Re-registering the *same* callable under the same name is a no-op."""
-    from mriforge.infrastructure.calibration.score_registry import (
+    from spectramr.infrastructure.calibration.score_registry import (
         CALIBRATION_SCORE_REGISTRY,
         register_calibration_score,
     )

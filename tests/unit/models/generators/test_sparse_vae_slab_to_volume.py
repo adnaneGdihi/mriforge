@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.sparse_vae_slab_to_volume import (
+from spectramr.models.generators.sparse_vae_slab_to_volume import (
     SparseVAESlabToVolumeGenerator,
 )
 
@@ -110,7 +110,7 @@ class TestSparseVAESlabToVolume:
             )(torch.randn(1, 1, 16, 16, 0))
 
     def test_registry_metadata(self) -> None:
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         entry = MODEL_REGISTRY.get("sparse_vae_slab_to_volume")
         assert entry is not None

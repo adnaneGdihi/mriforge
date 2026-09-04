@@ -5,12 +5,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.tight_frame_learner import TightFrameLearner
-from mriforge.models.losses.frame_coherence_loss import (
+from spectramr.models.generators.tight_frame_learner import TightFrameLearner
+from spectramr.models.losses.frame_coherence_loss import (
     FrameCoherenceLoss,
     gram_offdiagonal_penalty,
 )
-from mriforge.models.losses.registry import create_loss, list_available
+from spectramr.models.losses.registry import create_loss, list_available
 
 
 def test_reads_frame_module() -> None:

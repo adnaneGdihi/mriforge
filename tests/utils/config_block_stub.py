@@ -21,7 +21,7 @@ Two properties, both inherited from ``data_config_stub``'s rules:
 And one it adds:
 
 3. **The flat->canonical routing is DERIVED from**
-   :data:`mriforge.config.schemas.renames.RENAMES`, not restated. 87 pairs across
+   :data:`spectramr.config.schemas.renames.RENAMES`, not restated. 87 pairs across
    the 5 registered blocks, every one of them the same record the loader folds
    YAML with. A hand-written table would be a second resolver that agrees until
    the next rename -- which is the whole reason these tests broke.
@@ -50,15 +50,15 @@ __all__ = ["BLOCK_SCHEMAS", "block_stub", "flat_to_canonical"]
 
 #: Block name -> ``(module, class)`` of the schema that defines it.
 BLOCK_SCHEMAS: dict[str, tuple[str, str]] = {
-    "validation": ("mriforge.config.schemas.validation", "ValidationConfigSchema"),
-    "logging": ("mriforge.config.schemas.logging", "LoggingConfigSchema"),
-    "losses": ("mriforge.config.schemas.loss", "LossConfigSchema"),
+    "validation": ("spectramr.config.schemas.validation", "ValidationConfigSchema"),
+    "logging": ("spectramr.config.schemas.logging", "LoggingConfigSchema"),
+    "losses": ("spectramr.config.schemas.loss", "LossConfigSchema"),
     "undersampling": (
-        "mriforge.config.schemas.acceleration",
+        "spectramr.config.schemas.acceleration",
         "AccelerationConfigSchema",
     ),
     "optimization": (
-        "mriforge.config.schemas.optimization",
+        "spectramr.config.schemas.optimization",
         "OptimizationConfigSchema",
     ),
 }
@@ -91,7 +91,7 @@ def flat_to_canonical(block: str) -> dict[str, tuple[str, ...]]:
     ``optimization.gradient.clip.value`` and gets the schema default. The test
     then pins the default it never chose.
     """
-    from mriforge.config.schemas.renames import RENAMES
+    from spectramr.config.schemas.renames import RENAMES
 
     prefix = f"{block}."
     out: dict[str, tuple[str, ...]] = {}

@@ -1,6 +1,6 @@
 """Tests for ``HistogramConsistencyLoss``.
 
-Targets ``mriforge.models.losses.histogram_loss``. Differentiable
+Targets ``spectramr.models.losses.histogram_loss``. Differentiable
 soft-binned-histogram + L1-CDF distance — an Earth Mover's
 Distance-style intensity-distribution alignment loss.
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.histogram_loss import HistogramConsistencyLoss
+from spectramr.models.losses.histogram_loss import HistogramConsistencyLoss
 
 
 # ---------------------------------------------------------------------------
@@ -132,6 +132,6 @@ def test_gradient_flows_through_soft_binning() -> None:
 
 def test_histogram_consistency_registered() -> None:
     """``histogram_consistency`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "histogram_consistency" in list_available()

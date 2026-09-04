@@ -1,9 +1,9 @@
-"""Regression guard: ``mriforge.main`` must NOT import the heavy pipeline graph at
+"""Regression guard: ``spectramr.main`` must NOT import the heavy pipeline graph at
 module top-level (performance follow-up, 2026-06-19).
 
-``from mriforge.pipelines import run_training_pipeline`` pulls the entire pipeline
+``from spectramr.pipelines import run_training_pipeline`` pulls the entire pipeline
 → model-registry → monai/torchio graph (tens of seconds cold). It used to sit at
-module top, so ``from mriforge.main import _parse_value`` (and every other
+module top, so ``from spectramr.main import _parse_value`` (and every other
 lightweight reach into the module — e.g. the ``ablation`` verb) paid the full
 cold-import cost: the "after the import line it waits for a whole minute"
 symptom. It is now imported lazily inside the two functions that use it
@@ -19,7 +19,7 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-MAIN_PY = Path(__file__).resolve().parents[2] / "src" / "mriforge" / "main.py"
+MAIN_PY = Path(__file__).resolve().parents[2] / "src" / "spectramr" / "main.py"
 
 
 def _module_level_imports(source: str) -> list[str]:
@@ -39,12 +39,12 @@ def test_pipelines_not_imported_at_module_level():
     offenders = [
         m
         for m in top
-        if m == "mriforge.pipelines" or m.startswith("mriforge.pipelines.")
+        if m == "spectramr.pipelines" or m.startswith("spectramr.pipelines.")
     ]
     assert not offenders, (
-        f"mriforge.main imports the heavy pipeline graph at module level: {offenders}. "
+        f"spectramr.main imports the heavy pipeline graph at module level: {offenders}. "
         "Import run_training_pipeline lazily inside the function that uses it so "
-        "`import mriforge.main` stays cheap."
+        "`import spectramr.main` stays cheap."
     )
 
 
@@ -52,7 +52,7 @@ def test_run_training_pipeline_is_imported_lazily():
     # The deferral must actually be present (not merely deleted): both call sites
     # import it function-locally.
     source = MAIN_PY.read_text()
-    lazy = source.count("from mriforge.pipelines import run_training_pipeline")
+    lazy = source.count("from spectramr.pipelines import run_training_pipeline")
     assert lazy >= 2, (
         "expected run_training_pipeline to be imported lazily in "
         f"__common_train_setup and experiment_command, found {lazy} local import(s)"
@@ -91,7 +91,7 @@ def test_cuda_alloc_conf_set_before_torch_import():
 
 
 def test_hpo_command_is_not_defined():
-    # The `hpo` verb is owned entirely by ``mriforge.cli.app.hpo_cmd`` (which drives
+    # The `hpo` verb is owned entirely by ``spectramr.cli.app.hpo_cmd`` (which drives
     # HPOUseCase directly). ``main.py`` used to carry a byte-orphaned near-duplicate
     # ``hpo_command`` that nothing imported — ``cli.app`` never wired it. Removed
     # 2026-07-02; this guard stops it silently reappearing. Uses ``ast`` so the
@@ -103,6 +103,6 @@ def test_hpo_command_is_not_defined():
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
     }
     assert "hpo_command" not in defs, (
-        "mriforge.main.hpo_command is dead (cli.app uses its own hpo_cmd). "
+        "spectramr.main.hpo_command is dead (cli.app uses its own hpo_cmd). "
         "Do not re-add it here — extend cli.app.hpo_cmd instead."
     )

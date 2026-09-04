@@ -23,7 +23,7 @@ class TestReconstructionChannelAmbiguity:
         NOT shape-based inference like:
             if lr_image.shape[1] > 2:  # BAD: This is ambiguous
         """
-        with open("src/mriforge/infrastructure/training/strategies/reconstruction.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/reconstruction.py") as f:
             source = f.read()
 
         tree = ast.parse(source)
@@ -44,7 +44,7 @@ class TestReconstructionChannelAmbiguity:
 
     def test_has_forensic_fix_comment(self):
         """Verify FORENSIC FIX comment exists for multislice handling."""
-        with open("src/mriforge/infrastructure/training/strategies/reconstruction.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/reconstruction.py") as f:
             source = f.read()
 
         assert (
@@ -53,7 +53,7 @@ class TestReconstructionChannelAmbiguity:
 
     def test_no_ambiguous_shape_heuristics(self):
         """Verify shape check is combined with config flag, not standalone."""
-        with open("src/mriforge/infrastructure/training/strategies/reconstruction.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/reconstruction.py") as f:
             source = f.read()
 
         tree = ast.parse(source)
@@ -78,7 +78,7 @@ class TestReconstructionChannelAmbiguity:
 
     def test_multislice_detection_is_documented(self):
         """Verify the multislice logic is clearly documented."""
-        with open("src/mriforge/infrastructure/training/strategies/reconstruction.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/reconstruction.py") as f:
             source = f.read()
 
         assert (

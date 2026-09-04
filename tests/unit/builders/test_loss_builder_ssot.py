@@ -9,9 +9,9 @@ from unittest.mock import MagicMock
 import pytest
 import torch.nn as nn
 
-from mriforge.config.schemas.loss import LossConfigSchema, ReconstructionLossesConfig
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+from spectramr.config.schemas.loss import LossConfigSchema, ReconstructionLossesConfig
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
 
 class TestLossBuilderSSOT:

@@ -20,10 +20,10 @@ import torch
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 
-from mriforge.bootstrap import build_container
-from mriforge.config.settings import TrainingSettings
-from mriforge.domain.interfaces.service_interfaces import ICheckpointService, ILoggingService
-from mriforge.infrastructure.di import resolve_service
+from spectramr.bootstrap import build_container
+from spectramr.config.settings import TrainingSettings
+from spectramr.domain.interfaces.service_interfaces import ICheckpointService, ILoggingService
+from spectramr.infrastructure.di import resolve_service
 
 
 class TestFullTrainingIntegration:
@@ -73,7 +73,7 @@ class TestFullTrainingIntegration:
                 "gradient_clip_value": 1.0,
             },
             "training": {
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
                 "epochs": 2,
             },
             # `training.seed` is a RAISE-posture rename, not a fold: the seed
@@ -165,7 +165,7 @@ class TestFullTrainingIntegration:
                 "gradient_clip_value": 1.0,
             },
             "training": {
-                "strategy_class": "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+                "strategy_class": "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
                 "epochs": 2,
                 "diffusion": {
                     "timesteps": 100,  # Minimal for testing
@@ -296,7 +296,7 @@ class TestFullTrainingIntegration:
                 "learning_rate": 1e-4,
             },
             "training": {
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
                 "epochs": 1,
             },
             "losses": {"reconstruction": {"lambda_l1": 1.0}},
@@ -451,8 +451,8 @@ class TestDataLeakPreventionInTraining:
 
     def test_noise_simulation_active_in_data_consistency(self):
         """Test that data consistency layer adds noise during training."""
-        from mriforge.config.schemas.physics import DataConsistencyConfig
-        from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
+        from spectramr.config.schemas.physics import DataConsistencyConfig
+        from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
 
         # Create DC layer with noise enabled
         dc_config = DataConsistencyConfig(
@@ -542,11 +542,11 @@ class TestMultiStrategyTraining:
             # Deep copy training dict if it existed, but here we construct it.
 
             if mode == "reconstruction":
-                strategy = "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                strategy = "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 config["training"] = {"strategy_class": strategy, "epochs": 1}
 
             elif mode == "diffusion":
-                strategy = "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
+                strategy = "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
                 config["training"] = {
                     "strategy_class": strategy,
                     "epochs": 1,
@@ -559,7 +559,7 @@ class TestMultiStrategyTraining:
 
             elif mode == "vae":
                 strategy = (
-                    "mriforge.infrastructure.training.strategies.vae.VAETrainingStrategy"
+                    "spectramr.infrastructure.training.strategies.vae.VAETrainingStrategy"
                 )
                 config["training"] = {
                     "strategy_class": strategy,
@@ -570,7 +570,7 @@ class TestMultiStrategyTraining:
 
             elif mode == "gan":
                 strategy = (
-                    "mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy"
+                    "spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy"
                 )
                 config["training"] = {
                     "strategy_class": strategy,

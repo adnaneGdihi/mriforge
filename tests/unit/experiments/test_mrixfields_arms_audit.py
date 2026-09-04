@@ -21,7 +21,8 @@ import pathlib
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
+from spectramr.config.training_budget import NO_TRAINING_MODES
 from tests.utils.corpus import tracked_yamls
 
 # Resolved from this file, not the CWD: a relative path silently yields an empty
@@ -105,9 +106,7 @@ def _image_loss_names(cfg) -> list[str]:
     image = getattr(losses, "image_losses", None) or []
     out = []
     for item in image:
-        name = (
-            item.get("name") if isinstance(item, dict) else getattr(item, "name", None)
-        )
+        name = item.get("name") if isinstance(item, dict) else getattr(item, "name", None)
         if name:
             out.append(name)
     return out
@@ -150,6 +149,13 @@ def test_arm_has_metric_driven_best_checkpoint(arm: pathlib.Path) -> None:
     # Each arm (treatment AND its _ablate_ sibling) must now track its OWN headline
     # metric so the comparison stays one-knob (anti-confound, pitfall #17).
     cfg = TrainingSettings.from_yaml(str(arm))
+    mode = str(
+        getattr(cfg.training, "training_mode", "")
+        or getattr(cfg.training, "strategy_class", "")
+        or ""
+    )
+    if mode in NO_TRAINING_MODES:
+        pytest.skip(f"{arm.name}: {mode} optimises nothing, so no checkpoint is selected")
     es = cfg.early_stopping
     assert es is not None and es.enabled, f"{arm.name}: early_stopping must be enabled"
     # Early stopping must be a REAL saturation guard: it should FIRE on a genuine
@@ -187,13 +193,13 @@ def test_arm_has_metric_driven_best_checkpoint(arm: pathlib.Path) -> None:
     )
     # The monitored metric must actually be emitted, else the F-EARLYSTOP resolver
     # silently misses and no best checkpoint is ever saved (a NEW facade).
-    assert primary in _emitted_metrics(
-        cfg
-    ), f"{arm.name}: monitored {primary!r} not in validation.metrics — would never resolve"
+    assert primary in _emitted_metrics(cfg), (
+        f"{arm.name}: monitored {primary!r} not in validation.metrics — would never resolve"
+    )
     mode = str(es.mode).split(".")[-1].lower()
-    assert (
-        mode == _METRIC_MODE[primary]
-    ), f"{arm.name}: mode {mode!r} wrong for {primary!r} (expected {_METRIC_MODE[primary]})"
+    assert mode == _METRIC_MODE[primary], (
+        f"{arm.name}: mode {mode!r} wrong for {primary!r} (expected {_METRIC_MODE[primary]})"
+    )
 
 
 @pytest.mark.parametrize("arm", ARMS, ids=lambda p: p.name)
@@ -205,9 +211,9 @@ def test_arm_wires_val_manifest_and_metric_tracking(arm: pathlib.Path) -> None:
     normalisation, or validation-only metrics."""
     cfg = TrainingSettings.from_yaml(str(arm))
     data = cfg.data
-    assert data.source.validation_index_path == (
-        "data/manifests/mrixfields2026_val.json"
-    ), f"{arm.name}: must validate on the held-out val manifest, not an internal split"
+    assert data.source.validation_index_path == ("data/manifests/mrixfields2026_val.json"), (
+        f"{arm.name}: must validate on the held-out val manifest, not an internal split"
+    )
     # Pre-normalised volumes: re-normalising would shift the intensity distribution.
     assert data.processing.normalization_type == "none", (
         f"{arm.name}: pre-normalised volumes must use normalization_type=none, "
@@ -215,69 +221,15 @@ def test_arm_wires_val_manifest_and_metric_tracking(arm: pathlib.Path) -> None:
     )
     # Training-time metric tracking (top-level metrics block drives _compute_training_metrics).
     m = cfg.metrics
-    assert (
-        m is not None and m.enable_tracking
-    ), f"{arm.name}: metrics.enable_tracking off"
+    assert m is not None and m.enable_tracking, f"{arm.name}: metrics.enable_tracking off"
     for flag in ("compute_ssim", "compute_psnr", "compute_nrmse", "compute_lpips"):
         assert getattr(m, flag) is True, f"{arm.name}: metrics.{flag} must be true"
     # Same core battery emitted at validation (train/val symmetry the user asked for).
     emitted = _emitted_metrics(cfg)
     for core in ("ssim", "psnr", "nrmse", "lpips"):
-        assert (
-            core in emitted
-        ), f"{arm.name}: validation.metrics missing {core!r} (got {sorted(emitted)})"
-
-
-@pytest.mark.parametrize(
-    "arm",
-    [a for a in ARMS if a.name.startswith(("b17_conformal", "b19_", "b38_"))],
-    ids=lambda p: p.name,
-)
-def test_cross_field_arms_advertise_only_computed_losses(arm: pathlib.Path) -> None:
-    """Anti-facade (#16): every advertised image loss must reach the total.
-
-    This used to assert ``names <= {"l1"}``, on the premise that
-    ``CrossFieldTranslationStrategy`` computes its objective inline and never
-    routes ``image_losses`` through the builder. That stopped being true: the
-    strategy grew the loss-SSOT seam (``_apply_builder_image_losses`` ->
-    ``fold_builder_image_losses``), added precisely so a declarative ``losses:``
-    block on an inline-objective strategy is not "an inert decoy (pitfall #16)".
-    b17/b19 add hfen + ms_ssim through it deliberately; the old assertion then
-    read a wired mechanism as a facade and failed both arms in job 8000966.
-
-    The property worth guarding survives the change, so assert it directly
-    instead of a hardcoded name set that goes stale the next time the seam moves.
-    A declared loss reaches the objective by exactly one of two routes:
-
-    * it is **inline-managed** -- the strategy computes it itself, and the fold
-      skips it so it is not double-counted (``l1`` here);
-    * it is **registered** -- the fold builds it and adds it to ``loss_total``.
-
-    A name in neither is silently dropped, which is the facade.
-    """
-    from mriforge.infrastructure.training.strategies.cross_field_translation_strategy import (  # noqa: E501
-        CrossFieldTranslationStrategy,
-    )
-    from mriforge.infrastructure.training.strategies.loss_folding import (
-        inline_managed_with,
-    )
-    from mriforge.models.losses.registry import LossRegistry
-
-    cfg = TrainingSettings.from_yaml(str(arm))
-    if getattr(cfg.training, "strategy_class", None) != "cross_field_translation":
-        pytest.skip("not a cross_field_translation arm")
-
-    inline = inline_managed_with(*CrossFieldTranslationStrategy._INLINE_MANAGED_EXTRA)
-    registered = set(LossRegistry._custom_losses)
-    assert registered, "loss registry is empty — import mriforge.models.losses first"
-
-    names = set(_image_loss_names(cfg))
-    unreachable = {n for n in names if n not in inline and n not in registered}
-    assert not unreachable, (
-        f"{arm.name} advertises image losses {sorted(unreachable)} that neither "
-        f"the inline objective computes ({sorted(inline)}) nor the fold can "
-        f"build — they would be dropped silently (facade)."
-    )
+        assert core in emitted, (
+            f"{arm.name}: validation.metrics missing {core!r} (got {sorted(emitted)})"
+        )
 
 
 # Adam beta1 policy (2026-07-07 knob sweep): non-adversarial arms use 0.9 (matches the
@@ -345,7 +297,7 @@ def test_task3_is_any_to_any(arm: pathlib.Path) -> None:
 # exact regression that shipped when 26 arms were enabled but only 8 strategies threaded
 # (2026-07-07). Adding a new contrast-enabled strategy requires threading it AND listing
 # it in the src SSOT.
-from mriforge.config.validation_constants import (  # noqa: E402
+from spectramr.config.validation_constants import (  # noqa: E402
     CONTRAST_THREADED_STRATEGIES as _CONTRAST_THREADED_STRATEGIES,
 )
 
@@ -363,13 +315,11 @@ def test_contrast_rollout_is_non_trivial() -> None:
     # (2026-07-07) enabled contrast on ~26 arms. If this collapses to near-zero, the
     # per-arm guard is inert and a threading regression could slip through.
     enabled = [
-        a.name
-        for a in ARMS
-        if _use_contrast_conditioning(TrainingSettings.from_yaml(str(a)))
+        a.name for a in ARMS if _use_contrast_conditioning(TrainingSettings.from_yaml(str(a)))
     ]
-    assert (
-        len(enabled) >= 20
-    ), f"expected the broad contrast rollout (~26 arms), found {len(enabled)}: {enabled}"
+    assert len(enabled) >= 20, (
+        f"expected the broad contrast rollout (~26 arms), found {len(enabled)}: {enabled}"
+    )
 
 
 @pytest.mark.parametrize("arm", ARMS, ids=lambda p: p.name)

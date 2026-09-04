@@ -6,14 +6,14 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.field_guided_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.field_guided_diffusion_strategy import (
     FieldGuidedDiffusionStrategy,
     compute_field_guided_diffusion_loss,
     field_guided_sample,
     make_alphas_cumprod,
     q_sample,
 )
-from mriforge.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
+from spectramr.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
 from tests.utils.config_block_stub import block_stub
 
 
@@ -205,8 +205,8 @@ def test_validation_no_chunk_uses_full_batch() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_guided_diffusion" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "field_guided_diffusion" in TrainingStrategyConfigSchema.model_fields
@@ -220,7 +220,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(FieldGuidedDiffusionStrategy)
@@ -241,7 +241,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
 
 
 def test_contrast_id_threaded_train_and_sampler() -> None:
-    from mriforge.infrastructure.training.strategies.field_guided_diffusion_strategy import (
+    from spectramr.infrastructure.training.strategies.field_guided_diffusion_strategy import (
         compute_field_guided_diffusion_loss,
         field_guided_sample,
     )

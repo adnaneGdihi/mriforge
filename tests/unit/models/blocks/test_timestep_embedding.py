@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.timestep_embedding import sinusoidal_timestep_embedding
+from spectramr.models.blocks.timestep_embedding import sinusoidal_timestep_embedding
 
 
 def test_shape_and_dtype():

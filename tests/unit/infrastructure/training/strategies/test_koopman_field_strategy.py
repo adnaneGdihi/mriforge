@@ -7,11 +7,11 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.koopman_field_strategy import (
+from spectramr.infrastructure.training.strategies.koopman_field_strategy import (
     KoopmanFieldStrategy,
     compute_koopman_field_loss,
 )
-from mriforge.models.generators.koopman_field_propagator import KoopmanFieldPropagator
+from spectramr.models.generators.koopman_field_propagator import KoopmanFieldPropagator
 
 
 def _net(**kw) -> KoopmanFieldPropagator:
@@ -54,14 +54,16 @@ def test_loss_reduces(use_koopman_semigroup: bool) -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(KoopmanFieldStrategy)
     strat.env = types.SimpleNamespace(generator=_net())
     strat._kf_lambda_l1 = 1.0
     strat._kf_lambda_recon = 0.5
-    out = strat._compute_losses_impl(input_batch=tb.input, target_batch=tb.target, epoch=0, batch=tb)
+    out = strat._compute_losses_impl(
+        input_batch=tb.input, target_batch=tb.target, epoch=0, batch=tb
+    )
     assert torch.isfinite(out["loss_total"])
 
 
@@ -72,8 +74,10 @@ def test_compute_losses_rejects_tensor_batch() -> None:
     strat._kf_lambda_recon = 0.5
     with pytest.raises(ValueError, match="mapping batch"):
         strat._compute_losses_impl(
-            input_batch=torch.rand(2, 1, 16, 16), target_batch=torch.rand(2, 1, 16, 16),
-            epoch=0, batch=torch.rand(2, 1, 16, 16),
+            input_batch=torch.rand(2, 1, 16, 16),
+            target_batch=torch.rand(2, 1, 16, 16),
+            epoch=0,
+            batch=torch.rand(2, 1, 16, 16),
         )
 
 
@@ -83,7 +87,10 @@ def test_validation_forward_in_unit_range_uses_both_fields() -> None:
     strat.env = types.SimpleNamespace(generator=m)
     pred = strat._validation_forward(
         torch.rand(2, 1, 16, 16),
-        {"field_strength": torch.tensor([0.1, 1.5]), "field_strength_target": torch.tensor([7.0, 3.0])},
+        {
+            "field_strength": torch.tensor([0.1, 1.5]),
+            "field_strength_target": torch.tensor([7.0, 3.0]),
+        },
     ).detach()
     assert float(pred.min()) >= 0.0 and float(pred.max()) <= 1.0
 
@@ -93,7 +100,8 @@ def test_validation_forward_raises_without_both_fields() -> None:
     strat.env = types.SimpleNamespace(generator=_net())
     with pytest.raises(ValueError, match="field_strength"):
         strat._validation_forward(
-            torch.rand(1, 1, 16, 16), {"field_strength": torch.tensor([0.1])}  # missing target
+            torch.rand(1, 1, 16, 16),
+            {"field_strength": torch.tensor([0.1])},  # missing target
         )
 
 
@@ -143,23 +151,29 @@ def test_input_sensitivity_warns_on_collapsed_encoder() -> None:
 def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim) fold onto the inline objective via the
     loss-SSOT seam; the inline l1 placeholder is skipped (no double-count)."""
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(KoopmanFieldStrategy)
     strat.env = types.SimpleNamespace(
-        generator=_net(), losses={"l1": CharbonnierLoss(), "hfen": HFENLoss()})
-    strat.config = types.SimpleNamespace(losses=types.SimpleNamespace(
-        image_losses=[{"name": "l1", "weight": 1.0}, {"name": "hfen", "weight": 0.2}],
-        kspace_losses=[], complex_losses=[]))
+        generator=_net(), losses={"l1": CharbonnierLoss(), "hfen": HFENLoss()}
+    )
+    strat.config = types.SimpleNamespace(
+        losses=types.SimpleNamespace(
+            image_losses=[{"name": "l1", "weight": 1.0}, {"name": "hfen", "weight": 0.2}],
+            kspace_losses=[],
+            complex_losses=[],
+        )
+    )
     strat._kf_lambda_l1 = 1.0
     strat._kf_lambda_recon = 0.5
     strat._kf_lambda_stability = 0.0
 
     tb = BatchAdapter.from_dict(_batch())
     out = strat._compute_losses_impl(
-        input_batch=tb.input, target_batch=tb.target, epoch=0, batch=tb)
+        input_batch=tb.input, target_batch=tb.target, epoch=0, batch=tb
+    )
     assert "loss_builder_aux" in out and "loss_hfen" in out
     assert torch.isfinite(out["loss_total"])
     assert "prediction" not in out and "target_image" not in out
@@ -195,11 +209,20 @@ def test_lambda_stability_config_read_and_stamped() -> None:
     strat = object.__new__(KoopmanFieldStrategy)
     strat.env = types.SimpleNamespace(generator=_net())
     strat.logging_service = types.SimpleNamespace(
-        log_info=lambda m: logs.append(m), log_warning=lambda m: logs.append(m))
+        log_info=lambda m: logs.append(m), log_warning=lambda m: logs.append(m)
+    )
     strat._log_config_features = lambda *_a, **_k: None
     cfg = types.SimpleNamespace(
-        koopman_field=types.SimpleNamespace(lambda_l1=1.0, lambda_recon=0.5, lambda_stability=0.05))
-    strat.config = types.SimpleNamespace(training=cfg)
+        koopman_field=types.SimpleNamespace(lambda_recon=0.5, lambda_stability=0.05)
+    )
+    # The inline L1 weight is read from the loss-weight table (losses.image_losses), not
+    # from the training block (mrixfields review 2026-09-03).
+    strat.config = types.SimpleNamespace(
+        training=cfg,
+        losses=types.SimpleNamespace(
+            image_losses=[{"name": "l1", "weight": 1.0}], kspace_losses=[], complex_losses=[]
+        ),
+    )
     strat._verify_strategy_config = lambda **_k: None
     strat._setup_strategy_specific_components()
     assert strat._kf_lambda_stability == 0.05
@@ -207,8 +230,8 @@ def test_lambda_stability_config_read_and_stamped() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "koopman_field" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "koopman_field" in TrainingStrategyConfigSchema.model_fields

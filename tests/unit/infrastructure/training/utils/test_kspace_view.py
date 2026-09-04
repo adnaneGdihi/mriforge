@@ -19,11 +19,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.transforms.normalization import (  # noqa: E402
+from spectramr.data.transforms.normalization import (  # noqa: E402
     compress_kspace_log,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
-from mriforge.infrastructure.training.utils.kspace_view import (  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
+from spectramr.infrastructure.training.utils.kspace_view import (  # noqa: E402
     decompress_for_view,
     log_scaling_enabled,
 )
@@ -134,7 +134,7 @@ class TestARenamedFlagCannotGoQuiet:
 
     def test_the_real_schema_still_resolves(self):
         """The guard must not reject the field as it is actually declared."""
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
         assert "enable_log_scaling" in DataProcessingConfigSchema.model_fields
 
@@ -151,10 +151,10 @@ class TestANoOpDecompressionIsReported:
     def test_a_no_op_inverse_warns(self, caplog, monkeypatch):
         import logging
 
-        from mriforge.infrastructure.training.utils import kspace_view
+        from spectramr.infrastructure.training.utils import kspace_view
 
         monkeypatch.setattr(
-            "mriforge.data.transforms.normalization.decompress_kspace_log",
+            "spectramr.data.transforms.normalization.decompress_kspace_log",
             lambda x, channel_dim=1: x,
         )
         x = torch.rand(1, 2, 8, 8) + 0.5
@@ -168,7 +168,7 @@ class TestANoOpDecompressionIsReported:
         """Anti-vacuity: the guard must stay quiet on the working path."""
         import logging
 
-        from mriforge.infrastructure.training.utils import kspace_view
+        from spectramr.infrastructure.training.utils import kspace_view
 
         x = torch.rand(1, 2, 8, 8) + 0.5
         with caplog.at_level(logging.WARNING):
@@ -207,7 +207,7 @@ class TestASpuriousDecompressionIsRefused:
     def test_a_tensor_above_the_ceiling_is_returned_untouched(self, caplog):
         import logging
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             DECOMPRESS_MAGNITUDE_CEILING,
         )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.hermitian import (
+from spectramr.infrastructure.physics.hermitian import (
     enforce_hermitian,
     hermitian_gaussian_noise,
     is_hermitian,

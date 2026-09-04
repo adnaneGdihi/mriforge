@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.regions.types import (  # noqa: E402
+from spectramr.core.metrics.regions.types import (  # noqa: E402
     RegionMask,
     RegionSet,
     RegionSource,

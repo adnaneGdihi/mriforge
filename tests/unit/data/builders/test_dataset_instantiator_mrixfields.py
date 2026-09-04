@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-from mriforge.data.datasets.mrixfields_dataset import MRIxFieldsPairedDataset
+from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+from spectramr.data.datasets.mrixfields_dataset import MRIxFieldsPairedDataset
 from tests.utils.data_config_stub import DataConfigStub
 
 
@@ -30,7 +30,7 @@ def test_instantiator_builds_mrixfields(monkeypatch) -> None:
     # _default_nifti_volume_loader, not the central-slice loader. A depth-3 all-
     # foreground volume expands each of the 6 all_pairs pairs to 3 slices -> 18.
     monkeypatch.setattr(
-        "mriforge.data.datasets.mrixfields_dataset._default_nifti_volume_loader",
+        "spectramr.data.datasets.mrixfields_dataset._default_nifti_volume_loader",
         lambda p: torch.rand(1, 8, 8, 3),
     )
     train, val = DatasetInstantiator.create_datasets(_cfg(), _idx(), _idx(), None, None)

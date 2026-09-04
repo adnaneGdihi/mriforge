@@ -17,7 +17,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import ClassVar
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -131,7 +131,7 @@ def _cfg_with_kwargs(model_type, kwargs):
 
 
 def _patched_checker(monkeypatch, cls):
-    import mriforge.models.registry as registry_mod
+    import spectramr.models.registry as registry_mod
 
     monkeypatch.setattr(registry_mod, "get_model_class", lambda name: cls)
     return ConfigHealthChecker()

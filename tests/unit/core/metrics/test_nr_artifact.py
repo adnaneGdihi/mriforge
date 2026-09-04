@@ -19,15 +19,15 @@ import struct
 import pytest
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.nr_artifact import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.nr_artifact import (
     AliasingReplicaEnergy,
     ComplexPhaseGradientEntropy,
     GibbsRingingIndex,
     PhaseEncodeGhostCoherence,
     ResolutionAnisotropyRatio,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 # ---------------------------------------------------------------------------
 # helpers
@@ -115,7 +115,7 @@ def test_no_requires_grad_scalar_warning_on_grad_input():
     """
     import warnings
 
-    from mriforge.core.metrics.nr_artifact import _as_bchw_magnitude, _as_bhw_complex
+    from spectramr.core.metrics.nr_artifact import _as_bchw_magnitude, _as_bhw_complex
 
     grad_img = _disk()[None, None].clone().requires_grad_(True)
     assert not _as_bchw_magnitude(grad_img).requires_grad
@@ -452,7 +452,7 @@ class TestGriRoutesItsThresholdThroughTheQuantileOwner:
     def test_the_threshold_is_computed_by_robust_quantile(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        from mriforge.core.metrics import nr_artifact
+        from spectramr.core.metrics import nr_artifact
 
         calls: list[int] = []
         real = nr_artifact.robust_quantile
@@ -473,7 +473,7 @@ class TestGriRoutesItsThresholdThroughTheQuantileOwner:
         """Observed, not assumed. GRI's gradient magnitudes are
         ``sqrt(gy**2 + gx**2 + 1e-12)`` -- strictly positive and finite, so no
         guard should decline; if one does, the fast path is dead code here."""
-        from mriforge.core import quantile as quantile_mod
+        from spectramr.core import quantile as quantile_mod
 
         engaged: list[bool] = []
         real = quantile_mod._fast_select_quantile
@@ -492,7 +492,7 @@ class TestGriRoutesItsThresholdThroughTheQuantileOwner:
     def test_the_metric_value_is_unchanged_by_the_routing(self) -> None:
         """The whole contract in one assertion: bit-identical to the value the
         direct ``torch.quantile`` spelling produced."""
-        from mriforge.core.metrics import nr_artifact
+        from spectramr.core.metrics import nr_artifact
 
         img = self._edge_image()
         via_owner = GibbsRingingIndex()(img)

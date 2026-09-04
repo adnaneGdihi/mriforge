@@ -22,8 +22,8 @@ import inspect
 
 import torch
 
-from mriforge.infrastructure.training.strategies import qsm_pipeline_strategy
-from mriforge.infrastructure.training.strategies.qsm_pipeline_strategy import (
+from spectramr.infrastructure.training.strategies import qsm_pipeline_strategy
+from spectramr.infrastructure.training.strategies.qsm_pipeline_strategy import (
     QSMPipelineStrategy,
 )
 
@@ -54,7 +54,7 @@ class TestPipelineFailurePropagates:
         s.run_pipeline = lambda batch: (_ for _ in ()).throw(sentinel)  # type: ignore[method-assign]
 
         # Patch the inherited parent impl + the static batch resolver.
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 

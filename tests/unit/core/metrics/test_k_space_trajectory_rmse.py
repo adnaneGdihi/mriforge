@@ -15,8 +15,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.k_space_trajectory_rmse import KSpaceTrajectoryRMSE
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.k_space_trajectory_rmse import KSpaceTrajectoryRMSE
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def test_registered_and_lower_is_better():

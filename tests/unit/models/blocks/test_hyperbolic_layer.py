@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.hyperbolic_layer import (
+from spectramr.models.blocks.hyperbolic_layer import (
     PoincareLayer,
     exp_map_zero,
     hyperbolic_tree_distance_loss,

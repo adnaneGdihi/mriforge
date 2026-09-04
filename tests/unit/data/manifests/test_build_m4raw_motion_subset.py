@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.data.manifests.build_m4raw_motion_subset import (
+from spectramr.data.manifests.build_m4raw_motion_subset import (
     build_motion_subset_manifest,
     filter_motion_subjects,
     subject_id_from_record,

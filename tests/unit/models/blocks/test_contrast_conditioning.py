@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.contrast_conditioning import (
+from spectramr.models.blocks.contrast_conditioning import (
     build_contrast_sequence,
     contrast_sequence_dim,
 )

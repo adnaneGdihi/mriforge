@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch.nn as nn
 
-from mriforge.models.blocks.block_registry import (
+from spectramr.models.blocks.block_registry import (
     BLOCK_REGISTRY,
     create_block,
     list_registered_blocks,

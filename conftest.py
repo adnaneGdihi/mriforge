@@ -69,8 +69,8 @@ def pytest_configure(config):
     # silently trained under the "Mamba" label). CI / CPU dev boxes lack the
     # kernel, so allow the wiring-only GRU fallback for the test session.
     # setdefault lets a developer force the raise path with
-    # MRIFORGE_ALLOW_MAMBA_FALLBACK=0 (test_mamba_block deletes it per-test).
-    os.environ.setdefault("MRIFORGE_ALLOW_MAMBA_FALLBACK", "1")
+    # SPECTRAMR_ALLOW_MAMBA_FALLBACK=0 (test_mamba_block deletes it per-test).
+    os.environ.setdefault("SPECTRAMR_ALLOW_MAMBA_FALLBACK", "1")
 
 
 def pytest_runtest_setup(item: Item) -> None:

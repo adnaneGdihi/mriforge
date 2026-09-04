@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.conditioning import ConditioningContext  # noqa: E402
+from spectramr.models.conditioning import ConditioningContext  # noqa: E402
 
 
 def test_empty_context_has_no_active_sources() -> None:

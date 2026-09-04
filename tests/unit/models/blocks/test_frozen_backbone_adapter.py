@@ -5,7 +5,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.frozen_backbone_adapter import FrozenBackboneAdapter
+from spectramr.models.blocks.frozen_backbone_adapter import FrozenBackboneAdapter
 
 
 def _two_layer_backbone() -> nn.Module:

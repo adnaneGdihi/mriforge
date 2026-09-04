@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     SUPPORTED_ACCELERATION_TYPES,
     VDCartesian1DAccelerator,
     create_kspace_accelerator,
@@ -125,7 +125,7 @@ class TestNestingEnforcement:
         self-contradicting lines ("realises R=2.23 ... but declares R=2.23") once
         per timestep. Nothing was wrong, so nothing should be said.
         """
-        caplog.set_level("WARNING", logger="mriforge.infrastructure.physics.sampling")
+        caplog.set_level("WARNING", logger="spectramr.infrastructure.physics.sampling")
         acc = create_kspace_accelerator(
             acceleration_type=family,
             enforce_nested=True,

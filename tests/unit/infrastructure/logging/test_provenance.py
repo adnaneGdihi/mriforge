@@ -27,8 +27,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.core import resources as res
-from mriforge.infrastructure.logging import provenance as prov
+from spectramr.core import resources as res
+from spectramr.infrastructure.logging import provenance as prov
 
 _ALLOC_ENV = (
     "SLURM_CPUS_PER_TASK",
@@ -160,7 +160,7 @@ def test_memory_resources_derives_from_mem_per_cpu(no_scheduler):
     assert prov.memory_resources()["allocated_gb"] == 32.0
 
 
-# The cgroup/CPU probes moved to ``mriforge.core.resources`` so that the numbers
+# The cgroup/CPU probes moved to ``spectramr.core.resources`` so that the numbers
 # stamped into provenance and the numbers the dataloader-worker clamp decides on
 # come from one implementation. These tests therefore patch the CORE module: the
 # function bodies resolve ``read_first_line`` in their own module globals, so
@@ -961,7 +961,7 @@ class TestWorkerDecisionsReachDisk:
 
     @staticmethod
     def _topology(*, world_size: int, local_world_size: int, cpus: float | None):
-        from mriforge.core.topology import RunTopology
+        from spectramr.core.topology import RunTopology
 
         return RunTopology(
             execution_mode="local",
@@ -1008,7 +1008,7 @@ class TestWorkerDecisionsReachDisk:
 
     def test_the_record_matches_what_the_director_actually_decided(self):
         """The whole premise: re-derivation, not bookkeeping that can drift."""
-        from mriforge.core.worker_policy import clamp_worker_count
+        from spectramr.core.worker_policy import clamp_worker_count
 
         topology = self._topology(world_size=4, local_world_size=4, cpus=16)
         direct = clamp_worker_count(8, topology, role="train").to_dict()
@@ -1357,7 +1357,7 @@ class TestTheSingleRankTripwireCanActuallyFire:
         assert "[!]" not in line
 
     def test_no_declared_strategy_is_silent(self):
-        """One process with no strategy is a plain `mriforge train`."""
+        """One process with no strategy is a plain `spectramr train`."""
         for strategy in (None, "none"):
             line = prov.format_parallel_line(
                 {"strategy": strategy, "world_size": 1, "rank": 0, "initialized": True}
@@ -1388,7 +1388,7 @@ class TestTheSchedulerAndLauncherEnvStayApart:
     """`_SLURM_FIELDS` is documented as "what the scheduler granted". Folding
     launcher variables into it makes that contract a lie, and the two are
     independently present: torchrun outside Slurm, or a Slurm job launched with
-    plain `mriforge train`.
+    plain `spectramr train`.
     """
 
     def test_node_topology_reached_the_scheduler_tuple(self):
@@ -1612,7 +1612,7 @@ class TestTheBannerNamesTheLogDestination:
         lines = prov.format_provenance_lines(
             {
                 "logging": {
-                    "resolved_path": "/tmp/mriforge_logs_ab/x.log",
+                    "resolved_path": "/tmp/spectramr_logs_ab/x.log",
                     "relocated_from": "/project/results/arm/logs",
                 }
             }
@@ -1668,7 +1668,7 @@ def test_collect_run_provenance_stamps_the_metric_aggregation_convention():
 def test_the_stamped_convention_is_the_one_the_code_implements():
     """Read from the owning module, not re-spelled here -- a constant copied
     into the stamp could drift from the reduction it claims to describe."""
-    from mriforge.core.metrics.sample_aggregation import aggregation_provenance
+    from spectramr.core.metrics.sample_aggregation import aggregation_provenance
 
     rec = prov.collect_run_provenance(_minimal_config(), seed=1, device="cpu", run_name="r")
     assert rec["metric_aggregation"] == aggregation_provenance()
@@ -1739,3 +1739,23 @@ def test_knobs_line_survives_an_arm_with_no_undersampling_block():
     line = prov.format_runtime_knobs(_knobs_config())
     assert "identity_rung" not in line
     assert "max_iter=150000" in line
+
+
+# --------------------------------------------------------------------------- #
+# validation.sampling.ensemble_samples in the pre-clamp knobs line
+# --------------------------------------------------------------------------- #
+def test_knobs_line_reports_a_validation_ensemble():
+    cfg = _knobs_config()
+    cfg.validation.sampling = SimpleNamespace(ensemble_samples=4)
+    assert "val_ensemble=4" in prov.format_runtime_knobs(cfg)
+
+
+def test_knobs_line_omits_a_single_sample_validation():
+    """Absent, not ``1``: the same policy as ``identity_rung`` -- only opt-ins carry it."""
+    cfg = _knobs_config()
+    cfg.validation.sampling = SimpleNamespace(ensemble_samples=1)
+    assert "val_ensemble" not in prov.format_runtime_knobs(cfg)
+
+
+def test_knobs_line_survives_a_validation_block_without_sampling():
+    assert "val_ensemble" not in prov.format_runtime_knobs(_knobs_config())

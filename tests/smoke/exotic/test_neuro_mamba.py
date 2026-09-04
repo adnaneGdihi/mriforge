@@ -11,7 +11,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.mamba.neuro_mamba import NeuroMamba, surrogate_spike
+from spectramr.models.mamba.neuro_mamba import NeuroMamba, surrogate_spike
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

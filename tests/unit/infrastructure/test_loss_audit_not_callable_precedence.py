@@ -20,7 +20,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.loss_audit import UNPROBED, _test_loss_forward
+from spectramr.infrastructure.loss_audit import UNPROBED, _test_loss_forward
 
 
 class _NoneCallableLoss(nn.Module):

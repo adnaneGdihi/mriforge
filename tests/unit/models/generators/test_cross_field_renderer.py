@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.cross_field_renderer import AnatomyFieldRenderer
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.generators.cross_field_renderer import AnatomyFieldRenderer
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def test_registered() -> None:

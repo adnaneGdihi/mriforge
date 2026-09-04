@@ -13,8 +13,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.hjb_residual_loss import HJBResidualLoss
-from mriforge.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.hjb_residual_loss import HJBResidualLoss
+from spectramr.models.losses.registry import LossRegistry, create_loss
 
 
 def _value_field(h: int = 16, w: int = 16, t: int = 8) -> torch.Tensor:
@@ -95,7 +95,7 @@ class TestHJBPrimitiveExercised:
     """The HJB Hamiltonian operator must drive the loss -- not plain L1/L2."""
 
     def test_primitive_is_called(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        import mriforge.models.losses.hjb_residual_loss as mod
+        import spectramr.models.losses.hjb_residual_loss as mod
 
         calls = {"n": 0}
         real = mod.hjb_residual_loss

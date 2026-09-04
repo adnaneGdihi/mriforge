@@ -34,7 +34,7 @@ def _is_finite(t: torch.Tensor) -> bool:
 class TestMutualInformation:
     @pytest.fixture
     def mi(self):
-        from mriforge.core.metrics.report_step_metrics import MutualInformationMetric
+        from spectramr.core.metrics.report_step_metrics import MutualInformationMetric
         return MutualInformationMetric()
 
     def test_canary_finite(self, mi):
@@ -61,7 +61,7 @@ class TestMutualInformation:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.report_step_metrics import MutualInformationMetric
+        from spectramr.core.metrics.report_step_metrics import MutualInformationMetric
         b, c, h, w = shape
         result = MutualInformationMetric().compute_metric(_img(b, c, h, w), _img(b, c, h, w, seed=7))
         assert _is_finite(result)
@@ -75,7 +75,7 @@ class TestMutualInformation:
 class TestEdgePreservationIndex:
     @pytest.fixture
     def epi(self):
-        from mriforge.core.metrics.report_step_metrics import EdgePreservationIndex
+        from spectramr.core.metrics.report_step_metrics import EdgePreservationIndex
         return EdgePreservationIndex()
 
     def test_canary_finite_or_nan_when_no_edges(self, epi):
@@ -111,7 +111,7 @@ class TestEdgePreservationIndex:
 class TestRadialKSpaceError:
     @pytest.fixture
     def rke(self):
-        from mriforge.core.metrics.report_step_metrics import RadialKSpaceError
+        from spectramr.core.metrics.report_step_metrics import RadialKSpaceError
         return RadialKSpaceError()
 
     def test_canary_finite_nonnegative(self, rke):
@@ -144,17 +144,17 @@ class TestRadialKSpaceError:
 class TestBlandAltman:
     @pytest.fixture
     def bias(self):
-        from mriforge.core.metrics.report_step_metrics import BlandAltmanBias
+        from spectramr.core.metrics.report_step_metrics import BlandAltmanBias
         return BlandAltmanBias()
 
     @pytest.fixture
     def loa_upper(self):
-        from mriforge.core.metrics.report_step_metrics import LimitsOfAgreementUpper
+        from spectramr.core.metrics.report_step_metrics import LimitsOfAgreementUpper
         return LimitsOfAgreementUpper()
 
     @pytest.fixture
     def loa_lower(self):
-        from mriforge.core.metrics.report_step_metrics import LimitsOfAgreementLower
+        from spectramr.core.metrics.report_step_metrics import LimitsOfAgreementLower
         return LimitsOfAgreementLower()
 
     def test_canary_bias_finite(self, bias):
@@ -200,7 +200,7 @@ class TestBlandAltman:
 class TestICC3_1:
     @pytest.fixture
     def icc(self):
-        from mriforge.core.metrics.report_step_metrics import ICC3_1Metric
+        from spectramr.core.metrics.report_step_metrics import ICC3_1Metric
         return ICC3_1Metric()
 
     def test_canary_in_minus1_1(self, icc):
@@ -238,7 +238,7 @@ class TestICC3_1:
 class TestCoefficientOfVariation:
     @pytest.fixture
     def cv(self):
-        from mriforge.core.metrics.report_step_metrics import CoefficientOfVariation
+        from spectramr.core.metrics.report_step_metrics import CoefficientOfVariation
         return CoefficientOfVariation()
 
     def test_canary_finite_nonnegative(self, cv):
@@ -275,12 +275,12 @@ class TestCoefficientOfVariation:
 class TestDetection:
     @pytest.fixture
     def sens(self):
-        from mriforge.core.metrics.report_step_metrics import DetectionSensitivity
+        from spectramr.core.metrics.report_step_metrics import DetectionSensitivity
         return DetectionSensitivity(threshold=0.5)
 
     @pytest.fixture
     def spec(self):
-        from mriforge.core.metrics.report_step_metrics import DetectionSpecificity
+        from spectramr.core.metrics.report_step_metrics import DetectionSpecificity
         return DetectionSpecificity(threshold=0.5)
 
     def test_canary_sensitivity_in_unit(self, sens):
@@ -334,7 +334,7 @@ class TestDetection:
 class TestECE:
     @pytest.fixture
     def ece(self):
-        from mriforge.core.metrics.report_step_metrics import ExpectedCalibrationError
+        from spectramr.core.metrics.report_step_metrics import ExpectedCalibrationError
         return ExpectedCalibrationError()
 
     def _binary_data(self, n: int = 32, seed: int = 0) -> tuple[torch.Tensor, torch.Tensor]:
@@ -382,7 +382,7 @@ class TestECE:
 class TestNLLBitsPerDim:
     @pytest.fixture
     def bpd(self):
-        from mriforge.core.metrics.report_step_metrics import NLLBitsPerDim
+        from spectramr.core.metrics.report_step_metrics import NLLBitsPerDim
         return NLLBitsPerDim()
 
     def test_canary_finite(self, bpd):
@@ -415,7 +415,7 @@ class TestNLLBitsPerDim:
 class TestWasserstein1D:
     @pytest.fixture
     def w1(self):
-        from mriforge.core.metrics.report_step_metrics import Wasserstein1D
+        from spectramr.core.metrics.report_step_metrics import Wasserstein1D
         return Wasserstein1D()
 
     def test_canary_finite_nonnegative(self, w1):
@@ -449,7 +449,7 @@ class TestWasserstein1D:
 class TestTRE:
     @pytest.fixture
     def tre(self):
-        from mriforge.core.metrics.report_step_metrics import TargetRegistrationErrorMetric
+        from spectramr.core.metrics.report_step_metrics import TargetRegistrationErrorMetric
         return TargetRegistrationErrorMetric()
 
     def test_canary_finite_nonnegative(self, tre):
@@ -485,5 +485,5 @@ class TestTRE:
 class TestCohenKappa:
     def test_import_canary(self):
         """Confirm the module can be imported without error."""
-        import mriforge.core.metrics.report_step_metrics as m
+        import spectramr.core.metrics.report_step_metrics as m
         assert hasattr(m, "BlandAltmanBias")  # representative export

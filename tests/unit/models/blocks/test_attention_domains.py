@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.blocks.attention_domains import (
+from spectramr.models.blocks.attention_domains import (
     ATTENTION_DOMAIN_SUPPORT,
     COMPLEX_UNET_BLOCK_ATTENTION,
     DOMAIN_AWARE_ATTENTION,
@@ -37,7 +37,7 @@ class TestValidateFeatureDomain:
 class TestSSOTMaps:
     def test_support_map_covers_every_attention_type(self):
         """Drift guard: the SSOT must track the AttentionType enum exactly."""
-        from mriforge.models.reconstruction.unet import AttentionType
+        from spectramr.models.reconstruction.unet import AttentionType
 
         enum_values = {e.value for e in AttentionType}
         assert set(ATTENTION_DOMAIN_SUPPORT) == enum_values

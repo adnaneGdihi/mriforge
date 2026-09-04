@@ -32,7 +32,7 @@ import pytest
 def factory_registry():
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
-    from mriforge.models.factories.model_factory import ModelFactory
+    from spectramr.models.factories.model_factory import ModelFactory
 
     return ModelFactory()._registry
 
@@ -76,13 +76,13 @@ def test_agents_resolve_to_their_canonical_home(factory_registry) -> None:
     """
     rl_cls = factory_registry.get_generator_class("rl_acquisition_agent")
     surgery_cls = factory_registry.get_generator_class("surgery_loop_agent")
-    assert rl_cls.__module__ == "mriforge.models.generators.rl_acquisition_agent", (
+    assert rl_cls.__module__ == "spectramr.models.generators.rl_acquisition_agent", (
         f"rl_acquisition_agent should resolve to the canonical agent in "
-        f"src/mriforge/models/generators/; got {rl_cls.__module__}.{rl_cls.__name__}."
+        f"src/spectramr/models/generators/; got {rl_cls.__module__}.{rl_cls.__name__}."
     )
-    assert surgery_cls.__module__ == "mriforge.models.generators.surgery_loop_agent", (
+    assert surgery_cls.__module__ == "spectramr.models.generators.surgery_loop_agent", (
         f"surgery_loop_agent should resolve to the canonical agent in "
-        f"src/mriforge/models/generators/; got {surgery_cls.__module__}.{surgery_cls.__name__}."
+        f"src/spectramr/models/generators/; got {surgery_cls.__module__}.{surgery_cls.__name__}."
     )
 
 
@@ -91,15 +91,15 @@ def test_stubs_no_longer_aliases_agents_to_rl_mri() -> None:
     import re
     from pathlib import Path
 
-    import mriforge
+    import spectramr
 
     # Derived from the package, not a path literal. The 2026-05 refactor moved
-    # the tree to ``src/mriforge/`` and every hardcoded ``parents[N] / "src"``
+    # the tree to ``src/spectramr/`` and every hardcoded ``parents[N] / "src"``
     # silently pointed at a directory that does not exist -- 5 of cluster job
     # 8004252's failures, all reading as FileNotFoundError rather than as the
-    # stale constant they were. ``mriforge.__file__`` cannot go stale on a move.
+    # stale constant they were. ``spectramr.__file__`` cannot go stale on a move.
 
-    pkg = Path(mriforge.__file__).resolve().parent
+    pkg = Path(spectramr.__file__).resolve().parent
     stubs = (pkg / "models" / "stubs.py").read_text()
     # The alias being banned is the literal `setdefault("<agent>", MODEL_REGISTRY["rl_mri"])`
     banned = re.compile(

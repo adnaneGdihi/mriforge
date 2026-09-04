@@ -1,6 +1,6 @@
 """Unit tests for the Tier-2 probe's Shepp-Logan phantom helper.
 
-Targets :mod:`mriforge.infrastructure.validation.phantom_builder`:
+Targets :mod:`spectramr.infrastructure.validation.phantom_builder`:
 
 * :func:`synthetic_phantom` — shape contract for 4-D / 5-D, complex
   output, determinism, edge-case ranks.
@@ -21,7 +21,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 phantom_builder = pytest.importorskip(
-    "mriforge.infrastructure.validation.phantom_builder"
+    "spectramr.infrastructure.validation.phantom_builder"
 )
 
 synthetic_phantom = phantom_builder.synthetic_phantom

@@ -6,7 +6,7 @@ Enforces CLAUDE.md "Architecture (load-bearing)" inward-only dep rule:
     cli/ → pipelines/ → application/ → infrastructure/ → models/, domain/ → core/, config/
 
 Lower layers must never import from higher ones.  Also: nothing under
-src/mriforge/ may import from a repo-root tree that is not in the wheel
+src/spectramr/ may import from a repo-root tree that is not in the wheel
 (``scripts``, ``tools``, ``scratch``, ``runners``, ``tests``) -- see
 ``NONPACKAGE_ROOTS``.
 
@@ -32,11 +32,11 @@ import pytest
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 
 # Repo-root trees that are NOT part of the installed distribution
-# (``pyproject.toml`` ships ``packages = ["src/mriforge"]`` and nothing else), so
+# (``pyproject.toml`` ships ``packages = ["src/spectramr"]`` and nothing else), so
 # an import of one from ``src/`` is broken for every wheel install.  A literal
 # set, deliberately, rather than one derived from ``ls REPO_ROOT``: the
 # ``public`` branch excludes several of these directories, and a disk-derived
@@ -49,7 +49,7 @@ VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 #   tests     test code is never a production dependency
 #
 # Matching is on the FIRST dotted segment only, so the in-package
-# ``mriforge.tools`` package is untouched -- there is a negative control for
+# ``spectramr.tools`` package is untouched -- there is a negative control for
 # exactly that in tests/unit/architecture/test_layer_direction_detector.py.
 NONPACKAGE_ROOTS: frozenset[str] = frozenset({"scripts", "scratch", "runners", "tools", "tests"})
 
@@ -60,58 +60,58 @@ NONPACKAGE_ROOTS: frozenset[str] = frozenset({"scripts", "scratch", "runners", "
 # Maps a module-prefix to the set of prefixes it is FORBIDDEN from importing.
 # Ordered by specificity — more-specific layers first.
 LAYER_FORBIDDEN: dict[str, list[str]] = {
-    "mriforge.core": [
-        "mriforge.infrastructure",
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
+    "spectramr.core": [
+        "spectramr.infrastructure",
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
-    "mriforge.config": [
-        "mriforge.infrastructure",
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
+    "spectramr.config": [
+        "spectramr.infrastructure",
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
-    "mriforge.domain": [
-        "mriforge.infrastructure",
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
+    "spectramr.domain": [
+        "spectramr.infrastructure",
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
     # models/ is allowed to reach infrastructure but NOT application/pipelines/cli
-    "mriforge.models": [
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
+    "spectramr.models": [
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
     # data/ sits logically between domain and infrastructure; it may NOT reach
     # up into infrastructure (physics primitives should be exposed via a port)
-    "mriforge.data": [
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
-        "mriforge.infrastructure",
+    "spectramr.data": [
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
+        "spectramr.infrastructure",
     ],
     # --- outer layers -------------------------------------------------------
     # Elected sole owner of import direction (#1398).  These three keys mirror
     # the ``emit`` blocks deleted from scripts/ci/check_layering.sh: every grep
     # there was anchored at ``^``, so a function-local import was structurally
     # invisible to it.  Both violations this table records are at col 8.
-    "mriforge.infrastructure": [
+    "spectramr.infrastructure": [
         # infrastructure -> application closes a hole NEITHER checker had:
         # the shell only ever tested infrastructure -> pipelines|cli.  Measured
-        # 0 violations across src/mriforge/ on 2026-08-22, so it lands as a pure
+        # 0 violations across src/spectramr/ on 2026-08-22, so it lands as a pure
         # ratchet with no baselined debt.
-        "mriforge.application",
-        "mriforge.pipelines",
-        "mriforge.cli",
+        "spectramr.application",
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
-    "mriforge.application": [
-        "mriforge.pipelines",
-        "mriforge.cli",
+    "spectramr.application": [
+        "spectramr.pipelines",
+        "spectramr.cli",
     ],
-    "mriforge.pipelines": [
-        "mriforge.cli",
+    "spectramr.pipelines": [
+        "spectramr.cli",
     ],
 }
 
@@ -293,7 +293,7 @@ def test_no_new_layer_direction_violations() -> None:
             messages.append(f"  {v['file']}  [{v['layer']}] imports {v['import']}")
     if new_nonpackage:
         messages.append(
-            "NEW imports of a non-wheel repo tree from src/mriforge/ "
+            "NEW imports of a non-wheel repo tree from src/spectramr/ "
             "(not in _known_violations.json). These break every wheel install:"
         )
         for v in new_nonpackage:

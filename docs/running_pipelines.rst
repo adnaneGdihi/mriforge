@@ -1,7 +1,7 @@
 Running Pipelines: Modes & Lifecycle
 ====================================
 
-MRIForge runs every paradigm (GAN, diffusion, VAE/VQ-VAE, SSL/MAE,
+spectraMR runs every paradigm (GAN, diffusion, VAE/VQ-VAE, SSL/MAE,
 reconstruction-only, domain-adaptation, physics-driven, virtual-fiducial, …)
 through **one config and one entry point**. You do not pick the paradigm on the
 command line — it is selected by ``training.training_mode`` in the YAML and
@@ -42,10 +42,10 @@ Every example below works with either spelling:
 
 .. code-block:: bash
 
-   mriforge <verb> [options]            # the installed console script
-   python -m mriforge.cli <verb> [options]   # module form (identical parser)
+   spectramr <verb> [options]            # the installed console script
+   python -m spectramr.cli <verb> [options]   # module form (identical parser)
 
-``mriforge --help`` lists every verb; ``mriforge <verb> --help`` shows that verb's
+``spectramr --help`` lists every verb; ``spectramr <verb> --help`` shows that verb's
 flags. (Heavy verbs print a one-line ``⏳ importing PyTorch + model registry…``
 notice on first use so the unavoidable cold import is not a silent wait — see
 :doc:`cli_reference`.)
@@ -67,8 +67,8 @@ and data roots, env knobs. The cluster pre-flight gate.
 
 .. code-block:: bash
 
-   mriforge doctor --require-cuda            # exit non-zero if no GPU is visible
-   mriforge doctor --config exp.yaml --json  # also confirm the YAML loads
+   spectramr doctor --require-cuda            # exit non-zero if no GPU is visible
+   spectramr doctor --config exp.yaml --json  # also confirm the YAML loads
 
 **1. Is my config valid?** ``audit`` — the audit ladder. Tier 0 (Pydantic v6
 schema) + Tier 1 (static cross-validation) in ~100 ms; add ``--probe`` for the
@@ -77,9 +77,9 @@ Tier-2 synthetic forward pass (~30 s, instantiates the model, catches AMP / shap
 
 .. code-block:: bash
 
-   mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml          # Tier 0+1
-   mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml --probe  # + Tier 2
-   mriforge audit experiments/inprogress/<paradigm>/ --strict           # bulk; warnings → errors
+   spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml          # Tier 0+1
+   spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml --probe  # + Tier 2
+   spectramr audit experiments/inprogress/<paradigm>/ --strict           # bulk; warnings → errors
 
 ``--strict`` promotes every warning to an error (exit 2) — the smoke-wrapper
 default. A directory argument audits every YAML beneath it and prints an aggregate
@@ -92,7 +92,7 @@ constructs, without spending a single gradient step.
 
 .. code-block:: bash
 
-   mriforge train --config exp.yaml --dry-run     # --dry_run also accepted
+   spectramr train --config exp.yaml --dry-run     # --dry_run also accepted
 
 **3. Does the model actually learn?** ``sanity_check`` — overfits a **single
 batch**. It injects a fixed set of overrides (``data.batch_size=1``, EMA off,
@@ -102,21 +102,21 @@ zero if the model, losses, and gradients are wired correctly. A sanity check tha
 
 .. code-block:: bash
 
-   mriforge sanity_check --config exp.yaml --device cuda
+   spectramr sanity_check --config exp.yaml --device cuda
 
 **4. The real run.** ``train`` — the canonical training pipeline.
 
 .. code-block:: bash
 
-   mriforge train --config exp.yaml --device cuda --seed 42
+   spectramr train --config exp.yaml --device cuda --seed 42
 
    # tweak config values inline without editing the YAML (repeatable, nested keys):
-   mriforge train -c exp.yaml -O optimization.learning_rate=1e-4 \
+   spectramr train -c exp.yaml -O optimization.learning_rate=1e-4 \
                              -O validation.val_interval=100
 
    # resume from a checkpoint (explicit path, or 'auto' for the latest in output_dir):
-   mriforge train -c exp.yaml --resume experiments/results/exp/checkpoints/best.pt
-   mriforge train -c exp.yaml --resume auto
+   spectramr train -c exp.yaml --resume experiments/results/exp/checkpoints/best.pt
+   spectramr train -c exp.yaml --resume auto
 
 ``--override / -O`` uses **dotted nested paths** because the config is nested
 (``config.optimization.learning_rate``, never ``config.lr``); each ``-O`` is one
@@ -129,23 +129,56 @@ output is identical whether training triggered it or you invoke it by hand.
 
 .. code-block:: bash
 
-   mriforge report --exp-dir experiments/results/exp --task reconstruction \
+   spectramr report --exp-dir experiments/results/exp --task reconstruction \
                   --method "my-method"
 
 **6. Serve a trained checkpoint.** ``infer`` — the SSOT inference pipeline. The
-**training** YAML is required (it is the single source of truth for how to
-reconstruct), plus the checkpoint and input.
+settings come from the run's own ``resolved_config.json`` when it sits beside
+the checkpoint (its directory or the parent): its ``_declared`` block
+re-validates to exactly the settings the run resolved, overrides included, so
+the checkpoint is scored under the config it trained under. ``--config`` is
+then optional; it is read when no artifact exists, when the artifact predates
+the ``_declared`` block (every run directory written before 2026-09-03; the log
+says so), or under ``--from-yaml``. A
+YAML that disagrees with the artifact is reported (the differing top-level
+blocks, at WARNING and in the result's ``config_source``), not used.
 
 .. code-block:: bash
 
-   mriforge infer --config exp.yaml --checkpoint experiments/results/exp/checkpoints/best.pt \
+   spectramr infer --checkpoint experiments/results/exp/checkpoints/best.pt \
                  --input data/test/ --output predictions/ --device cuda
+   # the training YAML, even when the artifact exists beside the checkpoint:
+   spectramr infer --config exp.yaml --from-yaml --checkpoint ... --input ... --output ...
 
 .. note::
 
-   ``predict`` (``--model``) and ``infer-dataset`` are **deprecated**. ``predict``
-   bypasses the data SSOT (calls ``torch.load`` / ``torch.save`` directly) and
-   ``infer-dataset`` is a back-compat alias for ``infer``. Prefer ``infer``.
+   ``predict`` (``--model``) runs the same pipeline through the same preamble
+   (ledger, seed, determinism policy, accelerator resolution) and takes the
+   same ``--from-yaml``; ``infer-dataset`` is a back-compat alias for ``infer``.
+   Artifacts written before 2026-09-03 carry no ``_declared`` block: the
+   YAML is used for them, with a warning; without a YAML the run refuses.
+
+**Hard data consistency at predict.** With
+``physics.data_consistency.apply_at_predict: true`` the prediction is projected
+onto the measured k-space as the last inference step: every sampled bin takes
+the measured value and the unsampled bins keep the predicted one. This is the
+predict-side counterpart of the training-time layer, which is model-integrated
+and inactive for a plain reconstruction or GAN network at inference. The
+setting is independent of ``enabled`` and ``method``. The projection needs
+three tensors, so it is not an adapter: ``infer`` reads the mask from the
+``mask`` dataset of an HDF5 input (the fastMRI test-set layout, ``(H, W)``,
+``(N, H, W)`` or ``(N, 1, H, W)`` with ``N`` equal to one or to the number of
+slices), takes the k-space input as the measurement, and raises when either is
+missing. NIfTI and NPY inputs have no mask, an image-route arm has no
+measurement, and a model with no registered ``output_domain`` has no projection
+domain; each of the three raises at load or at the first file. A sampler that
+already replaces the measured bins in its own loop (diffusion under
+``method: hard``, cold diffusion given a mask, physics-driven) is projected once,
+by that loop. The result dict and ``run_summary.json`` record a
+``data_consistency_at_predict`` block with the setting, the domain, the number
+of batches the predict step projected, and the loops that projected instead.
+The measurement is used as acquired; ``eval_noise_level`` is a validation-time
+simulation parameter and is not added.
 
 Variant modes — same config, different question
 -----------------------------------------------
@@ -158,7 +191,7 @@ the arms **sequentially in-process**; for many arms or long runs use ``campaign`
 
 .. code-block:: bash
 
-   mriforge ablation -c base.yaml \
+   spectramr ablation -c base.yaml \
        --vary model.model_kwargs.force_pure_kspace=false \
        --vary objectives.reconstruction.lambda_l1=0.5 \
        --max-iterations 2000 --output-dir experiments/results/exp_ablation --device cuda
@@ -170,11 +203,11 @@ space YAML; with neither, every trial runs the base config unchanged.
 
 .. code-block:: bash
 
-   mriforge hpo --list-presets                       # discover built-in search spaces
-   mriforge hpo --list-schema-paths                  # every tunable dotted-path key
-   mriforge hpo --print-template > my_space.yaml     # starter search-space YAML
+   spectramr hpo --list-presets                       # discover built-in search spaces
+   spectramr hpo --list-schema-paths                  # every tunable dotted-path key
+   spectramr hpo --print-template > my_space.yaml     # starter search-space YAML
 
-   mriforge hpo -c base.yaml -m unet --n-trials 50 \
+   spectramr hpo -c base.yaml -m unet --n-trials 50 \
        --search-preset lr_wd_curriculum --sampler tpe --pruner hyperband \
        --objective-metric val_loss --max-iter 30000 --device cuda
 
@@ -184,7 +217,7 @@ the DDP pipeline. The import-time env setup (cache root, thread isolation,
 
 .. code-block:: bash
 
-   torchrun --nproc_per_node=4 -m mriforge.cli train-distributed \
+   torchrun --nproc_per_node=4 -m spectramr.cli train-distributed \
        --config exp.yaml --backend nccl --resume auto
 
 Utility modes
@@ -192,10 +225,10 @@ Utility modes
 
 .. code-block:: bash
 
-   mriforge benchmark --suite all          # quality / throughput / memory micro-benchmarks
-   mriforge export --model best.pt --config exp.yaml --format onnx   # ONNX / TorchScript
-   mriforge list-features --module models --format markdown          # what's registered
-   mriforge meta-evaluate ...              # rank a metric set (see meta-evaluation docs)
+   spectramr benchmark --suite all          # quality / throughput / memory micro-benchmarks
+   spectramr export --model best.pt --config exp.yaml --format onnx   # ONNX / TorchScript
+   spectramr list-features --module models --format markdown          # what's registered
+   spectramr meta-evaluate ...              # rank a metric set (see meta-evaluation docs)
 
 Scaling out & choosing where to run
 -----------------------------------
@@ -206,9 +239,9 @@ other two axes, handled by the unified launcher and campaign manifests:
 
 .. code-block:: bash
 
-   mriforge launch exp.yaml --where slurm --gpus 2          # train as a SLURM job
-   mriforge launch exp.yaml --pipeline infer --where local -- --checkpoint best.pt --input d/
-   mriforge launch campaign.yaml --fanout campaign --where slurm   # a whole sweep
+   spectramr launch exp.yaml --where slurm --gpus 2          # train as a SLURM job
+   spectramr launch exp.yaml --pipeline infer --where local -- --checkpoint best.pt --input d/
+   spectramr launch campaign.yaml --fanout campaign --where slurm   # a whole sweep
 
 ``launch`` is an additive front door over the same machinery — every dedicated
 verb still works on its own. ``--dry-run`` on ``launch`` prints the exact command
@@ -224,7 +257,7 @@ axis entirely:
 
 .. code-block:: python
 
-   from mriforge import fit, make_model, make_dataloader, make_optimizer
+   from spectramr import fit, make_model, make_dataloader, make_optimizer
 
    model = make_model("unet", in_channels=1, out_channels=1)
    ...
@@ -278,7 +311,7 @@ Quick reference
      - ``launch`` / ``campaign``
      - choose where / run many
    * - Config-free
-     - ``mriforge.fit`` / ``Trainer``
+     - ``spectramr.fit`` / ``Trainer``
      - imperative Python API
 
 .. seealso::

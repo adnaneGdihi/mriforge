@@ -1,6 +1,6 @@
 # Add a loss
 
-Losses live under `src/mriforge/models/losses/`. Each loss is a callable
+Losses live under `src/spectramr/models/losses/`. Each loss is a callable
 that takes `(pred, target, **kwargs)` and returns a scalar tensor. The
 registry tracks which **domain** (image / k-space / complex / latent) the
 loss expects, so the audit can reject mismatched configs at load time.
@@ -10,7 +10,7 @@ loss expects, so the audit can reject mismatched configs at load time.
 ```python
 import torch
 import torch.nn as nn
-from mriforge.models.losses.registry import register_loss
+from spectramr.models.losses.registry import register_loss
 
 
 @register_loss(
@@ -74,7 +74,7 @@ Same "silent failure" trap as models. The decorator only fires when the
 module is imported.
 
 ```python
-# src/mriforge/models/losses/__init__.py
+# src/spectramr/models/losses/__init__.py
 from . import (
     image_losses,                     # noqa: F401
     kspace_losses,                    # noqa: F401
@@ -84,11 +84,11 @@ from . import (
 )
 ```
 
-The CLAUDE.md "pitfall #9" memo on the repo's CLAUDE.md is exactly this
+The repo's "pitfall 9" rule (no silent fallbacks) is exactly this
 case: a `@register_loss` decorator that nothing imports is silently dead.
 
 A cold-subprocess regression test in
-[`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/mriforge/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
+[`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/spectramr/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
 walks every advertised loss alias and asserts it resolves. Add your new
 name to that test's parameter list.
 
@@ -159,7 +159,7 @@ adapters:
 ```
 
 The adapter chain runs before each loss is computed. See
-`src/mriforge/data/adapters/registry.py` for the available bridges.
+`src/spectramr/data/adapters/registry.py` for the available bridges.
 
 ## Worked examples in the repo
 

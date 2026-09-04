@@ -12,10 +12,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.instrument_keyed_attention import (  # noqa: E402
+from spectramr.models.blocks.instrument_keyed_attention import (  # noqa: E402
     InstrumentKeyedCrossAttention,
 )
-from mriforge.models.generators.multicontrast_fusion_generator import (  # noqa: E402
+from spectramr.models.generators.multicontrast_fusion_generator import (  # noqa: E402
     MultiContrastFusionGenerator,
 )
 

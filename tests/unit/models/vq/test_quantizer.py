@@ -18,7 +18,7 @@ from __future__ import annotations
 import torch
 from torch.nn.functional import mse_loss, one_hot
 
-from mriforge.models.vq.quantizer import VectorQuantizer
+from spectramr.models.vq.quantizer import VectorQuantizer
 
 
 def _quantizer() -> VectorQuantizer:

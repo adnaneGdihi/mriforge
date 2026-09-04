@@ -52,7 +52,7 @@ jobs:
       - uses: ./.github/actions/setup-env
         with:
           extras: dev
-      - run: mypy src/mriforge/core src/mriforge/config src/mriforge/domain
+      - run: mypy src/spectramr/core src/spectramr/config src/spectramr/domain
 
   pre-commit:
     name: pre-commit (all hooks, all files)
@@ -95,11 +95,11 @@ jobs:
         # instead: sphinx-autoapi over the package is a long build.
         run: |
           if git diff --name-only "${BASE}...${HEAD}" -- \
-               docs/ src/mriforge/ pyproject.toml | grep -q .; then
+               docs/ src/spectramr/ pyproject.toml | grep -q .; then
             echo "any=true" >> "$GITHUB_OUTPUT"
           else
             echo "any=false" >> "$GITHUB_OUTPUT"
-            echo "Neither docs/ nor src/mriforge/ changed -- skipping the docs build."
+            echo "Neither docs/ nor src/spectramr/ changed -- skipping the docs build."
           fi
       - uses: actions/setup-python@v5
         if: steps.touched.outputs.any == 'true'

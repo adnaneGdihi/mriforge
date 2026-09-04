@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.orchestration.campaign_state`.
+"""Unit tests for :mod:`spectramr.infrastructure.orchestration.campaign_state`.
 
 Covers the persistent state objects ``ExperimentStatus`` and
 ``CampaignState`` end-to-end: round-trip serialisation, the property
@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.orchestration.campaign_state import (
+from spectramr.infrastructure.orchestration.campaign_state import (
     CampaignState,
     ExperimentStatus,
 )
@@ -323,7 +323,7 @@ class TestAtomicSave:
             raise RuntimeError("disk full mid-write")
 
         monkeypatch.setattr(
-            "mriforge.infrastructure.orchestration.campaign_state.json.dump", _boom
+            "spectramr.infrastructure.orchestration.campaign_state.json.dump", _boom
         )
         with pytest.raises(RuntimeError):
             state.save()

@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import pytest
 
-import mriforge.infrastructure.execution.backends as backends_mod
-from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+import spectramr.infrastructure.execution.backends as backends_mod
+from spectramr.infrastructure.orchestration.campaign_orchestrator import (
     CampaignOrchestrator,
 )
 
@@ -24,8 +24,8 @@ def _slurm_account(monkeypatch):
     site-specific, so the tree carries none (#1146). Tests that render SLURM
     directives must therefore configure one, exactly as a user does.
     """
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
 
 def test_rejects_unknown_where():

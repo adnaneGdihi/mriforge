@@ -1,6 +1,6 @@
 """Tests for ``KLDivergenceLoss`` and ``VQKLLoss``.
 
-Targets ``mriforge.models.losses.kl_divergence``. KL[N(μ, σ²) ∥ N(0, 1)] for
+Targets ``spectramr.models.losses.kl_divergence``. KL[N(μ, σ²) ∥ N(0, 1)] for
 β-VAE training, optional Burgess-style capacity constraint, optional
 linear annealing, and a VQ-VAE variant with code-book + commitment
 losses.
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.kl_divergence import (
+from spectramr.models.losses.kl_divergence import (
     KLDivergenceLoss,
     VQKLLoss,
     kl_divergence_loss,
@@ -259,7 +259,7 @@ def test_gradient_flows_to_mu_and_logvar() -> None:
 
 def test_kl_and_vq_kl_registered() -> None:
     """Both ``kl`` and ``vq_kl`` resolvable."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     names = list_available()
     assert "kl" in names
@@ -283,7 +283,7 @@ def test_functional_vq_loss_codebook_routes_to_codebook() -> None:
     ``detach`` placement was swapped, so the only active gradient flowed to the
     encoder ``z`` instead of the codebook.
     """
-    from mriforge.models.losses.kl_divergence import vq_loss
+    from spectramr.models.losses.kl_divergence import vq_loss
 
     quantized = torch.randn(4, 8, requires_grad=True)
     z = torch.randn(4, 8, requires_grad=True)

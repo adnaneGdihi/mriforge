@@ -1,4 +1,4 @@
-from mriforge.config.schemas.manifest_schema import (
+from spectramr.config.schemas.manifest_schema import (
     DatasetManifest,
     DatasetManifestCSV,
     DatasetManifestIndex,

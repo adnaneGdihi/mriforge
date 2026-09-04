@@ -1,6 +1,6 @@
 """Unit tests for non-conformity score functions.
 
-Targets ``mriforge.infrastructure.calibration.scores``. Part of the parallel
+Targets ``spectramr.infrastructure.calibration.scores``. Part of the parallel
 test-coverage push (Unit 14). These three score functions
 (:func:`absolute_residual`, :func:`quantile_regression`,
 :func:`conformalised_quantile_regression`) are pure / stateless, so the
@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.scores import (
+from spectramr.infrastructure.calibration.scores import (
     absolute_residual,
     conformalised_quantile_regression,
     quantile_regression,
@@ -231,7 +231,7 @@ _SE_ACQ = {"TR": 3000.0, "TE": 90.0, "TI": 0.0}
 
 def _render_spin_echo(params: torch.Tensor) -> torch.Tensor:
     """Render the SE contrast directly via the Bloch SSOT (int enum 0 = SE)."""
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -242,7 +242,7 @@ def _render_spin_echo(params: torch.Tensor) -> torch.Tensor:
 
 def test_physics_residual_zero_when_target_is_render_of_params() -> None:
     """When the target IS the Bloch render of the params, the residual is ~0."""
-    from mriforge.infrastructure.calibration.scores import physics_residual
+    from spectramr.infrastructure.calibration.scores import physics_residual
 
     params = _spin_echo_params()
     target = _render_spin_echo(params)
@@ -253,7 +253,7 @@ def test_physics_residual_zero_when_target_is_render_of_params() -> None:
 
 def test_physics_residual_positive_for_wrong_params() -> None:
     """A wrong parameter map renders an inconsistent contrast: residual > 0."""
-    from mriforge.infrastructure.calibration.scores import physics_residual
+    from spectramr.infrastructure.calibration.scores import physics_residual
 
     params = _spin_echo_params()
     target = _render_spin_echo(params)
@@ -265,7 +265,7 @@ def test_physics_residual_positive_for_wrong_params() -> None:
 
 def test_physics_residual_requires_acquisition() -> None:
     """No silent fallback: a physics residual without acquisition params raises."""
-    from mriforge.infrastructure.calibration.scores import physics_residual
+    from spectramr.infrastructure.calibration.scores import physics_residual
 
     params = _spin_echo_params()
     target = _render_spin_echo(params)
@@ -275,7 +275,7 @@ def test_physics_residual_requires_acquisition() -> None:
 
 def test_physics_residual_rejects_unknown_contrast() -> None:
     """Unknown contrast labels raise instead of degrading to a default (pitfall #9)."""
-    from mriforge.infrastructure.calibration.scores import physics_residual
+    from spectramr.infrastructure.calibration.scores import physics_residual
 
     params = _spin_echo_params()
     target = _render_spin_echo(params)
@@ -287,7 +287,7 @@ def test_physics_residual_rejects_unknown_contrast() -> None:
 
 def test_physics_residual_rejects_non_three_channel_prediction() -> None:
     """The prediction must carry the (rho, T1, T2) channels to be renderable."""
-    from mriforge.infrastructure.calibration.scores import physics_residual
+    from spectramr.infrastructure.calibration.scores import physics_residual
 
     params = _spin_echo_params()
     target = _render_spin_echo(params)

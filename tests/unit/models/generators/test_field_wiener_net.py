@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_wiener_net import FieldWienerNet
+from spectramr.models.generators.field_wiener_net import FieldWienerNet
 
 
 def _net(**kw) -> FieldWienerNet:
@@ -93,8 +93,8 @@ def test_rejects_complex_and_multichannel_and_nonbool() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "field_wiener_net" in MODEL_REGISTRY

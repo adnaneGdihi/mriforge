@@ -21,10 +21,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.twin_dps_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.twin_dps_strategy import (  # noqa: E402
     TwinLikelihoodDPSStrategy,
 )
-from mriforge.models.losses.phase_stego_score import PhaseStegoScoreLoss  # noqa: E402
+from spectramr.models.losses.phase_stego_score import PhaseStegoScoreLoss  # noqa: E402
 
 
 @pytest.fixture

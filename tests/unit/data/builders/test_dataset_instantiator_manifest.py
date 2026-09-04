@@ -14,8 +14,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mriforge.config.schemas.data import BartConfigSchema
-from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+from spectramr.config.schemas.data import BartConfigSchema
+from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 from tests.utils.data_config_stub import DataConfigStub
 
 

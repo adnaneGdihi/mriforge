@@ -10,7 +10,7 @@ import pytest
 import torch
 
 from tests.utils.shape_matrices import SHAPE_MATRIX_2D, shape_id
-from mriforge.infrastructure.physics.motion_correction import (
+from spectramr.infrastructure.physics.motion_correction import (
     CenterOfMassAlign,
     CrossCorrelationShift,
 )

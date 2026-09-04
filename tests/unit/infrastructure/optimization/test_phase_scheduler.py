@@ -1,6 +1,6 @@
 """Unit tests for PhaseScheduler.
 
-Targets ``mriforge.infrastructure.optimization.schedulers.phase_scheduler.PhaseScheduler``.
+Targets ``spectramr.infrastructure.optimization.schedulers.phase_scheduler.PhaseScheduler``.
 
 Properties verified:
 - ``get_phase`` returns correct string for each epoch range.
@@ -39,7 +39,7 @@ class _TinyLaNSModel(nn.Module):
 
 
 def test_canary_construct_default() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -69,7 +69,7 @@ def test_canary_construct_default() -> None:
     ],
 )
 def test_get_phase_boundaries(warmup, dynamics, total, epoch, expected) -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -83,7 +83,7 @@ def test_get_phase_boundaries(warmup, dynamics, total, epoch, expected) -> None:
 
 
 def test_warmup_zeroes_smoothness_and_bloch() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -97,7 +97,7 @@ def test_warmup_zeroes_smoothness_and_bloch() -> None:
 
 
 def test_joint_phase_preserves_all_keys() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -113,7 +113,7 @@ def test_joint_phase_preserves_all_keys() -> None:
 
 
 def test_update_model_state_warmup_freezes_siren() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -129,7 +129,7 @@ def test_update_model_state_warmup_freezes_siren() -> None:
 
 
 def test_update_model_state_joint_unfreezes_all() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 
@@ -148,7 +148,7 @@ def test_update_model_state_joint_unfreezes_all() -> None:
 
 
 def test_edge_epoch_beyond_total_is_joint() -> None:
-    from mriforge.infrastructure.optimization.schedulers.phase_scheduler import (
+    from spectramr.infrastructure.optimization.schedulers.phase_scheduler import (
         PhaseScheduler,
     )
 

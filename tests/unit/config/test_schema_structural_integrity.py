@@ -49,18 +49,18 @@ class TestNoDuplicateFields:
     """
 
     SCHEMA_CLASSES_TO_CHECK = [
-        "mriforge.config.schemas.loss.ReconstructionLossesConfig",
-        "mriforge.config.schemas.loss.GANLossesConfig",
-        "mriforge.config.schemas.loss.DiffusionLossesConfig",
-        "mriforge.config.schemas.loss.LatentLossesConfig",
-        "mriforge.config.schemas.loss.PhysicsLossesConfig",
-        "mriforge.config.schemas.loss.SSLLossesConfig",
-        "mriforge.config.schemas.loss.PINNLossesConfig",
-        "mriforge.config.schemas.loss.LossConfigSchema",
-        "mriforge.config.schemas.optimization.OptimizationConfigSchema",
-        "mriforge.config.schemas.physics.PhysicsConfigSchema",
-        "mriforge.config.schemas.training.base.DiffusionTrainingConfigSchema",
-        "mriforge.config.schemas.training.base.TrainingStrategyConfigSchema",
+        "spectramr.config.schemas.loss.ReconstructionLossesConfig",
+        "spectramr.config.schemas.loss.GANLossesConfig",
+        "spectramr.config.schemas.loss.DiffusionLossesConfig",
+        "spectramr.config.schemas.loss.LatentLossesConfig",
+        "spectramr.config.schemas.loss.PhysicsLossesConfig",
+        "spectramr.config.schemas.loss.SSLLossesConfig",
+        "spectramr.config.schemas.loss.PINNLossesConfig",
+        "spectramr.config.schemas.loss.LossConfigSchema",
+        "spectramr.config.schemas.optimization.OptimizationConfigSchema",
+        "spectramr.config.schemas.physics.PhysicsConfigSchema",
+        "spectramr.config.schemas.training.base.DiffusionTrainingConfigSchema",
+        "spectramr.config.schemas.training.base.TrainingStrategyConfigSchema",
     ]
 
     @pytest.mark.parametrize("class_path", SCHEMA_CLASSES_TO_CHECK)
@@ -125,13 +125,13 @@ class TestSymmetricEnableLambdaPairs:
     """
 
     LOSS_CONFIG_CLASSES = [
-        "mriforge.config.schemas.loss.ReconstructionLossesConfig",
-        "mriforge.config.schemas.loss.GANLossesConfig",
-        "mriforge.config.schemas.loss.DiffusionLossesConfig",
-        "mriforge.config.schemas.loss.LatentLossesConfig",
-        "mriforge.config.schemas.loss.PhysicsLossesConfig",
-        "mriforge.config.schemas.loss.SSLLossesConfig",
-        "mriforge.config.schemas.loss.PINNLossesConfig",
+        "spectramr.config.schemas.loss.ReconstructionLossesConfig",
+        "spectramr.config.schemas.loss.GANLossesConfig",
+        "spectramr.config.schemas.loss.DiffusionLossesConfig",
+        "spectramr.config.schemas.loss.LatentLossesConfig",
+        "spectramr.config.schemas.loss.PhysicsLossesConfig",
+        "spectramr.config.schemas.loss.SSLLossesConfig",
+        "spectramr.config.schemas.loss.PINNLossesConfig",
     ]
 
     # Allowlisted asymmetries that are intentional design decisions
@@ -262,7 +262,7 @@ class TestGetEnabledLossesCoverage:
     ]
 
     def _make_loss_config(self, paradigm: str, enable_flag: str, lambda_key: str):
-        from mriforge.config.schemas.loss import (
+        from spectramr.config.schemas.loss import (
             DiffusionLossesConfig,
             GANLossesConfig,
             LatentLossesConfig,
@@ -319,7 +319,7 @@ class TestEnumValueCasing:
     """All enum values used as registry keys must be lowercase."""
 
     def test_training_mode_values_are_lowercase(self):
-        from mriforge.config.schemas.enums import TrainingMode
+        from spectramr.config.schemas.enums import TrainingMode
 
         for member in TrainingMode:
             assert member.value == member.value.lower(), (
@@ -328,7 +328,7 @@ class TestEnumValueCasing:
             )
 
     def test_optimizer_type_values_are_lowercase(self):
-        from mriforge.config.schemas.enums import OptimizerType
+        from spectramr.config.schemas.enums import OptimizerType
 
         for member in OptimizerType:
             assert (
@@ -336,7 +336,7 @@ class TestEnumValueCasing:
             ), f"OptimizerType.{member.name} = '{member.value}' is not lowercase."
 
     def test_gan_loss_type_values_are_lowercase(self):
-        from mriforge.config.schemas.enums import GANLossType
+        from spectramr.config.schemas.enums import GANLossType
 
         for member in GANLossType:
             # GAN loss types may have hyphens; just check no uppercase letters
@@ -345,7 +345,7 @@ class TestEnumValueCasing:
             ), f"GANLossType.{member.name} = '{member.value}' contains uppercase letters."
 
     def test_lr_scheduler_values_are_lowercase(self):
-        from mriforge.config.schemas.enums import LRScheduler
+        from spectramr.config.schemas.enums import LRScheduler
 
         for member in LRScheduler:
             assert (

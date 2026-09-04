@@ -12,7 +12,7 @@ import random
 import numpy as np
 import torch
 
-from mriforge.core.worker_seeding import seed_worker
+from spectramr.core.worker_seeding import seed_worker
 
 
 def _draw_after_seed(worker_id: int, torch_seed: int = 0):
@@ -46,9 +46,9 @@ class TestSingleSourceOfTruth:
     def test_all_layers_share_one_object(self):
         """Every consumer must reference the ONE core hook — a re-introduced
         local copy would make these identity checks fail."""
-        from mriforge.accelerator import seed_worker as acc
-        from mriforge.data.builders.torchio_queue_builder import seed_worker as data_q
-        from mriforge.infrastructure.builders.leaf.data_builders import (
+        from spectramr.accelerator import seed_worker as acc
+        from spectramr.data.builders.torchio_queue_builder import seed_worker as data_q
+        from spectramr.infrastructure.builders.leaf.data_builders import (
             seed_worker as infra,
         )
 

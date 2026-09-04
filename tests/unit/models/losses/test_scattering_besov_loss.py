@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn.functional as F  # noqa: N812
 
-from mriforge.models.losses.scattering_besov_loss import ScatteringBesovLoss
+from spectramr.models.losses.scattering_besov_loss import ScatteringBesovLoss
 
 
 def _textured_target(n: int = 64) -> torch.Tensor:
@@ -83,8 +83,8 @@ def test_rejects_invalid_construction() -> None:
 
 
 def test_registered_and_creatable() -> None:
-    import mriforge.models.losses  # noqa: F401 — fire @register_loss decorators
-    from mriforge.models.losses.registry import LossRegistry
+    import spectramr.models.losses  # noqa: F401 — fire @register_loss decorators
+    from spectramr.models.losses.registry import LossRegistry
 
     assert "scattering_besov" in LossRegistry._custom_losses
     inst = LossRegistry.create("scattering_besov")

@@ -14,14 +14,14 @@ import sys
 import pytest
 import torch
 
-from mriforge.infrastructure.reporting.metadata import baseline_provenance
-from mriforge.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
-from mriforge.models.baselines.cdiffmr import (
+from spectramr.infrastructure.reporting.metadata import baseline_provenance
+from spectramr.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
+from spectramr.models.baselines.cdiffmr import (
     _UPSTREAM_NETWORK_FILE,
     CDiffMRBaseline,
 )
-from mriforge.models.baselines.fdb import _FDB_SCRIPT_UTIL, FDBBaseline
-from mriforge.models.baselines.shen2024 import Shen2024Baseline
+from spectramr.models.baselines.fdb import _FDB_SCRIPT_UTIL, FDBBaseline
+from spectramr.models.baselines.shen2024 import Shen2024Baseline
 
 # ---------------------------------------------------------------------------
 # Vendored-upstream gates
@@ -172,7 +172,7 @@ def test_cdiffmr_upstream_module_loaded_via_importlib() -> None:
     import importlib
     importlib.invalidate_caches()
     # The sentinel module name must be present once the adapter loaded.
-    from mriforge.models.baselines.cdiffmr import _load_upstream_model_class
+    from spectramr.models.baselines.cdiffmr import _load_upstream_model_class
     _load_upstream_model_class()
     assert "_cdiffmr_upstream_network" in sys.modules
     # The upstream's "models" and "utils" packages must NOT have leaked.
@@ -186,7 +186,7 @@ def test_cdiffmr_upstream_module_loaded_via_importlib() -> None:
 @needs_fdb
 def test_fdb_upstream_path_injection_is_idempotent() -> None:
     """Repeated calls to ``_ensure_upstream_on_sys_path`` don't multiply entries."""
-    from mriforge.models.baselines.fdb import _FDB_DIR, _ensure_upstream_on_sys_path
+    from spectramr.models.baselines.fdb import _FDB_DIR, _ensure_upstream_on_sys_path
 
     _ensure_upstream_on_sys_path()
     n_before = sys.path.count(str(_FDB_DIR))
@@ -262,8 +262,8 @@ def test_baseline_name_resolves_to_real_adapter_not_stub(name, expected_cls) -> 
     live in ``_v6_1_registrations.py`` and double-registered the name (tripping
     the fail-loud collision guard during collection).
     """
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import get_model_class
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import get_model_class
 
     populate_model_registry()  # idempotent; must not raise a collision
     resolved = get_model_class(name)
@@ -274,8 +274,8 @@ def test_baseline_name_resolves_to_real_adapter_not_stub(name, expected_cls) -> 
 def test_repo_root_resolves_to_the_directory_holding_external_baselines() -> None:
     """The adapters' `_REPO_ROOT` must be the repo root, not `src/`.
 
-    Regression for the `src -> src/mriforge` refactor (2026-05). These modules
-    moved from `src/models/baselines/` to `src/mriforge/models/baselines/`, one
+    Regression for the `src -> src/spectramr` refactor (2026-05). These modules
+    moved from `src/models/baselines/` to `src/spectramr/models/baselines/`, one
     level deeper, but kept `parents[3]` — which stopped being the repo root and
     became `src/`. The vendored upstreams then looked absent, and the adapters
     raised an error instructing the user to run a `git submodule add` they had
@@ -286,8 +286,8 @@ def test_repo_root_resolves_to_the_directory_holding_external_baselines() -> Non
     move of these files fails here with a clear reason instead of re-breaking
     the lookup.
     """
-    from mriforge.models.baselines.cdiffmr import _CDIFFMR_DIR, _REPO_ROOT as CD_ROOT
-    from mriforge.models.baselines.fdb import _FDB_DIR, _REPO_ROOT as FDB_ROOT
+    from spectramr.models.baselines.cdiffmr import _CDIFFMR_DIR, _REPO_ROOT as CD_ROOT
+    from spectramr.models.baselines.fdb import _FDB_DIR, _REPO_ROOT as FDB_ROOT
 
     for root in (CD_ROOT, FDB_ROOT):
         assert (root / "pyproject.toml").is_file(), (

@@ -14,7 +14,7 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.tables.dataset_descriptor import make
+from spectramr.infrastructure.reporting.tables.dataset_descriptor import make
 
 
 @pytest.fixture()

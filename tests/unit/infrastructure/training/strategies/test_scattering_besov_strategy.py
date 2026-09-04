@@ -7,12 +7,12 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.scattering_besov_strategy import (
+from spectramr.infrastructure.training.strategies.scattering_besov_strategy import (
     ScatteringBesovStrategy,
     compute_scattering_besov_loss,
 )
-from mriforge.models.generators.scattering_field_translator import ScatteringFieldTranslator
-from mriforge.models.losses.scattering_besov_loss import ScatteringBesovLoss
+from spectramr.models.generators.scattering_field_translator import ScatteringFieldTranslator
+from spectramr.models.losses.scattering_besov_loss import ScatteringBesovLoss
 
 
 def _net() -> ScatteringFieldTranslator:
@@ -55,7 +55,7 @@ def test_loss_reduces(lambda_scatter: float) -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(ScatteringBesovStrategy)
@@ -113,8 +113,8 @@ def test_detail_monitor_emits_ratio() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "scattering_besov" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "scattering_besov" in TrainingStrategyConfigSchema.model_fields
@@ -136,9 +136,9 @@ def _seam_config() -> types.SimpleNamespace:
 
 def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses on env.losses are folded onto loss_total (SSOT seam)."""
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     torch.manual_seed(0)
     strat = object.__new__(ScatteringBesovStrategy)
@@ -165,7 +165,7 @@ def test_builder_image_losses_folded_via_seam() -> None:
 
 def test_seam_is_noop_without_env_losses() -> None:
     """No env.losses -> the seam adds nothing (inline-only behaviour preserved)."""
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     strat = object.__new__(ScatteringBesovStrategy)
     strat.env = types.SimpleNamespace(generator=_net())  # no `losses` attribute
@@ -185,7 +185,7 @@ def test_seam_is_noop_without_env_losses() -> None:
 
 
 def test_contrast_id_threaded_to_model() -> None:
-    from mriforge.infrastructure.training.strategies.scattering_besov_strategy import (
+    from spectramr.infrastructure.training.strategies.scattering_besov_strategy import (
         compute_scattering_besov_loss,
     )
 

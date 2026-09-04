@@ -1,4 +1,4 @@
-"""Tests for ``src/mriforge/data/adapters/channels.py``.
+"""Tests for ``src/spectramr/data/adapters/channels.py``.
 
 Covers ``complex_to_real_imag_interleave``: a complex tensor is split
 into interleaved real/imag channels, and a real (non-complex) tensor
@@ -13,8 +13,8 @@ import pytest
 torch = pytest.importorskip("torch")
 
 # Force adapter registration.
-import mriforge.data.adapters  # noqa: F401, E402  triggers @register_adapter
-from mriforge.data.adapters.channels import ComplexToRealImagInterleave  # noqa: E402
+import spectramr.data.adapters  # noqa: F401, E402  triggers @register_adapter
+from spectramr.data.adapters.channels import ComplexToRealImagInterleave  # noqa: E402
 
 
 def test_complex_to_real_imag_interleave_raises_on_real_input() -> None:

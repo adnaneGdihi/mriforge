@@ -27,8 +27,8 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies import reconstruction as recon_mod
-from mriforge.infrastructure.training.strategies.loupe_strategy import LOUPEStrategy
+from spectramr.infrastructure.training.strategies import reconstruction as recon_mod
+from spectramr.infrastructure.training.strategies.loupe_strategy import LOUPEStrategy
 
 
 def _adaptive_cfg(enabled: bool = True):

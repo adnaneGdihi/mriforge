@@ -1,7 +1,7 @@
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import get
-from mriforge.infrastructure.reporting.plotters import ablation_heatmap  # noqa: F401
+from spectramr.infrastructure.reporting.plotters import get
+from spectramr.infrastructure.reporting.plotters import ablation_heatmap  # noqa: F401
 
 
 def test_ablation_heatmap_renders(tmp_path):

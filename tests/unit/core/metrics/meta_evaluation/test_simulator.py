@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.meta_evaluation.simulator import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.meta_evaluation.simulator import (
     SimulatorConfig,
     _build_sample_context,
     run_simulator,
@@ -83,9 +83,9 @@ def test_precompute_passes_context_as_keyword_so_nr_metric_computes():
     """
     import math
 
-    from mriforge.core.metrics import get_metric
-    from mriforge.core.metrics.meta_evaluation.simulator import precompute_metric_values
-    from mriforge.infrastructure.physics.asset_preparation import prepare_metric_context
+    from spectramr.core.metrics import get_metric
+    from spectramr.core.metrics.meta_evaluation.simulator import precompute_metric_values
+    from spectramr.infrastructure.physics.asset_preparation import prepare_metric_context
 
     c, h, w = 4, 16, 16
     yy, xx = torch.meshgrid(

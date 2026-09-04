@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.maxwell_aware_nufft import (
+from spectramr.infrastructure.physics.maxwell_aware_nufft import (
     MaxwellAwareNUFFT,
     maxwell_aware_nufft_forward,
     maxwell_concomitant_phase,

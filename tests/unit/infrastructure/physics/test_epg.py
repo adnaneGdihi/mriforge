@@ -1,6 +1,6 @@
 """Tests for the EPG (Extended Phase Graph) FSE simulators.
 
-Targets ``mriforge.infrastructure.physics.epg``. EPG is the differentiable
+Targets ``spectramr.infrastructure.physics.epg``. EPG is the differentiable
 forward operator for fast-spin-echo simulation. The full simulator is
 load-bearing for cycle-Bloch / Bloch-consistent SSDU paradigms.
 
@@ -19,7 +19,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.epg import (
+from spectramr.infrastructure.physics.epg import (
     simulate_differentiable_epg_fse,
     simulate_full_epg_fse,
 )

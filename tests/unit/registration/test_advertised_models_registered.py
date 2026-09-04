@@ -36,9 +36,9 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.validation_constants import VALID_MODEL_TYPES
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.config.validation_constants import VALID_MODEL_TYPES
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 _ALLOWLIST_PATH = Path(__file__).parent.parent.parent / "contracts" / "_known_unregistered_advertised.json"
 

@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_velocity_unet import FieldVelocityUNet
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.generators.field_velocity_unet import FieldVelocityUNet
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def test_registered() -> None:

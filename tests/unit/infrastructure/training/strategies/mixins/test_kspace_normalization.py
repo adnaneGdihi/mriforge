@@ -16,7 +16,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.kspace import KspaceMixin
+from spectramr.infrastructure.training.strategies.mixins.kspace import KspaceMixin
 
 
 def test_mask_saturation_gate_reads_loop_state_not_frozen_env_step() -> None:
@@ -86,7 +86,7 @@ def test_resolver_disagreeing_with_the_caller_raises():
     ``experiment_11_attention_none`` trained on raw k-space at ``|k|max ~ 2400``
     — the resolver read flat pre-decomposition names no schema still carries.
     """
-    from mriforge.config.schemas.data import DataProcessingConfigSchema
+    from spectramr.config.schemas.data import DataProcessingConfigSchema
 
     o = types.SimpleNamespace()
     o.logging_service = MagicMock()
@@ -154,7 +154,7 @@ class TestValidationDoesNotNormalizeATwiceNormalizedBatch:
 
     @staticmethod
     def _batch_publishing(scale):
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         tensor = torch.ones(1, 2, 8, 8)
         return BatchAdapter.from_dict(
@@ -190,7 +190,7 @@ class TestValidationDoesNotNormalizeATwiceNormalizedBatch:
         A loader that genuinely served raw tensors still needs validation to
         normalize them, so the fix must add reach without disabling the fallback.
         """
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         tensor = torch.rand(1, 2, 8, 8) * 100.0
         batch = BatchAdapter.from_dict({"input": tensor, "target": tensor.clone()})

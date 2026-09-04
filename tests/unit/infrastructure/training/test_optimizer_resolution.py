@@ -29,10 +29,10 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.config.schemas.optimization import (  # noqa: E402
+from spectramr.config.schemas.optimization import (  # noqa: E402
     OptimizationConfigSchema,
 )
-from mriforge.infrastructure.training.optimizer_resolution import (  # noqa: E402
+from spectramr.infrastructure.training.optimizer_resolution import (  # noqa: E402
     OptimizerConfigurationError,
     build_optimizer_from_spec,
     resolve_optimizer_spec,
@@ -65,7 +65,7 @@ class TestBetasReachEveryOptimizerThatAcceptsThem:
         optimizer needs no edit here."""
         import inspect
 
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.infrastructure.training.optimizer_registry import (
             OptimizerRegistry,
         )
 
@@ -404,7 +404,7 @@ class TestFusedOptimizer:
         needs no edit here."""
         import inspect
 
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.infrastructure.training.optimizer_registry import (
             OptimizerRegistry,
         )
 

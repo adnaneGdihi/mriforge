@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.beltrami_faithfulness import (
+from spectramr.infrastructure.physics.beltrami_faithfulness import (
     BeltramiFaithfulnessThreshold,
     beltrami_faithfulness,
     beltrami_from_displacement,

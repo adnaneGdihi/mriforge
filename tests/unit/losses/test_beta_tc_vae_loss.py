@@ -7,8 +7,8 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.beta_tc_vae_loss import BetaTCVAELoss, _log_density_gaussian
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.beta_tc_vae_loss import BetaTCVAELoss, _log_density_gaussian
+from spectramr.models.losses.registry import create_loss
 
 B, D = 8, 16  # batch × latent-dim
 

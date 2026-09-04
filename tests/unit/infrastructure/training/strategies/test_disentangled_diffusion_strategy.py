@@ -12,10 +12,10 @@ from unittest.mock import MagicMock
 
 import torch
 
-from mriforge.infrastructure.training.strategies.disentangled_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.disentangled_diffusion_strategy import (
     DisentangledDiffusionStrategy,
 )
-from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
     MetricsMixin,
 )
 
@@ -96,7 +96,7 @@ def test_compute_losses_impl_uses_live_loop_iteration() -> None:
     so forced iteration=0 every step, firing the Bloch-DC throttle
     (``iteration % _bloch_dc_interval == 0``) on every step instead of every N.
     """
-    from mriforge.infrastructure.training.loop_state import LoopState
+    from spectramr.infrastructure.training.loop_state import LoopState
 
     strategy = object.__new__(DisentangledDiffusionStrategy)
     strategy.device = torch.device("cpu")

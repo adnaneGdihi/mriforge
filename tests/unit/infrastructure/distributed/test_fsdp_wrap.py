@@ -19,8 +19,8 @@ import pytest
 import torch.nn as nn
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import FSDPConfigSchema, ParallelismConfigSchema
-from mriforge.infrastructure.distributed.fsdp_wrap import maybe_wrap_with_fsdp
+from spectramr.config.schemas.base import FSDPConfigSchema, ParallelismConfigSchema
+from spectramr.infrastructure.distributed.fsdp_wrap import maybe_wrap_with_fsdp
 
 
 class _Bag:

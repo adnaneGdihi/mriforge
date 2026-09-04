@@ -2,7 +2,7 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.biophysics.bloch import BlochSimulator
+from spectramr.infrastructure.physics.biophysics.bloch import BlochSimulator
 
 
 class TestBlochSimulator:

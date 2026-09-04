@@ -1,6 +1,6 @@
 """Tests for the QC HTML report assembler.
 
-Targets ``mriforge.infrastructure.reporting.html_report.build_html_report``:
+Targets ``spectramr.infrastructure.reporting.html_report.build_html_report``:
 base64 figure embedding, static group fallback (no plotly), table links,
 empty-input skip, and (when installed) the interactive plotly path.
 """
@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.html_report import build_html_report
+from spectramr.infrastructure.reporting.html_report import build_html_report
 
 _HAS_PLOTLY = importlib.util.find_spec("plotly") is not None
 
@@ -146,7 +146,7 @@ def test_interactive_false_uses_static(tmp_path):
 def test_degrade_to_static_when_plotly_import_fails(tmp_path, monkeypatch):
     # Simulate plotly absent: every interactive builder returns None, so the
     # report must still render with the static group-strip PNG (no crash).
-    from mriforge.infrastructure.reporting import interactive as itv
+    from spectramr.infrastructure.reporting import interactive as itv
     for name in ("group_iqm_div", "subject_viewer_2d_div", "volume_viewer_3d_div",
                  "learning_curve_div", "metric_distribution_div", "comparison_div"):
         monkeypatch.setattr(itv, name, lambda *a, **k: None)

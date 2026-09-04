@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.step_executor import (
+from spectramr.infrastructure.training.step_executor import (
     OptimizationStepConfig,
     StepExecutor,
 )

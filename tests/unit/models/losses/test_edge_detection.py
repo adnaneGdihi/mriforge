@@ -1,6 +1,6 @@
 """Tests for edge-detection losses.
 
-Targets ``mriforge.models.losses.edge_detection``:
+Targets ``spectramr.models.losses.edge_detection``:
 
 - ``SobelOperator`` — 3×3 Sobel gradient module (single + multi-channel)
 - ``SobelLoss`` — MSE between Sobel gradients
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.edge_detection import (
+from spectramr.models.losses.edge_detection import (
     GradientLoss,
     SobelLoss,
     SobelOperator,
@@ -196,7 +196,7 @@ def test_sobel_loss_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_edge_losses_registered_under_documented_names() -> None:
     """``sobel_edge``, ``edge_consistency``, ``explicit_gradient`` are registered."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     available = set(list_available())
     expected = {"sobel_edge", "edge_consistency", "explicit_gradient"}
@@ -215,7 +215,7 @@ def test_edge_preservation_returns_grad_carrying_tensor() -> None:
     return value was a gradient-free float and the loss contributed zero
     gradient (pitfall #16 at the autograd layer).
     """
-    from mriforge.models.losses.edge_detection import EdgePreservationLoss
+    from spectramr.models.losses.edge_detection import EdgePreservationLoss
 
     pred = torch.rand(2, 1, 16, 16, requires_grad=True)
     target = torch.rand(2, 1, 16, 16)

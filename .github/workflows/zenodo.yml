@@ -1,0 +1,62 @@
+name: Zenodo deposition
+
+# `workflow_dispatch` ONLY, and that is the ordering constraint rather than
+# caution. Publication order here is public tree -> Zenodo -> tag: the tag is what
+# triggers the PyPI publish, and the DOI has to exist before the release quotes
+# it. A workflow keyed on `release: published` or on the tag push cannot run at
+# that point in the sequence -- by the time either event fires, the tag it was
+# meant to precede already exists. So this is a button, pressed between the
+# publish and the tag.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish the deposition (IRREVERSIBLE: mints a permanent DOI). Leave off to create a reviewable draft."
+        type: boolean
+        default: false
+      sandbox:
+        description: "Deposit to sandbox.zenodo.org instead of the live archive."
+        type: boolean
+        default: false
+
+# A deposition token is not a repository credential: nothing here needs write
+# access to the tree, and the token arrives through `secrets`, scoped to the one
+# step that uses it.
+permissions:
+  contents: read
+
+jobs:
+  deposit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Same builder release.yml uses, so the archived artefact is byte-identical
+      # to the published one. It reads src/spectramr/__init__.py as TEXT, so this
+      # job needs none of the package's 5.1 GB of dependencies.
+      - run: pip install build twine
+      - name: Build and verify the distribution
+        run: python scripts/release/build_dist.py
+
+      # Rehearsed before it is trusted: the dry run constructs the exact payload
+      # and touches no network, so a malformed .zenodo.json fails here rather than
+      # halfway through a deposition that has already reserved a DOI.
+      - name: Rehearse the payload
+        run: python scripts/release/zenodo_deposit.py --dry-run
+
+      - name: Deposit
+        env:
+          ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}
+          # Through env, never interpolated into the command line: a workflow input
+          # is attacker-influenced text in the general case, and pasting it into a
+          # shell string is the standard script-injection seam.
+          PUBLISH: ${{ inputs.publish }}
+          SANDBOX: ${{ inputs.sandbox }}
+        run: |
+          args=""
+          [ "$PUBLISH" = "true" ] && args="$args --publish"
+          [ "$SANDBOX" = "true" ] && args="$args --sandbox"
+          python scripts/release/zenodo_deposit.py $args

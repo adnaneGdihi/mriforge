@@ -50,7 +50,7 @@ _PLANTS = [
     (
         "config_yaml",
         "p.rst",
-        ".. code-block:: bash\n\n   mriforge train -c experiments/gone.yaml\n",
+        ".. code-block:: bash\n\n   spectramr train -c experiments/gone.yaml\n",
     ),
     # A repo-root script has no directory to anchor on, so the root-anchored pattern
     # is structurally blind to it -- and the export drops several such files.
@@ -141,7 +141,7 @@ def test_a_dead_path_in_prose_is_a_reference_not_a_command(tmp_path: Path) -> No
 )
 def test_an_explicit_placeholder_is_exempt(tmp_path: Path, token: str) -> None:
     """Teaching a shape is not claiming a file. Nobody pastes an angle bracket."""
-    root = _tree(tmp_path, "p.rst", f".. code-block:: bash\n\n   mriforge audit {token}\n")
+    root = _tree(tmp_path, "p.rst", f".. code-block:: bash\n\n   spectramr audit {token}\n")
     assert gate.scan(root, root / "docs") == []
 
 

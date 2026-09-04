@@ -31,7 +31,7 @@ def _image(n_ro: int, n_pe: int) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_encoding_matrix_import():
     """Module imports and EncodingMatrixBuilder can be instantiated."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     emb = EncodingMatrixBuilder(n_readout=8, n_phase=8)
     assert emb is not None
 
@@ -39,7 +39,7 @@ def test_canary_encoding_matrix_import():
 @pytest.mark.physics
 def test_canary_forward_output_shape():
     """Forward operator returns [1, 1, N_pe, N_ro] complex tensor."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     n_ro, n_pe = 8, 8
     emb = EncodingMatrixBuilder(n_readout=n_ro, n_phase=n_pe)
     image = _image(n_ro, n_pe)
@@ -65,7 +65,7 @@ def test_canary_forward_output_shape():
     ids=["8x8", "8x16", "16x8", "16x16"],
 )
 def test_forward_shape(n_ro, n_pe):
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     emb = EncodingMatrixBuilder(n_readout=n_ro, n_phase=n_pe)
     image = _image(n_ro, n_pe)
     b0 = _b0_map(n_ro, n_pe)
@@ -84,7 +84,7 @@ def test_forward_shape(n_ro, n_pe):
     ids=["8x8", "8x16", "16x8"],
 )
 def test_adjoint_shape(n_ro, n_pe):
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     emb = EncodingMatrixBuilder(n_readout=n_ro, n_phase=n_pe)
     b0 = _b0_map(n_ro, n_pe)
     kspace = torch.randn(1, 1, n_pe, n_ro, dtype=torch.complex64)
@@ -101,7 +101,7 @@ def test_adjoint_shape(n_ro, n_pe):
 @pytest.mark.physics
 def test_forward_adjoint_inner_product():
     """<Ef, g> = <f, E^H g> up to float32 tolerance (n=8)."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     n = 8
     emb = EncodingMatrixBuilder(n_readout=n, n_phase=n)
     b0 = _b0_map(n, n)
@@ -130,7 +130,7 @@ def test_forward_adjoint_inner_product():
 @pytest.mark.physics
 def test_build_with_sampling_shape():
     """build_with_sampling returns a submatrix with fewer rows."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     n_ro, n_pe = 8, 8
     emb = EncodingMatrixBuilder(n_readout=n_ro, n_phase=n_pe)
     b0 = _b0_map(n_ro, n_pe).squeeze()   # [H, W]
@@ -151,7 +151,7 @@ def test_build_with_sampling_shape():
 @pytest.mark.physics
 def test_forward_edge_zero_b0():
     """Zero B0 map: no phase distortion; output should be well-defined."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     n = 8
     emb = EncodingMatrixBuilder(n_readout=n, n_phase=n)
     b0 = torch.zeros(1, 1, n, n)
@@ -163,7 +163,7 @@ def test_forward_edge_zero_b0():
 @pytest.mark.physics
 def test_adjoint_edge_zero_kspace():
     """Zero k-space → zero image estimate."""
-    from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+    from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
     n = 8
     emb = EncodingMatrixBuilder(n_readout=n, n_phase=n)
     b0 = _b0_map(n, n)

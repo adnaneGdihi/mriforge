@@ -10,7 +10,7 @@ t=0 was returning full sampling (no degradation) instead of max degradation.
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     VariableDensityKSpaceAccelerator,
     create_kspace_accelerator,
 )
@@ -64,7 +64,7 @@ class TestAccelerationTimestepBehavior:
 
     def test_linear_accelerator_decay(self):
         """[Regression Test] Verify LinearKSpaceAccelerator semantics (t=0 -> Base, t=T -> Max)."""
-        from mriforge.infrastructure.physics.sampling import LinearKSpaceAccelerator
+        from spectramr.infrastructure.physics.sampling import LinearKSpaceAccelerator
 
         accelerator = LinearKSpaceAccelerator(
             num_timesteps=1000,

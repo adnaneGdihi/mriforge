@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.generators.siren_pinn import (
+from spectramr.models.generators.siren_pinn import (
     SirenLayer,
     SirenSensNet,
     get_last_shared_layer,

@@ -4,7 +4,7 @@
 User Guide
 ==========
 
-This comprehensive guide explains how to use the MRIForge framework effectively, from understanding its architecture to developing custom models.
+This comprehensive guide explains how to use the spectraMR framework effectively, from understanding its architecture to developing custom models.
 
 .. contents:: Table of Contents
    :local:
@@ -16,7 +16,7 @@ Framework Overview
 Architecture Philosophy
 -----------------------
 
-The MRIForge framework follows **Clean Architecture** principles with clear separation of concerns:
+The spectraMR framework follows **Clean Architecture** principles with clear separation of concerns:
 
 .. code-block:: text
 
@@ -37,10 +37,10 @@ The MRIForge framework follows **Clean Architecture** principles with clear sepa
 
 **Key Components:**
 
-1. **Domain Layer** (``src/models/``, ``src/losses/``): Core ML logic
-2. **Infrastructure Layer** (``src/infrastructure/``): Training engines, data loaders
-3. **Application Layer** (``src/application/``): Use cases and pipelines
-4. **Services Layer** (``src/infrastructure/services/``): Logging, checkpointing, metrics
+1. **Domain Layer** (``src/spectramr/models/``, ``src/spectramr/models/losses/``): Core ML logic
+2. **Infrastructure Layer** (``src/spectramr/infrastructure/``): Training engines, data loaders
+3. **Application Layer** (``src/spectramr/application/``): Use cases and pipelines
+4. **Services Layer** (``src/spectramr/infrastructure/services/``): Logging, checkpointing, metrics
 
 Dependency Injection
 --------------------
@@ -49,7 +49,7 @@ The framework uses a DI container to manage dependencies:
 
 .. code-block:: python
 
-   from mriforge.infrastructure.di_container import DIContainer
+   from spectramr.infrastructure.di_container import DIContainer
 
    # Automatically initialized from config
    container = DIContainer.get_instance()
@@ -216,7 +216,7 @@ Polymorphic configuration based on ``training_mode``.
      - **REQUIRED**. ``reconstruction``, ``diffusion``, ``gan``, or ``vae``.
    * - ``strategy_class``
      - ``str``
-     - Full Python path to strategy class (e.g., ``mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy``).
+     - Full Python path to strategy class (e.g., ``spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy``).
    * - ``input_domain``
      - ``str``
      - ``image`` or ``kspace``
@@ -435,7 +435,7 @@ Training Strategies
 
 .. code-block:: python
 
-   # src/infrastructure/training/strategies/reconstruction_training_strategy.py
+   # src/spectramr/infrastructure/training/strategies/reconstruction.py
 
    def train_step(self, batch):
        undersampled, ground_truth = batch
@@ -506,7 +506,7 @@ Checkpointing
 
 .. code-block:: bash
 
-   python -m mriforge.cli train \\
+   python -m spectramr.cli train \\
        --config experiments/active/experiment_30_mamba_mri_reconstruction.yaml \\
        --resume experiments/active/experiment_30_mamba_mri_reconstruction/checkpoints/latest.pt
 
@@ -545,7 +545,7 @@ value:
 
 .. code-block:: python
 
-   from mriforge.infrastructure.services.logging_service import LoggingService
+   from spectramr.infrastructure.services.logging_service import LoggingService
 
    logger = LoggingService.get_instance()
    logger.log_metrics({"custom_metric": value}, step=iteration)
@@ -567,7 +567,7 @@ Running Inference
 
 .. code-block:: bash
 
-   python -m mriforge.cli infer \\
+   python -m spectramr.cli infer \\
        --config experiments/active/experiment_30_mamba_mri_reconstruction.yaml \\
        --checkpoint experiments/active/experiment_30_mamba_mri_reconstruction/checkpoints/best.pt \\
        --input-dir databases/fastmri/datasets/multicoil_brain_val \\
@@ -593,7 +593,7 @@ Evaluation
 
 .. code-block:: bash
 
-   mriforge report --exp-dir output/experiment_30_inference
+   spectramr report --exp-dir output/experiment_30_inference
 
 **Metrics Output:**
 
@@ -663,9 +663,9 @@ Extending Base Models
 
 .. code-block:: python
 
-   # src/models/generators/custom_generator.py
+   # src/spectramr/models/generators/custom_generator.py
 
-   from mriforge.models.base.base_unet_generator import BaseUnetGenerator
+   from spectramr.models.base.base_unet_generator import BaseUnetGenerator
    import torch.nn as nn
 
    class CustomGenerator(BaseUnetGenerator):
@@ -702,9 +702,9 @@ Extending Base Models
 
 .. code-block:: python
 
-   # src/models/registry.py
+   # src/spectramr/models/registry.py
 
-   from mriforge.models.generators.custom_generator import CustomGenerator
+   from spectramr.models.generators.custom_generator import CustomGenerator
 
    MODEL_REGISTRY = {
        # ... existing models
@@ -727,7 +727,7 @@ Creating Custom Loss Functions
 
 .. code-block:: python
 
-   # src/losses/custom_loss.py
+   # src/spectramr/models/losses/custom_loss.py
 
    import torch
    import torch.nn as nn
@@ -922,8 +922,8 @@ Adding a new one requires 5 steps and zero changes to orchestration code.
 
 .. code-block:: python
 
-   # src/infrastructure/training/strategies/my_strategy.py
-   from mriforge.infrastructure.training.base import BaseTrainingStrategy
+   # src/spectramr/infrastructure/training/strategies/my_strategy.py
+   from spectramr.infrastructure.training.base import BaseTrainingStrategy
 
    class MyCustomStrategy(BaseTrainingStrategy):
        """Custom training strategy."""
@@ -951,13 +951,13 @@ Adding a new one requires 5 steps and zero changes to orchestration code.
 
 .. code-block:: python
 
-   # src/pipelines/train.py  — add to STRATEGY_REGISTRY
+   # src/spectramr/pipelines/train.py  — add to STRATEGY_REGISTRY
    STRATEGY_REGISTRY = {
        # ... existing strategies ...
        "my_custom": MyCustomStrategy,    # ← add this line
    }
 
-**Step 3 — Add training mode enum** (``src/config/schemas/enums.py``):
+**Step 3 — Add training mode enum** (``src/spectramr/config/schemas/enums.py``):
 
 .. code-block:: python
 
@@ -991,7 +991,7 @@ Adding a new one requires 5 steps and zero changes to orchestration code.
 
 .. code-block:: bash
 
-   python -m mriforge.cli train --config <your-arm>.yaml
+   python -m spectramr.cli train --config <your-arm>.yaml
 
 
 ---
@@ -1005,7 +1005,7 @@ Losses are resolved via the loss registry. Adding one takes 3 steps.
 
 .. code-block:: python
 
-   # src/models/losses/my_loss.py
+   # src/spectramr/models/losses/my_loss.py
    import torch
    import torch.nn as nn
 
@@ -1036,8 +1036,8 @@ Losses are resolved via the loss registry. Adding one takes 3 steps.
 
 .. code-block:: python
 
-   # src/models/losses/__init__.py or registry.py
-   from mriforge.models.losses.my_loss import MyLoss
+   # src/spectramr/models/losses/__init__.py or registry.py
+   from spectramr.models.losses.my_loss import MyLoss
 
    LOSS_REGISTRY["my_freq_mse"] = MyLoss
 
@@ -1111,7 +1111,7 @@ SLURM Job Submission
 .. code-block:: bash
 
    #!/bin/bash
-   #SBATCH --job-name=mriforge_exp01
+   #SBATCH --job-name=spectramr_exp01
    #SBATCH --nodes=1
    #SBATCH --ntasks-per-node=4
    #SBATCH --gres=gpu:4
@@ -1120,15 +1120,15 @@ SLURM Job Submission
    #SBATCH --partition=gpu
 
    source ~/.bashrc
-   conda activate mriforge
+   conda activate spectramr
 
    # Required: set cluster data root
-   export MRIFORGE_DATA_ROOT=/project/<allocation>/<user>/mriforge/databases/
+   export SPECTRAMR_DATA_ROOT=/project/<allocation>/<user>/spectramr/databases/
 
    torchrun \
        --nproc_per_node=4 \
        --nnodes=1 \
-       mriforge train \
+       spectramr train \
        --config experiments/training/experiment_01_baseline_gan.yaml \
        --override "data.num_workers=8" \
        --override "data.batch_size=8"
@@ -1153,7 +1153,7 @@ process group; ``dp`` is single-process and does not):
 
 .. code-block:: bash
 
-   torchrun --nproc_per_node=4 -m mriforge.cli train-distributed --config <arm>.yaml
+   torchrun --nproc_per_node=4 -m spectramr.cli train-distributed --config <arm>.yaml
 
 ``fsdp`` and ``deepspeed`` additionally require their sub-block flag to agree
 with ``strategy`` (``fsdp.enabled: true`` / ``deepspeed.enabled: true``);
@@ -1185,7 +1185,7 @@ On cluster nodes, use the ``PathResolver`` prefix map:
      train_manifest: data/manifests/train_knee.pkl
      # Prefix rewriting: local /home/<user>/... -> cluster /project/<allocation>/...
      path_prefix_map:
-       "/home/<user>/work/mriforge": "/project/<allocation>/<user>/mriforge"
+       "/home/<user>/work/spectramr": "/project/<allocation>/<user>/spectramr"
 
 Or regenerate cluster-native manifests:
 
@@ -1193,7 +1193,7 @@ Or regenerate cluster-native manifests:
 
    # On cluster login node
    python scripts/data/regenerate_cluster_manifests.py \
-       --data-base /project/<allocation>/<user>/mriforge/databases/
+       --data-base /project/<allocation>/<user>/spectramr/databases/
 
 Multi-Node Training
 --------------------
@@ -1207,7 +1207,7 @@ Multi-Node Training
        --node_rank=0 \
        --master_addr=node0.cluster.local \
        --master_port=29500 \
-       mriforge train --config my.yaml
+       spectramr train --config my.yaml
 
    # Node 1
    torchrun \
@@ -1216,5 +1216,5 @@ Multi-Node Training
        --node_rank=1 \
        --master_addr=node0.cluster.local \
        --master_port=29500 \
-       mriforge train --config my.yaml
+       spectramr train --config my.yaml
 

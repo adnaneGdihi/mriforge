@@ -1,6 +1,6 @@
 """Tests for ``LoggingConfigSchema``.
 
-Targets ``mriforge.config.schemas.logging``. Logging / experiment-tracking /
+Targets ``spectramr.config.schemas.logging``. Logging / experiment-tracking /
 TensorBoard / debug-snapshot configuration. Validates documented
 defaults, ge constraints, ``frozen=True``.
 """
@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import LogLevel
-from mriforge.config.schemas.logging import (
+from spectramr.config.schemas.enums import LogLevel
+from spectramr.config.schemas.logging import (
     LoggingConfigSchema,
     LoggingSnapshotsConfigSchema,
 )
@@ -145,7 +145,7 @@ def test_wandb_project_is_refused_not_ignored() -> None:
     the facade this refusal exists to remove. The field must stay and say no.
     """
     with pytest.raises(ValidationError, match="Weights & Biases is not implemented"):
-        LoggingConfigSchema(wandb_project="mriforge_research")
+        LoggingConfigSchema(wandb_project="spectramr_research")
 
 
 def test_wandb_entity_is_refused_too() -> None:
@@ -190,7 +190,7 @@ def test_log_steps_does_not_drive_the_snapshot_cadence() -> None:
     Pinned behaviourally: the resolver is what the writer actually consults,
     so assert ``log_steps`` cannot reach it whatever the arm declares.
     """
-    from mriforge.infrastructure.training.debug_snapshot import (
+    from spectramr.infrastructure.training.debug_snapshot import (
         _resolve_config,
         snapshot_step_is_due,
     )

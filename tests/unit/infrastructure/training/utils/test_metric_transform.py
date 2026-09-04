@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.utils.metric_transform import (
+from spectramr.infrastructure.training.utils.metric_transform import (
     IMPLEMENTED_METRIC_TRANSFORMS,
     canonical_metric_transform,
     declared_metric_transforms,

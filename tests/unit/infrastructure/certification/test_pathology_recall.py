@@ -16,7 +16,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.certification.pathology_recall import (
+from spectramr.infrastructure.certification.pathology_recall import (
     PathologyRecallCertificate,
     build_pathology_recall_certificate,
     hoeffding_recall_lower_bound,

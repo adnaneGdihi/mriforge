@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.diffusion.alpha_stable_levy import (
+from spectramr.models.diffusion.alpha_stable_levy import (
     alpha_stable_kernel_fft,
     fractional_score_matching_loss,
     sample_alpha_stable,

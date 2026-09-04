@@ -1,6 +1,6 @@
 """Tests for normalization blocks.
 
-Targets ``mriforge.models.blocks.normalization``:
+Targets ``spectramr.models.blocks.normalization``:
 
 - ``get_adaptive_groups`` — group-count selection helper
 - ``AdaptiveInstanceNorm`` — AdaIN with style modulation
@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.normalization import (
+from spectramr.models.blocks.normalization import (
     AdaptiveGroupNorm,
     AdaptiveInstanceNorm,
     ConditionalBatchNorm,

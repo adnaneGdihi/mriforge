@@ -10,12 +10,12 @@ class TestUncertaintyAwareLoss:
 
     @pytest.fixture
     def loss_fn(self):
-        from mriforge.models.losses.uncertainty_loss import UncertaintyAwareLoss
+        from spectramr.models.losses.uncertainty_loss import UncertaintyAwareLoss
         return UncertaintyAwareLoss(base_loss_type="l2")
 
     @pytest.fixture
     def loss_fn_l1(self):
-        from mriforge.models.losses.uncertainty_loss import UncertaintyAwareLoss
+        from spectramr.models.losses.uncertainty_loss import UncertaintyAwareLoss
         return UncertaintyAwareLoss(base_loss_type="l1")
 
     def test_fallback_no_uncertainty(self, loss_fn):
@@ -109,12 +109,12 @@ class TestUncertaintyAwareLoss:
 
     def test_registry_access(self):
         """Verify loss is accessible via registry."""
-        from mriforge.models.losses.registry import create_loss
+        from spectramr.models.losses.registry import create_loss
         loss = create_loss("uncertainty")
         assert loss is not None, "Failed to resolve 'uncertainty' from registry"
 
     def test_invalid_base_loss_type(self):
         """Invalid base_loss_type should raise ValueError."""
-        from mriforge.models.losses.uncertainty_loss import UncertaintyAwareLoss
+        from spectramr.models.losses.uncertainty_loss import UncertaintyAwareLoss
         with pytest.raises(ValueError, match="base_loss_type must be"):
             UncertaintyAwareLoss(base_loss_type="huber")

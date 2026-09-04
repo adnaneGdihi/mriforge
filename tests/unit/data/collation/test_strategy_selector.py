@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.data.collation.strategy_selector import CollationStrategySelector
+from spectramr.data.collation.strategy_selector import CollationStrategySelector
 
 _NEW_TYPES = [
     "bart_kspace",
@@ -77,8 +77,8 @@ class TestTheTwoStrategyVocabulariesAgree:
     """
 
     def test_every_advertised_strategy_is_constructible(self) -> None:
-        from mriforge.data.collation.strategies import CollateStrategyFactory
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.data.collation.strategies import CollateStrategyFactory
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -90,7 +90,7 @@ class TestTheTwoStrategyVocabulariesAgree:
         )
 
     def test_universal_is_gone(self) -> None:
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -98,7 +98,7 @@ class TestTheTwoStrategyVocabulariesAgree:
 
     def test_the_guard_fires_on_a_reintroduction(self, monkeypatch) -> None:
         """A check that cannot fail is not a check."""
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -111,8 +111,8 @@ class TestTheTwoStrategyVocabulariesAgree:
     def test_the_guard_runs_on_the_live_path(self, monkeypatch) -> None:
         """Wired into `select_strategy`, not only asserted under test — the
         whole failure mode was a check that ran too late."""
-        from mriforge.config.schemas.data import CollationConfigSchema
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.config.schemas.data import CollationConfigSchema
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 
@@ -143,8 +143,8 @@ class TestIncompatiblePairsRaise:
 
     @staticmethod
     def _select(strategy, dataset_type):
-        from mriforge.config.schemas.data import CollationConfigSchema
-        from mriforge.data.collation.strategy_selector import (
+        from spectramr.config.schemas.data import CollationConfigSchema
+        from spectramr.data.collation.strategy_selector import (
             CollationStrategySelector,
         )
 

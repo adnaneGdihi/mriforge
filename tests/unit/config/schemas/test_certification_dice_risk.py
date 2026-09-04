@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.certification import (
+from spectramr.config.schemas.certification import (
     CertificationConfigSchema,
     DiceRiskCertificateConfig,
 )

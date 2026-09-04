@@ -1,4 +1,4 @@
-"""Regression tests for ``mriforge.models.vae.wavelet_kan_vae``.
+"""Regression tests for ``spectramr.models.vae.wavelet_kan_vae``.
 
 The registered ``vae_wavelet_kan_vae`` headline mechanism is the wavelet
 KAN convolution. The module used to guard its import with ``try/except
@@ -16,16 +16,16 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.layers.kan.kan_convs.wav_kan import (  # noqa: E402
+from spectramr.models.layers.kan.kan_convs.wav_kan import (  # noqa: E402
     WavKANConv2DLayer,
 )
-from mriforge.models.vae.wavelet_kan_vae import WaveletKANVAE  # noqa: E402
+from spectramr.models.vae.wavelet_kan_vae import WaveletKANVAE  # noqa: E402
 
 
 class TestWaveletKANVAEMechanismFires:
     def test_no_mock_conv_module_level_fallback(self) -> None:
         """The module must not define its own WavKANConv2D mock class."""
-        import mriforge.models.vae.wavelet_kan_vae as mod
+        import spectramr.models.vae.wavelet_kan_vae as mod
 
         assert not hasattr(mod, "WavKANConv2D"), (
             "mock WavKANConv2D fallback reintroduced — the real layer is "

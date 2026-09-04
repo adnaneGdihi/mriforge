@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""List src/mriforge modules that are not referenced by any test file.
+"""List src/spectramr modules that are not referenced by any test file.
 
-For every ``.py`` file under ``src/mriforge/`` that:
+For every ``.py`` file under ``src/spectramr/`` that:
   - is not ``__init__.py``
   - has at least 40 non-blank, non-comment lines
 
@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 TESTS_ROOT = REPO_ROOT / "tests"
 
 _MIN_LOC_DEFAULT = 40
@@ -65,14 +65,14 @@ def _build_test_corpus() -> dict[str, str]:
 
 
 def _layer_of(module_path: Path) -> str:
-    """Return the two-component layer label (relative to src/mriforge/).
+    """Return the two-component layer label (relative to src/spectramr/).
 
     Examples::
 
-        src/mriforge/infrastructure/physics/fft_ops.py -> infrastructure/physics
-        src/mriforge/models/generators/unet.py          -> models/generators
-        src/mriforge/main.py                            -> (root)
-        src/mriforge/cli/app.py                         -> cli
+        src/spectramr/infrastructure/physics/fft_ops.py -> infrastructure/physics
+        src/spectramr/models/generators/unet.py          -> models/generators
+        src/spectramr/main.py                            -> (root)
+        src/spectramr/cli/app.py                         -> cli
     """
     rel = module_path.relative_to(SRC_ROOT)
     parts = rel.parts[:-1]  # drop filename
@@ -85,7 +85,7 @@ def _layer_of(module_path: Path) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
-        description="List src/mriforge modules not referenced by any test file",
+        description="List src/spectramr modules not referenced by any test file",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )

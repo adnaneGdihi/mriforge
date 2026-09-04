@@ -1,6 +1,6 @@
 """Unit tests for training-loop utility functions.
 
-Targets ``mriforge.infrastructure.training.utils.training_utils``:
+Targets ``spectramr.infrastructure.training.utils.training_utils``:
 - ``sample_diffusion_timesteps``
 - ``clamp_to_range``
 - ``handle_training_error``
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_canary_sample_diffusion_timesteps_shape() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         sample_diffusion_timesteps,
     )
 
@@ -39,7 +39,7 @@ def test_canary_sample_diffusion_timesteps_shape() -> None:
 
 @pytest.mark.parametrize("batch_size,num_timesteps", [(1, 10), (4, 100), (16, 1000)])
 def test_sample_diffusion_timesteps_range(batch_size: int, num_timesteps: int) -> None:
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         sample_diffusion_timesteps,
     )
 
@@ -50,7 +50,7 @@ def test_sample_diffusion_timesteps_range(batch_size: int, num_timesteps: int) -
 
 
 def test_sample_diffusion_timesteps_dtype_long() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         sample_diffusion_timesteps,
     )
 
@@ -59,7 +59,7 @@ def test_sample_diffusion_timesteps_dtype_long() -> None:
 
 
 def test_sample_diffusion_timesteps_device_cpu() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         sample_diffusion_timesteps,
     )
 
@@ -73,7 +73,7 @@ def test_sample_diffusion_timesteps_device_cpu() -> None:
 
 
 def test_clamp_to_range_clips_out_of_bounds() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import clamp_to_range
+    from spectramr.infrastructure.training.utils.training_utils import clamp_to_range
 
     t = torch.tensor([-5.0, 0.0, 5.0])
     result = clamp_to_range(t, min_val=-1.0, max_val=1.0)
@@ -82,7 +82,7 @@ def test_clamp_to_range_clips_out_of_bounds() -> None:
 
 
 def test_clamp_to_range_no_clamp_when_disabled() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import clamp_to_range
+    from spectramr.infrastructure.training.utils.training_utils import clamp_to_range
 
     t = torch.tensor([-10.0, 10.0])
     result = clamp_to_range(t, enable=False)
@@ -92,7 +92,7 @@ def test_clamp_to_range_no_clamp_when_disabled() -> None:
 
 @pytest.mark.parametrize("min_val,max_val", [(-1.0, 1.0), (0.0, 1.0), (-0.5, 0.5)])
 def test_clamp_to_range_parametrized_bounds(min_val: float, max_val: float) -> None:
-    from mriforge.infrastructure.training.utils.training_utils import clamp_to_range
+    from spectramr.infrastructure.training.utils.training_utils import clamp_to_range
 
     t = torch.linspace(-5.0, 5.0, 20)
     result = clamp_to_range(t, min_val=min_val, max_val=max_val)
@@ -101,7 +101,7 @@ def test_clamp_to_range_parametrized_bounds(min_val: float, max_val: float) -> N
 
 
 def test_clamp_to_range_in_bounds_unchanged() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import clamp_to_range
+    from spectramr.infrastructure.training.utils.training_utils import clamp_to_range
 
     t = torch.tensor([0.0, 0.5, -0.5])
     result = clamp_to_range(t, min_val=-1.0, max_val=1.0)
@@ -123,7 +123,7 @@ def test_clamp_to_range_in_bounds_unchanged() -> None:
     ],
 )
 def test_handle_training_error_returns_correct_type(error_msg: str, expected_type: str) -> None:
-    from mriforge.infrastructure.training.utils.training_utils import handle_training_error
+    from spectramr.infrastructure.training.utils.training_utils import handle_training_error
 
     result = handle_training_error(
         error=Exception(error_msg),
@@ -140,7 +140,7 @@ def test_handle_training_error_returns_correct_type(error_msg: str, expected_typ
 
 
 def test_edge_single_timestep_always_zero() -> None:
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         sample_diffusion_timesteps,
     )
 
@@ -163,7 +163,7 @@ def test_module_import_has_no_eager_device_global() -> None:
     process that merely imported the package (CLI, audit, tests), with zero
     consumers of the resulting global. The eager global must be gone.
     """
-    import mriforge.infrastructure.training.utils.training_utils as tu
+    import spectramr.infrastructure.training.utils.training_utils as tu
 
     assert not hasattr(tu, "device"), (
         "module-scope `device` global re-introduced an import-time CUDA "
@@ -173,7 +173,7 @@ def test_module_import_has_no_eager_device_global() -> None:
 
 def test_get_default_device_is_lazy_and_callable() -> None:
     """A lazy accessor replaces the eager global for callers that want it."""
-    from mriforge.infrastructure.training.utils.training_utils import (
+    from spectramr.infrastructure.training.utils.training_utils import (
         get_default_device,
     )
 
@@ -184,7 +184,7 @@ def test_get_default_device_is_lazy_and_callable() -> None:
 
 
 # ---------------------------------------------------------------------------
-# MRIFORGE_GPU_MEMORY_FRACTION knob (2026-06 infra audit follow-up)
+# SPECTRAMR_GPU_MEMORY_FRACTION knob (2026-06 infra audit follow-up)
 # ---------------------------------------------------------------------------
 
 
@@ -194,28 +194,28 @@ class TestGpuMemoryFractionKnob:
     (pitfall #9) rather than silently falling back."""
 
     def test_default_fraction(self) -> None:
-        from mriforge.infrastructure.training.utils.training_utils import (
+        from spectramr.infrastructure.training.utils.training_utils import (
             _resolve_gpu_memory_fraction,
         )
 
         assert _resolve_gpu_memory_fraction() == pytest.approx(0.85)
 
     def test_env_override(self, monkeypatch: pytest.MonkeyPatch) -> None:
-        from mriforge.infrastructure.training.utils.training_utils import (
+        from spectramr.infrastructure.training.utils.training_utils import (
             _resolve_gpu_memory_fraction,
         )
 
-        monkeypatch.setenv("MRIFORGE_GPU_MEMORY_FRACTION", "0.5")
+        monkeypatch.setenv("SPECTRAMR_GPU_MEMORY_FRACTION", "0.5")
         assert _resolve_gpu_memory_fraction() == pytest.approx(0.5)
 
     @pytest.mark.parametrize("bad", ["0", "-0.2", "1.5", "abc", ""])
     def test_invalid_values_raise(
         self, monkeypatch: pytest.MonkeyPatch, bad: str
     ) -> None:
-        from mriforge.infrastructure.training.utils.training_utils import (
+        from spectramr.infrastructure.training.utils.training_utils import (
             _resolve_gpu_memory_fraction,
         )
 
-        monkeypatch.setenv("MRIFORGE_GPU_MEMORY_FRACTION", bad)
-        with pytest.raises(ValueError, match="MRIFORGE_GPU_MEMORY_FRACTION"):
+        monkeypatch.setenv("SPECTRAMR_GPU_MEMORY_FRACTION", bad)
+        with pytest.raises(ValueError, match="SPECTRAMR_GPU_MEMORY_FRACTION"):
             _resolve_gpu_memory_fraction()

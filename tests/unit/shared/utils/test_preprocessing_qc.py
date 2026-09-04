@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 
-from mriforge.shared.utils.preprocessing_qc import (
+from spectramr.shared.utils.preprocessing_qc import (
     FileQCResult,
     PreprocessingQC,
     QCResult,

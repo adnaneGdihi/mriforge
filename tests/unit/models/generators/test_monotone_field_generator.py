@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.generators.monotone_field_generator import (
+from spectramr.models.generators.monotone_field_generator import (
     MonotoneFieldOrderedGenerator,
 )
 
@@ -77,6 +77,6 @@ def test_rejects_inverted_tau_range() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "monotone_field_ordered_generator" in MODEL_REGISTRY

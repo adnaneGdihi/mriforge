@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
     DEGRADATION_REGISTRY,
     apply_degradation,
     degrade_concomitant_phase,
@@ -27,7 +27,7 @@ from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E
     degrade_variable_density_undersampling,
     list_degradations,
 )
-from mriforge.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
     CornerFiducialEmbedder,
     DigitalTwinSimulator,
     simulate_b1_bias_field,
@@ -91,7 +91,7 @@ class TestWave1_Cleanup:
 
     def test_delegated_callables_compiled_once(self) -> None:
         """Mod6: the dispatch table is a single dict, not a per-call closure."""
-        from mriforge.infrastructure.physics import digital_twin_extensions as ext
+        from spectramr.infrastructure.physics import digital_twin_extensions as ext
 
         assert hasattr(ext, "_DELEGATED_FNS")
         assert "b0" in ext._DELEGATED_FNS
@@ -131,7 +131,7 @@ class TestWave2_AdditiveAPI:
         At 0.3 T: shift = 42.577e6 * 0.3 * 3.5e-6 / 100 ~ 0.45 px (sub-pixel).
         At 3.0 T: shift ~ 4.47 px (visible).
         """
-        from mriforge.infrastructure.physics.digital_twin_simulator import (
+        from spectramr.infrastructure.physics.digital_twin_simulator import (
             simulate_chemical_shift as _simulate,
         )
         import math as _math
@@ -144,7 +144,7 @@ class TestWave2_AdditiveAPI:
 
         # Now confirm the simulator's effect strictly increases with B0.
         x = _phantom(64, 64)
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
         k = fft2c(x)
         at_03T = _simulate(k, (64, 64), b0_T=0.3, bw_per_pixel_hz=100.0)
         at_3T = _simulate(k, (64, 64), b0_T=3.0, bw_per_pixel_hz=100.0)
@@ -193,7 +193,7 @@ class TestWave2_AdditiveAPI:
         k-space) so the post-mask values read off the binary mask
         directly without FFT round-off ambiguity.
         """
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         # All-ones k-space → image is a delta at the origin; FFT
         # back gives all-ones again, and the mask reads cleanly.
@@ -248,7 +248,7 @@ class TestWave3_NewPhysics:
 
     def test_partial_fourier_zeros_one_half_at_theta_1(self) -> None:
         """Min2: theta=1 zeros (1 - min_fraction) of PE lines."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
         x = _phantom(64, 64)
         out = degrade_partial_fourier(x, theta=1.0, seed=0, min_fraction=0.5)
         k = fft2c(out)

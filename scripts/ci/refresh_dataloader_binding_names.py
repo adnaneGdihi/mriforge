@@ -46,14 +46,14 @@ _SYNTHETIC_MODULES = {"__main__", "__mp_main__"}
 
 
 def repo_third_party_modules(root: Path) -> set[str]:
-    """Every non-stdlib, non-``mriforge`` module ``src/mriforge`` imports anywhere.
+    """Every non-stdlib, non-``spectramr`` module ``src/spectramr`` imports anywhere.
 
     Function-local imports included -- ``ast.walk`` does not care about depth, and
     a loader imported inside a function is exactly the shape a top-of-file scan
     misses (the same blind spot as ``check_layering.sh``'s ``^``-anchored greps).
     """
     modules: set[str] = set()
-    for path in (root / "src" / "mriforge").rglob("*.py"):
+    for path in (root / "src" / "spectramr").rglob("*.py"):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
         except SyntaxError:
@@ -64,7 +64,7 @@ def repo_third_party_modules(root: Path) -> set[str]:
             elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
                 modules.add(node.module)
     stdlib = sys.stdlib_module_names
-    return {m for m in modules if not m.startswith("mriforge") and m.split(".")[0] not in stdlib}
+    return {m for m in modules if not m.startswith("spectramr") and m.split(".")[0] not in stdlib}
 
 
 def discover(root: Path) -> tuple[set[str], list[str]]:

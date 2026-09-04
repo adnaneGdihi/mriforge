@@ -13,8 +13,8 @@ from __future__ import annotations
 import torch
 from torch import nn
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders import OptimizationBuilder
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders import OptimizationBuilder
 
 
 class _Dummy(nn.Module):

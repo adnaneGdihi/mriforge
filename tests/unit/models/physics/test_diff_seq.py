@@ -1,6 +1,6 @@
 """Tests for ``BlochSimulator``, ``LearnableSequence``, and ``DiffSEQ``.
 
-Targets ``mriforge.models.physics.diff_seq`` (moved 2026-07-02 from
+Targets ``spectramr.models.physics.diff_seq`` (moved 2026-07-02 from
 ``infrastructure/physics/`` — it is a registered model, not a physics
 primitive) — differentiable pulse
 sequence simulator. Heavy parameter-recovery tests are deferred to
@@ -15,7 +15,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.physics.diff_seq import (
+from spectramr.models.physics.diff_seq import (
     BlochSimulator,
     DiffSEQ,
     LearnableSequence,

@@ -30,8 +30,8 @@ import math
 import pytest
 import torch
 
-from mriforge.data.transforms.non_cartesian import NonCartesianSimulationTransform
-from mriforge.infrastructure.physics.trajectories import (
+from spectramr.data.transforms.non_cartesian import NonCartesianSimulationTransform
+from spectramr.infrastructure.physics.trajectories import (
     NON_CARTESIAN_TRAJECTORIES,
     TRAJECTORY_TYPES,
     TrajectoryFactory,
@@ -147,7 +147,7 @@ class TestTheVocabularyIsOneList:
 
     def test_the_builders_re_export_is_the_same_object_not_a_copy(self) -> None:
         """``data.builders`` imports the vocabulary from ``data.transforms`` rather
-        than from ``infrastructure.physics`` directly, because ``mriforge.data ->
+        than from ``infrastructure.physics`` directly, because ``spectramr.data ->
         infrastructure`` is a layer-direction violation and only ``non_cartesian``
         carries the recorded exception for it.
 
@@ -155,8 +155,8 @@ class TestTheVocabularyIsOneList:
         #1097, so assert OBJECT IDENTITY: the builder must be validating against the
         same tuple the generator routes on, not a look-alike.
         """
-        from mriforge.data.builders import torchio_transform_builder as builder
-        from mriforge.infrastructure.physics import trajectories as physics
+        from spectramr.data.builders import torchio_transform_builder as builder
+        from spectramr.infrastructure.physics import trajectories as physics
 
         assert builder.TRAJECTORY_TYPES is physics.TRAJECTORY_TYPES
         assert builder.NON_CARTESIAN_TRAJECTORIES is physics.NON_CARTESIAN_TRAJECTORIES

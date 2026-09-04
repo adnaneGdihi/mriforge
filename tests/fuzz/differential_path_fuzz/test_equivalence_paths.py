@@ -89,7 +89,7 @@ except ImportError:
 # Import the factory and its registry
 # ---------------------------------------------------------------------------
 try:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

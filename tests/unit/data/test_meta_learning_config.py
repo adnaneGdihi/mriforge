@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     MetaLearningConfigSchema,
 )
@@ -64,7 +64,7 @@ def test_meta_learning_dataset_reads_from_config_schema() -> None:
     from torch.utils.data import TensorDataset
     import torch
 
-    from mriforge.data.datasets.meta_learning_dataset import MetaLearningDataset
+    from spectramr.data.datasets.meta_learning_dataset import MetaLearningDataset
 
     base = TensorDataset(torch.randn(16, 1, 8, 8))
     cfg = MetaLearningConfigSchema(
@@ -86,7 +86,7 @@ def test_meta_learning_dataset_backward_compat_with_kwargs() -> None:
     from torch.utils.data import TensorDataset
     import torch
 
-    from mriforge.data.datasets.meta_learning_dataset import MetaLearningDataset
+    from spectramr.data.datasets.meta_learning_dataset import MetaLearningDataset
 
     base = TensorDataset(torch.randn(8, 1, 8, 8))
     ds = MetaLearningDataset(

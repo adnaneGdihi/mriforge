@@ -1,6 +1,6 @@
 """Tests for ``RDPAccountant``.
 
-Targets ``mriforge.infrastructure.services.privacy.rdp_accountant`` —
+Targets ``spectramr.infrastructure.services.privacy.rdp_accountant`` —
 PR-7 (H5) of ``TODO/backlog_paradigm_expansion_roadmap.md``.
 
 Plan acceptance criterion covered:
@@ -26,8 +26,8 @@ import math
 
 import pytest
 
-from mriforge.domain.interfaces import IPrivacyAccountant
-from mriforge.infrastructure.services.privacy.rdp_accountant import (
+from spectramr.domain.interfaces import IPrivacyAccountant
+from spectramr.infrastructure.services.privacy.rdp_accountant import (
     RDPAccountant,
 )
 
@@ -206,7 +206,7 @@ def test_noninteger_order_does_not_undercut_integer_bound() -> None:
     epsilon candidate below both valid bracketing bounds (an under-reported,
     unsound privacy certificate).
     """
-    from mriforge.infrastructure.services.privacy.rdp_accountant import (
+    from spectramr.infrastructure.services.privacy.rdp_accountant import (
         DEFAULT_ORDERS,
     )
 

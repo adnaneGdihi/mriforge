@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.config.presets.discovery`.
+"""Unit tests for :mod:`spectramr.config.presets.discovery`.
 
 The discovery module scans ``experiments/training/`` for
 ``experiment_*.yaml`` files and registers them as presets. The category
@@ -15,8 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.presets import PresetRegistry
-from mriforge.config.presets.discovery import (
+from spectramr.config.presets import PresetRegistry
+from spectramr.config.presets.discovery import (
     _infer_tags,
     discover_and_register_presets,
     get_baseline_presets,
@@ -147,7 +147,7 @@ class TestDiscoverAndRegister:
         """
         _write_yaml(tmp_path / "experiment_01_baseline_gan.yaml")
         # Pre-seed the registry so the first add will collide.
-        from mriforge.config.presets import ConfigPreset
+        from spectramr.config.presets import ConfigPreset
 
         PresetRegistry.register(
             ConfigPreset(

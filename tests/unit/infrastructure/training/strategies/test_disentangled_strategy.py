@@ -9,15 +9,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 
 # Shared patch targets for BaseTrainingStrategy.__init__ dependencies
 _LOSS_BUILDER_PATCH = (
-    "mriforge.infrastructure.training.builders.loss_builder.LossBuilder"
+    "spectramr.infrastructure.training.builders.loss_builder.LossBuilder"
 )
-_BLOCH_PATCH = "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+_BLOCH_PATCH = "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
 
 
 def _mock_loss_builder():
@@ -33,7 +33,7 @@ def _mock_loss_builder():
 def mock_resolve_service():
     """Mock resolve_service to bypass DI container requirements in unit tests."""
     with patch(
-        "mriforge.infrastructure.di.di_container.resolve_service"
+        "spectramr.infrastructure.di.di_container.resolve_service"
     ) as mock_resolve:
         mock_resolve.return_value = MagicMock()
         yield mock_resolve
@@ -171,7 +171,7 @@ def test_compute_losses_impl_structure(strategy, mock_env):
     base-class contract without crashing.  Previously this method raised
     ``NotImplementedError`` — the new behaviour is the empty-dict
     contract documented at
-    :func:`mriforge.infrastructure.training.strategies.disentangled_strategy.DisentangledTrainingStrategy._compute_losses_impl`.
+    :func:`spectramr.infrastructure.training.strategies.disentangled_strategy.DisentangledTrainingStrategy._compute_losses_impl`.
     """
     input_batch = torch.randn(2, 1, 64, 64)
     target_batch = torch.randn(2, 1, 64, 64)
@@ -186,7 +186,7 @@ def test_train_step_execution(strategy, mock_env):
     mock_env.config.losses.latent.use_capacity_scheduling = False
 
     # Ensure compute returns a real tensor to pass isfinite() check
-    from mriforge.models.losses.computers.base import LossOutput
+    from spectramr.models.losses.computers.base import LossOutput
 
     with patch.object(strategy.loss_computer, "compute") as mock_compute:
         mock_compute.return_value = LossOutput(
@@ -310,7 +310,7 @@ def test_closures_store_floats_via_no_grad(strategy, mock_env):
     # real tensor and the float(detach()) conversion is what is under test.
     mock_env.config.losses.gan.enable_adversarial = False
 
-    from mriforge.models.losses.computers.base import LossOutput
+    from spectramr.models.losses.computers.base import LossOutput
 
     with patch.object(strategy.loss_computer, "compute") as mock_compute:
         mock_compute.return_value = LossOutput(
@@ -407,7 +407,7 @@ class TestGetLastMetricsStaysOnDevice:
     def test_tensor_entries_are_not_converted(self):
         import torch
 
-        from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+        from spectramr.infrastructure.training.strategies.disentangled_strategy import (
             DisentangledTrainingStrategy,
         )
 
@@ -422,7 +422,7 @@ class TestGetLastMetricsStaysOnDevice:
 
     def test_non_tensor_entries_still_pass_through(self):
         """`loss_output.to_dict()` may carry non-numeric fields."""
-        from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+        from spectramr.infrastructure.training.strategies.disentangled_strategy import (
             DisentangledTrainingStrategy,
         )
 
@@ -435,7 +435,7 @@ class TestGetLastMetricsStaysOnDevice:
 
     def test_the_returned_dict_is_a_copy(self):
         """A caller mutating the result must not corrupt the next step's state."""
-        from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+        from spectramr.infrastructure.training.strategies.disentangled_strategy import (
             DisentangledTrainingStrategy,
         )
 
@@ -451,14 +451,14 @@ class TestGetLastMetricsStaysOnDevice:
         """The contract is what makes the loop the single converter."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies import (
+        from spectramr.infrastructure.training.strategies import (
             disentangled_strategy,
             gan,
         )
-        from mriforge.infrastructure.training.strategies.base import (
+        from spectramr.infrastructure.training.strategies.base import (
             BaseTrainingStrategy,
         )
-        from mriforge.infrastructure.training.strategies.mixins import adversarial
+        from spectramr.infrastructure.training.strategies.mixins import adversarial
 
         owners = [
             BaseTrainingStrategy,
@@ -500,7 +500,7 @@ class TestValidationImageDirIsARealPath:
 
     @staticmethod
     def _mock_self(output_dir):
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         gen = MagicMock()
         gen.use_vae = False
@@ -583,7 +583,7 @@ class TestLossWeightsMappingTargetsExist:
 
         module = (
             Path(__file__).resolve().parents[5]
-            / "src/mriforge/infrastructure/training/strategies/disentangled_strategy.py"
+            / "src/spectramr/infrastructure/training/strategies/disentangled_strategy.py"
         )
         tree = ast.parse(module.read_text())
         for node in ast.walk(tree):
@@ -604,7 +604,7 @@ class TestLossWeightsMappingTargetsExist:
         raise AssertionError("could not locate the config-field -> loss-name mapping")
 
     def test_every_mapped_config_key_exists_on_the_schema(self):
-        from mriforge.config.schemas.loss import ReconstructionLossesConfig
+        from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
         missing = [
             key for key in self._mapping() if key not in ReconstructionLossesConfig.model_fields

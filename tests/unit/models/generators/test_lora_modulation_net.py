@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.lora_modulation_net import LoRAModulationNet
+from spectramr.models.generators.lora_modulation_net import LoRAModulationNet
 
 
 def _net(**kw) -> LoRAModulationNet:
@@ -119,8 +119,8 @@ def test_both_fields_required_for_probe() -> None:
 
 
 def test_synthetic_forward_probe_passes_for_all_arms() -> None:
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.forward_probe import synthetic_forward_probe
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.forward_probe import synthetic_forward_probe
 
     for arm in ("b36_lora_modulation", "b36_ablate_rank0", "b36_ablate_param_matched"):
         cfg = TrainingSettings.from_yaml(
@@ -142,8 +142,8 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "lora_modulation_net" in MODEL_REGISTRY

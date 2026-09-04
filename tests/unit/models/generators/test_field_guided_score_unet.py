@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
+from spectramr.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
 
 
 def _net() -> FieldGuidedScoreUNet:
@@ -88,7 +88,7 @@ def test_field_and_null_are_load_bearing_after_perturbation() -> None:
 
 def test_registered_in_model_registry() -> None:
     # The top-level import above runs the @register_model decorator.
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "field_guided_score_unet" in MODEL_REGISTRY
 

@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.mamba.bloch_mamba import BlochMambaBlock, BlochTransition
+from spectramr.models.mamba.bloch_mamba import BlochMambaBlock, BlochTransition
 
 
 def _reference_block_forward(

@@ -12,9 +12,9 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.data import CANONICAL_DATASET_TYPES
-from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-from mriforge.data.datasets.registry import (
+from spectramr.config.schemas.data import CANONICAL_DATASET_TYPES
+from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+from spectramr.data.datasets.registry import (
     DATASET_REGISTRY,
     get_dataset_creator,
     list_registered_dataset_types,
@@ -85,7 +85,7 @@ class TestRouteShape:
         which is why it stayed green over the second, larger half of the drift.
         Now that the set is derived, assert equality.
         """
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _self_indexed_dataset_types,
         )
 

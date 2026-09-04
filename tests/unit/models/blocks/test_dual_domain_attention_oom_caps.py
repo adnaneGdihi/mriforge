@@ -21,7 +21,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.blocks.dual_domain_attention_kan import (
+from spectramr.models.blocks.dual_domain_attention_kan import (
     ComplexMHA,
     MultiScaleFreqBandAttention,
     RadialBandAttention,

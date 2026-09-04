@@ -1,6 +1,6 @@
 """Tests for SPAMM tagging injection and the Dirac notch filter.
 
-Targets ``mriforge.infrastructure.physics.spamm_grid``. The injector applies a
+Targets ``spectramr.infrastructure.physics.spamm_grid``. The injector applies a
 ``cos(2πfX)·cos(2πfY)`` tag pattern on ``X, Y ∈ [-1, 1]`` (FOV width 2), so
 each tag harmonic sits ``2f`` k-space bins from the centre — at the four
 diagonal corners ``(±2f, ±2f)``. The notch filter must null exactly those
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.spamm_grid import (
+from spectramr.infrastructure.physics.spamm_grid import (
     DiracNotchFilter,
     SPAMMGridInjector,
 )

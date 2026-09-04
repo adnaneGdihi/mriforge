@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
+from spectramr.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
 
 
 class _CompleteAdapter(BaselineAdapter):

@@ -20,8 +20,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.schemas.loss import LossConfigSchema, ReconstructionLossesConfig
-from mriforge.models.losses.computers.unified_vae import (
+from spectramr.config.schemas.loss import LossConfigSchema, ReconstructionLossesConfig
+from spectramr.models.losses.computers.unified_vae import (
     UnifiedVAELossComputer,
     UnifiedVQVAELossComputer,
 )
@@ -147,7 +147,7 @@ class TestKLAnnealNamingSchism:
 
     def test_validated_schema_block_anneals_identically(self):
         """Declared `training.vae` + AliasChoices must agree with the dict path."""
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 
@@ -216,7 +216,7 @@ class TestKLAnnealNamingSchism:
         field may win. See ``test_vae_kl_weight_wiring.py`` for the arm-level
         guard this protects.
         """
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 

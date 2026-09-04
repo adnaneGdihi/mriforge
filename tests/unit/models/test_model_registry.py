@@ -12,8 +12,8 @@ Tests validation of:
 import pytest
 import torch
 
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class, list_models
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class, list_models
 
 populate_model_registry()
 

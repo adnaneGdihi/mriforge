@@ -6,7 +6,7 @@ Reporting pipeline (Nature-grade figures)
    :local:
    :depth: 2
 
-The end-of-training reporting pipeline (:mod:`mriforge.infrastructure.reporting`)
+The end-of-training reporting pipeline (:mod:`spectramr.infrastructure.reporting`)
 emits publication-grade figures, tables, and a provenance manifest into
 ``<run_dir>/report/``.
 
@@ -52,7 +52,7 @@ needs a cohort descriptor, and a single training run has neither, so both
 correctly return ``None``. Verified on a real run directory carrying 27 rows of
 metrics: zero files written.
 
-``tab_run_summary`` (:mod:`mriforge.infrastructure.reporting.tables.run_summary`)
+``tab_run_summary`` (:mod:`spectramr.infrastructure.reporting.tables.run_summary`)
 is built for exactly this case. It consumes what the aggregator already recovers
 from any run — ``training_metrics.csv``, ``validation_metrics.csv``,
 ``final_metrics.json`` — and emits one row per ``(split, metric)``:
@@ -102,19 +102,19 @@ House style
 ``style: nature`` applies ``styles/nature.mplstyle`` — sans-serif (Helvetica/Arial),
 7 pt base / 5 pt floor, no gridlines, bold lowercase panel letters, the colour-blind-safe
 Okabe–Ito cycle, and vector + 600-dpi raster. Figure widths follow Nature columns
-(89 mm single / 120 mm 1.5 / 183 mm double) via :func:`mriforge.infrastructure.reporting.style.column_width`.
+(89 mm single / 120 mm 1.5 / 183 mm double) via :func:`spectramr.infrastructure.reporting.style.column_width`.
 
 Axis labels and panel titles resolve through
-:func:`mriforge.infrastructure.reporting.style.pretty_label` — the same SSOT idea as
+:func:`spectramr.infrastructure.reporting.style.pretty_label` — the same SSOT idea as
 ``METHOD_COLOURS``: ``psnr`` renders as "PSNR (dB)" and ``val_ssim`` as
 "validation SSIM" in every figure; unknown keys degrade to lowercase words
 (cosmetic fallback — labels are not registered-option enums, so pitfall #9
 does not apply).
 
 Every figure passes through
-:func:`mriforge.infrastructure.reporting.style.save_figure`, which scrubs
+:func:`spectramr.infrastructure.reporting.style.save_figure`, which scrubs
 non-renderable C0/C1 control characters from all text artists (via
-:func:`mriforge.infrastructure.reporting.style.sanitize_figure_text`) immediately
+:func:`spectramr.infrastructure.reporting.style.sanitize_figure_text`) immediately
 before rasterising. This is defence-in-depth against a corrupt data-derived
 label — e.g. an arm name carrying stray ``\x7f``/``\x80`` bytes flowing into
 ``suptitle`` — which otherwise makes ``fig.savefig`` emit a "Glyph N missing from
@@ -124,7 +124,7 @@ so stripping them is a normalisation, not a silent fallback (pitfalls #9/#10).
 Data sources
 ------------
 
-:func:`mriforge.infrastructure.reporting.aggregator.aggregate` builds the tidy
+:func:`spectramr.infrastructure.reporting.aggregator.aggregate` builds the tidy
 long-format frame every plotter consumes. It merges, per run directory:
 
 - ``logs/training_metrics.csv`` → ``split="train"`` rows (per-step)
@@ -146,7 +146,7 @@ TikZ / pgfplots export
 ----------------------
 
 ``tikz: true`` additionally emits LaTeX-native figures under
-``report/figures/tikz/`` via :mod:`mriforge.infrastructure.reporting.tikz_export`:
+``report/figures/tikz/`` via :mod:`spectramr.infrastructure.reporting.tikz_export`:
 per-metric training/validation curves (``curve_<metric>.tex``) and the headline
 Pareto (``pareto_<metric>_vs_<cost>.tex``). Each figure is written twice —
 
@@ -170,7 +170,7 @@ auto-discovers them — no manual wiring needed.
 
 Metric-key resolution: ``validation.primary_metric`` is a bare name (``psnr``), but the
 feed seam stores the validation metrics dict verbatim, whose keys carry a monitor prefix
-(``val_psnr``). :class:`~mriforge.infrastructure.reporting.cases.recorder.ReportCaseRecorder`
+(``val_psnr``). :class:`~spectramr.infrastructure.reporting.cases.recorder.ReportCaseRecorder`
 resolves the ranking key against the ``metric_directions`` monitor-prefix SSOT
 (bare name, then each ``val_``/``train_``/… prefix), so ``best``/``median``/``worst`` rank
 by the true metric. Before this fix an exact-match lookup silently missed the prefixed
@@ -180,7 +180,7 @@ case was labelled ``best`` while a 17.2 dB case was labelled ``worst``).
 Figure catalog
 --------------
 
-The ``PLOTTERS`` registry (:mod:`mriforge.infrastructure.reporting.plotters`) is the
+The ``PLOTTERS`` registry (:mod:`spectramr.infrastructure.reporting.plotters`) is the
 authoritative figure set; ``list_available()`` lists every id. **By default the
 report attempts the task preset** — ``TASK_PRESETS[<task>]["figures"]``, with
 ``contact_sheet`` rendered last since it composites the others. Pass an explicit
@@ -293,16 +293,16 @@ ID                                   Shows
 ``reporting.per_call_metrics`` is on), then the recorded-case ``predictions_df``,
 then the aggregate frame — so it tracks whatever metrics/losses the run computed
 rather than a fixed IQM list. The mosaic and carpet consume the recorded
-``report_cases`` arrays (or, in the standalone ``mriforge report`` path, the
+``report_cases`` arrays (or, in the standalone ``spectramr report`` path, the
 downloaded ``real_images``/``fake_images`` PNG pairs). All three are bundled into
 the self-contained ``qc_report.html`` when ``reporting.html_report`` is on
 (interactive group plots when :mod:`plotly` is installed, static-PNG fallback
 otherwise). Gated per-run by ``reporting.qc_figures``.
 
 To report a whole cohort at once,
-:func:`mriforge.infrastructure.reporting.generate_reports` (CLI:
-``mriforge report --exp-dir <root> --recursive``) discovers every run beneath a
-root via :func:`mriforge.infrastructure.reporting.discover_run_dirs`, reports each,
+:func:`spectramr.infrastructure.reporting.generate_reports` (CLI:
+``spectramr report --exp-dir <root> --recursive``) discovers every run beneath a
+root via :func:`spectramr.infrastructure.reporting.discover_run_dirs`, reports each,
 and writes a top-level ``report_index.html`` linking them.
 
 Cohort task-ablation bar figures
@@ -321,26 +321,26 @@ early-stopping semantics. Degenerate / collapsed arms (negative PSNR, near-zero
 SSIM, identity collapse) are shown honestly with their real value and hatched —
 never hidden.
 
-Assembly lives in :mod:`mriforge.infrastructure.reporting.cohort_ablation`:
-:func:`~mriforge.infrastructure.reporting.cohort_ablation.discover_cohort_arms`
+Assembly lives in :mod:`spectramr.infrastructure.reporting.cohort_ablation`:
+:func:`~spectramr.infrastructure.reporting.cohort_ablation.discover_cohort_arms`
 derives ``task`` / ``family`` / ``role`` self-contained from each arm's
 ``resolved_config.json`` (``metadata.tags.task``, the ``bNN`` token, the
 ``_ablate_`` suffix);
-:func:`~mriforge.infrastructure.reporting.cohort_ablation.best_val_metrics` reuses
-the :func:`~mriforge.infrastructure.reporting.aggregator.aggregate` SSOT reader to
+:func:`~spectramr.infrastructure.reporting.cohort_ablation.best_val_metrics` reuses
+the :func:`~spectramr.infrastructure.reporting.aggregator.aggregate` SSOT reader to
 pull best validation scalars; and
-:func:`~mriforge.infrastructure.reporting.cohort_ablation.generate_task_ablation_figures`
+:func:`~spectramr.infrastructure.reporting.cohort_ablation.generate_task_ablation_figures`
 dispatches the registered plotter once per task. The plotter itself is generic —
 it consumes a tidy ``[family, role, arm, metric, value]`` frame and returns
 ``None`` (soft-skip) on the standard aggregator frame, so it never disturbs the
-default ``mriforge report`` "plot all" pass. Across a whole cohort, drive it
-with ``mriforge report --exp-dir <cohort-root> --recursive``, which walks every
+default ``spectramr report`` "plot all" pass. Across a whole cohort, drive it
+with ``spectramr report --exp-dir <cohort-root> --recursive``, which walks every
 experiment directory beneath the root::
 
-    mriforge report --exp-dir <cohort-root> --recursive --metrics ssim,psnr,lpips
+    spectramr report --exp-dir <cohort-root> --recursive --metrics ssim,psnr,lpips
 
 The driver never calls ``savefig`` — saving happens inside the registered plotter
-via :func:`~mriforge.infrastructure.reporting.style.save_figure`, so the C1
+via :func:`~spectramr.infrastructure.reporting.style.save_figure`, so the C1
 plotting-SSOT ratchet holds.
 
 Interactive layer (plotly)
@@ -349,7 +349,7 @@ Interactive layer (plotly)
 When ``reporting.interactive`` is on (default) **and** :mod:`plotly` is installed,
 ``qc_report.html`` gains an interactive layer *beside* the static PNGs — the PNGs
 stay as the print/archival copy and the offline fallback. The builders live in
-:mod:`mriforge.infrastructure.reporting.interactive`; each returns an inline
+:mod:`spectramr.infrastructure.reporting.interactive`; each returns an inline
 ``<div>`` or ``None`` (plotly absent or no data), so the section degrades cleanly
 to the embedded PNG. Every interactive panel carries a short **"How to read this"**
 caption for explainability.
@@ -392,7 +392,7 @@ preserve a ``[Z, H, W]`` stack (``input_volume``/``prediction_volume``/
 unambiguous slice axis — a 5-D ``[B, C, Z, H, W]`` tensor (coils RSS-collapsed,
 slices kept) or a 3-D ``[Z, H, W]`` volume; a 4-D ``[B, C, H, W]`` (a 2-D slice
 with coils) records **no** volume. On single-slice data the knob is a no-op.
-Set ``reporting.interactive: false`` (or ``mriforge report --no-interactive``) to
+Set ``reporting.interactive: false`` (or ``spectramr report --no-interactive``) to
 force the static-only report.
 
 The three ``fig_1_16``–``fig_1_18`` figures (2026-07-01) are data-driven from the
@@ -458,7 +458,7 @@ can return ``None`` (regression covered by
 The name overpromises, and a reader who trusts it draws a conclusion the data
 cannot support. Each row is **one validation call** carrying the **batch-aggregate**
 metrics, tagged with a ``case_id`` that
-:func:`~mriforge.infrastructure.training.strategies.mixins.metrics_mixin.report_case_id`
+:func:`~spectramr.infrastructure.training.strategies.mixins.metrics_mixin.report_case_id`
 derives from the training step (plus the cascade rung, when there is one). It is not
 one row per sample, because the run computes metrics batch-wise and no per-sample
 value exists to record.
@@ -486,7 +486,7 @@ Two guards now stand between that data and a chart:
 
 Each row now also carries a **context block** — identity columns written between
 ``step`` and the metrics, in the fixed order declared by
-:data:`~mriforge.infrastructure.reporting.cases.metric_sink.CONTEXT_COLUMNS`:
+:data:`~spectramr.infrastructure.reporting.cases.metric_sink.CONTEXT_COLUMNS`:
 
 ========================= ======================================================
 ``acceleration_level``    The cascade rung this pass evaluated (2, 8, 32, …)
@@ -550,12 +550,12 @@ The validation ladder is declared, not fixed
        levels: [2, 4, 8]      # omit for the framework default (2, 8, 32)
 
 It used to be a module constant in
-:mod:`mriforge.core.cascading_validation`, so an arm could widen
+:mod:`spectramr.core.cascading_validation`, so an arm could widen
 ``undersampling.acceleration_range`` for *training* while *validation* stayed
 pinned at 2/8/32 with no spelling to say otherwise — the two halves of the loop
 disagreed by construction. Both the strategy and the
 ``validation_cascade_levels_in_range`` audit check now read one resolver,
-:func:`~mriforge.core.cascading_validation.resolve_cascade_levels`; the check
+:func:`~spectramr.core.cascading_validation.resolve_cascade_levels`; the check
 previously held its own copy of the ladder beside a docstring conceding the two
 "should be updated in lockstep".
 
@@ -570,7 +570,7 @@ are **refused at load time** rather than silently repaired.
 
 Under ``undersampling.schedule_type: step`` a rung that is not in
 ``undersampling.acceleration_range`` has no timestep inverse and is skipped at
-runtime; ``mriforge audit`` warns about that before the launch.
+runtime; ``spectramr audit`` warns about that before the launch.
 
 Artifacts
 ---------
@@ -587,12 +587,12 @@ produced by a registered plotter under ``plotters/`` (plus the plotly ``interact
 layer), styled through ``style.py``, and orchestrated by :func:`pipeline.generate_report`.
 The only sanctioned exceptions are the sim2rank meta-evaluation figures under
 ``core/metrics/meta_evaluation/`` and dataset EDA under ``data/eda/`` — reached by the
-separate ``mriforge meta`` / EDA paths, never by ``mriforge report``. A ratchet test,
+separate ``spectramr meta`` / EDA paths, never by ``spectramr report``. A ratchet test,
 ``tests/unit/infrastructure/reporting/test_plotting_ssot_guard.py``, fails on any new
 ``savefig`` / ``write_html`` / ``write_image`` / ``plt.show`` added outside
 ``infrastructure/reporting/`` (with a frozen baseline of pre-existing emitters).
 
-``mriforge report`` renders **every applicable figure by default** —
+``spectramr report`` renders **every applicable figure by default** —
 :func:`pipeline.generate_report` requests all registered plotters and each soft-skips
 (returns ``None``) when the run lacks its data. Pass ``--figures a,b,c`` to opt into a
 subset. Unlike the end-of-training hook, the ``report`` command deliberately does *not*

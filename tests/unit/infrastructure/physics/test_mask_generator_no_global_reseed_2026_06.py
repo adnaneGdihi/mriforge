@@ -11,7 +11,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from mriforge.infrastructure.physics.sampling import MaskGenerator
+from spectramr.infrastructure.physics.sampling import MaskGenerator
 
 
 def test_construction_does_not_touch_global_rng() -> None:

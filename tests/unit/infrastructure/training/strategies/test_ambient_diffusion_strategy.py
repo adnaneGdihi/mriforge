@@ -12,18 +12,18 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.training.strategies.ambient_diffusion_strategy import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.training.strategies.ambient_diffusion_strategy import (
     AmbientDiffusionStrategy,
     ambient_diffusion_step,
 )
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
-from mriforge.models.generators.score_based_diffusion_generator import (
+from spectramr.models.generators.score_based_diffusion_generator import (
     ScoreBasedDiffusionGenerator,
 )
-from mriforge.models.losses.ambient_consistency_loss import ambient_consistency_residual
+from spectramr.models.losses.ambient_consistency_loss import ambient_consistency_residual
 
 
 def _tiny_score_gen():

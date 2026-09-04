@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import MetricMode
-from mriforge.config.schemas.metrics import MetricsConfigSchema, ProfilingConfigSchema
+from spectramr.config.schemas.enums import MetricMode
+from spectramr.config.schemas.metrics import MetricsConfigSchema, ProfilingConfigSchema
 
 
 class TestMetricsConfigSchema:

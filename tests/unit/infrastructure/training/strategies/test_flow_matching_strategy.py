@@ -11,10 +11,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
-from mriforge.infrastructure.training.strategies.flow_matching_strategy import (
+from spectramr.infrastructure.training.strategies.flow_matching_strategy import (
     FlowMatchingStrategy,
 )
 from tests.utils.mock_environment import create_mock_training_env
@@ -118,7 +118,7 @@ def training_env(simple_model, mock_fm_config):
 @pytest.fixture(autouse=True)
 def mock_resolve_service():
     with patch(
-        "mriforge.infrastructure.di.di_container.resolve_service"
+        "spectramr.infrastructure.di.di_container.resolve_service"
     ) as mock_resolve:
         mock_resolve.return_value = MagicMock()
         yield mock_resolve

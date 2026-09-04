@@ -5,9 +5,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.bloch_manifold_residual import BlochManifoldResidual
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.models.physics.bloch_manifold_projector import BlochManifoldProjector
+from spectramr.core.metrics.bloch_manifold_residual import BlochManifoldResidual
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.models.physics.bloch_manifold_projector import BlochManifoldProjector
 
 
 def _on_manifold(proj: BlochManifoldProjector, b: int = 1, hw: int = 4) -> torch.Tensor:

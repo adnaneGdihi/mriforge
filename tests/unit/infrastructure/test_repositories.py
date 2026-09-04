@@ -6,7 +6,7 @@ Covers ModelCardRepository, ArtifactLifecycle.
 import pytest
 
 try:
-    from mriforge.infrastructure.repositories.model_cards import ModelCardRepository
+    from spectramr.infrastructure.repositories.model_cards import ModelCardRepository
 except ImportError:
     ModelCardRepository = None
 

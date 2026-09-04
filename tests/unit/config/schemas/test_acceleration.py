@@ -1,6 +1,6 @@
 """Tests for ``AccelerationConfigSchema``.
 
-Targets ``mriforge.config.schemas.acceleration``. K-space undersampling
+Targets ``spectramr.config.schemas.acceleration``. K-space undersampling
 configuration with bounds (gt=0, ge/le on partial-Fourier and
 center-fraction) and ``frozen=True`` immutability.
 """
@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-from mriforge.config.schemas.enums import AccelerationSchedule
+from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+from spectramr.config.schemas.enums import AccelerationSchedule
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -247,3 +247,38 @@ class TestTrainIdentityRung:
         desc = AccelerationConfigSchema.model_fields["train_identity_rung"].description or ""
         assert "R(0) == 1" in desc
         assert "min_meaningful_timestep" in desc
+
+
+def test_base_acceleration_below_one_is_refused() -> None:
+    """Below 1.0 is not an acceleration; 1.0 means fully sampled (cohort review T0.3)."""
+    with pytest.raises(ValidationError):
+        AccelerationConfigSchema(base_acceleration=0.5)
+    assert AccelerationConfigSchema(base_acceleration=1.0).base_acceleration == 1.0
+
+
+class TestDeclaresNoAcceleration:
+    """One predicate for "this block is the fully-sampled declaration"."""
+
+    def test_base_and_max_at_one(self) -> None:
+        assert AccelerationConfigSchema(
+            base_acceleration=1.0, max_acceleration=1.0
+        ).declares_no_acceleration
+
+    def test_base_one_alone_is_a_ladder_to_the_default_max(self) -> None:
+        assert not AccelerationConfigSchema(base_acceleration=1.0).declares_no_acceleration
+
+    def test_a_declared_range_above_one_is_acceleration(self) -> None:
+        cfg = AccelerationConfigSchema(
+            base_acceleration=1.0, max_acceleration=1.0, acceleration_range=[1.0, 4.0]
+        )
+        assert not cfg.declares_no_acceleration
+
+    def test_the_default_range_is_not_a_declaration(self) -> None:
+        cfg = AccelerationConfigSchema(base_acceleration=1.0, max_acceleration=1.0)
+        assert cfg.acceleration_range == [1.0, 16.0] and cfg.declares_no_acceleration
+
+    def test_a_dynamic_mask_is_acceleration(self) -> None:
+        cfg = AccelerationConfigSchema(
+            base_acceleration=1.0, max_acceleration=1.0, enable_dynamic_mask=True
+        )
+        assert not cfg.declares_no_acceleration

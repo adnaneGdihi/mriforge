@@ -55,7 +55,7 @@ def test_laplace_generator_forward_has_timesteps_kwarg() -> None:
     ``_callable_accepts_kwarg`` only threads ``timesteps`` if the
     signature exposes it."""
     text = (
-        REPO / "src" / "mriforge" / "models" / "generators"
+        REPO / "src" / "spectramr" / "models" / "generators"
         / "laplace_diffusion_generator.py"
     ).read_text()
     # The post-F7 signature spans a few lines; match relaxed.
@@ -72,7 +72,7 @@ def test_laplace_generator_forward_has_timesteps_kwarg() -> None:
 
 def test_rician_generator_forward_has_timesteps_kwarg() -> None:
     text = (
-        REPO / "src" / "mriforge" / "models" / "generators"
+        REPO / "src" / "spectramr" / "models" / "generators"
         / "rician_diffusion_generator.py"
     ).read_text()
     assert re.search(
@@ -88,7 +88,7 @@ def test_mrf_tangent_score_t_kwarg_is_optional() -> None:
     with a zero default unblocks the strategy without changing the
     diffusion-time path's semantics."""
     text = (
-        REPO / "src" / "mriforge" / "models" / "generators" / "mrf_models.py"
+        REPO / "src" / "spectramr" / "models" / "generators" / "mrf_models.py"
     ).read_text()
     # Match ``t: torch.Tensor | None = None`` in the MRFTangentScore class block.
     assert re.search(
@@ -107,8 +107,8 @@ def test_mrf_tangent_score_t_kwarg_is_optional() -> None:
 @pytest.mark.parametrize(
     "module_path,class_name",
     [
-        ("mriforge.models.generators.laplace_diffusion_generator", "LaplaceDiffusionGenerator"),
-        ("mriforge.models.generators.rician_diffusion_generator", "RicianDiffusionGenerator"),
+        ("spectramr.models.generators.laplace_diffusion_generator", "LaplaceDiffusionGenerator"),
+        ("spectramr.models.generators.rician_diffusion_generator", "RicianDiffusionGenerator"),
     ],
 )
 def test_generator_forward_threads_timesteps_to_inner_unet(
@@ -161,8 +161,8 @@ def test_generator_forward_threads_timesteps_to_inner_unet(
 @pytest.mark.parametrize(
     "module_path,class_name",
     [
-        ("mriforge.models.generators.laplace_diffusion_generator", "LaplaceDiffusionGenerator"),
-        ("mriforge.models.generators.rician_diffusion_generator", "RicianDiffusionGenerator"),
+        ("spectramr.models.generators.laplace_diffusion_generator", "LaplaceDiffusionGenerator"),
+        ("spectramr.models.generators.rician_diffusion_generator", "RicianDiffusionGenerator"),
     ],
 )
 def test_generator_forward_default_timesteps_is_zeros(

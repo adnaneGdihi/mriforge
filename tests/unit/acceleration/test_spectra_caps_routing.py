@@ -9,8 +9,8 @@ not hardware-feature registers, so they are excluded.
 
 from __future__ import annotations
 
-from mriforge.config.schemas.spectra import BackendAccelerationConfigSchema
-from mriforge.infrastructure.accelerator.spectra.spectra_backend import (
+from spectramr.config.schemas.spectra import BackendAccelerationConfigSchema
+from spectramr.infrastructure.accelerator.spectra.spectra_backend import (
     SPECTRA_CAPS_ADDR,
     SPECTRA_REGISTER_MAP,
 )

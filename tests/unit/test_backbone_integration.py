@@ -7,7 +7,7 @@ properly integrate with the cold diffusion framework.
 import pytest
 import torch
 
-from mriforge.models.generators.kspace_cold_diffusion_generator import (
+from spectramr.models.generators.kspace_cold_diffusion_generator import (
     KSpaceColdDiffusionGenerator,
 )
 

@@ -55,8 +55,8 @@ class TestModelRegistryCanary:
     def test_known_model_resolves(self) -> None:
         """'domain_discriminator' was registered in domain_adaptation.py."""
         # Ensure the generators sub-package is imported so decorators fire.
-        import mriforge.models.domain_adaptation  # noqa: F401
-        from mriforge.models.registry import get_model_class
+        import spectramr.models.domain_adaptation  # noqa: F401
+        from spectramr.models.registry import get_model_class
 
         cls = get_model_class("domain_discriminator")
         assert cls is not None
@@ -70,16 +70,16 @@ class TestLossRegistryCanary:
     def test_known_loss_resolves(self) -> None:
         """'hfen' is registered in models/losses/hfen_loss.py."""
         # Importing the losses package fires all @register_loss decorators.
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         assert "hfen" in LossRegistry.list_available()
 
     @pytest.mark.unit
     def test_known_loss_instantiates(self) -> None:
         """LossRegistry.create('hfen') must return an nn.Module instance."""
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         loss = LossRegistry.create("hfen")
         assert isinstance(loss, nn.Module)
@@ -90,15 +90,15 @@ class TestMetricsRegistryCanary:
 
     @pytest.mark.unit
     def test_known_metric_resolves(self) -> None:
-        # Importing mriforge.core.metrics triggers pkgutil walk-discovery.
-        from mriforge.core.metrics import get_metric
+        # Importing spectramr.core.metrics triggers pkgutil walk-discovery.
+        from spectramr.core.metrics import get_metric
 
         metric = get_metric("psnr")
         assert metric is not None
 
     @pytest.mark.unit
     def test_known_metric_is_callable(self) -> None:
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         metric = get_metric("ssim")
         assert callable(metric)
@@ -122,21 +122,21 @@ class TestMetricsRegistryCanary:
 def test_registry_surface_canary(surface: str, key: str) -> None:
     """Each registry surface resolves its representative known key."""
     if surface == "model":
-        import mriforge.models.domain_adaptation  # noqa: F401
-        from mriforge.models.registry import get_model_class
+        import spectramr.models.domain_adaptation  # noqa: F401
+        from spectramr.models.registry import get_model_class
 
         result = get_model_class(key)
         assert result is not None and isinstance(result, type)
 
     elif surface == "loss":
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         result = LossRegistry.create(key)
         assert isinstance(result, nn.Module)
 
     elif surface == "metric":
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         result = get_metric(key)
         assert result is not None
@@ -153,7 +153,7 @@ class TestModelRegistryDoubleRegister:
     @pytest.mark.unit
     def test_same_class_idempotent(self) -> None:
         """Re-registering the same class under the same name is allowed."""
-        from mriforge.models.registry import MODEL_REGISTRY, register_model
+        from spectramr.models.registry import MODEL_REGISTRY, register_model
 
         name = _unique("m_idempotent")
 
@@ -172,7 +172,7 @@ class TestModelRegistryDoubleRegister:
     @pytest.mark.unit
     def test_different_class_raises(self) -> None:
         """Registering a different class under an existing name must raise ValueError."""
-        from mriforge.models.registry import register_model
+        from spectramr.models.registry import register_model
 
         name = _unique("m_collision")
 
@@ -194,7 +194,7 @@ class TestLossRegistryDoubleRegister:
 
     @pytest.mark.unit
     def test_same_class_idempotent(self) -> None:
-        from mriforge.models.losses.registry import LossRegistry, register_loss
+        from spectramr.models.losses.registry import LossRegistry, register_loss
 
         name = _unique("l_idempotent")
 
@@ -209,7 +209,7 @@ class TestLossRegistryDoubleRegister:
 
     @pytest.mark.unit
     def test_different_class_raises(self) -> None:
-        from mriforge.models.losses.registry import register_loss
+        from spectramr.models.losses.registry import register_loss
 
         name = _unique("l_collision")
 
@@ -231,7 +231,7 @@ class TestMetricsRegistryDoubleRegister:
 
     @pytest.mark.unit
     def test_same_class_idempotent(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry, register_metric
+        from spectramr.core.metrics.registry import MetricsRegistry, register_metric
 
         name = _unique("met_idempotent")
 
@@ -255,7 +255,7 @@ class TestMetricsRegistryDoubleRegister:
 
     @pytest.mark.unit
     def test_different_class_raises(self) -> None:
-        from mriforge.core.metrics.registry import register_metric
+        from spectramr.core.metrics.registry import register_metric
 
         name = _unique("met_collision")
 
@@ -299,8 +299,8 @@ class TestModelRegistryCaseSensitive:
     @pytest.mark.unit
     def test_uppercase_key_raises(self) -> None:
         """'Domain_Discriminator' (wrong case) must raise ValueError, not return a class."""
-        import mriforge.models.domain_adaptation  # noqa: F401
-        from mriforge.models.registry import get_model_class
+        import spectramr.models.domain_adaptation  # noqa: F401
+        from spectramr.models.registry import get_model_class
 
         with pytest.raises(ValueError):
             get_model_class("Domain_Discriminator")
@@ -308,8 +308,8 @@ class TestModelRegistryCaseSensitive:
     @pytest.mark.unit
     def test_lowercase_key_resolves(self) -> None:
         """Exact lowercase key resolves correctly."""
-        import mriforge.models.domain_adaptation  # noqa: F401
-        from mriforge.models.registry import get_model_class
+        import spectramr.models.domain_adaptation  # noqa: F401
+        from spectramr.models.registry import get_model_class
 
         cls = get_model_class("domain_discriminator")
         assert cls is not None
@@ -321,8 +321,8 @@ class TestLossRegistryCaseInsensitive:
     @pytest.mark.unit
     def test_uppercase_alias_resolves_via_normalisation(self) -> None:
         """'HFEN' should resolve to the same loss as 'hfen'."""
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         # 'hfen' canonical key — verify that uppercase also resolves
         # (normalisation path: name.lower() → 'hfen')
@@ -336,7 +336,7 @@ class TestMetricsRegistryCaseInsensitive:
     @pytest.mark.unit
     def test_uppercase_name_resolves(self) -> None:
         """'PSNR' (uppercase) must resolve through alias normalisation."""
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         metric = get_metric("PSNR")
         assert metric is not None
@@ -344,7 +344,7 @@ class TestMetricsRegistryCaseInsensitive:
     @pytest.mark.unit
     def test_mixed_case_name_resolves(self) -> None:
         """'Ssim' must resolve through lowercase normalisation."""
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         metric = get_metric("Ssim")
         assert metric is not None
@@ -360,14 +360,14 @@ class TestModelRegistryUnknownKey:
 
     @pytest.mark.unit
     def test_unknown_model_raises_value_error(self) -> None:
-        from mriforge.models.registry import get_model_class
+        from spectramr.models.registry import get_model_class
 
         with pytest.raises(ValueError, match="not found in registry"):
             get_model_class("__no_such_model_ever_registered__")
 
     @pytest.mark.unit
     def test_empty_string_raises(self) -> None:
-        from mriforge.models.registry import get_model_class
+        from spectramr.models.registry import get_model_class
 
         with pytest.raises(ValueError):
             get_model_class("")
@@ -378,16 +378,16 @@ class TestLossRegistryUnknownKey:
 
     @pytest.mark.unit
     def test_unknown_loss_raises_value_error(self) -> None:
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         with pytest.raises(ValueError, match="Unknown loss"):
             LossRegistry.create("__no_such_loss_ever_registered__")
 
     @pytest.mark.unit
     def test_empty_string_raises(self) -> None:
-        import mriforge.models.losses  # noqa: F401
-        from mriforge.models.losses.registry import LossRegistry
+        import spectramr.models.losses  # noqa: F401
+        from spectramr.models.losses.registry import LossRegistry
 
         with pytest.raises(ValueError):
             LossRegistry.create("")
@@ -398,14 +398,14 @@ class TestMetricsRegistryUnknownKey:
 
     @pytest.mark.unit
     def test_unknown_metric_raises_key_error(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         with pytest.raises(KeyError, match="Unknown metric"):
             MetricsRegistry.get("__no_such_metric_ever_registered__")
 
     @pytest.mark.unit
     def test_empty_string_raises(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         with pytest.raises(KeyError):
             MetricsRegistry.get("")
@@ -421,7 +421,7 @@ class TestStrategyFactoryUnknownParadigm:
 
     @pytest.fixture()
     def factory(self):
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         return TrainingStrategyFactory()
 
@@ -444,7 +444,7 @@ class TestStrategyFactoryUnknownParadigm:
     @pytest.mark.unit
     def test_unknown_paradigm_raises(self, factory: Any) -> None:
         """A training_mode not in STRATEGY_CLASS_PATHS → ConfigurationError."""
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         config = self._make_config()
         with pytest.raises(ConfigurationError):
@@ -453,7 +453,7 @@ class TestStrategyFactoryUnknownParadigm:
     @pytest.mark.unit
     def test_none_training_config_raises(self, factory: Any) -> None:
         """config.training = None (no training block at all) → ConfigurationError."""
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         config = MagicMock()
         config.training = None
@@ -463,7 +463,7 @@ class TestStrategyFactoryUnknownParadigm:
     @pytest.mark.unit
     def test_known_paradigm_returns_class(self, factory: Any) -> None:
         """A valid strategy_class path in STRATEGY_CLASS_PATHS → resolves without error."""
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         config = self._make_config(
             strategy_class=None,
@@ -481,7 +481,7 @@ class TestStrategyFactoryUnknownParadigm:
     def test_explicit_strategy_class_path_takes_priority(self, factory: Any) -> None:
         """Priority 1: explicit strategy_class path is used before any fallback."""
         full_path = (
-            "mriforge.infrastructure.training.strategies.reconstruction"
+            "spectramr.infrastructure.training.strategies.reconstruction"
             ".ReconstructionTrainingStrategy"
         )
         config = self._make_config(strategy_class=full_path)

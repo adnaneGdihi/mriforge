@@ -9,12 +9,12 @@ import torch
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 
-from mriforge.bootstrap import build_container
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.director import TrainingEnvironmentDirector
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.bootstrap import build_container
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.director import TrainingEnvironmentDirector
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 
@@ -134,7 +134,7 @@ class TestStrategyExecution:
         config_dict = self.create_base_config(temp_experiment_dir)
         config_dict["training"][
             "strategy_class"
-        ] = "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+        ] = "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
         # Needed for ModelBuilder to validate correct model set
         config_dict["training"]["training_mode"] = "reconstruction"
 
@@ -183,7 +183,7 @@ class TestStrategyExecution:
         config_dict = self.create_base_config(temp_experiment_dir)
         config_dict["training"][
             "strategy_class"
-        ] = "mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy"
+        ] = "spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy"
         config_dict["training"]["disc_start_step"] = 0
         # config_dict["training"]["training_mode"] = "gan" # Extra field issue in builder
 
@@ -260,7 +260,7 @@ class TestStrategyExecution:
         config_dict = self.create_base_config(temp_experiment_dir)
         config_dict["training"][
             "strategy_class"
-        ] = "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
+        ] = "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
         config_dict["training"]["training_mode"] = "diffusion"
         config_dict["training"]["diffusion"] = {
             "timesteps": 10,  # Small number for test

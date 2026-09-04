@@ -1,6 +1,6 @@
 """Tests for ``ProfilingService``.
 
-Targets ``mriforge.infrastructure.services.profiling_service``. Lightweight
+Targets ``spectramr.infrastructure.services.profiling_service``. Lightweight
 context-manager-based profiler that aggregates events into latency
 metrics for hot paths.
 
@@ -23,7 +23,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.services.profiling_service import (
+from spectramr.infrastructure.services.profiling_service import (
     ProfilingEvent,
     ProfilingService,
 )

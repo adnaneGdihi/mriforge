@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.data.builders.sfc_conformal_fmri_keys_wrapper import (
+from spectramr.data.builders.sfc_conformal_fmri_keys_wrapper import (
     SFCConformalFMRIKeysWrapper,
 )
-from mriforge.data.transforms.sfc_conformal_fmri_keys import (
+from spectramr.data.transforms.sfc_conformal_fmri_keys import (
     attach_field_strength,
     attach_site_id,
 )

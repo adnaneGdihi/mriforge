@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.flow_metrics import ConsistencyOfMass, Divergence
+from spectramr.core.metrics.flow_metrics import ConsistencyOfMass, Divergence
 
 
 # ---------------------------------------------------------------------------

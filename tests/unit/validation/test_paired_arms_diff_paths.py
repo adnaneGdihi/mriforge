@@ -9,13 +9,13 @@ produce.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.paired_arms_diff_paths import DEFAULT_DIFF_PATHS
+from spectramr.infrastructure.validation.paired_arms_diff_paths import DEFAULT_DIFF_PATHS
 
 
 class TestAllowListIdentity:
     def test_audit_module_reexports_the_same_object(self) -> None:
         """One frozenset, one owner (NN17) -- not a copy that can drift."""
-        from mriforge.infrastructure.validation import paired_arms_audit
+        from spectramr.infrastructure.validation import paired_arms_audit
 
         assert paired_arms_audit._DEFAULT_DIFF_PATHS is DEFAULT_DIFF_PATHS
 
@@ -28,7 +28,7 @@ class TestAllowListIdentity:
 class TestAllowListSpellings:
     def test_no_allowlist_entry_is_a_retired_path(self) -> None:
         """A retired spelling never matches, so its exemption is silently dead."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         fold = {r.legacy: r.canonical for r in RENAMES.values() if r.posture == "fold"}
         stale = sorted(f"{p} -> {fold[p]}" for p in DEFAULT_DIFF_PATHS if p in fold)
@@ -40,7 +40,7 @@ class TestAllowListSpellings:
 
     def test_the_retired_path_check_can_fire(self) -> None:
         """Anti-vacuity: an empty fold table would make the check above pass blind."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         assert any(r.posture == "fold" for r in RENAMES.values())
 

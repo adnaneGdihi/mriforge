@@ -10,8 +10,8 @@ Tests Phase 0 foundation infrastructure:
 
 import pytest
 
-from mriforge.infrastructure.builders.core import BuilderBase, DirectorBuilder, FluentBuilder
-from mriforge.infrastructure.builders.registry import (
+from spectramr.infrastructure.builders.core import BuilderBase, DirectorBuilder, FluentBuilder
+from spectramr.infrastructure.builders.registry import (
     BuilderRegistry,
     create_builder,
     get_builder_registry,

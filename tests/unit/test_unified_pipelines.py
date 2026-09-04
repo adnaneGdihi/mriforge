@@ -12,7 +12,7 @@ class TestGoldenAngleTrajectory:
     """Tests for golden-angle radial trajectory generation."""
 
     def test_trajectory_shape(self):
-        from mriforge.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
+        from spectramr.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
 
         gen = GoldenAngleTrajectory(
             im_size=(64, 64), num_spokes=16, samples_per_spoke=32
@@ -22,7 +22,7 @@ class TestGoldenAngleTrajectory:
 
     def test_trajectory_range(self):
         """Coordinates must be in [-π, π]."""
-        from mriforge.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
+        from spectramr.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
 
         gen = GoldenAngleTrajectory(
             im_size=(64, 64), num_spokes=8, samples_per_spoke=16
@@ -34,7 +34,7 @@ class TestGoldenAngleTrajectory:
         """Consecutive spokes should be separated by the golden angle."""
         import math
 
-        from mriforge.infrastructure.physics.nufft_ops import GOLDEN_ANGLE
+        from spectramr.infrastructure.physics.nufft_ops import GOLDEN_ANGLE
 
         assert abs(GOLDEN_ANGLE - math.pi * (math.sqrt(5) - 1) / 2) < 1e-10
 
@@ -44,12 +44,12 @@ class TestNUFFTForwardModel:
 
     @pytest.fixture
     def nufft(self):
-        from mriforge.infrastructure.physics.nufft_ops import NUFFTForwardModel
+        from spectramr.infrastructure.physics.nufft_ops import NUFFTForwardModel
 
         return NUFFTForwardModel(im_size=(32, 32))
 
     def test_forward_shape(self, nufft):
-        from mriforge.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
+        from spectramr.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
 
         gen = GoldenAngleTrajectory(
             im_size=(32, 32), num_spokes=8, samples_per_spoke=32
@@ -60,7 +60,7 @@ class TestNUFFTForwardModel:
         assert kdata.shape == (1, 1, 8 * 32)
 
     def test_adjoint_shape(self, nufft):
-        from mriforge.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
+        from spectramr.infrastructure.physics.nufft_ops import GoldenAngleTrajectory
 
         gen = GoldenAngleTrajectory(
             im_size=(32, 32), num_spokes=8, samples_per_spoke=32
@@ -75,7 +75,7 @@ class TestSPAMMGrid:
     """Tests for SPAMM injection and Dirac notch."""
 
     def test_spamm_modulates_magnitude(self):
-        from mriforge.infrastructure.physics.spamm_grid import SPAMMGridInjector
+        from spectramr.infrastructure.physics.spamm_grid import SPAMMGridInjector
 
         spamm = SPAMMGridInjector(spatial_freq_x=4.0, spatial_freq_y=4.0)
         img = torch.ones(1, 1, 64, 64)
@@ -85,7 +85,7 @@ class TestSPAMMGrid:
 
     def test_dirac_notch_coverage(self):
         """Notch filter should block only a tiny fraction of k-space."""
-        from mriforge.infrastructure.physics.spamm_grid import DiracNotchFilter
+        from spectramr.infrastructure.physics.spamm_grid import DiracNotchFilter
 
         notch = DiracNotchFilter(
             im_size=(64, 64), spatial_freq_x=8.0, spatial_freq_y=8.0
@@ -96,7 +96,7 @@ class TestSPAMMGrid:
 
     def test_notch_zeros_correct_positions(self):
         """Notch filter zeros should be at SPAMM frequency positions."""
-        from mriforge.infrastructure.physics.spamm_grid import DiracNotchFilter
+        from spectramr.infrastructure.physics.spamm_grid import DiracNotchFilter
 
         notch = DiracNotchFilter(
             im_size=(64, 64), spatial_freq_x=8.0, spatial_freq_y=8.0, notch_radius=2

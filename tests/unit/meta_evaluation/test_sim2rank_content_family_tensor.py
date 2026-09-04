@@ -28,7 +28,7 @@ import struct
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import (
+from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import (
     _content_family_tensor,
 )
 

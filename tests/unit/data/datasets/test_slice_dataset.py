@@ -21,7 +21,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.datasets.slice_dataset import (
+from spectramr.data.datasets.slice_dataset import (
     CONTRAST_TO_IDX,
     KNOWN_CONTRASTS,
     extract_contrast_from_filename,
@@ -79,21 +79,21 @@ def _make_npy_files(tmp_path: Path, n: int = 3, h: int = 16, w: int = 16) -> lis
 
 def test_canary_construction_with_file_list(tmp_path: Path) -> None:
     files = _make_npy_files(tmp_path, n=3)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     ds = SliceDataset(file_list=files, normalize=False)
     assert len(ds) == 3
 
 
 def test_construction_raises_on_empty_file_list() -> None:
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     with pytest.raises(RuntimeError, match="No .npy files found"):
         SliceDataset(file_list=[])
 
 
 def test_construction_requires_data_dir_or_file_list() -> None:
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     with pytest.raises((ValueError, RuntimeError)):
         SliceDataset()  # neither data_dir nor file_list
@@ -104,7 +104,7 @@ def test_construction_requires_data_dir_or_file_list() -> None:
 
 def test_getitem_returns_torchio_subject(tmp_path: Path) -> None:
     files = _make_npy_files(tmp_path, n=2)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     ds = SliceDataset(file_list=files, normalize=False)
     item = ds[0]
@@ -113,7 +113,7 @@ def test_getitem_returns_torchio_subject(tmp_path: Path) -> None:
 
 def test_getitem_has_input_and_target_keys(tmp_path: Path) -> None:
     files = _make_npy_files(tmp_path, n=2)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     ds = SliceDataset(file_list=files, normalize=False)
     item = ds[0]
@@ -131,7 +131,7 @@ def test_getitem_transform_failure_raises_not_silently_skipped(
     hardening regression (2026-07-17).
     """
     files = _make_npy_files(tmp_path, n=1)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     def _boom(_subject: object) -> object:
         raise ValueError("transform boom")
@@ -144,7 +144,7 @@ def test_getitem_transform_failure_raises_not_silently_skipped(
 def test_getitem_input_output_shapes(tmp_path: Path) -> None:
     """Each slice is (2, H, W); after split input=[1,H,W,1], target=[1,H,W,1]."""
     files = _make_npy_files(tmp_path, n=2, h=16, w=16)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     ds = SliceDataset(file_list=files, normalize=False)
     item = ds[0]
@@ -154,7 +154,7 @@ def test_getitem_input_output_shapes(tmp_path: Path) -> None:
 
 def test_getitem_extracts_contrast(tmp_path: Path) -> None:
     files = _make_npy_files(tmp_path, n=2)
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     ds = SliceDataset(file_list=files, normalize=False)
     item = ds[0]
@@ -163,7 +163,7 @@ def test_getitem_extracts_contrast(tmp_path: Path) -> None:
 
 def test_getitem_bad_npy_shape_raises(tmp_path: Path) -> None:
     """Shape [3, H, W] is invalid (expected [2, H, W])."""
-    from mriforge.data.datasets.slice_dataset import SliceDataset
+    from spectramr.data.datasets.slice_dataset import SliceDataset
 
     bad = tmp_path / "sub-0001_T1w_slice001.npy"
     np.save(str(bad), np.random.rand(3, 8, 8).astype(np.float32))
@@ -186,7 +186,7 @@ def test_real_dataset_contrast_distribution() -> None:  # pragma: no cover
 # [C,H,W,D] volume crashes in conv2d. The wrapper expands each volume into D
 # depth-1 [C,H,W,1] slice samples so batch_size=1 = one slice (no OOM).
 
-from mriforge.data.datasets.slice_dataset import SliceVolumeDataset  # noqa: E402
+from spectramr.data.datasets.slice_dataset import SliceVolumeDataset  # noqa: E402
 
 
 class _MockVolumeBase:

@@ -10,8 +10,8 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.evaluation.mrixfields_baselines.generator_loader import LoadedBaseline
-from mriforge.infrastructure.evaluation.mrixfields_baselines.volume_inference import (
+from spectramr.infrastructure.evaluation.mrixfields_baselines.generator_loader import LoadedBaseline
+from spectramr.infrastructure.evaluation.mrixfields_baselines.volume_inference import (
     _center_crop_or_pad,
     apply_brain_mask,
     predict_volume,

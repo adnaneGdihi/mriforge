@@ -1,7 +1,7 @@
 import torch
 
-from mriforge.infrastructure.physics.coordinate_utils import CoordinateSampler
-from mriforge.models.generators.hybrid_pinn import HybridQMapGenerator
+from spectramr.infrastructure.physics.coordinate_utils import CoordinateSampler
+from spectramr.models.generators.hybrid_pinn import HybridQMapGenerator
 
 
 class TestHybridArchitecture:

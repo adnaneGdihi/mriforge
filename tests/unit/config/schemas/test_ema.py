@@ -1,6 +1,6 @@
 """Tests for ``EMAConfigSchema``.
 
-Targets ``mriforge.config.schemas.ema``. Pydantic v2 schema with custom
+Targets ``spectramr.config.schemas.ema``. Pydantic v2 schema with custom
 validators: ``decay >= 0.5``, ``final_decay >= initial_decay``.
 """
 
@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.ema import EMAConfigSchema
+from spectramr.config.schemas.ema import EMAConfigSchema
 
 
 # ---------------------------------------------------------------------------

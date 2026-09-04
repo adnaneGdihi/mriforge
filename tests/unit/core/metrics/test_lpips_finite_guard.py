@@ -11,7 +11,7 @@ the VGG backbone — so the test does not need torchmetrics installed.
 import pytest
 import torch
 
-from mriforge.core.metrics.evaluation_metrics import LPIPS
+from spectramr.core.metrics.evaluation_metrics import LPIPS
 
 
 class _ExplodingBackbone(torch.nn.Module):

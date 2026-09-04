@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mriforge.data.metadata.index_builder import IndexBuilder
+from spectramr.data.metadata.index_builder import IndexBuilder
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -83,7 +83,7 @@ def _split(**kw):
     )
 
 
-@patch("mriforge.data.metadata.index_builder.PathResolver.resolve", side_effect=_no_op_resolve)
+@patch("spectramr.data.metadata.index_builder.PathResolver.resolve", side_effect=_no_op_resolve)
 class TestLoadPairedBidsManifest:
     def test_raises_on_missing_file(self, mock_resolve):
         cfg = DataConfigStub(

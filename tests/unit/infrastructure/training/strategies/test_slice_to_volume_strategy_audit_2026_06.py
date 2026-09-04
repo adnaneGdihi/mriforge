@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.slice_to_volume_strategy import (
+from spectramr.infrastructure.training.strategies.slice_to_volume_strategy import (
     SliceToVolumeStrategy,
 )
 

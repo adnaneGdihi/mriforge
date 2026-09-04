@@ -7,7 +7,7 @@
 #
 # Build:
 #   docker build \
-#       -t mriforge_bart:latest \
+#       -t spectramr_bart:latest \
 #       -f tests/docker/Dockerfile.bart \
 #       .
 #
@@ -15,13 +15,13 @@
 #   docker run --rm --gpus all \
 #       -v $PWD:/workspace \
 #       -w /workspace \
-#       mriforge_bart:latest \
+#       spectramr_bart:latest \
 #       pytest tests/physics/differential/test_espirit_vs_bart.py \
 #              -v --tb=short -m "differential and requires_bart"
 #
 # Run (one-shot CI, no repo mount — needs editable install inside container):
 #   docker run --rm --gpus all \
-#       mriforge_bart:latest \
+#       spectramr_bart:latest \
 #       pytest tests/physics/differential/test_espirit_vs_bart.py \
 #              -v --tb=short -m "differential and requires_bart"
 #
@@ -32,7 +32,7 @@
 
 FROM nvidia/cuda:12.9.0-cudnn-runtime-ubuntu22.04
 
-LABEL org.opencontainers.image.title="mriforge BART differential test"
+LABEL org.opencontainers.image.title="spectramr BART differential test"
 LABEL org.opencontainers.image.description="BART + PyTorch CUDA 12.9 image for ESPIRiT-vs-BART differential tests"
 LABEL org.opencontainers.image.source="https://github.com/mrirecon/bart"
 
@@ -99,8 +99,10 @@ RUN bart ecalib --help >/dev/null 2>&1 || true
 WORKDIR /
 
 # ---------------------------------------------------------------------------
-# 3. Install the mriforge package (editable, with dev extras)
-#    Torch is pulled from the CUDA 12.9 index declared in pyproject.toml.
+# 3. Install the spectramr package (editable, with dev extras)
+#    Torch is pulled from the CUDA 12.6 index declared in pyproject.toml
+#    (cu126 is the only lane shipping sm_70 for the V100 target nodes; the
+#    12.9 base image is unrelated and hosts cu126 wheels fine).
 #    We COPY only the files needed for the install step so the layer
 #    invalidates only when pyproject.toml changes, not on every src edit.
 # ---------------------------------------------------------------------------
@@ -112,7 +114,7 @@ COPY src/ ./src/
 
 RUN python3.12 -m pip install --upgrade pip \
     && python3.12 -m pip install \
-        --extra-index-url https://download.pytorch.org/whl/cu129 \
+        --extra-index-url https://download.pytorch.org/whl/cu126 \
         -e ".[dev]"
 
 # ---------------------------------------------------------------------------

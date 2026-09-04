@@ -23,7 +23,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 CLIP_VALUE = 1.0
 
@@ -228,7 +228,7 @@ class TestTheSentinelIsDistinguishableFromARealZero:
         """``-> float`` was a lie once a non-measurement could be returned."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         sig = inspect.signature(BaseTrainingStrategy._clip_and_log_gradients)
         assert sig.return_annotation in ("float | None", float | None)

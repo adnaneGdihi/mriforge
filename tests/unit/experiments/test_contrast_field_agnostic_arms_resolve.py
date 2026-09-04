@@ -20,8 +20,8 @@ import pytest
 
 pytest.importorskip("torch")
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 pytestmark = pytest.mark.unit
 
@@ -51,8 +51,8 @@ def test_arm_resolves_to_expected_strategy(rel_path: str, expected: str) -> None
 @pytest.mark.parametrize("rel_path", sorted(ARMS))
 def test_arm_model_type_is_registered(rel_path: str) -> None:
     """The declared model_type must resolve through the populated registry."""
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import get_model_class
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import get_model_class
 
     populate_model_registry()
     config = TrainingSettings.from_yaml(str(_REPO_ROOT / rel_path))

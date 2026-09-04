@@ -14,7 +14,7 @@ import pytest
 torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 
-from mriforge.data.datasets.fmri_dataset import FMRIVolumeDataset  # noqa: E402
+from spectramr.data.datasets.fmri_dataset import FMRIVolumeDataset  # noqa: E402
 
 
 def _write_valid_npy(path: Path) -> None:

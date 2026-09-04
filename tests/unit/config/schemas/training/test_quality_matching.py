@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.quality_matching import (
+from spectramr.config.schemas.training.quality_matching import (
     QualityMatchingConfig,
     QualityTargetConfig,
 )
@@ -128,7 +128,7 @@ def test_defaults_are_the_documented_ones():
 
 
 def test_is_mounted_on_the_training_schema():
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "quality_matching" in TrainingStrategyConfigSchema.model_fields
 
@@ -140,7 +140,7 @@ def test_mounted_block_parses_from_a_nested_dict():
     accepted as a raw dict and read back as None -- indistinguishable from success
     until something silently does nothing.
     """
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     parsed = TrainingStrategyConfigSchema(
         quality_matching={

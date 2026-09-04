@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.group_actions import (
+from spectramr.core.metrics.meta_evaluation.group_actions import (
     nuis_bias,
     nuis_gamma,
     nuis_phase,

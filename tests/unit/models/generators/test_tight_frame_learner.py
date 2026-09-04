@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.tight_frame_learner import TightFrameLearner
+from spectramr.models.generators.tight_frame_learner import TightFrameLearner
 
 
 def test_forward_preserves_shape() -> None:
@@ -114,8 +114,8 @@ def test_even_kernel_raises() -> None:
 
 
 def test_registered_as_model() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "tight_frame_learner" in MODEL_REGISTRY

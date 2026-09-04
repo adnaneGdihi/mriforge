@@ -1,7 +1,7 @@
 """Logging-service de-duplication (2026-06-19 audit).
 
 Pins the fixes that consolidated redundant root-logger configuration in
-:mod:`mriforge.infrastructure.services.logging_service`:
+:mod:`spectramr.infrastructure.services.logging_service`:
 
 * #1/#2 — the "upgrade-or-install a colored console handler" routine, once
   copy-pasted in ``bootstrap_console_logging`` and ``LoggingService.setup``,
@@ -25,7 +25,7 @@ import ast
 import logging
 from pathlib import Path
 
-from mriforge.infrastructure.services.logging_service import (
+from spectramr.infrastructure.services.logging_service import (
     _FILE_LOG_FORMAT,
     ColoredConsoleFormatter,
     _install_or_upgrade_colored_console,
@@ -34,7 +34,7 @@ from mriforge.infrastructure.services.logging_service import (
 _SRC = (
     Path(__file__).resolve().parents[4]
     / "src"
-    / "mriforge"
+    / "spectramr"
     / "infrastructure"
     / "services"
     / "logging_service.py"

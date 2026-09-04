@@ -19,7 +19,7 @@ import torch
 import torch.nn as nn
 import pytest
 
-from mriforge.models.capabilities import ModelCapabilities
+from spectramr.models.capabilities import ModelCapabilities
 from tests.utils.minimal_builders import (
     _channels_from_caps,
     _fill_required_param,

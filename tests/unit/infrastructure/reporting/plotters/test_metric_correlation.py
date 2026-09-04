@@ -9,7 +9,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import metric_correlation
+from spectramr.infrastructure.reporting.plotters import metric_correlation
 
 
 def _frame(n_steps: int = 10) -> pd.DataFrame:

@@ -23,7 +23,7 @@ from typing import ClassVar
 import pytest
 from pydantic import BaseModel, Field
 
-from mriforge.core.execution_ledger import (
+from spectramr.core.execution_ledger import (
     NO_VALUE,
     ExecutionLedger,
     SubstitutionClass,
@@ -98,7 +98,7 @@ def test_current_or_begin_flags_incomplete_coverage(caplog):
     the artifact so a later reader of ``_ledger`` knows the absence of records
     is not evidence of absence of substitutions.
     """
-    with caplog.at_level("WARNING", logger="mriforge.core.execution_ledger"):
+    with caplog.at_level("WARNING", logger="spectramr.core.execution_ledger"):
         ledger = ExecutionLedger.current_or_begin(source="programmatic")
 
     assert ledger.notes, "a late-armed ledger must say its records are incomplete"
@@ -365,7 +365,7 @@ def test_default_coincidence_is_recorded_when_declared_equals_the_default():
     from "dropped and defaulted" — which is why the oscillating LR looked right in
     every log. Only a record made AT the seam carries that distinction.
     """
-    from mriforge.core.execution_ledger import record_default_coincidence
+    from spectramr.core.execution_ledger import record_default_coincidence
 
     ledger = ExecutionLedger.begin_run()
     made = record_default_coincidence(
@@ -385,7 +385,7 @@ def test_default_coincidence_is_recorded_when_declared_equals_the_default():
 
 def test_no_coincidence_when_the_declared_value_differs():
     """CONTROL: proves it is not simply always recording."""
-    from mriforge.core.execution_ledger import record_default_coincidence
+    from spectramr.core.execution_ledger import record_default_coincidence
 
     ledger = ExecutionLedger.begin_run()
     assert (
@@ -411,9 +411,9 @@ def test_every_substitution_class_has_an_emitter():
     """
     import subprocess
 
-    from mriforge.core import execution_ledger as mod
+    from spectramr.core import execution_ledger as mod
 
-    # parents[1] is the mriforge package itself: .../src/mriforge/core/x.py -> mriforge
+    # parents[1] is the spectramr package itself: .../src/spectramr/core/x.py -> spectramr
     package = Path(mod.__file__).resolve().parents[1]
     emitted = set()
     for member in SubstitutionClass:
@@ -470,7 +470,7 @@ class TestFoldedInputKeysAreNotDrops:
         return Outer
 
     def _drops(self, raw: dict, model) -> list[str]:
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
             diff_declared_vs_resolved,
@@ -501,7 +501,7 @@ class TestFoldedInputKeysAreNotDrops:
         """Anti-vacuity: the exemption reads an attribute most classes lack, so
         a typo in its name would silently do nothing and every test above would
         still pass. This pins that the default is an empty set, not a skip."""
-        from mriforge.core.execution_ledger import diff_declared_vs_resolved
+        from spectramr.core.execution_ledger import diff_declared_vs_resolved
 
         class Plain(BaseModel):
             model_config = {"extra": "ignore"}
@@ -515,7 +515,7 @@ class TestFoldedInputKeysAreNotDrops:
         """``defaults_injected`` counts FIELDS left at their default. A folded
         legacy name is not a field, so counting it would overstate the number
         by one per record on every arm."""
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             diff_declared_vs_resolved,
         )
@@ -548,7 +548,7 @@ class TestDefaultsArePerKeyNotACount:
 
     @staticmethod
     def _walk(raw: dict, model_cls):
-        from mriforge.core.execution_ledger import (
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             diff_declared_vs_resolved,
         )
@@ -701,7 +701,7 @@ def test_a_folded_scalar_has_no_sub_keys_and_is_skipped_quietly():
 
 def test_unconsumed_keys_defaults_to_the_drop_class():
     """Every original caller meant "dropped"; the default must not move."""
-    from mriforge.core.execution_ledger import (
+    from spectramr.core.execution_ledger import (
         ExecutionLedger,
         SubstitutionClass,
         unconsumed_keys,
@@ -719,7 +719,7 @@ def test_unconsumed_keys_defaults_to_the_drop_class():
 def test_unconsumed_keys_var_kwargs_class_keeps_the_value_and_says_why():
     """A key swallowed by **kwargs is NOT dropped, so it must not resolve to
     NO_VALUE -- it is present but has no verified reader (#878)."""
-    from mriforge.core.execution_ledger import (
+    from spectramr.core.execution_ledger import (
         NO_VALUE,
         ExecutionLedger,
         SubstitutionClass,
@@ -932,7 +932,7 @@ def test_the_real_checkpoint_schema_accepts_save_dir_quietly():
     branch applies to the 293 arms. Imported inside the test so `core`'s own
     suite does not take a hard `config` dependency at collection time.
     """
-    from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+    from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
     field = CheckpointConfigSchema.model_fields["checkpoint_dir"]
     assert field.validation_alias == "save_dir" and field.alias is None, (

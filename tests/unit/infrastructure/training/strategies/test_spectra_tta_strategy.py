@@ -18,7 +18,7 @@ from unittest.mock import MagicMock, patch
 import torch
 import torch.nn as nn
 
-_DI = "mriforge.infrastructure.di.di_container.resolve_service"
+_DI = "spectramr.infrastructure.di.di_container.resolve_service"
 
 
 class _TinyBackbone(nn.Module):
@@ -63,7 +63,7 @@ def _make_config() -> MagicMock:
 
 
 def _make_strategy(gen: nn.Module, config: object | None = None):
-    from mriforge.infrastructure.training.strategies.spectra_tta_strategy import (
+    from spectramr.infrastructure.training.strategies.spectra_tta_strategy import (
         SpectraTestTimeAdaptationStrategy,
     )
 

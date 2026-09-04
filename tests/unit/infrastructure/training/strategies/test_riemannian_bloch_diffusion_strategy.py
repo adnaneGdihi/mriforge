@@ -19,8 +19,8 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.manifolds import BlochRelaxationManifold
-from mriforge.infrastructure.training.strategies.riemannian_bloch_diffusion_strategy import (
+from spectramr.infrastructure.physics.manifolds import BlochRelaxationManifold
+from spectramr.infrastructure.training.strategies.riemannian_bloch_diffusion_strategy import (
     _UNCACHED_POINT_LIMIT,
     RiemannianBlochDiffusionStrategy,
 )

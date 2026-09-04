@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.field_conditioned_lora import FieldConditionedLoRAConv2d
+from spectramr.models.blocks.field_conditioned_lora import FieldConditionedLoRAConv2d
 
 
 def test_forward_shape() -> None:

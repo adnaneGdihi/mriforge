@@ -38,7 +38,7 @@ def assert_gradient_flows(model, loss: torch.Tensor) -> None:
 
 def assert_registered(name: str, expected_mode: str) -> None:
     """Assert ``name`` resolves to a class with the expected training mode."""
-    from mriforge.models.registry import get_model_class, get_model_mode
+    from spectramr.models.registry import get_model_class, get_model_mode
 
     cls = get_model_class(name)
     assert cls is not None

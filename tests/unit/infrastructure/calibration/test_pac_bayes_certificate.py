@@ -1,6 +1,6 @@
 r"""Tests for ``PACBayesCertificate`` (ULF roadmap PR-24 / R5).
 
-Targets ``mriforge.infrastructure.calibration.pac_bayes_certificate``.
+Targets ``spectramr.infrastructure.calibration.pac_bayes_certificate``.
 
 Plan acceptance criterion (§"Tests"):
 
@@ -27,7 +27,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.calibration.pac_bayes_certificate import (
+from spectramr.infrastructure.calibration.pac_bayes_certificate import (
     PACBayesCertificate,
     PACBayesReport,
     mcallester_complexity_term,

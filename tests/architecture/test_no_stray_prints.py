@@ -1,16 +1,16 @@
 """
 Phase 4 logging-hygiene fitness function.
 
-Library code under ``src/mriforge/`` must emit through the ``logging``
+Library code under ``src/spectramr/`` must emit through the ``logging``
 module, not ``print()``. User-facing CLI tools and the package
 entrypoint legitimately write to stdout; everywhere else, a ``print()``
 defeats log routing (file sinks, structured fields, log levels) and
 fights ``infrastructure.logging.banner`` / ``phase``.
 
 Legitimate stdout subtrees (blanket-exempt):
-  * ``mriforge/cli/`` — interactive CLI tools.
-  * ``mriforge/tools/`` — diagnostic / inspection scripts.
-  * ``mriforge/main.py`` — top-level entrypoint banner.
+  * ``spectramr/cli/`` — interactive CLI tools.
+  * ``spectramr/tools/`` — diagnostic / inspection scripts.
+  * ``spectramr/main.py`` — top-level entrypoint banner.
 
 Everywhere else is **library code**: the gate fails on any ``print(``
 call that is not in ``_known_violations.json["stray_prints"]``. The
@@ -32,14 +32,14 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 
 # Blanket-exempt subtrees: legitimate stdout for human-facing tooling.
 BLANKET_EXEMPT_PREFIXES: tuple[str, ...] = (
-    "mriforge/cli/",
-    "mriforge/tools/",
-    "mriforge/main.py",
+    "spectramr/cli/",
+    "spectramr/tools/",
+    "spectramr/main.py",
 )
 
 
@@ -129,7 +129,7 @@ def test_no_new_stray_prints_outside_cli_tools_main() -> None:
       * Replace the ``print(`` with the file's module logger
         (``logging.getLogger(__name__).<level>(...)``).
       * If the print is genuinely user-facing CLI output, move the
-        function to ``mriforge/cli/`` or ``mriforge/tools/``.
+        function to ``spectramr/cli/`` or ``spectramr/tools/``.
 
     Temporarily adding to the debt list is only OK when the migration
     is genuinely deferred -- the slow-lane test fails until the list is
@@ -166,7 +166,7 @@ def test_no_new_stray_prints_outside_cli_tools_main() -> None:
             "\nFix: replace print(...) with the file's module logger "
             "(``logging.getLogger(__name__).info/warning/error(...)``). "
             "If the print is genuinely user-facing CLI output, move the "
-            "function to mriforge/cli/ or mriforge/tools/."
+            "function to spectramr/cli/ or spectramr/tools/."
         )
         pytest.fail("\n\n".join(messages))
 

@@ -1,4 +1,4 @@
-from mriforge.config.schemas.training.meta_learning import (
+from spectramr.config.schemas.training.meta_learning import (
     AdaptationConfig,
     MetaLearningDataConfig,
     MetaLearningModelConfig,

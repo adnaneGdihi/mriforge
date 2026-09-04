@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
-from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-from mriforge.data.builders.torchio_transform_builder import (
+from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+from spectramr.data.builders.torchio_transform_builder import (
     TorchIOTransformBuilder,
     TorchIOTransformConfig,
 )
@@ -62,7 +62,7 @@ def test_transform_builder_creates_masking_transform():
 
     # Inspect transforms
     # We expect PhysicsInformedMasking
-    from mriforge.data.transforms.tio_physics import PhysicsInformedMasking
+    from spectramr.data.transforms.tio_physics import PhysicsInformedMasking
 
     has_masking = any(
         isinstance(t, PhysicsInformedMasking) for t in transforms.transforms
@@ -111,7 +111,7 @@ def test_transform_builder_no_acceleration_fallback():
 
     # Verify pipeline uses KSpaceToInput (rename only)
     transforms = TorchIOTransformBuilder.build_val_transforms(transform_config)
-    from mriforge.data.builders.torchio_transform_builder import _KSpaceToInputTransform
+    from spectramr.data.builders.torchio_transform_builder import _KSpaceToInputTransform
 
     has_rename = any(
         isinstance(t, _KSpaceToInputTransform) for t in transforms.transforms
@@ -121,8 +121,8 @@ def test_transform_builder_no_acceleration_fallback():
 
 def test_transform_builder_injects_digital_twin_when_opted_in():
     """physics.digital_twin.apply_as_transform → DigitalTwinDegradation in pipeline."""
-    from mriforge.config.schemas.physics import DigitalTwinConfig
-    from mriforge.data.transforms.tio_physics import DigitalTwinDegradation
+    from spectramr.config.schemas.physics import DigitalTwinConfig
+    from spectramr.data.transforms.tio_physics import DigitalTwinDegradation
 
     config = TorchIOTransformConfig(
         patch_size=(32, 32, 1),
@@ -138,7 +138,7 @@ def test_transform_builder_injects_digital_twin_when_opted_in():
 
 
 def test_transform_builder_no_digital_twin_by_default():
-    from mriforge.data.transforms.tio_physics import DigitalTwinDegradation
+    from spectramr.data.transforms.tio_physics import DigitalTwinDegradation
 
     config = TorchIOTransformConfig(patch_size=(32, 32, 1), dataset_type="kspace")
     transforms = TorchIOTransformBuilder.build_val_transforms(config)

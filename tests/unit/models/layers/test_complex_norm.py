@@ -12,7 +12,7 @@ assert exactly those three properties.
 import pytest
 import torch
 
-from mriforge.models.layers.complex_norm import ComplexRMSNorm
+from spectramr.models.layers.complex_norm import ComplexRMSNorm
 
 
 def _split(x: torch.Tensor):

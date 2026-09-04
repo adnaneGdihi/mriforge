@@ -29,10 +29,10 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
     PhysicsDrivenTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 from tests.utils.config_block_stub import block_stub
@@ -237,7 +237,7 @@ class TestB0ImportFailureRaises:
         real_import = builtins.__import__
 
         def _boom(name, *args, **kwargs):
-            if name == "mriforge.infrastructure.physics.field_simulation":
+            if name == "spectramr.infrastructure.physics.field_simulation":
                 raise ImportError("simulated missing B0MapSimulator")
             return real_import(name, *args, **kwargs)
 
@@ -255,7 +255,7 @@ class TestB0ImportFailureRaises:
         real_import = builtins.__import__
 
         def _boom(name, *args, **kwargs):
-            if name == "mriforge.infrastructure.physics.field_simulation":
+            if name == "spectramr.infrastructure.physics.field_simulation":
                 raise ImportError("simulated missing B0MapSimulator")
             return real_import(name, *args, **kwargs)
 
@@ -373,14 +373,14 @@ class TestKwargStripDoesNotSwallow:
 
 class TestKwargPatternHoisted:
     def test_module_level_pattern_exists(self):
-        from mriforge.infrastructure.training.strategies import (
+        from spectramr.infrastructure.training.strategies import (
             physics_driven_strategy as mod,
         )
 
         assert hasattr(mod, "_KWARG_PAT")
 
     def test_pattern_matches_typeerror_message(self):
-        from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+        from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
             _KWARG_PAT,
         )
 
@@ -390,7 +390,7 @@ class TestKwargPatternHoisted:
         assert m.group(1) == "query_coords"
 
     def test_pattern_handles_double_quotes(self):
-        from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+        from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
             _KWARG_PAT,
         )
 

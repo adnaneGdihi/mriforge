@@ -4,7 +4,7 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.mbir import positive_contrast_demodulation
+from spectramr.infrastructure.physics.mbir import positive_contrast_demodulation
 
 
 def test_positive_contrast_demodulation_scalar_te() -> None:

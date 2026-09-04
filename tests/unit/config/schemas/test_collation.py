@@ -1,6 +1,6 @@
 """Tests for ``CollationConfigSchema``.
 
-Targets ``mriforge.config.schemas.collation``. Pydantic schema for batch
+Targets ``spectramr.config.schemas.collation``. Pydantic schema for batch
 collation strategy selection. Has custom validators for:
 
 - ``strategy`` ∈ documented set (or None)
@@ -17,7 +17,7 @@ import math
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.collation import CollationConfigSchema
+from spectramr.config.schemas.collation import CollationConfigSchema
 
 
 # ---------------------------------------------------------------------------

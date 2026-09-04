@@ -12,14 +12,14 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.psf_estimation import (  # noqa: E402
+from spectramr.infrastructure.physics.psf_estimation import (  # noqa: E402
     apply_psf,
     estimate_psf,
     gaussian_psf,
     psf_fwhm_map,
     psf_identifiability,
 )
-from mriforge.infrastructure.physics.virtual_fiducial import (  # noqa: E402
+from spectramr.infrastructure.physics.virtual_fiducial import (  # noqa: E402
     VirtualFiducial,
 )
 

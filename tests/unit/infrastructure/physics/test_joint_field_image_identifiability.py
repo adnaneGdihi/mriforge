@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.joint_field_image_identifiability import (
+from spectramr.infrastructure.physics.joint_field_image_identifiability import (
     JointFieldImageIdentifiabilityCert,
     field_image_confound_angle,
     joint_condition_number,

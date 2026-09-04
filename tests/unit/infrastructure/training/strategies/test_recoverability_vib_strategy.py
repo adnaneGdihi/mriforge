@@ -7,12 +7,12 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
     RecoverabilityVIBStrategy,
     _kl_rate,
     compute_recoverability_vib_loss,
 )
-from mriforge.models.generators.recoverability_vib_net import RecoverabilityVIBNet
+from spectramr.models.generators.recoverability_vib_net import RecoverabilityVIBNet
 
 
 def _net() -> RecoverabilityVIBNet:
@@ -62,7 +62,7 @@ class _CollapsedVIB(torch.nn.Module):
 
 
 def test_free_bits_floors_penalty_below_floor() -> None:
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate_free_bits,
     )
 
@@ -74,7 +74,7 @@ def test_free_bits_floors_penalty_below_floor() -> None:
 
 
 def test_free_bits_is_noop_above_floor() -> None:
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate_free_bits,
     )
 
@@ -87,7 +87,7 @@ def test_free_bits_is_noop_above_floor() -> None:
 def test_free_bits_removes_collapse_pushdown_gradient() -> None:
     """Below the floor the free-bits penalty has zero gradient, so beta*rate can
     no longer push the encoder toward posterior collapse."""
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate_free_bits,
     )
 
@@ -162,7 +162,7 @@ def test_loss_reduces() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(RecoverabilityVIBStrategy)
@@ -246,8 +246,8 @@ def test_rate_decreases_with_higher_beta_after_training() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "recoverability_vib" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "recoverability_vib" in TrainingStrategyConfigSchema.model_fields
@@ -273,7 +273,7 @@ def test_sum_rate_scales_with_latent_dimension_count() -> None:
     """The legacy reduction makes the rate — hence the effective beta — grid-dependent."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate,
     )
 
@@ -294,7 +294,7 @@ def test_sum_rate_scales_with_latent_dimension_count() -> None:
 def test_mean_per_dim_equals_sum_divided_by_dimensions() -> None:
     import torch
 
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate,
     )
 
@@ -308,7 +308,7 @@ def test_mean_per_dim_equals_sum_divided_by_dimensions() -> None:
 
 def test_free_bits_floor_is_meaningless_in_aggregate_units() -> None:
     """Why the 0.2 floor never protected b23: a collapsed encoder is already near it."""
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate,
     )
 
@@ -326,7 +326,7 @@ def test_free_bits_clamp_has_no_gradient_below_the_floor() -> None:
     """Free bits removes DOWNWARD pressure only — it cannot rescue a collapsed encoder."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate_free_bits,
     )
 
@@ -340,7 +340,7 @@ def test_free_bits_clamp_has_no_gradient_below_the_floor() -> None:
 
 
 def test_unknown_rate_reduction_raises_not_degrades() -> None:
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         _kl_rate,
     )
 
@@ -353,7 +353,7 @@ def test_compute_loss_threads_rate_reduction_through() -> None:
     """The knob must reach the objective, not just the schema (#15)."""
     import torch
 
-    from mriforge.infrastructure.training.strategies.recoverability_vib_strategy import (
+    from spectramr.infrastructure.training.strategies.recoverability_vib_strategy import (
         compute_recoverability_vib_loss,
     )
 

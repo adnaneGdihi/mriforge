@@ -14,8 +14,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.constants import BIAS_FIELD_MAX_VALUE, BIAS_FIELD_MIN_VALUE
-from mriforge.models.generators.disentangled_mri import BiasFieldGenerator
+from spectramr.models.constants import BIAS_FIELD_MAX_VALUE, BIAS_FIELD_MIN_VALUE
+from spectramr.models.generators.disentangled_mri import BiasFieldGenerator
 
 
 def test_unknown_order_raises_at_construction() -> None:

@@ -14,9 +14,9 @@ import inspect
 
 import pytest
 
-from mriforge.infrastructure.training.strategies import domain_adaptation as _da_mod
-from mriforge.infrastructure.training.strategies import gan as _gan_mod
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.infrastructure.training.strategies import domain_adaptation as _da_mod
+from spectramr.infrastructure.training.strategies import gan as _gan_mod
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 

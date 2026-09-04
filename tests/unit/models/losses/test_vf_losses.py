@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.losses import create_loss, list_available
+from spectramr.models.losses import create_loss, list_available
 
 VF_LOSSES = [
     "zero_shot_denoising",

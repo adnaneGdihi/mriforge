@@ -34,7 +34,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 # Each test runs across these shapes to catch shape-conditional bugs.
 SHAPES_2D: tuple[tuple[int, int, int], ...] = (
@@ -140,7 +140,7 @@ def test_hard_data_consistency_idempotent(seed: int) -> None:
     Hard DC replaces predicted k-space at sampled locations with the
     measured k-space. Applying it twice must equal applying it once.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
     gen = torch.Generator().manual_seed(seed)
     shape = (1, 16, 16)
@@ -180,7 +180,7 @@ def test_uniform_cartesian_mask_acceleration_within_tolerance(
     needed because ACS center lines are added on top of the under-
     sampling pattern, raising the sampled fraction slightly.
     """
-    from mriforge.infrastructure.physics.sampling import MaskType, create_mask_generator
+    from spectramr.infrastructure.physics.sampling import MaskType, create_mask_generator
 
     gen = create_mask_generator(seed=seed)
     shape = (256, 256)
@@ -201,7 +201,7 @@ def test_uniform_cartesian_mask_acceleration_within_tolerance(
 
 def test_zero_mask_implies_zero_observed_kspace() -> None:
     """``fft2c_masked(x, mask=0)`` returns zero (sanity boundary)."""
-    from mriforge.infrastructure.physics.fft_ops import fft2c_masked
+    from spectramr.infrastructure.physics.fft_ops import fft2c_masked
 
     x = torch.randn(2, 16, 16, dtype=torch.complex64)
     out = fft2c_masked(x, torch.zeros(2, 16, 16))

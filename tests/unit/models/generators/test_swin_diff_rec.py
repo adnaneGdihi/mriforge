@@ -24,12 +24,12 @@ import pathlib
 import pytest
 import torch
 
-from mriforge.models.blocks.complex_blocks import ComplexResBlock
-from mriforge.models.blocks.residual import ResidualBlock
-from mriforge.models.generators.swin_diff_rec import SwinDiffRec
+from spectramr.models.blocks.complex_blocks import ComplexResBlock
+from spectramr.models.blocks.residual import ResidualBlock
+from spectramr.models.generators.swin_diff_rec import SwinDiffRec
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[4]
-_GENERATOR = _REPO_ROOT / "src/mriforge/models/generators/kspace_cold_diffusion_generator.py"
+_GENERATOR = _REPO_ROOT / "src/spectramr/models/generators/kspace_cold_diffusion_generator.py"
 
 
 def _tiny(**overrides):

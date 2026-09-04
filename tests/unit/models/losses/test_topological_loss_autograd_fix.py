@@ -15,7 +15,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.topological_loss import PersistentHomologyLoss  # noqa: E402
+from spectramr.models.losses.topological_loss import PersistentHomologyLoss  # noqa: E402
 
 
 def test_persistent_homology_loss_is_autograd_traceable() -> None:

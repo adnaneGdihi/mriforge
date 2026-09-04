@@ -13,8 +13,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.data import QuantitativeConfigSchema
-from mriforge.data.datasets.quantitative_dataset import (
+from spectramr.config.schemas.data import QuantitativeConfigSchema
+from spectramr.data.datasets.quantitative_dataset import (
     QuantitativeMapDataset,
     build_quantitative_index,
 )

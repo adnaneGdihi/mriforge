@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.confluence_strategy import (
+from spectramr.infrastructure.training.strategies.confluence_strategy import (
     ConfluenceStrategy,
     compute_confluence_losses,
 )
-from mriforge.models.generators.cross_field_renderer import AnatomyFieldRenderer
+from spectramr.models.generators.cross_field_renderer import AnatomyFieldRenderer
 
 
 def _net() -> AnatomyFieldRenderer:
@@ -36,8 +36,8 @@ def test_loss_keys_and_finite() -> None:
 def test_builder_image_losses_folded_onto_consensus_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim) fold onto the consensus deliverable via the
     loss-SSOT seam; the inline per-source l1 fidelity is skipped (no double-count)."""
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(ConfluenceStrategy)
     strat.env = types.SimpleNamespace(
@@ -160,7 +160,7 @@ def test_validation_falls_back_to_single_input_without_tuple() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(ConfluenceStrategy)
@@ -200,8 +200,8 @@ def test_compute_losses_requires_sources() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "confluence" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "confluence" in TrainingStrategyConfigSchema.model_fields

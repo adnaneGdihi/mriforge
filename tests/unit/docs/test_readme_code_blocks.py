@@ -9,7 +9,7 @@ most-read file in the repository:
   The identical defect had already been found and fixed in
   ``examples/quickstart_reconstruction.py``; nothing looked one file over.
 * the YAML block declared ``config_version: '6.0'``, which the loader refuses
-  (``Accepted values: ['1.0']``), and the ``mriforge audit`` line beneath it
+  (``Accepted values: ['1.0']``), and the ``spectramr audit`` line beneath it
   exited **2**.
 * the extras block named ``[diffusion]`` as "+ einops" (it is ``diffusers``),
   claimed ``[all]`` excluded ``docs`` (it includes it), and omitted ten of the
@@ -51,7 +51,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mriforge.config.schemas.base import ACCEPTED_CONFIG_VERSIONS
+from spectramr.config.schemas.base import ACCEPTED_CONFIG_VERSIONS
 from tests.utils.corpus import repo_root
 
 _FENCE = re.compile(r"^```(\w+)\n(.*?)^```", re.MULTILINE | re.DOTALL)
@@ -106,7 +106,7 @@ def test_every_python_block_runs_in_a_cold_interpreter(index: int, tmp_path: Pat
             "PATH": "/usr/bin:/bin",
             "HOME": str(tmp_path),
             "PYTHONPATH": str(repo_root() / "src"),
-            "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1",
+            "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1",
         },
         timeout=600,
     )
@@ -137,7 +137,7 @@ def test_every_yaml_block_declares_a_config_version_the_loader_accepts() -> None
 
 
 def test_every_extra_the_readme_tells_you_to_install_exists() -> None:
-    """``pip install mriforge[x]`` for an ``x`` that does not exist fails outright.
+    """``pip install spectramr[x]`` for an ``x`` that does not exist fails outright.
 
     Parsed with ``tomllib``, never grepped: a bare name match in
     ``pyproject.toml`` also hits comments and pytest marker names, which is how
@@ -147,7 +147,7 @@ def test_every_extra_the_readme_tells_you_to_install_exists() -> None:
     declared = set(pyproject.get("project", {}).get("optional-dependencies", {}))
     assert declared, "no optional-dependencies parsed from pyproject.toml"
 
-    advertised = set(re.findall(r"pip install [^\n]*mriforge\[([a-z0-9,\-_]+)\]", _readme()))
+    advertised = set(re.findall(r"pip install [^\n]*spectramr\[([a-z0-9,\-_]+)\]", _readme()))
     advertised = {name for group in advertised for name in group.split(",")}
     assert advertised, "the README advertises no extras -- the pattern has stopped matching"
 
@@ -158,11 +158,11 @@ def test_every_extra_the_readme_tells_you_to_install_exists() -> None:
     )
 
 
-def test_every_mriforge_verb_in_a_bash_block_is_a_real_verb() -> None:
+def test_every_spectramr_verb_in_a_bash_block_is_a_real_verb() -> None:
     """The README advertised a ``preprocess`` verb the CLI has never had."""
     import argparse
 
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     parser = build_parser()
     verbs = {
@@ -176,12 +176,12 @@ def test_every_mriforge_verb_in_a_bash_block_is_a_real_verb() -> None:
     used = set()
     for body in _blocks("bash") + _blocks("markdown"):
         for line in body.splitlines():
-            match = re.match(r"\s*mriforge\s+([a-z][a-z0-9_-]*)", line)
+            match = re.match(r"\s*spectramr\s+([a-z][a-z0-9_-]*)", line)
             if match:
                 used.add(match.group(1))
 
     unknown = sorted(used - verbs)
-    assert not unknown, f"README runs mriforge verb(s) that do not exist: {unknown}\nreal verbs: {sorted(verbs)}"
+    assert not unknown, f"README runs spectramr verb(s) that do not exist: {unknown}\nreal verbs: {sorted(verbs)}"
 
 
 def test_no_bash_block_names_a_path_that_is_absent() -> None:
@@ -204,8 +204,8 @@ def test_the_registry_counts_the_readme_prints_are_the_live_ones() -> None:
     an exact equality would fail on every legitimate addition, and a check
     nobody can keep green gets deleted rather than fixed.
     """
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     live = len(MODEL_REGISTRY)

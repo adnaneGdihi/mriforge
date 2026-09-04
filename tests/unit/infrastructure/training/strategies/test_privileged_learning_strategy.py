@@ -1,7 +1,7 @@
 """A6: the domain-adversarial term must not fabricate its own labels.
 
 ``privileged_learning_strategy.py`` read the per-sample domain label as
-``batch.get("domain_label", 1)``. No dataset under ``mriforge.data`` emits that
+``batch.get("domain_label", 1)``. No dataset under ``spectramr.data`` emits that
 key -- the A6 census found it among 60 batch keys with no data-layer producer --
 so the default always won and every sample in every batch was labelled domain
 ``1``. The gradient-reversal discriminator was therefore trained to separate one
@@ -26,7 +26,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.privileged_learning_strategy import (
+from spectramr.infrastructure.training.strategies.privileged_learning_strategy import (
     PrivilegedLearningStrategy,
 )
 
@@ -77,7 +77,7 @@ class TestDomainLabelIsRequired:
         assert "domain_label" in message
         # The message must name BOTH exits, or it just blocks the run.
         assert "delta: 0.0" in message, "the opt-out is not stated"
-        assert "no dataset under mriforge.data emits it" in message
+        assert "no dataset under spectramr.data emits it" in message
 
     def test_the_term_is_optional_and_delta_zero_is_the_way_out(self) -> None:
         """Opting out must not require inventing labels.
@@ -138,7 +138,7 @@ class TestNoProducerEmitsTheKey:
         raise above becomes reachable-but-wrong and this test says so first."""
         from pathlib import Path
 
-        data_root = Path(__file__).resolve().parents[5] / "src" / "mriforge" / "data"
+        data_root = Path(__file__).resolve().parents[5] / "src" / "spectramr" / "data"
         assert data_root.is_dir(), f"data layer not at {data_root}"
         emitters = [
             path.relative_to(data_root)

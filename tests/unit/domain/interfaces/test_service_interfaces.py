@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.domain.interfaces.service_interfaces import I3DGenerator
+from spectramr.domain.interfaces.service_interfaces import I3DGenerator
 
 
 def test_generate_from_text_declares_prompt_first() -> None:

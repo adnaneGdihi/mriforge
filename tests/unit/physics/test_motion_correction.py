@@ -32,7 +32,7 @@ def _stack(b: int, t: int, h: int, w: int, seed: int = 42) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_motion_correction_imports():
     """All public symbols import cleanly."""
-    from mriforge.infrastructure.physics.motion_correction import (
+    from spectramr.infrastructure.physics.motion_correction import (
         CenterOfMassAlign,
         CrossCorrelationShift,
         RigidAlign2D,
@@ -44,7 +44,7 @@ def test_canary_motion_correction_imports():
 @pytest.mark.physics
 def test_canary_center_of_mass_align():
     """CenterOfMassAlign forward pass on trivial input."""
-    from mriforge.infrastructure.physics.motion_correction import CenterOfMassAlign
+    from spectramr.infrastructure.physics.motion_correction import CenterOfMassAlign
     aligner = CenterOfMassAlign()
     x = _stack(1, 4, 16, 16)
     out = aligner(x)
@@ -54,7 +54,7 @@ def test_canary_center_of_mass_align():
 @pytest.mark.physics
 def test_canary_xcorr_shift():
     """CrossCorrelationShift forward pass on trivial input."""
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     x = _stack(1, 4, 16, 16)
     out = aligner(x)
@@ -64,7 +64,7 @@ def test_canary_xcorr_shift():
 @pytest.mark.physics
 def test_canary_motion_corrected_mean_com():
     """MotionCorrectedMean(com) reduces temporal stack to single image."""
-    from mriforge.infrastructure.physics.motion_correction import MotionCorrectedMean
+    from spectramr.infrastructure.physics.motion_correction import MotionCorrectedMean
     m = MotionCorrectedMean(method="com")
     x = _stack(2, 4, 16, 16)
     out = m(x)
@@ -87,7 +87,7 @@ def test_canary_motion_corrected_mean_com():
     ids=["b1-t2-sq16", "b2-t4-sq32", "b1-t3-rect", "b2-t2-sq64"],
 )
 def test_com_align_shape(b, t, h, w):
-    from mriforge.infrastructure.physics.motion_correction import CenterOfMassAlign
+    from spectramr.infrastructure.physics.motion_correction import CenterOfMassAlign
     aligner = CenterOfMassAlign()
     x = _stack(b, t, h, w)
     out = aligner(x)
@@ -98,7 +98,7 @@ def test_com_align_shape(b, t, h, w):
 @pytest.mark.physics
 def test_com_align_identity_already_aligned():
     """Perfectly aligned stack: output should equal input (or close)."""
-    from mriforge.infrastructure.physics.motion_correction import CenterOfMassAlign
+    from spectramr.infrastructure.physics.motion_correction import CenterOfMassAlign
     aligner = CenterOfMassAlign()
     # Single-frame stack: COM shift is always 0
     x = _stack(1, 1, 16, 16)
@@ -121,7 +121,7 @@ def test_com_align_identity_already_aligned():
     ids=["b1-t2", "b2-t3", "b1-t2-rect"],
 )
 def test_xcorr_shift_shape(b, t, h, w):
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     x = _stack(b, t, h, w)
     out = aligner(x)
@@ -132,7 +132,7 @@ def test_xcorr_shift_shape(b, t, h, w):
 @pytest.mark.physics
 def test_xcorr_estimate_shifts_shape():
     """estimate_shifts returns [B, T, 2]."""
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     b, t, h, w = 2, 4, 16, 16
     x = _stack(b, t, h, w)
@@ -156,7 +156,7 @@ def test_xcorr_estimate_shifts_shape():
 )
 def test_rigid_align2d_identity(b, c, h, w):
     """RigidAlign2D with identity theta is a no-op."""
-    from mriforge.infrastructure.physics.motion_correction import RigidAlign2D
+    from spectramr.infrastructure.physics.motion_correction import RigidAlign2D
     aligner = RigidAlign2D(learnable=False)
     image = torch.rand(b, c, h, w)
     theta = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]).unsqueeze(0).expand(b, -1, -1)
@@ -172,7 +172,7 @@ def test_rigid_align2d_identity(b, c, h, w):
 @pytest.mark.physics
 @pytest.mark.parametrize("method", ["com", "xcorr"])
 def test_motion_corrected_mean_shapes(method):
-    from mriforge.infrastructure.physics.motion_correction import MotionCorrectedMean
+    from spectramr.infrastructure.physics.motion_correction import MotionCorrectedMean
     m = MotionCorrectedMean(method=method)
     b, t, h, w = 2, 4, 16, 16
     x = _stack(b, t, h, w)
@@ -183,7 +183,7 @@ def test_motion_corrected_mean_shapes(method):
 
 @pytest.mark.physics
 def test_motion_corrected_mean_rigid():
-    from mriforge.infrastructure.physics.motion_correction import MotionCorrectedMean
+    from spectramr.infrastructure.physics.motion_correction import MotionCorrectedMean
     m = MotionCorrectedMean(method="rigid")
     b, t, h, w = 2, 3, 16, 16
     x = _stack(b, t, h, w)
@@ -200,7 +200,7 @@ def test_motion_corrected_mean_rigid():
 @pytest.mark.physics
 def test_com_align_edge_all_zeros():
     """All-zero input: COM is at centre; output should be all zeros."""
-    from mriforge.infrastructure.physics.motion_correction import CenterOfMassAlign
+    from spectramr.infrastructure.physics.motion_correction import CenterOfMassAlign
     aligner = CenterOfMassAlign()
     x = torch.zeros(1, 2, 16, 16)
     out = aligner(x)
@@ -211,7 +211,7 @@ def test_com_align_edge_all_zeros():
 @pytest.mark.physics
 def test_xcorr_edge_single_frame():
     """T=1: shift vs itself should be ~zero."""
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     x = _stack(1, 1, 16, 16)
     shifts = aligner.estimate_shifts(x, ref_index=0)
@@ -222,7 +222,7 @@ def test_xcorr_edge_single_frame():
 @pytest.mark.physics
 def test_xcorr_edge_complex_input():
     """CrossCorrelationShift handles complex (takes abs internally)."""
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     x = torch.randn(1, 2, 16, 16) + 1j * torch.randn(1, 2, 16, 16)
     out = aligner(x)
@@ -237,7 +237,7 @@ def test_xcorr_edge_complex_input():
 @pytest.mark.physics
 def test_com_align_raises_wrong_rank():
     """CenterOfMassAlign requires 4-D input; 3-D should raise ValueError."""
-    from mriforge.infrastructure.physics.motion_correction import CenterOfMassAlign
+    from spectramr.infrastructure.physics.motion_correction import CenterOfMassAlign
     aligner = CenterOfMassAlign()
     x = torch.rand(4, 16, 16)   # missing B dim
     with pytest.raises(ValueError):
@@ -247,7 +247,7 @@ def test_com_align_raises_wrong_rank():
 @pytest.mark.physics
 def test_xcorr_raises_wrong_rank():
     """CrossCorrelationShift requires 4-D input."""
-    from mriforge.infrastructure.physics.motion_correction import CrossCorrelationShift
+    from spectramr.infrastructure.physics.motion_correction import CrossCorrelationShift
     aligner = CrossCorrelationShift()
     with pytest.raises(ValueError):
         aligner(torch.rand(4, 16, 16))
@@ -256,7 +256,7 @@ def test_xcorr_raises_wrong_rank():
 @pytest.mark.physics
 def test_rigid_align2d_raises_wrong_theta_shape():
     """RigidAlign2D raises ValueError for theta with wrong last dims."""
-    from mriforge.infrastructure.physics.motion_correction import RigidAlign2D
+    from spectramr.infrastructure.physics.motion_correction import RigidAlign2D
     aligner = RigidAlign2D(learnable=False)
     image = torch.rand(2, 1, 16, 16)
     bad_theta = torch.eye(3).unsqueeze(0).expand(2, -1, -1)  # [2, 3, 3] not [2, 2, 3]
@@ -267,7 +267,7 @@ def test_rigid_align2d_raises_wrong_theta_shape():
 @pytest.mark.physics
 def test_rigid_align2d_raises_wrong_image_rank():
     """RigidAlign2D requires [B, C, H, W]."""
-    from mriforge.infrastructure.physics.motion_correction import RigidAlign2D
+    from spectramr.infrastructure.physics.motion_correction import RigidAlign2D
     aligner = RigidAlign2D(learnable=False)
     image = torch.rand(1, 16, 16)    # 3-D — missing C
     theta = torch.tensor([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]).unsqueeze(0)
@@ -278,7 +278,7 @@ def test_rigid_align2d_raises_wrong_image_rank():
 @pytest.mark.physics
 def test_motion_corrected_mean_rigid_raises_without_theta():
     """MotionCorrectedMean(rigid) must raise ValueError when theta=None."""
-    from mriforge.infrastructure.physics.motion_correction import MotionCorrectedMean
+    from spectramr.infrastructure.physics.motion_correction import MotionCorrectedMean
     m = MotionCorrectedMean(method="rigid")
     x = _stack(1, 2, 8, 8)
     with pytest.raises(ValueError, match="theta"):
@@ -288,6 +288,6 @@ def test_motion_corrected_mean_rigid_raises_without_theta():
 @pytest.mark.physics
 def test_motion_corrected_mean_raises_invalid_method():
     """MotionCorrectedMean must raise ValueError for unknown method string."""
-    from mriforge.infrastructure.physics.motion_correction import MotionCorrectedMean
+    from spectramr.infrastructure.physics.motion_correction import MotionCorrectedMean
     with pytest.raises(ValueError, match="method"):
         MotionCorrectedMean(method="invalid_method")

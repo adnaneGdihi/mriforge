@@ -45,10 +45,10 @@ from typing import Any
 import pytest
 import yaml
 
-import mriforge.pipelines.infer as infer_mod
-import mriforge.pipelines.train as train_mod
-from mriforge.config.settings import TrainingSettings
-from mriforge.domain.exceptions import WorkflowNotImplementedError
+import spectramr.pipelines.infer as infer_mod
+import spectramr.pipelines.train as train_mod
+from spectramr.config.settings import TrainingSettings
+from spectramr.domain.exceptions import WorkflowNotImplementedError
 
 # A STUB regime: the framework has no forward operator/losses/strategy for it,
 # so every pipeline must refuse it. See WORKFLOW_PROFILES.

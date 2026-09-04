@@ -10,7 +10,7 @@ This module tests:
 
 import torch
 
-from mriforge.data.batch_types import TrainingBatch
+from spectramr.data.batch_types import TrainingBatch
 
 
 class TestTrainingStrategyDeviceIntegrity:
@@ -492,7 +492,7 @@ from typing import ClassVar  # noqa: E402
 import torch.nn as nn  # noqa: E402
 import yaml as _yaml  # noqa: E402
 
-from mriforge.models.registry import register_model  # noqa: E402
+from spectramr.models.registry import register_model  # noqa: E402
 
 
 @register_model("_integrity_witness", "reconstruction")
@@ -592,8 +592,8 @@ class TestTrainingAndInferenceBuildTheSameGenerator:
         """Exactly the chain the training director runs."""
         import torch
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         config = TrainingSettings.from_yaml(config_path)
         builder = (
@@ -612,8 +612,8 @@ class TestTrainingAndInferenceBuildTheSameGenerator:
         """Exactly the chain the inference pipeline runs."""
         import torch
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         config = TrainingSettings.from_yaml(config_path)
         model = (

@@ -1,683 +1,683 @@
 {
-  "_comment": "Pre-existing layer-direction violations recorded 2026-05-22. These are known technical debt. The gate test PASSES if no NEW violations appear beyond this list. The slow-lane cleanup tracker FAILS until this list is empty. 2026-06-12: added mriforge.data k-space readers (bart_dataset, ismrmrd_dataset) + the dataset-EDA module (eda/loader, eda/probes) as physics-SSOT consumers — they MUST import infrastructure/physics (fft2c/NUFFT/gridding/ESPIRiT) per CLAUDE.md pitfall #2 (no reimplemented FFTs); same accepted exception as the 60+ core/ entries above. 2026-07-02: pruned stale data_io entry (evaluation_use_case.py deleted); added 2 checkpoint-IO data_io entries (model_builder, conformal_calibration_strategy) + 6 layer_direction entries from the 2026-06/07 hardening commits (same accepted physics-SSOT/metric shapes). 2026-07-30 (#629): added 2 checkpoint/model-load data_io entries (mrixfields_baselines/generator_loader, pipelines/eval_baselines) - both load a model, not a dataset, so DataPipelineDirector does not apply. Also added 5 layer_direction entries (super_nyquist_fidelity, fastmri_brain_groups, m4raw_source x2, transforms/normalization) - all the SAME accepted physics-SSOT exception: reimplementing fft2c/pseudo-GT locally would violate non-negotiable #2. Pruned 4 stale entries (models/dev_experience/enhanced_cli.py deleted: 2 duplicate layer_direction + 1 data_io; spectra_tta_strategy.py no longer uses torch.fft) and deduplicated layer_direction. Staleness is now its own hard-failing gate. Also pruned 3 more stale entries the new staleness gates caught: cli/app.py's scripts.sim2rank import (now only a docstring :func: reference) and the .item() calls removed from disentangled_strategy/domain_adaptation train_step. 2026-08-04: pruned 5 stale entries (4 layer_direction + 1 raw_torch_fft) for the four duplicate transform modules deleted this day — coil_compression_transform, coil_sensitivity_transform, concomitant_phase_compensation, non_cartesian_simulation. Each was a caller-free second implementation of a live job and three disagreed numerically with it; the debt they recorded is paid by deletion, not by a fix. 2026-08-22: pruned 4 data_io entries that the text oracle recorded from prose, not code (entities_3d nib.load, optional_imports h5py.File, infer.py h5py.File + nib.load) — infer.py's docstring asserts the pipeline layer never calls them and the regex read that sentence as the violation. The scanner is now AST-based, so the list can only shrink. 2026-08-22: training_loop grew 1 -> 6 entries (8 occurrences) WITHOUT any new code -- TARGET_METHODS is now derived from base.py's own per-step call graph instead of being a four-name literal, three of whose names were defined zero times anywhere under strategies/. The real hook _compute_losses_impl (144 definers) had never been audited. Entries now carry a count: identity alone forgives a whole method, which is the NN20 hole where growth inside a baselined entry goes unseen. 2026-08-22 (#1398): layer_direction gained the three OUTER source layers (infrastructure, application, pipelines) as this test was elected sole owner of import direction and the matching emit blocks were deleted from scripts/ci/check_layering.sh. The extension surfaced exactly 2 violations, both function-local at col 8 in hpo_use_case.py -- the shape the deleted greps could never see. infrastructure -> application is a rule NEITHER checker had; it measured 0 violations, so it lands as a pure ratchet with no baselined debt. 2026-08-23 (D12#5): training_loop grew 6 -> 10 entries, again WITHOUT any new code -- the detector gained an implicit-sync visitor for 'if' tests that boolean a tensor ('.any()'/'.all()' and torch.isnan/isinf/isfinite), which no '.item()' spelling makes visible. Exactly 4 sites, recorded one per 'if' rather than one per matching call (the 'isnan().any() or isinf().any()' expression matches four times and is one sync point; counting calls would have inflated the report to 7). Bare-name any()/all() are deliberately NOT matched -- as a bare name they are the Python builtins over a generator, and 3 sites in the audited methods depend on that. Correcting the count above: _compute_losses_impl is defined in 134 files (145 definitions), not '144 definers'. 2026-08-24 (D01#16): renamed the scripts_imports key to nonpackage_imports and widened its scanner from the single hardcoded name 'scripts' to NONPACKAGE_ROOTS (scripts, scratch, runners, tools, tests) -- every repo-root tree absent from pyproject's packages=[\"src/mriforge\"]. It had recorded 0 violations since it was written while 2 real ones sat at cli/app.py:474,487 (col 8, function-local), which break mriforge list-features on every wheel install. Recorded here as one entry (both sites are the same file+import); the relocation of tools/generate_feature_matrix.py and tools/feature_introspection.py into the package is filed as #1492. The scanner skips relative ImportFrom nodes: ast drops the leading dots, so 'from .tools import x' arrives as the bare name 'tools' and the first-segment match condemned a legal in-package import of src/mriforge/tools/.",
+  "_comment": "Pre-existing layer-direction violations recorded 2026-05-22. These are known technical debt. The gate test PASSES if no NEW violations appear beyond this list. The slow-lane cleanup tracker FAILS until this list is empty. 2026-06-12: added spectramr.data k-space readers (bart_dataset, ismrmrd_dataset) + the dataset-EDA module (eda/loader, eda/probes) as physics-SSOT consumers — they MUST import infrastructure/physics (fft2c/NUFFT/gridding/ESPIRiT) per CLAUDE.md pitfall #2 (no reimplemented FFTs); same accepted exception as the 60+ core/ entries above. 2026-07-02: pruned stale data_io entry (evaluation_use_case.py deleted); added 2 checkpoint-IO data_io entries (model_builder, conformal_calibration_strategy) + 6 layer_direction entries from the 2026-06/07 hardening commits (same accepted physics-SSOT/metric shapes). 2026-07-30 (#629): added 2 checkpoint/model-load data_io entries (mrixfields_baselines/generator_loader, pipelines/eval_baselines) - both load a model, not a dataset, so DataPipelineDirector does not apply. Also added 5 layer_direction entries (super_nyquist_fidelity, fastmri_brain_groups, m4raw_source x2, transforms/normalization) - all the SAME accepted physics-SSOT exception: reimplementing fft2c/pseudo-GT locally would violate non-negotiable #2. Pruned 4 stale entries (models/dev_experience/enhanced_cli.py deleted: 2 duplicate layer_direction + 1 data_io; spectra_tta_strategy.py no longer uses torch.fft) and deduplicated layer_direction. Staleness is now its own hard-failing gate. Also pruned 3 more stale entries the new staleness gates caught: cli/app.py's scripts.sim2rank import (now only a docstring :func: reference) and the .item() calls removed from disentangled_strategy/domain_adaptation train_step. 2026-08-04: pruned 5 stale entries (4 layer_direction + 1 raw_torch_fft) for the four duplicate transform modules deleted this day — coil_compression_transform, coil_sensitivity_transform, concomitant_phase_compensation, non_cartesian_simulation. Each was a caller-free second implementation of a live job and three disagreed numerically with it; the debt they recorded is paid by deletion, not by a fix. 2026-08-22: pruned 4 data_io entries that the text oracle recorded from prose, not code (entities_3d nib.load, optional_imports h5py.File, infer.py h5py.File + nib.load) — infer.py's docstring asserts the pipeline layer never calls them and the regex read that sentence as the violation. The scanner is now AST-based, so the list can only shrink. 2026-08-22: training_loop grew 1 -> 6 entries (8 occurrences) WITHOUT any new code -- TARGET_METHODS is now derived from base.py's own per-step call graph instead of being a four-name literal, three of whose names were defined zero times anywhere under strategies/. The real hook _compute_losses_impl (144 definers) had never been audited. Entries now carry a count: identity alone forgives a whole method, which is the NN20 hole where growth inside a baselined entry goes unseen. 2026-08-22 (#1398): layer_direction gained the three OUTER source layers (infrastructure, application, pipelines) as this test was elected sole owner of import direction and the matching emit blocks were deleted from scripts/ci/check_layering.sh. The extension surfaced exactly 2 violations, both function-local at col 8 in hpo_use_case.py -- the shape the deleted greps could never see. infrastructure -> application is a rule NEITHER checker had; it measured 0 violations, so it lands as a pure ratchet with no baselined debt. 2026-08-23 (D12#5): training_loop grew 6 -> 10 entries, again WITHOUT any new code -- the detector gained an implicit-sync visitor for 'if' tests that boolean a tensor ('.any()'/'.all()' and torch.isnan/isinf/isfinite), which no '.item()' spelling makes visible. Exactly 4 sites, recorded one per 'if' rather than one per matching call (the 'isnan().any() or isinf().any()' expression matches four times and is one sync point; counting calls would have inflated the report to 7). Bare-name any()/all() are deliberately NOT matched -- as a bare name they are the Python builtins over a generator, and 3 sites in the audited methods depend on that. Correcting the count above: _compute_losses_impl is defined in 134 files (145 definitions), not '144 definers'. 2026-08-24 (D01#16): renamed the scripts_imports key to nonpackage_imports and widened its scanner from the single hardcoded name 'scripts' to NONPACKAGE_ROOTS (scripts, scratch, runners, tools, tests) -- every repo-root tree absent from pyproject's packages=[\"src/spectramr\"]. It had recorded 0 violations since it was written while 2 real ones sat at cli/app.py:474,487 (col 8, function-local), which break spectramr list-features on every wheel install. Recorded here as one entry (both sites are the same file+import); the relocation of tools/generate_feature_matrix.py and tools/feature_introspection.py into the package is filed as #1492. The scanner skips relative ImportFrom nodes: ast drops the leading dots, so 'from .tools import x' arrives as the bare name 'tools' and the first-segment match condemned a legal in-package import of src/spectramr/tools/.",
   "layer_direction": [
     {
-      "file": "mriforge/core/metrics/connectivity/fc_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.manifolds.spd_manifold",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/connectivity/fc_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.manifolds.spd_manifold",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/evaluation_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/evaluation_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/meta_evaluation/descriptors.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/meta_evaluation/descriptors.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/meta_evaluation/simulator.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/meta_evaluation/simulator.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_consistency.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.coil_sensitivity",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_consistency.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.coil_sensitivity",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_consistency.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_consistency.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_consistency.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.sampling",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_consistency.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.sampling",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_cross.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.differentiable_bloch",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_cross.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.differentiable_bloch",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_prior_geometry.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_prior_geometry.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_spectral.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_spectral.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_spectral.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.hermitian",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_spectral.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.hermitian",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/nr_spectral.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.prolate",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/nr_spectral.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.prolate",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/physics_nr_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.differentiable_bloch",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/physics_nr_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.differentiable_bloch",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/physics_nr_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/physics_nr_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/physics_nr_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.free_probability_gfactor",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/physics_nr_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.free_probability_gfactor",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/quantitative/cohomology_certificate.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.galois_unwrap",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/quantitative/cohomology_certificate.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.galois_unwrap",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/quantitative/conformal_risk.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.manifolds",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/quantitative/conformal_risk.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.manifolds",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/quantitative/geodesic_qmap_error.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.manifolds",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/quantitative/geodesic_qmap_error.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.manifolds",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/quantitative/mrf_metrics.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.manifolds.bloch_mrf_manifold",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/quantitative/mrf_metrics.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.manifolds.bloch_mrf_manifold",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/super_nyquist_fidelity.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.band_partition",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/super_nyquist_fidelity.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.band_partition",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/task_based_detectability.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.physics.model_observer",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/task_based_detectability.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.physics.model_observer",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/core/metrics/uncertainty/phys_residual_conformal.py",
-      "layer": "mriforge.core",
-      "import": "mriforge.infrastructure.calibration.scores",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/core/metrics/uncertainty/phys_residual_conformal.py",
+      "layer": "spectramr.core",
+      "import": "spectramr.infrastructure.calibration.scores",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/adapters/fourier.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/adapters/fourier.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/builders/torchio_subject_builder.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.errors",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/builders/torchio_subject_builder.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.errors",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/builders/torchio_subject_builder.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/builders/torchio_subject_builder.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/builders/torchio_transform_builder.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.digital_twin_simulator",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/builders/torchio_transform_builder.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.digital_twin_simulator",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/bart_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/bart_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/bart_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.gridding",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/bart_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.gridding",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/bart_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.nufft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/bart_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.nufft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/fastmri_brain_groups.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.m4raw_pseudo_gt",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/fastmri_brain_groups.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.m4raw_pseudo_gt",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/inference_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.io.adapters",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/inference_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.io.adapters",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/inference_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/inference_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/ismrmrd_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.gridding",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/ismrmrd_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.gridding",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/ismrmrd_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.nufft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/ismrmrd_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.nufft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/m4raw_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/m4raw_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/meta_learning_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/meta_learning_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/meta_learning_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.training.utils.kspace_masks",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/meta_learning_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.training.utils.kspace_masks",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/datasets/slice_dataset.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.physics_registry",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/datasets/slice_dataset.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.physics_registry",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/eda/loader.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/eda/loader.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/eda/loader.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.nufft_utils",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/eda/loader.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.nufft_utils",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/eda/loader.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.trajectories",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/eda/loader.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.trajectories",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/eda/probes.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.coil_sensitivity",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/eda/probes.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.coil_sensitivity",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/sources/m4raw_source.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/sources/m4raw_source.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/sources/m4raw_source.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.m4raw_pseudo_gt",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/sources/m4raw_source.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.m4raw_pseudo_gt",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/synthesis/vlf_simulator.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.bloch_simulation",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/synthesis/vlf_simulator.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.bloch_simulation",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/synthesis/vlf_simulator.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/synthesis/vlf_simulator.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/synthesis/vlf_simulator.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.tissue_properties",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/synthesis/vlf_simulator.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.tissue_properties",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/acquisition_params_injector.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.physics_registry",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/acquisition_params_injector.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.physics_registry",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/benchmarking_degradations.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/benchmarking_degradations.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/image_undersampling.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/image_undersampling.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/image_undersampling.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.sampling",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/image_undersampling.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.sampling",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/joint_rotation.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/joint_rotation.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/kspace_coil_transforms.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/kspace_coil_transforms.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/non_cartesian.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.trajectories",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/non_cartesian.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.trajectories",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/normalization.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/normalization.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/physics_sync.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/physics_sync.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/realistic_degradations.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/realistic_degradations.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/realistic_degradations.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.field_simulation",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/realistic_degradations.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.field_simulation",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/scout_acquisition.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/scout_acquisition.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/synthetic_lesion.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.multi_physics_bloch",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/synthetic_lesion.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.multi_physics_bloch",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/synthetic_ulf_simulator.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.maxwell_concomitant",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/synthetic_ulf_simulator.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.maxwell_concomitant",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/tio_physics.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/tio_physics.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/data/transforms/transforms.py",
-      "layer": "mriforge.data",
-      "import": "mriforge.infrastructure.physics.fft_ops",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/data/transforms/transforms.py",
+      "layer": "spectramr.data",
+      "import": "spectramr.infrastructure.physics.fft_ops",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/domain/entities/training.py",
-      "layer": "mriforge.domain",
-      "import": "mriforge.infrastructure.training.contexts",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/domain/entities/training.py",
+      "layer": "spectramr.domain",
+      "import": "spectramr.infrastructure.training.contexts",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/domain/services/generation_3d_orchestration_service.py",
-      "layer": "mriforge.domain",
-      "import": "mriforge.infrastructure.services.device_policy",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/domain/services/generation_3d_orchestration_service.py",
+      "layer": "spectramr.domain",
+      "import": "spectramr.infrastructure.services.device_policy",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/domain/services/generation_3d_orchestration_service.py",
-      "layer": "mriforge.domain",
-      "import": "mriforge.infrastructure.services.pipeline_execution_service",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/domain/services/generation_3d_orchestration_service.py",
+      "layer": "spectramr.domain",
+      "import": "spectramr.infrastructure.services.pipeline_execution_service",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/domain/services/services.py",
-      "layer": "mriforge.domain",
-      "import": "mriforge.infrastructure.services",
-      "forbidden_layer": "mriforge.infrastructure"
+      "file": "spectramr/domain/services/services.py",
+      "layer": "spectramr.domain",
+      "import": "spectramr.infrastructure.services",
+      "forbidden_layer": "spectramr.infrastructure"
     },
     {
-      "file": "mriforge/models/factories/model_factory.py",
-      "layer": "mriforge.models",
-      "import": "mriforge.application.pipelines.pggs_pipeline",
-      "forbidden_layer": "mriforge.application"
+      "file": "spectramr/models/factories/model_factory.py",
+      "layer": "spectramr.models",
+      "import": "spectramr.application.pipelines.pggs_pipeline",
+      "forbidden_layer": "spectramr.application"
     },
     {
-      "file": "mriforge/config/schemas/physics.py",
-      "layer": "mriforge.config",
-      "import": "mriforge.infrastructure.physics.digital_twin_simulator",
-      "forbidden_layer": "mriforge.infrastructure",
-      "note": "FIRST mriforge.config entry in this list (the other 68 are data/core/domain/models). Deferred function-local import for cycle-avoidance: the schema validates against the simulator's own vocabulary. Recorded rather than refactored because inverting it is an architectural change, not a red-test fix -- see the header comment."
+      "file": "spectramr/config/schemas/physics.py",
+      "layer": "spectramr.config",
+      "import": "spectramr.infrastructure.physics.digital_twin_simulator",
+      "forbidden_layer": "spectramr.infrastructure",
+      "note": "FIRST spectramr.config entry in this list (the other 68 are data/core/domain/models). Deferred function-local import for cycle-avoidance: the schema validates against the simulator's own vocabulary. Recorded rather than refactored because inverting it is an architectural change, not a red-test fix -- see the header comment."
     },
     {
-      "file": "mriforge/config/schemas/training/quality_matching.py",
-      "layer": "mriforge.config",
-      "import": "mriforge.infrastructure.physics.quality_descriptors",
-      "forbidden_layer": "mriforge.infrastructure",
+      "file": "spectramr/config/schemas/training/quality_matching.py",
+      "layer": "spectramr.config",
+      "import": "spectramr.infrastructure.physics.quality_descriptors",
+      "forbidden_layer": "spectramr.infrastructure",
       "note": "Same class as the physics.py entry above; deferred, cycle-avoidance."
     },
     {
-      "file": "mriforge/config/schemas/training/quality_matching.py",
-      "layer": "mriforge.config",
-      "import": "mriforge.infrastructure.physics.degradation_chain",
-      "forbidden_layer": "mriforge.infrastructure",
+      "file": "spectramr/config/schemas/training/quality_matching.py",
+      "layer": "spectramr.config",
+      "import": "spectramr.infrastructure.physics.degradation_chain",
+      "forbidden_layer": "spectramr.infrastructure",
       "note": "Same class as the physics.py entry above; deferred, cycle-avoidance."
     },
     {
-      "file": "mriforge/application/use_cases/hpo_use_case.py",
-      "layer": "mriforge.application",
-      "import": "mriforge.pipelines.hpo_search_spaces",
-      "forbidden_layer": "mriforge.pipelines",
+      "file": "spectramr/application/use_cases/hpo_use_case.py",
+      "layer": "spectramr.application",
+      "import": "spectramr.pipelines.hpo_search_spaces",
+      "forbidden_layer": "spectramr.pipelines",
       "note": "Recorded 2026-08-22 with the layering election (#1398). Function-local import inside a method, at col 8: every grep in check_layering.sh was anchored at ^, so this shape was invisible to the checker that owned the rule until now. Not fixed here -- untangling the HPO use case's dependency on pipelines is application-layer work, not gate work."
     },
     {
-      "file": "mriforge/application/use_cases/hpo_use_case.py",
-      "layer": "mriforge.application",
-      "import": "mriforge.pipelines.hpo",
-      "forbidden_layer": "mriforge.pipelines",
+      "file": "spectramr/application/use_cases/hpo_use_case.py",
+      "layer": "spectramr.application",
+      "import": "spectramr.pipelines.hpo",
+      "forbidden_layer": "spectramr.pipelines",
       "note": "Recorded 2026-08-22 with the layering election (#1398). Function-local import inside a method, at col 8: every grep in check_layering.sh was anchored at ^, so this shape was invisible to the checker that owned the rule until now. Not fixed here -- untangling the HPO use case's dependency on pipelines is application-layer work, not gate work."
     }
   ],
   "nonpackage_imports": [
     {
-      "file": "mriforge/cli/app.py",
+      "file": "spectramr/cli/app.py",
       "import": "tools.generate_feature_matrix",
       "root": "tools"
     }
   ],
   "data_io": [
     {
-      "file": "mriforge/cli/app.py",
+      "file": "spectramr/cli/app.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/cli/audit_plan_novel_cli.py",
+      "file": "spectramr/cli/audit_plan_novel_cli.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/builders/directors/checkpoint_director.py",
+      "file": "spectramr/infrastructure/builders/directors/checkpoint_director.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/builders/leaf/model_builders.py",
+      "file": "spectramr/infrastructure/builders/leaf/model_builders.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/calibration/vf_residual_score.py",
+      "file": "spectramr/infrastructure/calibration/vf_residual_score.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/evaluation/mrixfields_baselines/generator_loader.py",
+      "file": "spectramr/infrastructure/evaluation/mrixfields_baselines/generator_loader.py",
       "call": "torch.load",
       "note": "checkpoint IO (weights_only state_dict), not dataset IO - gate docstring option (b)"
     },
     {
-      "file": "mriforge/infrastructure/inference/base_inference_strategy.py",
+      "file": "spectramr/infrastructure/inference/base_inference_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/inference/gan_inference_strategy.py",
+      "file": "spectramr/infrastructure/inference/gan_inference_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/io/adapters.py",
+      "file": "spectramr/infrastructure/io/adapters.py",
       "call": "h5py.File"
     },
     {
-      "file": "mriforge/infrastructure/io/adapters.py",
+      "file": "spectramr/infrastructure/io/adapters.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/infrastructure/orchestration/campaign_evaluator.py",
+      "file": "spectramr/infrastructure/orchestration/campaign_evaluator.py",
       "call": "pickle.load"
     },
     {
-      "file": "mriforge/infrastructure/orchestration/campaign_evaluator.py",
+      "file": "spectramr/infrastructure/orchestration/campaign_evaluator.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/physics/coil_sensitivity.py",
+      "file": "spectramr/infrastructure/physics/coil_sensitivity.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/infrastructure/physics/integration.py",
+      "file": "spectramr/infrastructure/physics/integration.py",
       "call": "h5py.File"
     },
     {
-      "file": "mriforge/infrastructure/physics/integration.py",
+      "file": "spectramr/infrastructure/physics/integration.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/infrastructure/physics/m4raw_pseudo_gt.py",
+      "file": "spectramr/infrastructure/physics/m4raw_pseudo_gt.py",
       "call": "h5py.File"
     },
     {
-      "file": "mriforge/infrastructure/physics/sampling.py",
+      "file": "spectramr/infrastructure/physics/sampling.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/reporting/plotters/failure_gallery.py",
+      "file": "spectramr/infrastructure/reporting/plotters/failure_gallery.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/infrastructure/services/checkpoint_service.py",
+      "file": "spectramr/infrastructure/services/checkpoint_service.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/builders/model_builder.py",
+      "file": "spectramr/infrastructure/training/builders/model_builder.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/conformal_calibration_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/conformal_calibration_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/diffusion.py",
+      "file": "spectramr/infrastructure/training/strategies/diffusion.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/distillation_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/distillation_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/pipeline_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/pipeline_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/twin_dps_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/twin_dps_strategy.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/infrastructure/validation/config_health_checker.py",
+      "file": "spectramr/infrastructure/validation/config_health_checker.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/models/blocks/frozen_backbone_adapter.py",
+      "file": "spectramr/models/blocks/frozen_backbone_adapter.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/models/blocks/metric_sfc.py",
+      "file": "spectramr/models/blocks/metric_sfc.py",
       "call": "pickle.load"
     },
     {
-      "file": "mriforge/models/generators/latent_diffusion_generator.py",
+      "file": "spectramr/models/generators/latent_diffusion_generator.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/pipelines/eval_baselines.py",
+      "file": "spectramr/pipelines/eval_baselines.py",
       "call": "torch.load",
       "note": "TorchScript/state-dict model load fallback for the segmentation baseline, not dataset IO"
     },
     {
-      "file": "mriforge/pipelines/infer.py",
+      "file": "spectramr/pipelines/infer.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/pipelines/make.py",
+      "file": "spectramr/pipelines/make.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/shared/utils/preprocessing_qc.py",
+      "file": "spectramr/shared/utils/preprocessing_qc.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/shared/utils/safe_io.py",
+      "file": "spectramr/shared/utils/safe_io.py",
       "call": "torch.load"
     },
     {
-      "file": "mriforge/tools/cluster_explorer.py",
+      "file": "spectramr/tools/cluster_explorer.py",
       "call": "nib.load"
     },
     {
-      "file": "mriforge/tools/cluster_explorer.py",
+      "file": "spectramr/tools/cluster_explorer.py",
       "call": "pickle.load"
     },
     {
-      "file": "mriforge/tools/index_datasets.py",
+      "file": "spectramr/tools/index_datasets.py",
       "call": "h5py.File"
     },
     {
-      "file": "mriforge/tools/inspect_cluster_data.py",
+      "file": "spectramr/tools/inspect_cluster_data.py",
       "call": "h5py.File"
     },
     {
-      "file": "mriforge/tools/inspect_cluster_data.py",
+      "file": "spectramr/tools/inspect_cluster_data.py",
       "call": "nib.load"
     }
   ],
   "training_loop": [
     {
-      "file": "mriforge/infrastructure/training/strategies/test_time_adaptation_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/test_time_adaptation_strategy.py",
       "method": "train_step",
       "call": "item()",
       "count": 1,
       "note": "Recorded 2026-07-30. Per-step metric dict materialised inside the step."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/cross_contrast_kspace_diffusion_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/cross_contrast_kspace_diffusion_strategy.py",
       "method": "_compute_losses_impl",
       "call": "tolist()",
       "count": 1,
       "note": "unique().tolist() drives a Python loop over contrasts -- a sync AND a host-side loop per step. The worst of the eight; a scatter/index_add keeps it on device."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/diffusion.py",
+      "file": "spectramr/infrastructure/training/strategies/diffusion.py",
       "method": "_compute_losses_impl",
       "call": "item()",
       "count": 3,
       "note": "Three .item()s building a diagnostic f-string. Guarded by a debug condition, so the sync is conditional -- but the guard is evaluated per step and the string is built eagerly."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
       "method": "_compute_losses_impl",
       "call": "item()",
       "count": 2,
       "note": "NaN/Inf fraction for a warning, on a branch already gated by isnan().any() -- itself a sync. Cheapest of the eight to justify: it only fires when the step is already going wrong."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/physics_equivariant_ssl_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/physics_equivariant_ssl_strategy.py",
       "method": "_compute_losses_impl",
       "call": "item()",
       "count": 1,
       "note": "torch.randint(...).item() picks an operator EVERY step. No debug guard, unconditional sync; a host-side RNG would remove it outright."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/reconstruction.py",
+      "file": "spectramr/infrastructure/training/strategies/reconstruction.py",
       "method": "_compute_losses_impl",
       "call": "item()",
       "count": 1,
       "note": "PINN loss formatted into a debug log line inside the step."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/disentangled_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/disentangled_strategy.py",
       "method": "train_step",
       "call": "if isfinite()",
       "count": 1,
       "note": "Recorded 2026-08-23 by the D12#5 implicit-sync visitor. 'not torch.isfinite(loss_output.total)' booleans a tensor, so the branch waits on the GPU every step, unconditionally. Its body is also the fabricated zero-grad leaf that guided_sr_strategy's own comment calls out as pitfall #10 -- filed as #1471; the sync is what this entry records."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/graph_cold_diffusion_strategy.py",
       "method": "_compute_losses_impl",
       "call": "if any()",
       "count": 1,
       "note": "Recorded 2026-08-23 by the D12#5 implicit-sync visitor. This is the 'isnan().any() or isinf().any()' guard the sibling item() entry already described as 'a branch already gated by isnan().any() -- itself a sync'. It is now detected, not merely mentioned in a note."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/guided_sr_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/guided_sr_strategy.py",
       "method": "train_step",
       "call": "if isfinite()",
       "count": 1,
       "note": "Recorded 2026-08-23 by the D12#5 implicit-sync visitor. 'not torch.isfinite(total)' guards a deliberate instability warning. Cheapest of the four to justify -- the expensive half only runs when the step is already going wrong -- but the test itself syncs every step."
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/masked_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/masked_strategy.py",
       "method": "_compute_losses_impl",
       "call": "if any()",
       "count": 1,
@@ -687,127 +687,127 @@
   "stray_prints": [],
   "raw_torch_fft": [
     {
-      "file": "mriforge/core/metrics/no_reference_extended.py",
+      "file": "spectramr/core/metrics/no_reference_extended.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/core/metrics/nr_texture.py",
+      "file": "spectramr/core/metrics/nr_texture.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/data/adapters/fourier.py",
+      "file": "spectramr/data/adapters/fourier.py",
       "note": "data adapter wrapping physics \u2014 TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/data/transforms/realistic_degradations.py",
+      "file": "spectramr/data/transforms/realistic_degradations.py",
       "note": "data transform \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/data/transforms/tio_physics.py",
+      "file": "spectramr/data/transforms/tio_physics.py",
       "note": "data transform \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/infrastructure/optimization/regularizers/divergence.py",
+      "file": "spectramr/infrastructure/optimization/regularizers/divergence.py",
       "note": "spectral regularizer \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/infrastructure/sensors/adapters/respiratory.py",
+      "file": "spectramr/infrastructure/sensors/adapters/respiratory.py",
       "note": "sensor signal processing \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/physics_equivariant_ssl_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/physics_equivariant_ssl_strategy.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/pilot_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/pilot_strategy.py",
       "note": "pilot strategy uses raw fft \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/infrastructure/training/strategies/pinn_strategy.py",
+      "file": "spectramr/infrastructure/training/strategies/pinn_strategy.py",
       "note": "PINN strategy uses raw fft \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/models/blocks/fno_block.py",
+      "file": "spectramr/models/blocks/fno_block.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/blocks/hermitian_equivariant.py",
+      "file": "spectramr/models/blocks/hermitian_equivariant.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/blocks/hyena_block.py",
+      "file": "spectramr/models/blocks/hyena_block.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/blocks/s4d_block.py",
+      "file": "spectramr/models/blocks/s4d_block.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/blocks/spectral_branch.py",
+      "file": "spectramr/models/blocks/spectral_branch.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/blocks/toeplitz_attention.py",
+      "file": "spectramr/models/blocks/toeplitz_attention.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/diffusion/alpha_stable_levy.py",
+      "file": "spectramr/models/diffusion/alpha_stable_levy.py",
       "note": "diffusion model \u2014 fftfreq usage for noise spectrum"
     },
     {
-      "file": "mriforge/models/diffusion/ssad.py",
+      "file": "spectramr/models/diffusion/ssad.py",
       "note": "comment-only reference \u2014 no active call (check ssad.py)"
     },
     {
-      "file": "mriforge/models/edge/q_fno.py",
+      "file": "spectramr/models/edge/q_fno.py",
       "note": "FNO variant outside blocks/ \u2014 TODO move to blocks/ or use fft_ops"
     },
     {
-      "file": "mriforge/models/experimental/world_model.py",
+      "file": "spectramr/models/experimental/world_model.py",
       "note": "experimental FNO layer outside blocks/ \u2014 TODO move to blocks/"
     },
     {
-      "file": "mriforge/models/generative/mc_cm.py",
+      "file": "spectramr/models/generative/mc_cm.py",
       "note": "fftfreq usage for MC-CM model \u2014 TODO route via fft_ops"
     },
     {
-      "file": "mriforge/models/generators/aftnet_generator.py",
+      "file": "spectramr/models/generators/aftnet_generator.py",
       "note": "AFTNet attention uses FFT on Q/K/V \u2014 real feature maps"
     },
     {
-      "file": "mriforge/models/generators/cross_contrast_cross_domain_generator.py",
+      "file": "spectramr/models/generators/cross_contrast_cross_domain_generator.py",
       "note": "comment-only reference in docstring"
     },
     {
-      "file": "mriforge/models/generators/geo_fno_generator.py",
+      "file": "spectramr/models/generators/geo_fno_generator.py",
       "note": "geo-FNO generator outside blocks/ \u2014 TODO move to blocks/"
     },
     {
-      "file": "mriforge/models/generators/reconstruction_variants.py",
+      "file": "spectramr/models/generators/reconstruction_variants.py",
       "note": "spectral branch in generator \u2014 TODO route via fft_ops or move to blocks/"
     },
     {
-      "file": "mriforge/models/generators/vf_field_generators.py",
+      "file": "spectramr/models/generators/vf_field_generators.py",
       "note": "virtual fiducial cross-correlation \u2014 real feature maps"
     },
     {
-      "file": "mriforge/models/layers/kan/kan_convs/fast_kan_conv.py",
+      "file": "spectramr/models/layers/kan/kan_convs/fast_kan_conv.py",
       "note": "spectral KAN conv \u2014 real feature maps"
     },
     {
-      "file": "mriforge/models/losses/frontdoor_criterion_loss.py",
+      "file": "spectramr/models/losses/frontdoor_criterion_loss.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/losses/kspace_consistency_tta_loss.py",
+      "file": "spectramr/models/losses/kspace_consistency_tta_loss.py",
       "note": "integration-surfaced post-consolidation; TODO route via fft_ops port"
     },
     {
-      "file": "mriforge/models/losses/phase_stego_score.py",
+      "file": "spectramr/models/losses/phase_stego_score.py",
       "note": "phase loss uses fftn on phase maps \u2014 borderline, review"
     },
     {
-      "file": "mriforge/models/losses/spectral_radial_prior_loss.py",
+      "file": "spectramr/models/losses/spectral_radial_prior_loss.py",
       "note": "comment-only reference in docstring"
     }
   ]

@@ -48,7 +48,7 @@ def test_example_runs_to_completion(script: Path) -> None:
     env = {
         **os.environ,
         # The clinical-use warning fires on first import and is not a failure.
-        "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1",
+        "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1",
     }
     proc = subprocess.run(
         [sys.executable, str(script)],

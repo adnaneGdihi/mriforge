@@ -2,7 +2,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.physics import (
+from spectramr.config.schemas.physics import (
     CoilProcessingConfig,
     PhysicsConfigSchema,
 )
@@ -32,7 +32,7 @@ def test_calibration_lines_defaults_to_none_full_fov():
 def test_calibration_lines_schema_runtime_agree_for_default_svd():
     # A svd config without an explicit calibration_lines must resolve to the same
     # value on both sides (schema None == runtime None == full FoV).
-    from mriforge.config.schemas.loader import _sync_coil_processing_to_legacy
+    from spectramr.config.schemas.loader import _sync_coil_processing_to_legacy
 
     raw = {
         "physics": {

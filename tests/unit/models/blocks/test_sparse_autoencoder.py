@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.sparse_autoencoder import SparseAutoencoder
+from spectramr.models.blocks.sparse_autoencoder import SparseAutoencoder
 
 
 def test_encode_decode_shape() -> None:

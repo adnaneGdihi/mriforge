@@ -6,9 +6,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.annotations.fastmri_plus import LesionBox, YOrigin  # noqa: E402
-from mriforge.data.annotations.fastmri_plus_classes import LesionGroup  # noqa: E402
-from mriforge.data.annotations.matched_control import (  # noqa: E402
+from spectramr.data.annotations.fastmri_plus import LesionBox, YOrigin  # noqa: E402
+from spectramr.data.annotations.fastmri_plus_classes import LesionGroup  # noqa: E402
+from spectramr.data.annotations.matched_control import (  # noqa: E402
     sample_matched_control,
     sample_matched_controls,
 )

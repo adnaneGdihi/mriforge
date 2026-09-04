@@ -1,6 +1,6 @@
 """Tests for ``PhaseSimulator`` and ``apply_synthetic_phase``.
 
-Targets ``mriforge.data.transforms.phase_aug``. This is a phase *augmentation*
+Targets ``spectramr.data.transforms.phase_aug``. This is a phase *augmentation*
 (smooth random low-frequency phase, uncalibrated), NOT a physical B0/
 susceptibility field simulator — used to bootstrap complex-domain training when
 only magnitude images are available.
@@ -18,8 +18,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms import phase_aug
-from mriforge.data.transforms.phase_aug import PhaseSimulator, apply_synthetic_phase
+from spectramr.data.transforms import phase_aug
+from spectramr.data.transforms.phase_aug import PhaseSimulator, apply_synthetic_phase
 
 
 # ---------------------------------------------------------------------------

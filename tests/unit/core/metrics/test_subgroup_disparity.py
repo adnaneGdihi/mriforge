@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics import MetricsRegistry, get_metric
+from spectramr.core.metrics import MetricsRegistry, get_metric
 
 
 class TestSubgroupDisparityRegistration:

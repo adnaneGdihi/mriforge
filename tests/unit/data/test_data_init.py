@@ -1,9 +1,9 @@
-"""Public-API surface of the ``mriforge.data`` package (WS7).
+"""Public-API surface of the ``spectramr.data`` package (WS7).
 
 ``ConsolidatedDatasetFactory`` was re-exported here for back-compat and is now
 DELETED (6a-iii) -- a 435-LOC parallel implementation of ``DataPipelineDirector``
 with no production caller left. The eager import is gone with it, which also
-removes the reason importing ``mriforge.data`` had to be checked for a
+removes the reason importing ``spectramr.data`` had to be checked for a
 deprecation warning: there is no deprecated symbol left to construct.
 
 The warning-free-import test stays anyway. It guards the property, not the one
@@ -16,7 +16,7 @@ import warnings
 def test_import_does_not_emit_deprecation_warning():
     import importlib
 
-    import mriforge.data as data_pkg
+    import spectramr.data as data_pkg
 
     with warnings.catch_warnings():
         warnings.simplefilter("error", DeprecationWarning)
@@ -24,7 +24,7 @@ def test_import_does_not_emit_deprecation_warning():
 
 
 def test_public_exports_are_back_compat():
-    import mriforge.data as data_pkg
+    import spectramr.data as data_pkg
 
     assert set(data_pkg.__all__) == {"IOStrategyFactory"}
     assert hasattr(data_pkg, "IOStrategyFactory")
@@ -34,6 +34,6 @@ def test_public_exports_are_back_compat():
 
 
 def test_docstring_points_at_director():
-    import mriforge.data as data_pkg
+    import spectramr.data as data_pkg
 
     assert "DataPipelineDirector" in (data_pkg.__doc__ or "")

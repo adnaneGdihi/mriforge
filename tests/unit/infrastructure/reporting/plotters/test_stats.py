@@ -1,6 +1,6 @@
 import numpy as np
 
-from mriforge.infrastructure.reporting.plotters import _stats
+from spectramr.infrastructure.reporting.plotters import _stats
 
 
 def test_bootstrap_ci_brackets_mean():

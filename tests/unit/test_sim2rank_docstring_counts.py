@@ -174,7 +174,7 @@ def _require_subject() -> None:
 
     * **the directory is missing entirely** -- the public export does not ship
       ``scripts/sim2rank/`` (the in-package half under
-      ``mriforge.core.metrics.meta_evaluation`` does, and stands alone). There
+      ``spectramr.core.metrics.meta_evaluation`` does, and stands alone). There
       is no subject to sweep, so the honest answer is to decline and say so.
     * **the directory is there and something inside it moved** -- a real
       defect, and every assertion below still runs to catch it. This helper

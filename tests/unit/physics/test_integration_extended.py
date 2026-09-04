@@ -35,14 +35,14 @@ def _kspace_complex_last(b: int, c: int, h: int, w: int, seed: int = 0):
 @pytest.mark.physics
 def test_canary_integration_module_imports():
     """integration.py imports without error (optional deps guarded by try/except)."""
-    import mriforge.infrastructure.physics.integration as integ
+    import spectramr.infrastructure.physics.integration as integ
     assert integ is not None
 
 
 @pytest.mark.physics
 def test_canary_create_operator_fft():
     """create_operator('fft') returns an IForwardOperator-compatible object."""
-    from mriforge.infrastructure.physics.registry import create_operator
+    from spectramr.infrastructure.physics.registry import create_operator
     op = create_operator("fft2d")
     assert hasattr(op, "forward")
     assert hasattr(op, "adjoint")
@@ -51,7 +51,7 @@ def test_canary_create_operator_fft():
 @pytest.mark.physics
 def test_canary_coil_sensitivity_estimator_instantiates():
     """CoilSensitivityEstimator (integration variant) instantiates cleanly."""
-    from mriforge.infrastructure.physics.integration import CoilSensitivityEstimator
+    from spectramr.infrastructure.physics.integration import CoilSensitivityEstimator
     cse = CoilSensitivityEstimator(calib_size=24, thresh=0.02)
     assert cse is not None
 
@@ -59,7 +59,7 @@ def test_canary_coil_sensitivity_estimator_instantiates():
 @pytest.mark.physics
 def test_canary_coil_sensitivity_estimator_rss():
     """CoilSensitivityEstimator.estimate_rss returns [B, C, H, W, 2] tensor."""
-    from mriforge.infrastructure.physics.integration import CoilSensitivityEstimator
+    from spectramr.infrastructure.physics.integration import CoilSensitivityEstimator
     cse = CoilSensitivityEstimator()
     b, c, h, w = 1, 4, 16, 16
     ks = _kspace_complex_last(b, c, h, w)
@@ -76,8 +76,8 @@ def test_canary_coil_sensitivity_estimator_rss():
 @pytest.mark.physics
 def test_integration_dc_layer_instantiates():
     """integration.DataConsistencyLayer can be constructed with an FFT operator."""
-    from mriforge.infrastructure.physics.integration import DataConsistencyLayer
-    from mriforge.infrastructure.physics.registry import create_operator
+    from spectramr.infrastructure.physics.integration import DataConsistencyLayer
+    from spectramr.infrastructure.physics.registry import create_operator
     op = create_operator("fft2d")
     dc = DataConsistencyLayer(operator=op, lambda_dc=1.0)
     assert dc is not None
@@ -90,7 +90,7 @@ def test_integration_dc_layer_instantiates():
 @pytest.mark.physics
 def test_fft_operator_forward_shape():
     """FFT2DOperator.forward([B, C, H, W] complex) returns same shape."""
-    from mriforge.infrastructure.physics.implementations import FFT2DOperator
+    from spectramr.infrastructure.physics.implementations import FFT2DOperator
     op = FFT2DOperator(normalized=True, center=True)
     b, c, h, w = 1, 1, 16, 16
     g = torch.Generator().manual_seed(0)
@@ -103,7 +103,7 @@ def test_fft_operator_forward_shape():
 @pytest.mark.physics
 def test_fft_operator_round_trip():
     """FFT2DOperator.forward followed by adjoint recovers original."""
-    from mriforge.infrastructure.physics.implementations import FFT2DOperator
+    from spectramr.infrastructure.physics.implementations import FFT2DOperator
     op = FFT2DOperator(normalized=True, center=True)
     b, c, h, w = 1, 1, 16, 16
     g = torch.Generator().manual_seed(1)
@@ -120,7 +120,7 @@ def test_fft_operator_round_trip():
 @pytest.mark.physics
 def test_coil_sensitivity_estimator_forward_auto():
     """CoilSensitivityEstimator.forward('auto') runs without error."""
-    from mriforge.infrastructure.physics.integration import CoilSensitivityEstimator
+    from spectramr.infrastructure.physics.integration import CoilSensitivityEstimator
     cse = CoilSensitivityEstimator()
     b, c, h, w = 1, 4, 16, 16
     ks = _kspace_complex_last(b, c, h, w)
@@ -131,7 +131,7 @@ def test_coil_sensitivity_estimator_forward_auto():
 @pytest.mark.physics
 def test_coil_sensitivity_estimator_forward_rss():
     """CoilSensitivityEstimator.forward('rss') runs without error."""
-    from mriforge.infrastructure.physics.integration import CoilSensitivityEstimator
+    from spectramr.infrastructure.physics.integration import CoilSensitivityEstimator
     cse = CoilSensitivityEstimator()
     b, c, h, w = 1, 4, 16, 16
     ks = _kspace_complex_last(b, c, h, w)

@@ -125,7 +125,7 @@ class TestCocycleIsDominatedByLatentCycle:
 
 class TestStrategyExposesTheInstrument:
     def test_strategy_declares_field_sensitivity_exposure(self) -> None:
-        from mriforge.infrastructure.training.strategies.field_cocycle_strategy import (
+        from spectramr.infrastructure.training.strategies.field_cocycle_strategy import (
             FieldCocycleTranslationStrategy,
         )
 

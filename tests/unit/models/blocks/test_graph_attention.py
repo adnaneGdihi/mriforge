@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.graph_attention import (
+from spectramr.models.blocks.graph_attention import (
     GraphAttentionBlock,
     LocalGraphAttentionBlock,
 )

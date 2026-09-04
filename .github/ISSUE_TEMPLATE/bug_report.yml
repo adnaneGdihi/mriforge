@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem in MRIForge.
+description: Report a reproducible problem in spectraMR.
 title: "bug: <one-line summary>"
 labels: ["bug", "triage"]
 body:
@@ -12,8 +12,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: MRIForge version
-      description: Output of `python -c "import mriforge; print(mriforge.__version__)"`.
+      label: spectraMR version
+      description: Output of `python -c "import spectramr; print(spectramr.__version__)"`.
       placeholder: "0.1.0"
     validations:
       required: true

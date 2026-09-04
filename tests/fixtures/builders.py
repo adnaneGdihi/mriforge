@@ -16,12 +16,12 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.builders.core.base_builder import (
+from spectramr.infrastructure.builders.core.base_builder import (
     BuilderBase,
     DirectorBuilder,
     FluentBuilder,
 )
-from mriforge.infrastructure.builders.registry import BuilderRegistry
+from spectramr.infrastructure.builders.registry import BuilderRegistry
 
 # ============================================================================
 # Mock Builders for Testing

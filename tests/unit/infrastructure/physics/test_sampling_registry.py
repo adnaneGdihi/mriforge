@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling_registry import SamplingPatternRegistry
+from spectramr.infrastructure.physics.sampling_registry import SamplingPatternRegistry
 
 
 class TestResolution:
@@ -100,7 +100,7 @@ class TestResolution:
 
 class TestAccelerator:
     def test_accelerator_for_returns_the_registry_entry(self) -> None:
-        from mriforge.infrastructure.physics.sampling import (
+        from spectramr.infrastructure.physics.sampling import (
             UniformCartesianKSpaceAccelerator,
         )
 

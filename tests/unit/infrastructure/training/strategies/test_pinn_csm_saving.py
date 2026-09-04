@@ -8,7 +8,7 @@ import pytest
 import torch
 from PIL import Image
 
-from mriforge.infrastructure.training.strategies.pinn_strategy import (
+from spectramr.infrastructure.training.strategies.pinn_strategy import (
     ConcretePINNSensitivityStrategy,
 )
 

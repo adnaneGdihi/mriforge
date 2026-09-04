@@ -1,6 +1,6 @@
 """Tests for the self-supervised denoising losses ``SURELoss`` / ``Noise2SelfLoss``.
 
-Targets ``mriforge.models.losses.sure_n2self_losses``. SURE (Stein's Unbiased
+Targets ``spectramr.models.losses.sure_n2self_losses``. SURE (Stein's Unbiased
 Risk Estimator) needs both the denoiser and its noisy input via
 ``context["model"]`` / ``context["noisy_input"]``; its Hutchinson divergence
 term re-evaluates the model on a perturbed input. When the model returns a
@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.sure_n2self_losses import GSUREKspaceLoss, SURELoss
+from spectramr.models.losses.sure_n2self_losses import GSUREKspaceLoss, SURELoss
 
 # ---------------------------------------------------------------------------
 # Construction validation
@@ -127,7 +127,7 @@ def test_missing_context_raises() -> None:
 
 def test_registered_under_canonical_name() -> None:
     """The ``@register_loss`` decorator registers 'sure'."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     available = list_available()
     assert "sure" in available, f"'sure' not in registry; available: {available[:10]}"
@@ -232,7 +232,7 @@ def test_gsure_ncchi_debias_fires_at_low_snr() -> None:
 
 def test_gsure_registered_under_canonical_and_alias() -> None:
     """gsure_kspace registered; ncchi_gsure alias resolves to it."""
-    from mriforge.models.losses.registry import LossRegistry, list_available
+    from spectramr.models.losses.registry import LossRegistry, list_available
 
     assert "gsure_kspace" in list_available()
     assert LossRegistry.create("ncchi_gsure", sigma=0.1).__class__.__name__ == "GSUREKspaceLoss"

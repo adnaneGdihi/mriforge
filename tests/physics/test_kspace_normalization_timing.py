@@ -17,7 +17,7 @@ import torch
 
 # Assume imports from src
 try:
-    from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 except ImportError:
     # Fallback for testing without installation
     def fft2c(x: torch.Tensor) -> torch.Tensor:

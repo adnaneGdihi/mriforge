@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.witness.registry import Subject
-from mriforge.infrastructure.validation.witness.subject import (
+from spectramr.infrastructure.validation.witness.registry import Subject
+from spectramr.infrastructure.validation.witness.subject import (
     WitnessSubject,
     WitnessSubjectUnavailableError,
 )

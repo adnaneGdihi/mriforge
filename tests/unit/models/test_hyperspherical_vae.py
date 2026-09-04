@@ -8,8 +8,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.vae.von_mises_fisher import VonMisesFisher
-from mriforge.models.vae.hyperspherical_vae import HypersphericalVAE
+from spectramr.models.blocks.vae.von_mises_fisher import VonMisesFisher
+from spectramr.models.vae.hyperspherical_vae import HypersphericalVAE
 
 from ._vae_base import (
     assert_gradient_flows,

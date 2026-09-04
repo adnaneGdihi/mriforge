@@ -1,6 +1,6 @@
 """Tests for ``EquivariantSSLReconLoss``.
 
-Targets ``mriforge.models.losses.equivariant_recon_loss``. Measurement-
+Targets ``spectramr.models.losses.equivariant_recon_loss``. Measurement-
 domain equivariance penalty: ``f(R y) - R f(y)``.
 
 Categories:
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.equivariant_recon_loss import EquivariantSSLReconLoss
+from spectramr.models.losses.equivariant_recon_loss import EquivariantSSLReconLoss
 
 
 # ---------------------------------------------------------------------------
@@ -119,6 +119,6 @@ def test_gradient_flows_to_prediction() -> None:
 
 def test_registered() -> None:
     """``equivariant_ssl_recon`` resolvable."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "equivariant_ssl_recon" in list_available()

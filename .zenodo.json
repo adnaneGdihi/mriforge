@@ -1,0 +1,34 @@
+{
+  "title": "spectraMR: A Multi-Paradigm Research Framework for MRI Reconstruction, Super-Resolution, and Generative Modelling",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "apache-2.0",
+  "creators": [
+    {
+      "name": "Gdihi, Adnane",
+      "orcid": "0009-0006-6266-7769"
+    }
+  ],
+  "description": "<p>spectraMR is a research framework for MRI reconstruction, super-resolution and generative modelling. It spans GAN, diffusion (including cold and latent diffusion), VAE/VQ-VAE, masked-autoencoder and self-supervised pretraining, reconstruction-only, domain-adaptation, physics-driven, disentangled, sensitivity-estimation (PINN), cycle-Bloch, flow, state-space (Mamba), magnetic-resonance-fingerprinting, fMRI and active/learnable-acquisition paradigms behind one configuration schema.</p><p>Complex k-space is handled through centred, orthonormally-scaled FFT operators rather than raw transforms; configuration is nested, frozen and loaded once; components resolve through registries and a dependency-injection container rather than dispatch chains. Heavy pipelines run on an accelerator or raise, with no silent CPU fallback.</p><p><strong>Not for clinical use.</strong> This is research software. It is not a medical device and has not been evaluated by any regulatory authority.</p>",
+  "keywords": [
+    "magnetic-resonance-imaging",
+    "image-reconstruction",
+    "generative-models",
+    "diffusion-models",
+    "physics-informed-neural-networks",
+    "quantitative-mri",
+    "deep-learning"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/adnaneGdihi/spectramr",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    },
+    {
+      "identifier": "https://pypi.org/project/spectramr/",
+      "relation": "isIdenticalTo",
+      "scheme": "url"
+    }
+  ]
+}

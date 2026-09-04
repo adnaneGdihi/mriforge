@@ -32,7 +32,7 @@ class TestLoggingService:
 
     @pytest.mark.unit
     def test_canary_construct_and_log(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_canary")
         # Primary method must not raise
@@ -43,28 +43,28 @@ class TestLoggingService:
 
     @pytest.mark.unit
     def test_log_info_shorthand(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_shorthand")
         svc.log_info("info via shorthand")
 
     @pytest.mark.unit
     def test_log_warning_shorthand(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_warn_shorthand")
         svc.log_warning("warning via shorthand")
 
     @pytest.mark.unit
     def test_log_error_shorthand(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_error_shorthand")
         svc.log_error("error via shorthand")
 
     @pytest.mark.unit
     def test_invalid_level_raises(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_invalid")
         with pytest.raises(ValueError, match="Unsupported log level"):
@@ -73,7 +73,7 @@ class TestLoggingService:
     @pytest.mark.unit
     def test_throttle_limits_repeated_messages(self) -> None:
         """Same (level, message) pair is throttled after the limit."""
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_throttle")
         # _throttle_limit is 3 — call 5× and expect no crash
@@ -82,7 +82,7 @@ class TestLoggingService:
 
     @pytest.mark.unit
     def test_get_logger_returns_logger(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_getlogger")
         lg = svc.get_logger("some.child")
@@ -90,7 +90,7 @@ class TestLoggingService:
 
     @pytest.mark.unit
     def test_step_and_epoch_properties(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_step_epoch")
         svc.set_step(42)
@@ -100,7 +100,7 @@ class TestLoggingService:
 
     @pytest.mark.unit
     def test_fallback_records_empty_on_clean_run(self) -> None:
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         svc = LoggingService(logger_name="test_fallback_clean")
         svc.log("info", "clean message")
@@ -116,7 +116,7 @@ class TestJSONFormatter:
     def test_formats_to_json(self) -> None:
         import json
 
-        from mriforge.infrastructure.services.logging_service import JSONFormatter
+        from spectramr.infrastructure.services.logging_service import JSONFormatter
 
         fmt = JSONFormatter()
         record = logging.LogRecord(
@@ -137,7 +137,7 @@ class TestJSONFormatter:
     def test_fields_present(self) -> None:
         import json
 
-        from mriforge.infrastructure.services.logging_service import JSONFormatter
+        from spectramr.infrastructure.services.logging_service import JSONFormatter
 
         fmt = JSONFormatter()
         record = logging.LogRecord(
@@ -159,7 +159,7 @@ class TestBootstrapConsoleLogging:
 
     @pytest.mark.unit
     def test_idempotent(self) -> None:
-        from mriforge.infrastructure.services.logging_service import (
+        from spectramr.infrastructure.services.logging_service import (
             bootstrap_console_logging,
         )
 
@@ -177,14 +177,14 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_canary_construct(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt"), save_images=False)
         assert tracker.current_metrics == {}
 
     @pytest.mark.unit
     def test_update_persists(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt2"), save_images=False)
         tracker.update_metric("psnr", 35.5)
@@ -194,7 +194,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_update_metrics_dict(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt3"), save_images=False)
         tracker.update_metrics({"loss_g": 0.3, "loss_d": 0.7})
@@ -202,7 +202,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_reset_clears_state(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt4"), save_images=False)
         tracker.update_metric("some_val", 1.0)
@@ -211,7 +211,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_set_gauge_alias(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt5"), save_images=False)
         tracker.set_gauge("my_gauge", 99.0)
@@ -221,7 +221,7 @@ class TestMetricsTracker:
     def test_log_metrics_writes_csv(self, tmp_path) -> None:
         import csv
 
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt6"), save_images=False)
         tracker.log_metrics({"psnr": 30.0}, step=10, epoch=1, prefix="validation")
@@ -232,7 +232,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_get_latest_metrics_returns_copy(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt7"), save_images=False)
         tracker.update_metric("x", 5.0)
@@ -242,7 +242,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_export_summary_report(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt8"), save_images=False)
         path = tracker.export_summary_report()
@@ -255,7 +255,7 @@ class TestMetricsTracker:
 
     @pytest.mark.unit
     def test_empty_best_metrics(self, tmp_path) -> None:
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path / "mt9"), save_images=False)
         assert tracker.get_best_metrics() == {}
@@ -268,7 +268,7 @@ class TestMetricsTracker:
 
 def _make_es_config(**kwargs):
     """Build a minimal EarlyStoppingConfigSchema."""
-    from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+    from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
     defaults = dict(enabled=True, patience=3, metric="val_loss", min_delta=0.0, check_interval=1)
     defaults.update(kwargs)
@@ -278,7 +278,7 @@ def _make_es_config(**kwargs):
 class TestEarlyStoppingService:
     @pytest.mark.unit
     def test_canary_construct(self) -> None:
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=5)
         svc = EarlyStoppingService(cfg)
@@ -286,8 +286,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_improves_resets_wait_count(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=3, mode=MetricMode.MIN, min_delta=0.0)
         svc = EarlyStoppingService(cfg)
@@ -298,8 +298,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_no_improvement_increments_wait(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=5, mode=MetricMode.MIN)
         svc = EarlyStoppingService(cfg)
@@ -311,8 +311,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_stop_triggered_after_patience(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=2, mode=MetricMode.MIN)
         svc = EarlyStoppingService(cfg)
@@ -323,8 +323,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_disabled_service_never_stops(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=False, patience=1, mode=MetricMode.MIN)
         svc = EarlyStoppingService(cfg)
@@ -334,8 +334,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_reset_clears_state(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=1, mode=MetricMode.MIN)
         svc = EarlyStoppingService(cfg)
@@ -348,8 +348,8 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_callback_called_on_improvement(self) -> None:
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         calls: list[tuple] = []
         cfg = _make_es_config(enabled=True, patience=5, mode=MetricMode.MIN)
@@ -370,8 +370,8 @@ class TestEarlyStoppingService:
         test was asserting through it. ``val_psnr`` is higher-is-better, which is
         what MAX means.
         """
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, patience=5, metric="val_psnr", mode=MetricMode.MAX)
         svc = EarlyStoppingService(cfg)
@@ -382,8 +382,8 @@ class TestEarlyStoppingService:
     @pytest.mark.unit
     def test_max_mode_on_a_lower_is_better_metric_raises(self) -> None:
         """The pairing above is rejected, not silently accepted."""
-        from mriforge.config.schemas.enums import MetricMode
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.enums import MetricMode
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         # The config build moved INSIDE the `raises` block and the pattern is
         # loose. `EarlyStoppingConfigSchema` gained its own copy of this guard
@@ -398,7 +398,7 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_get_state_dict(self) -> None:
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True)
         svc = EarlyStoppingService(cfg)
@@ -415,7 +415,7 @@ class TestEarlyStoppingService:
 
     @pytest.mark.unit
     def test_should_check_interval(self) -> None:
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         cfg = _make_es_config(enabled=True, check_interval=100)
         svc = EarlyStoppingService(cfg)
@@ -442,7 +442,7 @@ def _make_iter_config(max_iterations: int = -1, max_steps_per_epoch: int = -1):
 class TestIterationCounterService:
     @pytest.mark.unit
     def test_canary_construct(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -452,7 +452,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_increment_advances_step(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -464,7 +464,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_start_epoch_resets_epoch_steps(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -478,7 +478,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_should_checkpoint_at_interval(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -490,7 +490,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_should_log_at_interval(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -502,7 +502,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_should_stop_global_at_max(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -513,7 +513,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_increment_raises_at_max(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -525,7 +525,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_unlimited_never_stops(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -536,7 +536,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_get_state_keys(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -553,7 +553,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_repr_contains_step(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -563,7 +563,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_should_validate_step_based(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -575,7 +575,7 @@ class TestIterationCounterService:
 
     @pytest.mark.unit
     def test_should_validate_epoch_based(self) -> None:
-        from mriforge.infrastructure.services.iteration_counter_service import (
+        from spectramr.infrastructure.services.iteration_counter_service import (
             IterationCounterService,
         )
 
@@ -596,7 +596,7 @@ class TestDevicePolicy:
 
     @pytest.mark.unit
     def test_cpu_policy(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -617,8 +617,8 @@ class TestDevicePolicy:
         """
         import torch
 
-        from mriforge.core.compute_device import AcceleratorRequiredError
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.core.compute_device import AcceleratorRequiredError
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -635,7 +635,7 @@ class TestDevicePolicy:
 
     @pytest.mark.unit
     def test_specific_cpu_policy(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -652,7 +652,7 @@ class TestDevicePolicy:
 
     @pytest.mark.unit
     def test_device_cached(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -667,7 +667,7 @@ class TestDevicePolicy:
     def test_move_tensor_to_cpu(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -682,7 +682,7 @@ class TestDevicePolicy:
     def test_move_list_to_cpu(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -697,7 +697,7 @@ class TestDevicePolicy:
     def test_move_dict_to_cpu(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -712,7 +712,7 @@ class TestDevicePolicy:
     def test_is_device_available_cpu(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -723,7 +723,7 @@ class TestDevicePolicy:
 
     @pytest.mark.unit
     def test_specific_missing_device_raises(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -739,7 +739,7 @@ class TestDevicePolicy:
 
     @pytest.mark.unit
     def test_get_device_info_has_type(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicy,
             DevicePolicyConfig,
             DevicePolicyType,
@@ -754,7 +754,7 @@ class TestDevicePolicy:
 class TestDeviceManager:
     @pytest.mark.unit
     def test_canary_cpu(self) -> None:
-        from mriforge.infrastructure.services.device_manager import DeviceManager
+        from spectramr.infrastructure.services.device_manager import DeviceManager
 
         dm = DeviceManager(preferred_device="cpu")
         import torch
@@ -763,7 +763,7 @@ class TestDeviceManager:
 
     @pytest.mark.unit
     def test_list_devices_includes_cpu(self) -> None:
-        from mriforge.infrastructure.services.device_manager import DeviceManager
+        from spectramr.infrastructure.services.device_manager import DeviceManager
 
         dm = DeviceManager(preferred_device="cpu")
         devices = dm.list_devices()
@@ -771,7 +771,7 @@ class TestDeviceManager:
 
     @pytest.mark.unit
     def test_unsupported_device_raises(self) -> None:
-        from mriforge.infrastructure.services.device_manager import DeviceManager
+        from spectramr.infrastructure.services.device_manager import DeviceManager
 
         with pytest.raises(ValueError, match="Unsupported device"):
             DeviceManager(preferred_device="tpu")
@@ -782,7 +782,7 @@ class TestDeviceManager:
 
         if torch.cuda.is_available():
             pytest.skip("CUDA available — test targets no-GPU path only")
-        from mriforge.infrastructure.services.device_manager import DeviceManager
+        from spectramr.infrastructure.services.device_manager import DeviceManager
 
         with pytest.raises(RuntimeError, match="CUDA"):
             DeviceManager(preferred_device="cuda")
@@ -791,7 +791,7 @@ class TestDeviceManager:
     def test_move_tensor_to_device(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.device_manager import DeviceManager
+        from spectramr.infrastructure.services.device_manager import DeviceManager
 
         dm = DeviceManager(preferred_device="cpu")
         t = torch.randn(4)
@@ -807,7 +807,7 @@ class TestDeviceManager:
 class TestDevicePolicyFactories:
     @pytest.mark.unit
     def test_create_cpu_policy(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             create_cpu_device_policy,
         )
         import torch
@@ -825,7 +825,7 @@ class TestDevicePolicyFactories:
         the AUTO policy type; where that resolves is asserted once, in
         ``test_auto_policy_gives_cuda_or_raises``.
         """
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             DevicePolicyType,
             create_auto_device_policy,
         )
@@ -834,7 +834,7 @@ class TestDevicePolicyFactories:
 
     @pytest.mark.unit
     def test_create_specific_policy(self) -> None:
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             create_specific_device_policy,
         )
         import torch
@@ -845,7 +845,7 @@ class TestDevicePolicyFactories:
     @pytest.mark.unit
     def test_create_cuda_policy_with_fallback(self) -> None:
         """CUDA policy with fallback_to_cpu should not raise on CPU-only environment."""
-        from mriforge.infrastructure.services.device_policy import (
+        from spectramr.infrastructure.services.device_policy import (
             create_cuda_device_policy,
         )
 
@@ -865,7 +865,7 @@ class TestSteinAggregation:
     def test_rbf_kernel_shape(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import rbf_kernel
+        from spectramr.infrastructure.services.stein_aggregation import rbf_kernel
 
         particles = torch.randn(5, 8)
         k, gk = rbf_kernel(particles)
@@ -876,7 +876,7 @@ class TestSteinAggregation:
     def test_rbf_kernel_symmetric(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import rbf_kernel
+        from spectramr.infrastructure.services.stein_aggregation import rbf_kernel
 
         particles = torch.randn(4, 6)
         k, _ = rbf_kernel(particles)
@@ -886,7 +886,7 @@ class TestSteinAggregation:
     def test_rbf_kernel_requires_2d(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import rbf_kernel
+        from spectramr.infrastructure.services.stein_aggregation import rbf_kernel
 
         with pytest.raises(ValueError, match="particles must be"):
             rbf_kernel(torch.randn(3))
@@ -895,7 +895,7 @@ class TestSteinAggregation:
     def test_rbf_kernel_requires_at_least_2(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import rbf_kernel
+        from spectramr.infrastructure.services.stein_aggregation import rbf_kernel
 
         with pytest.raises(ValueError, match="at least 2 particles"):
             rbf_kernel(torch.randn(1, 4))
@@ -904,7 +904,7 @@ class TestSteinAggregation:
     def test_svgd_step_shape(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import svgd_update_step
+        from spectramr.infrastructure.services.stein_aggregation import svgd_update_step
 
         n, d = 6, 10
         particles = torch.randn(n, d)
@@ -915,7 +915,7 @@ class TestSteinAggregation:
     def test_svgd_step_invalid_step_size(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import svgd_update_step
+        from spectramr.infrastructure.services.stein_aggregation import svgd_update_step
 
         with pytest.raises(ValueError, match="step_size must be positive"):
             svgd_update_step(torch.randn(3, 4), lambda x: x, step_size=-1.0)
@@ -924,7 +924,7 @@ class TestSteinAggregation:
     def test_product_of_experts_mean(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import (
+        from spectramr.infrastructure.services.stein_aggregation import (
             product_of_experts_score,
         )
 
@@ -936,7 +936,7 @@ class TestSteinAggregation:
 
     @pytest.mark.unit
     def test_product_of_experts_empty_raises(self) -> None:
-        from mriforge.infrastructure.services.stein_aggregation import (
+        from spectramr.infrastructure.services.stein_aggregation import (
             product_of_experts_score,
         )
 
@@ -947,7 +947,7 @@ class TestSteinAggregation:
     def test_product_of_experts_shape_mismatch_raises(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import (
+        from spectramr.infrastructure.services.stein_aggregation import (
             product_of_experts_score,
         )
 
@@ -958,7 +958,7 @@ class TestSteinAggregation:
     def test_federated_svgd_step(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import (
+        from spectramr.infrastructure.services.stein_aggregation import (
             federated_svgd_step,
         )
 
@@ -972,7 +972,7 @@ class TestSteinAggregation:
     def test_federated_svgd_negative_dp_raises(self) -> None:
         import torch
 
-        from mriforge.infrastructure.services.stein_aggregation import (
+        from spectramr.infrastructure.services.stein_aggregation import (
             federated_svgd_step,
         )
 
@@ -989,21 +989,21 @@ class TestSteinAggregation:
 class TestRDPAccountant:
     @pytest.mark.unit
     def test_canary_construct(self) -> None:
-        from mriforge.infrastructure.services.privacy.rdp_accountant import RDPAccountant
+        from spectramr.infrastructure.services.privacy.rdp_accountant import RDPAccountant
 
         acc = RDPAccountant()
         assert acc.steps == 0
 
     @pytest.mark.unit
     def test_invalid_order_raises(self) -> None:
-        from mriforge.infrastructure.services.privacy.rdp_accountant import RDPAccountant
+        from spectramr.infrastructure.services.privacy.rdp_accountant import RDPAccountant
 
         with pytest.raises(ValueError, match="must be > 1"):
             RDPAccountant(orders=[1.0, 2.0])
 
     @pytest.mark.unit
     def test_orders_property(self) -> None:
-        from mriforge.infrastructure.services.privacy.rdp_accountant import RDPAccountant
+        from spectramr.infrastructure.services.privacy.rdp_accountant import RDPAccountant
 
         acc = RDPAccountant(orders=[2.0, 4.0, 8.0])
         assert set(acc.orders) == {2.0, 4.0, 8.0}

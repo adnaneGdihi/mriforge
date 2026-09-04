@@ -1,6 +1,6 @@
 """Tests for strategy detection from config.
 
-Targets ``mriforge.infrastructure.inference.strategy_detector``. Replaces a
+Targets ``spectramr.infrastructure.inference.strategy_detector``. Replaces a
 ~30-branch ``if/elif`` chain with a declarative rule list. Tests focus
 on:
 
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.inference.strategy_detector import (
+from spectramr.infrastructure.inference.strategy_detector import (
     StrategyDetectionRule,
     StrategyDetector,
     create_default_detector,

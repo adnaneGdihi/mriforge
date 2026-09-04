@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.shared.utils.model_utils`.
+"""Unit tests for :mod:`spectramr.shared.utils.model_utils`.
 
 The module currently exposes a single helper, ``maybe_dropout``, which
 returns ``nn.Dropout(p)`` when ``p > 0`` and ``nn.Identity()`` otherwise.
@@ -15,7 +15,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.shared.utils.model_utils import maybe_dropout
+from spectramr.shared.utils.model_utils import maybe_dropout
 
 
 class TestMaybeDropout:

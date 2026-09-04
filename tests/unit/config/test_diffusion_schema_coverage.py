@@ -23,7 +23,7 @@ import pytest
 
 def _strategy_source() -> str:
     """Return the full source of DiffusionTrainingStrategy."""
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
 
@@ -58,7 +58,7 @@ class TestDiffusionSchemaFieldAccessibility:
     def test_condition_on_input_defaults_false(self):
         """The measurement-conditioning flag is a declared, validated bool that
         defaults off (every existing arm stays unconditional / byte-identical)."""
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         field = DiffusionTrainingConfigSchema.model_fields["condition_on_input"]
         assert field.default is False
@@ -67,7 +67,7 @@ class TestDiffusionSchemaFieldAccessibility:
 
     @pytest.mark.parametrize("field_name", EXPECTED_FIELDS)
     def test_field_exists_in_schema(self, field_name: str):
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         assert field_name in DiffusionTrainingConfigSchema.model_fields, (
             f"DiffusionTrainingConfigSchema.{field_name} is missing.\n"
@@ -77,7 +77,7 @@ class TestDiffusionSchemaFieldAccessibility:
 
     @pytest.mark.parametrize("field_name", EXPECTED_FIELDS)
     def test_field_accessible_from_instance(self, field_name: str):
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         cfg = DiffusionTrainingConfigSchema()
         value = getattr(cfg, field_name, "_MISSING_")
@@ -87,7 +87,7 @@ class TestDiffusionSchemaFieldAccessibility:
 
     def test_sampler_valid_values(self):
         """sampler field must accept the documented valid values."""
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         valid_samplers = ["ddpm", "ddim", "predictor_corrector", "dpm_solver"]
         for sampler in valid_samplers:
@@ -96,7 +96,7 @@ class TestDiffusionSchemaFieldAccessibility:
 
     def test_prediction_type_valid_values(self):
         """prediction_type must accept documented values."""
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         valid = ["epsilon", "sample", "v_prediction"]
         for pred_type in valid:
@@ -165,7 +165,7 @@ class TestDiffusionStrategyConsumesSchemaFields:
         except ImportError:
             pytest.skip("DiffusionTrainingStrategy not importable")
 
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         all_fields = set(DiffusionTrainingConfigSchema.model_fields.keys())
         consumed_search_terms = {search for _, search in self.EXPECTED_CONSUMPTIONS}
@@ -211,7 +211,7 @@ class TestLatentSchemaFieldAccessibility:
 
     @pytest.mark.parametrize("field_name", EXPECTED_FIELDS)
     def test_field_accessible(self, field_name: str):
-        from mriforge.config.schemas.training.base import LatentTrainingConfigSchema
+        from spectramr.config.schemas.training.base import LatentTrainingConfigSchema
 
         cfg = LatentTrainingConfigSchema()
         value = getattr(cfg, field_name, "_MISSING_")
@@ -231,7 +231,7 @@ class TestTimestepSamplerValidator:
     def test_high_t_emphasis_in_literal_and_valid_set(self):
         import typing
 
-        from mriforge.config.schemas.training.diffusion import (
+        from spectramr.config.schemas.training.diffusion import (
             VALID_TIMESTEP_SAMPLERS,
             TrainingConfigDiffusion,
         )
@@ -244,7 +244,7 @@ class TestTimestepSamplerValidator:
         # Call the field validator directly: full-model construction trips an
         # UNRELATED objectives.reconstruction v6.0 migration shim, so isolate the
         # validator that my change actually touches.
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         assert (
             TrainingConfigDiffusion._validate_timestep_sampler("high_t_emphasis")
@@ -252,7 +252,7 @@ class TestTimestepSamplerValidator:
         )
 
     def test_validator_rejects_unknown(self):
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         with pytest.raises(ValueError, match="timestep_sampling_strategy must be one of"):
             TrainingConfigDiffusion._validate_timestep_sampler("definitely_not_a_sampler")
@@ -263,7 +263,7 @@ class TestTimestepSamplerValidator:
         at schema parse (dead knob, pitfall #15)."""
         import typing
 
-        from mriforge.config.schemas.training.diffusion import (
+        from spectramr.config.schemas.training.diffusion import (
             VALID_TIMESTEP_SAMPLERS,
             TrainingConfigDiffusion,
         )
@@ -273,7 +273,7 @@ class TestTimestepSamplerValidator:
         assert "balanced_high_t" in typing.get_args(ann)
 
     def test_validator_accepts_balanced_high_t(self):
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         assert (
             TrainingConfigDiffusion._validate_timestep_sampler("balanced_high_t")
@@ -288,7 +288,7 @@ class TestTimestepSamplerValidator:
         schema parse — a dead knob (pitfall #15)."""
         import typing
 
-        from mriforge.config.schemas.training.diffusion import (
+        from spectramr.config.schemas.training.diffusion import (
             VALID_INFERENCE_SAMPLERS,
             TrainingConfigDiffusion,
         )
@@ -298,17 +298,17 @@ class TestTimestepSamplerValidator:
         assert "dds" in typing.get_args(ann)
 
     def test_validator_accepts_dds(self):
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         assert TrainingConfigDiffusion._validate_inference_sampler("dds") == "dds"
 
     def test_dds_inference_sampler_resolves_to_registered_sampler(self):
         """Every inference_sampler value must name a sampler the registry knows —
         otherwise the enum value is itself a dead knob. Guards 'dds' specifically."""
-        from mriforge.config.schemas.training.diffusion import VALID_INFERENCE_SAMPLERS
+        from spectramr.config.schemas.training.diffusion import VALID_INFERENCE_SAMPLERS
 
         try:
-            from mriforge.models.diffusion.samplers import SamplerRegistry
+            from spectramr.models.diffusion.samplers import SamplerRegistry
         except Exception:  # pragma: no cover - torch-less env
             pytest.skip("sampler registry not importable")
 
@@ -320,7 +320,7 @@ class TestTimestepSamplerValidator:
         selectable inference_sampler value resolving to a registered sampler."""
         import typing
 
-        from mriforge.config.schemas.training.diffusion import (
+        from spectramr.config.schemas.training.diffusion import (
             VALID_INFERENCE_SAMPLERS,
             TrainingConfigDiffusion,
         )
@@ -330,7 +330,7 @@ class TestTimestepSamplerValidator:
         assert "dynamic_dps" in typing.get_args(ann)
         assert TrainingConfigDiffusion._validate_inference_sampler("dynamic_dps") == "dynamic_dps"
         try:
-            from mriforge.models.diffusion.samplers import SamplerRegistry
+            from spectramr.models.diffusion.samplers import SamplerRegistry
         except Exception:  # pragma: no cover - torch-less env
             pytest.skip("sampler registry not importable")
         assert SamplerRegistry.is_registered("dynamic_dps")
@@ -339,10 +339,10 @@ class TestTimestepSamplerValidator:
         """The only schema sampler the strategy does not implement is
         'cosine_warm' (pre-existing). Every other schema sampler MUST be handled
         by the strategy, and high_t_emphasis must be in BOTH."""
-        from mriforge.config.schemas.training.diffusion import VALID_TIMESTEP_SAMPLERS
+        from spectramr.config.schemas.training.diffusion import VALID_TIMESTEP_SAMPLERS
 
         try:
-            from mriforge.infrastructure.training.strategies.diffusion import (
+            from spectramr.infrastructure.training.strategies.diffusion import (
                 _VALID_SAMPLING_STRATEGIES,
             )
         except Exception:  # pragma: no cover - torch-less env

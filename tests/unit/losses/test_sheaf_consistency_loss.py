@@ -1,7 +1,7 @@
 """Unit tests for sheaf_consistency_loss.py.
 
 The loss must genuinely encode cellular-sheaf consistency by consuming the
-primitives in :mod:`mriforge.infrastructure.physics.cellular_sheaf` — it is
+primitives in :mod:`spectramr.infrastructure.physics.cellular_sheaf` — it is
 *not* a relabelled L1/L2. The key algebraic property under test is that the
 sheaf-Laplacian quadratic form is zero iff the section is a global section
 (consistent across the cover), and strictly positive otherwise.
@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.registry import create_loss
-from mriforge.models.losses.sheaf_consistency_loss import SheafConsistencyLoss
+from spectramr.models.losses.registry import create_loss
+from spectramr.models.losses.sheaf_consistency_loss import SheafConsistencyLoss
 
 B, C, H, W = 2, 4, 16, 16
 
@@ -42,7 +42,7 @@ class TestSheafConsistencyLoss:
         assert isinstance(loss_fn, SheafConsistencyLoss)
 
     def test_registry_domain_is_image(self):
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         info = LossRegistry._loss_domains["sheaf_consistency"]
         assert info["domain"] == "image"
@@ -76,7 +76,7 @@ class TestSheafConsistencyLoss:
         """Hard proof the loss routes through the sheaf primitive: patch the
         quadratic-form callable and assert it was called.
         """
-        import mriforge.models.losses.sheaf_consistency_loss as mod
+        import spectramr.models.losses.sheaf_consistency_loss as mod
 
         calls = {"n": 0}
         real = mod.sheaf_laplacian_quadratic_form
@@ -91,7 +91,7 @@ class TestSheafConsistencyLoss:
         assert calls["n"] > 0
 
     def test_property_obstruction_invoked(self, monkeypatch):
-        import mriforge.models.losses.sheaf_consistency_loss as mod
+        import spectramr.models.losses.sheaf_consistency_loss as mod
 
         calls = {"n": 0}
         real = mod.mayer_vietoris_obstruction_norm

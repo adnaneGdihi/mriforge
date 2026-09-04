@@ -1,6 +1,6 @@
 r"""Tests for the validation-badge document (ULF-PR-26 / V.3).
 
-Targets ``mriforge.infrastructure.reporting.validation_badge``.
+Targets ``spectramr.infrastructure.reporting.validation_badge``.
 
 Categories:
 
@@ -21,7 +21,7 @@ import json
 
 import pytest
 
-from mriforge.infrastructure.reporting.validation_badge import (
+from spectramr.infrastructure.reporting.validation_badge import (
     BadgeAuditResult,
     DEFAULT_REQUIRED_GATES,
     GateResult,

@@ -2,9 +2,9 @@ import sys
 import tracemalloc
 
 tracemalloc.start()
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.directors.data_pipeline_director import DataPipelineDirector
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.directors.data_pipeline_director import DataPipelineDirector
 
 ulf_targets = [
     "experiments/inprogress/hilbert_mamba/exp_hm_01_ct_mamba.yaml",

@@ -13,7 +13,7 @@ Covers two real bugs surfaced by the WS-6 audit:
 import pytest
 import torch
 
-from mriforge.models.diffusion.chi_square_diffusion import (
+from spectramr.models.diffusion.chi_square_diffusion import (
     ChiSquareColdDiffusion,
     ChiSquareDiffusion,
 )

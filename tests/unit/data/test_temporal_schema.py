@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import DataConfigSchema, TemporalConfigSchema
+from spectramr.config.schemas.data import DataConfigSchema, TemporalConfigSchema
 
 
 def test_temporal_defaults_are_disabled() -> None:

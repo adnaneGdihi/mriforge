@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.generators.bloch_cycle_network import BlochCycleNetwork
+from spectramr.models.generators.bloch_cycle_network import BlochCycleNetwork
 
 
 def test_bloch_cycle_forward():

@@ -37,8 +37,8 @@ import re
 
 import pytest
 
-from mriforge.infrastructure.training.strategies import reconstruction as _recon_mod
-from mriforge.infrastructure.training.strategies import vae as _vae_mod
+from spectramr.infrastructure.training.strategies import reconstruction as _recon_mod
+from spectramr.infrastructure.training.strategies import vae as _vae_mod
 
 
 def _loss_impl_source(module: object) -> str:
@@ -80,7 +80,7 @@ def test_metrics_throttle_honours_current_step() -> None:
     """
     import torch
 
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         MetricsMixin,
     )
 

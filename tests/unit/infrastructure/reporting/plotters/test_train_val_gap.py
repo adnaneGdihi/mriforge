@@ -8,7 +8,7 @@ matplotlib.use("Agg")
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import train_val_gap
+from spectramr.infrastructure.reporting.plotters import train_val_gap
 
 
 def _frame() -> pd.DataFrame:

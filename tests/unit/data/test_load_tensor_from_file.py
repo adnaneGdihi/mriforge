@@ -2,7 +2,7 @@
 
 ``src/data/builders/torchio_subject_builder.py::_load_tensor`` used to
 inline its own ``torch.load`` / ``h5py.File`` / ``nib.load`` dispatch.
-It now delegates to ``mriforge.data.io_strategies.load_tensor_from_file``
+It now delegates to ``spectramr.data.io_strategies.load_tensor_from_file``
 (the canonical multi-format reader). Pinning the helper here so a
 future refactor can't silently re-inline the dispatch (CLAUDE.md
 pitfall #11: data-loading SSOT under ``src/data/``).
@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.io_strategies import load_tensor_from_file
+from spectramr.data.io_strategies import load_tensor_from_file
 
 
 def test_load_pt_tensor(tmp_path) -> None:
@@ -114,7 +114,7 @@ def test_subject_builder_load_tensor_delegates_to_io_strategies() -> None:
     src = (
         Path(__file__).resolve().parents[3]
         / "src"
-        / "mriforge"
+        / "spectramr"
         / "data"
         / "builders"
         / "torchio_subject_builder.py"
@@ -131,6 +131,6 @@ def test_subject_builder_load_tensor_delegates_to_io_strategies() -> None:
     for needle in ("h5py.File(", "nib.load(", "torch.load("):
         assert needle not in body, (
             f"torchio_subject_builder._load_tensor re-inlined `{needle}`. "
-            "Route through mriforge.data.io_strategies.load_tensor_from_file — "
+            "Route through spectramr.data.io_strategies.load_tensor_from_file — "
             "see audit 16 F2."
         )

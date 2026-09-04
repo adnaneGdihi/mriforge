@@ -19,7 +19,7 @@ import torch
 
 
 def test_guided_sr_to_4d_projects_volume_and_passes_4d_through() -> None:
-    from mriforge.infrastructure.training.strategies.guided_sr_strategy import (
+    from spectramr.infrastructure.training.strategies.guided_sr_strategy import (
         GuidedSuperResolutionStrategy,
     )
 
@@ -35,8 +35,8 @@ def test_ssim_hfen_construct_without_channel_kwarg() -> None:
     """The old guided_sr code called ``SSIMLoss(window_size=7, channel=...)``
     (an unsupported kwarg) behind a bare ``except: pass`` so the term was always
     silently dropped. The fixed call must construct and run cleanly on 4-D."""
-    from mriforge.models.losses.hfen_loss import HFENLoss
-    from mriforge.models.losses.ssim_loss import SSIMLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.ssim_loss import SSIMLoss
 
     pred = torch.rand(2, 1, 16, 16)
     target = torch.rand(2, 1, 16, 16)
@@ -57,14 +57,14 @@ def test_ssim_hfen_construct_without_channel_kwarg() -> None:
 
 
 def test_hssc_dead_hilbert_helper_removed() -> None:
-    from mriforge.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
+    from spectramr.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
 
     assert not hasattr(HSSCStrategy, "_resolve_hilbert")
     assert not hasattr(HSSCStrategy, "_hilbert")
 
 
 def test_hssc_data_consistency_trusts_observed_inside_mask() -> None:
-    from mriforge.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
+    from spectramr.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
 
     k_obs = torch.ones(1, 1, 4, 4)
     k_hat = torch.zeros(1, 1, 4, 4)
@@ -83,7 +83,7 @@ def test_hssc_data_consistency_trusts_observed_inside_mask() -> None:
 
 
 def test_ib_active_select_next_line_rejects_unknown_mode() -> None:
-    from mriforge.infrastructure.training.strategies.ib_active_acquisition_strategy import (
+    from spectramr.infrastructure.training.strategies.ib_active_acquisition_strategy import (
         IBActiveAcquisitionStrategy,
     )
 
@@ -111,7 +111,7 @@ def test_ib_active_select_next_line_rejects_unknown_mode() -> None:
 
 
 def test_n2n_single_repetition_raises_explicitly() -> None:
-    from mriforge.infrastructure.training.strategies.n2n_strategy import (
+    from spectramr.infrastructure.training.strategies.n2n_strategy import (
         NoiseToNoiseStrategy,
     )
 
@@ -123,7 +123,7 @@ def test_n2n_single_repetition_raises_explicitly() -> None:
 def test_n2n_reads_iteration_kwarg_not_step() -> None:
     """The schedule was frozen at iteration 0 because the strategy read the
     nonexistent ``step`` kwarg instead of the canonical ``iteration``."""
-    from mriforge.infrastructure.training.strategies.n2n_strategy import (
+    from spectramr.infrastructure.training.strategies.n2n_strategy import (
         NoiseToNoiseStrategy,
     )
 
@@ -161,7 +161,7 @@ def test_n2n_reads_iteration_kwarg_not_step() -> None:
 
 
 def test_standard_strategy_requires_env() -> None:
-    from mriforge.infrastructure.training.strategies.standard_strategy import (
+    from spectramr.infrastructure.training.strategies.standard_strategy import (
         StandardTrainingStrategy,
     )
 
@@ -178,7 +178,7 @@ def test_standard_strategy_requires_env() -> None:
 
 
 def test_resolve_legacy_batch_accepts_tensor_without_ambiguous_bool() -> None:
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     multi = torch.zeros(2, 2)  # bool(multi) would raise "ambiguous"
     out = BaseTrainingStrategy._resolve_legacy_batch(None, {"batch": multi})

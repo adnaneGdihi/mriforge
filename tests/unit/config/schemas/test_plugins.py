@@ -1,4 +1,4 @@
-"""Tests for :class:`mriforge.config.schemas.plugins.PluginsConfigSchema`.
+"""Tests for :class:`spectramr.config.schemas.plugins.PluginsConfigSchema`.
 
 The ``plugins`` block is the YAML-facing wire for out-of-tree component
 discovery: a list of dotted module paths the framework imports at registry
@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.plugins import PluginsConfigSchema
+from spectramr.config.schemas.plugins import PluginsConfigSchema
 
 
 class TestPluginsConfigSchema:

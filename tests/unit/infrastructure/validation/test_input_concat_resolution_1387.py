@@ -31,8 +31,8 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
-from mriforge.models.generators.kspace_cold_diffusion_generator import (
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.models.generators.kspace_cold_diffusion_generator import (
     KSpaceColdDiffusionGenerator,
     config_expects_smaps_concat,
 )
@@ -157,7 +157,7 @@ def test_generator_defaults_have_one_owner() -> None:
     """``__init__`` and the config resolver must not default differently."""
     import inspect
 
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         DEFAULT_BACKBONE_TYPE,
         DEFAULT_CONDITION_WITH_SMAPS,
     )

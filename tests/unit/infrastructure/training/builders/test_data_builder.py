@@ -6,9 +6,9 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.training.builders.data_builder import DataBuilder
 from tests.utils.data_config_stub import DataConfigStub
 
 
@@ -78,7 +78,7 @@ class TestDataBuilder:
         assert legacy._loaders == canonical._loaders == {}
 
     @patch(
-        "mriforge.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
+        "spectramr.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
     )
     def test_build_train_val_loaders_success(self, mock_director_cls, builder):
         """Test successful creation of train/val loaders.
@@ -100,9 +100,9 @@ class TestDataBuilder:
         assert builder._loaders["val"] == mock_val
         assert "test" not in builder._loaders
 
-    @patch("mriforge.infrastructure.training.builders.data_builder.torch")
+    @patch("spectramr.infrastructure.training.builders.data_builder.torch")
     @patch(
-        "mriforge.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
+        "spectramr.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
     )
     def test_explicit_pin_memory_false_is_honored_on_cuda(
         self, mock_director_cls, mock_torch, builder
@@ -128,9 +128,9 @@ class TestDataBuilder:
         _, kwargs = mock_director.build_dataloaders.call_args
         assert kwargs["pin_memory"] is False
 
-    @patch("mriforge.infrastructure.training.builders.data_builder.torch")
+    @patch("spectramr.infrastructure.training.builders.data_builder.torch")
     @patch(
-        "mriforge.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
+        "spectramr.infrastructure.builders.directors.data_pipeline_director.DataPipelineDirector"
     )
     def test_pin_memory_true_still_gated_on_cuda(
         self, mock_director_cls, mock_torch, builder
@@ -160,8 +160,8 @@ class TestDataBuilder:
         with pytest.raises(ValueError, match="TrainingSettings.data is required"):
             builder.build_train_val_loaders()
 
-    @patch("mriforge.infrastructure.training.builders.data_builder.Path")
-    @patch("mriforge.data.datasets.universal_dataset.UniversalMRIDataset")
+    @patch("spectramr.infrastructure.training.builders.data_builder.Path")
+    @patch("spectramr.data.datasets.universal_dataset.UniversalMRIDataset")
     def test_build_inference_loader_success(self, mock_ds, mock_path, builder):
         """Test successful creation of inference loader."""
         # Mock file system
@@ -171,8 +171,8 @@ class TestDataBuilder:
 
         # Mock transforms to avoid complex dependencies
         with (
-            patch("mriforge.data.builders.TorchIOTransformBuilder.build_val_transforms"),
-            patch("mriforge.data.collation.strategies.CollateStrategyFactory.create"),
+            patch("spectramr.data.builders.TorchIOTransformBuilder.build_val_transforms"),
+            patch("spectramr.data.collation.strategies.CollateStrategyFactory.create"),
         ):
             builder.build_inference_loader(Path("/tmp/input"))
 
@@ -182,7 +182,7 @@ class TestDataBuilder:
     def test_build_inference_loader_no_files(self, builder):
         """Test error when no NIfTI files found."""
         with patch(
-            "mriforge.infrastructure.training.builders.data_builder.Path"
+            "spectramr.infrastructure.training.builders.data_builder.Path"
         ) as mock_path:
             mock_path.return_value.glob.return_value = []
 
@@ -285,7 +285,7 @@ class TestLoaderConstructionRoutesThroughTheLeafBuilder:
         import ast
         import inspect
 
-        from mriforge.infrastructure.training.builders import data_builder
+        from spectramr.infrastructure.training.builders import data_builder
 
         tree = ast.parse(inspect.getsource(data_builder))
         constructions = [
@@ -315,7 +315,7 @@ class TestLoaderConstructionRoutesThroughTheLeafBuilder:
         """
         import inspect
 
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
         src = inspect.getsource(DataBuilder.build_inference_loader)
         assert 'CollateStrategyFactory.create("image")' in src
         assert ".with_collate_fn(collate_strategy.collate)" in src
@@ -333,7 +333,7 @@ class TestLoaderConstructionRoutesThroughTheLeafBuilder:
         """
         import inspect
 
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
 
         src = inspect.getsource(DataBuilder.build_inference_loader)
         code = "\n".join(
@@ -352,7 +352,7 @@ class TestLoaderConstructionRoutesThroughTheLeafBuilder:
         instead of silently promoting it to a config-derived strategy."""
         import inspect
 
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
 
         src = inspect.getsource(DataBuilder.build_ablation_subsets)
         assert "train_loader.collate_fn" in src
@@ -373,7 +373,7 @@ class TestMultiDomainRouting:
         """The seam: DataBuilder must branch on the flag."""
         import inspect
 
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
         src = inspect.getsource(DataBuilder.build_train_val_loaders)
         code = "\n".join(
             line for line in src.splitlines() if not line.lstrip().startswith("#")
@@ -385,7 +385,7 @@ class TestMultiDomainRouting:
 
     def test_enabled_flag_selects_the_balancer(self, monkeypatch) -> None:
         """enabled=true calls the balancer builder; enabled=false does not."""
-        from mriforge.infrastructure.builders.directors import (
+        from spectramr.infrastructure.builders.directors import (
             data_pipeline_director as dpd,
         )
 
@@ -406,13 +406,13 @@ class TestMultiDomainRouting:
             dpd.DataPipelineDirector, "build_dataloaders", _fake_single
         )
 
-        from mriforge.config.schemas.data import (
+        from spectramr.config.schemas.data import (
             DataConfigSchema,
             DomainConfigSchema,
             MultiDomainConfigSchema,
         )
-        from mriforge.infrastructure.builders.context import BuilderContext
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.builders.context import BuilderContext
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
 
         def _run(enabled: bool) -> list[str]:
             calls.clear()

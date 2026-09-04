@@ -1,6 +1,6 @@
 """Tests for the DP-SGD primitives.
 
-Targets ``mriforge.infrastructure.services.privacy.dp_sgd``.
+Targets ``spectramr.infrastructure.services.privacy.dp_sgd``.
 
 Categories:
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.services.privacy.dp_sgd import (
+from spectramr.infrastructure.services.privacy.dp_sgd import (
     add_gaussian_noise,
     clip_per_sample_grad,
     compose_dp_sgd_update,

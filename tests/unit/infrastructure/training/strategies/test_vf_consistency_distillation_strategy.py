@@ -23,7 +23,7 @@ from types import SimpleNamespace
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.vf_consistency_distillation_strategy import (
+from spectramr.infrastructure.training.strategies.vf_consistency_distillation_strategy import (
     VFConsistencyDistillationStrategy,
 )
 

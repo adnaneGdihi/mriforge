@@ -81,7 +81,7 @@ Then edit the file:
 
    training:
      training_mode: gan
-     strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy
      epochs: 100
      seed: 42
 

@@ -23,8 +23,8 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-import mriforge.models.blocks.triton_scan as _ts  # noqa: E402
-from mriforge.models.blocks.triton_scan import (  # noqa: E402
+import spectramr.models.blocks.triton_scan as _ts  # noqa: E402
+from spectramr.models.blocks.triton_scan import (  # noqa: E402
     mamba_ssm_available,
     selective_scan,
     triton_available,
@@ -217,7 +217,7 @@ def test_auto_picks_triton_on_cuda() -> None:
         pytest.skip("triton not installed")
     # When CUDA + triton are both available, auto must dispatch to triton —
     # not silently fall back to compile/python.
-    import mriforge.models.blocks.triton_scan as ts
+    import spectramr.models.blocks.triton_scan as ts
 
     calls: list[str] = []
     real_triton = ts._triton_scan

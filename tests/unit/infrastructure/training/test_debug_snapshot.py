@@ -21,7 +21,7 @@ from typing import ClassVar
 
 import torch
 
-from mriforge.infrastructure.training.debug_snapshot import (
+from spectramr.infrastructure.training.debug_snapshot import (
     SnapshotConfig,
     save_debug_snapshot,
     _call_counts,
@@ -258,7 +258,7 @@ class TestImageDomainDoesNotAutoPairAsComplex:
     """
 
     def test_paired_modality_is_rss_not_complex_pair(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.training.debug_snapshot import _render_image_preview
+        from spectramr.infrastructure.training.debug_snapshot import _render_image_preview
 
         # Construct a 2-channel "paired modality" tensor where the two
         # channels are obviously different magnitudes — if the old code
@@ -284,7 +284,7 @@ class TestImageDomainDoesNotAutoPairAsComplex:
         a magnitude image. We supply a tensor whose channel-RSS gives a
         spatially-smooth disk; the rendered preview must preserve that
         spatial structure (i.e. not be uniform after normalisation)."""
-        from mriforge.infrastructure.training.debug_snapshot import _render_image_preview
+        from spectramr.infrastructure.training.debug_snapshot import _render_image_preview
 
         y, x = torch.meshgrid(
             torch.linspace(-1, 1, 16),
@@ -327,8 +327,8 @@ class TestKspaceSignatureGuard:
         return disk.unsqueeze(0).unsqueeze(0)
 
     def test_looks_like_kspace_separates_domains(self) -> None:
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.infrastructure.training.debug_snapshot import _looks_like_kspace
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.training.debug_snapshot import _looks_like_kspace
 
         img = self._disk().abs()  # image-domain magnitude
         ksp = fft2c(self._disk()).abs()  # its k-space magnitude
@@ -338,7 +338,7 @@ class TestKspaceSignatureGuard:
     def test_image_flagged_kspace_is_not_ifftd(self) -> None:
         """A complex IMAGE tensor flagged in_kspace=True must render as the
         image (structure preserved), NOT a DC blob."""
-        from mriforge.infrastructure.training.debug_snapshot import _render_image_preview
+        from spectramr.infrastructure.training.debug_snapshot import _render_image_preview
 
         preview = _render_image_preview(self._disk(), in_kspace=True)
         assert preview is not None
@@ -352,8 +352,8 @@ class TestKspaceSignatureGuard:
     def test_real_kspace_still_ifftd(self) -> None:
         """Genuine k-space (DC signature present) must STILL be IFFT'd so its
         preview is the reconstructed image — the m10 / experiment_11 contract."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.infrastructure.training.debug_snapshot import _render_image_preview
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.training.debug_snapshot import _render_image_preview
 
         ksp = fft2c(self._disk())  # complex k-space of the disk
         preview = _render_image_preview(ksp, in_kspace=True)
@@ -373,7 +373,7 @@ class TestKspaceSignatureGuard:
         the threshold (a clean synthetic phantom's DC survives log1p; real
         spread k-space does not). The tensor is still k-space → must be IFFT'd.
         """
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         y, x = torch.meshgrid(
             torch.linspace(-1, 1, H), torch.linspace(-1, 1, H), indexing="ij"
@@ -393,7 +393,7 @@ class TestKspaceSignatureGuard:
         wrongly skipped and the debug ``target.png`` rendered as raw k-space
         (DC blob / 'doubled brain'). This pins WHY the spectrum-based test is
         needed."""
-        from mriforge.infrastructure.training.debug_snapshot import _looks_like_kspace
+        from spectramr.infrastructure.training.debug_snapshot import _looks_like_kspace
 
         kn = self._normalized_kspace()
         # legacy heuristic on the raw magnitude => "not k-space" (the bug)
@@ -402,8 +402,8 @@ class TestKspaceSignatureGuard:
     def test_is_in_kspace_domain_matrix(self) -> None:
         """The spectrum-based decision is normalization-invariant: raw AND
         normalized k-space => IFFT; an image (even flagged k-space) => skip."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.infrastructure.training.debug_snapshot import _is_in_kspace_domain
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.training.debug_snapshot import _is_in_kspace_domain
 
         assert _is_in_kspace_domain(fft2c(self._disk())) is True  # raw k-space
         assert (
@@ -414,7 +414,7 @@ class TestKspaceSignatureGuard:
     def test_normalized_kspace_is_ifftd_to_image(self) -> None:
         """End-to-end: a normalized k-space flagged in_kspace=True must be
         IFFT'd (decision True), where the legacy code skipped it."""
-        from mriforge.infrastructure.training.debug_snapshot import (
+        from spectramr.infrastructure.training.debug_snapshot import (
             _is_in_kspace_domain,
             _render_image_preview,
         )
@@ -440,8 +440,8 @@ class TestKspaceSignatureGuard:
         known-bad output and assert the authoritative path still recovers the
         image.
         """
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        import mriforge.infrastructure.training.debug_snapshot as ds
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        import spectramr.infrastructure.training.debug_snapshot as ds
 
         # Reproduce the real-data failure mode: heuristic wrongly says "image".
         monkeypatch.setattr(ds, "_is_in_kspace_domain", lambda _x: False)
@@ -504,7 +504,7 @@ class TestImageDomainMaskDetector:
 
     def test_correctly_undersampled_kspace_not_flagged(self, tmp_path: Path) -> None:
         _reset_budget()
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         ksp = fft2c(self._brain().to(torch.complex64))  # genuine k-space
         # Undersample in K-SPACE (correct): zero every other k-space row.
@@ -630,7 +630,7 @@ class TestSnapshotBudget:
         """
         import torch
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         ds._call_counts.clear()
         written = [
@@ -657,7 +657,7 @@ class TestSnapshotBudget:
         """
         import torch
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         ds._call_counts.clear()
         per_tag = {}
@@ -692,7 +692,7 @@ class TestMockRunDirIsRefused:
         import pytest
         import torch
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         mock_dir = MagicMock().run_output_dir
         # Pin the premise, so the guard is not silently weakened later.
@@ -714,7 +714,7 @@ class TestMockRunDirIsRefused:
     def test_str_and_path_both_still_work(self, tmp_path):
         import torch
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         ds._call_counts.clear()
         for i, run_dir in enumerate((tmp_path, str(tmp_path))):
@@ -743,8 +743,8 @@ class TestSnapshotDecompressesLogScaledKspace:
     def _compressed_phantom():
         import torch
 
-        from mriforge.data.transforms.normalization import compress_kspace_log
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.data.transforms.normalization import compress_kspace_log
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         yy, xx = torch.meshgrid(
             torch.linspace(-1, 1, 64), torch.linspace(-1, 1, 64), indexing="ij"
@@ -755,7 +755,7 @@ class TestSnapshotDecompressesLogScaledKspace:
     def test_the_flag_changes_the_render(self):
         import torch
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         _img, compressed = self._compressed_phantom()
         off = ds._render_image_preview(
@@ -767,7 +767,7 @@ class TestSnapshotDecompressesLogScaledKspace:
         assert not torch.allclose(off, on), "log_scaled had no effect on the render"
 
     def test_the_decompressed_render_matches_the_anatomy(self):
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         img, compressed = self._compressed_phantom()
         rendered = ds._render_image_preview(
@@ -784,7 +784,7 @@ class TestSnapshotDecompressesLogScaledKspace:
         exactly as before this change."""
         import inspect
 
-        from mriforge.infrastructure.training.debug_snapshot import (
+        from spectramr.infrastructure.training.debug_snapshot import (
             _render_image_preview,
             save_debug_snapshot,
         )
@@ -810,12 +810,12 @@ class TestSnapshotsAreEnabled:
     """
 
     def test_enabled_by_default(self) -> None:
-        from mriforge.infrastructure.training.debug_snapshot import snapshots_are_enabled
+        from spectramr.infrastructure.training.debug_snapshot import snapshots_are_enabled
 
         assert snapshots_are_enabled(None) is True
 
     def test_reads_the_nested_flag(self) -> None:
-        from mriforge.infrastructure.training.debug_snapshot import snapshots_are_enabled
+        from spectramr.infrastructure.training.debug_snapshot import snapshots_are_enabled
 
         assert snapshots_are_enabled(_snapshot_section(enabled=False)) is False
         assert snapshots_are_enabled(_snapshot_section(enabled=True)) is True
@@ -827,7 +827,7 @@ class TestSnapshotsAreEnabled:
         this stays True — that gap is exactly why the contract check may not use
         the cadence predicate.
         """
-        from mriforge.infrastructure.training.debug_snapshot import (
+        from spectramr.infrastructure.training.debug_snapshot import (
             snapshot_step_is_due,
             snapshots_are_enabled,
         )
@@ -862,7 +862,7 @@ class TestSnapshotStepIsDue:
         silently disabled the snapshot on every resumed run — see
         `test_a_resumed_run_is_still_due` below.
         """
-        from mriforge.infrastructure.training.debug_snapshot import snapshot_step_is_due
+        from spectramr.infrastructure.training.debug_snapshot import snapshot_step_is_due
 
         section = _snapshot_section(max_calls=8, interval_steps=0)
         assert all(snapshot_step_is_due(section, s) for s in range(0, 41))
@@ -877,7 +877,7 @@ class TestSnapshotStepIsDue:
         """
         import types
 
-        from mriforge.infrastructure.training.debug_snapshot import snapshot_step_is_due
+        from spectramr.infrastructure.training.debug_snapshot import snapshot_step_is_due
 
         section = _snapshot_section(max_calls=8, interval_steps=0)
         section.intervals = types.SimpleNamespace(log=5000)
@@ -887,14 +887,14 @@ class TestSnapshotStepIsDue:
         assert 1 % (5000 * 5) != 0
 
     def test_a_configured_interval_is_honoured(self):
-        from mriforge.infrastructure.training.debug_snapshot import snapshot_step_is_due
+        from spectramr.infrastructure.training.debug_snapshot import snapshot_step_is_due
 
         section = _snapshot_section(max_calls=8, interval_steps=100)
         assert snapshot_step_is_due(section, 100) is True
         assert snapshot_step_is_due(section, 101) is False
 
     def test_disabled_snapshots_are_never_due(self):
-        from mriforge.infrastructure.training.debug_snapshot import snapshot_step_is_due
+        from spectramr.infrastructure.training.debug_snapshot import snapshot_step_is_due
 
         section = _snapshot_section()
         section.snapshots.enabled = False
@@ -913,7 +913,7 @@ class TestSnapshotStepIsDue:
         hid the `step <= max_calls` divergence: the property held on the one
         trajectory the fixture explored.
         """
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         # start=0 is a fresh run; the rest stand in for a resume, where the loop
         # begins at `start_iteration + 1` with an empty in-process counter.
@@ -949,7 +949,7 @@ class TestSnapshotStepIsDue:
         forever, and a resumed cold-diffusion arm wrote ZERO `diffusion_step`
         snapshots — the one artifact showing the degraded model input.
         """
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         section = _snapshot_section(max_calls=8, interval_steps=0)
         for start_iteration in (8, 99, 4_999):
@@ -1240,7 +1240,7 @@ class TestDeferredExtra:
         """
         import inspect
 
-        from mriforge.infrastructure.training import debug_snapshot as ds
+        from spectramr.infrastructure.training import debug_snapshot as ds
 
         # Drop the leading docstring only: `[-1]` would cut at the LAST triple
         # quote, and this function's body carries two more of them, so it would
@@ -1278,7 +1278,7 @@ class TestRunIdentityReachesTheArtifact:
         )
 
     def test_the_json_carries_the_published_run_id(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.training.snapshot_provenance import (
+        from spectramr.infrastructure.training.snapshot_provenance import (
             reset_run_identity,
             set_run_identity,
         )
@@ -1307,7 +1307,7 @@ class TestRunIdentityReachesTheArtifact:
     ) -> None:
         """``snapshot.txt`` is what a human actually reads when triaging an arm,
         so the id has to be legible there, not only machine-readable."""
-        from mriforge.infrastructure.training.snapshot_provenance import (
+        from spectramr.infrastructure.training.snapshot_provenance import (
             reset_run_identity,
             set_run_identity,
         )
@@ -1334,7 +1334,7 @@ class TestRunIdentityReachesTheArtifact:
     ) -> None:
         """Pitfall #16: a field that silently disappears reads as a snapshot
         written before #1299 landed. The fallback is present and labelled."""
-        from mriforge.infrastructure.training.snapshot_provenance import (
+        from spectramr.infrastructure.training.snapshot_provenance import (
             reset_run_identity,
         )
 
@@ -1351,7 +1351,7 @@ class TestRunIdentityReachesTheArtifact:
     def test_two_snapshots_from_one_run_agree(self, tmp_path: Path) -> None:
         """The correlation the arm directory needs: same run, same id, so a
         differing id is positive evidence of a relaunch rather than noise."""
-        from mriforge.infrastructure.training.snapshot_provenance import (
+        from spectramr.infrastructure.training.snapshot_provenance import (
             reset_run_identity,
         )
 

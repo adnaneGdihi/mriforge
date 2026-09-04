@@ -1,6 +1,6 @@
 """Tests for the dataset manifest dataclasses.
 
-Targets ``mriforge.config.schemas.manifest_schema``. Frozen dataclasses for
+Targets ``spectramr.config.schemas.manifest_schema``. Frozen dataclasses for
 file-level metadata, dataset variants, and the in-memory manifest
 index. Includes legacy CSV row support.
 
@@ -21,7 +21,7 @@ import dataclasses
 
 import pytest
 
-from mriforge.config.schemas.manifest_schema import (
+from spectramr.config.schemas.manifest_schema import (
     DatasetManifest,
     DatasetManifestCSV,
     DatasetManifestIndex,

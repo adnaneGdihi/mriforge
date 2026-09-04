@@ -7,7 +7,7 @@ Retired Configuration Keys
 .. warning::
 
    **This page is generated.** Edit
-   ``mriforge/config/schemas/renames.py`` and run
+   ``spectramr/config/schemas/renames.py`` and run
    the page generator in the maintainers' tree; do not edit the tables below.
 
 Every key that has moved, where it went, and why. The rename table is the single
@@ -59,7 +59,7 @@ Reflow the offending file to block style, then re-run. For the live count, run
 either migrator over the corpus -- this page is generated from ``RENAMES`` alone
 and does not scan ``experiments/``, so a number written here would only drift.
 
-Retired outright (77)
+Retired outright (92)
 =====================
 
 These raise on load. Write the replacement.
@@ -79,7 +79,7 @@ These raise on load. Write the replacement.
    * - ``data.enable_graph_encoding``
      - ``data.domain.enable_graph_encoding``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.expose_acquisition_params``
      - ``data.expose.acquisition_params``
      - 2026-07-31
@@ -115,11 +115,11 @@ These raise on load. Write the replacement.
    * - ``data.graph_config``
      - ``data.domain.graph_config``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.graph_type``
      - ``data.domain.graph_type``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.hf_resolution``
      - ``data.pairing.hf_resolution``
      - 2026-07-31
@@ -131,7 +131,7 @@ These raise on load. Write the replacement.
    * - ``data.input_artifact``
      - ``data.domain.input_artifact``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.kspace_scale_domain``
      - ``data.processing.kspace_scale_domain``
      - 2026-07-31
@@ -179,7 +179,7 @@ These raise on load. Write the replacement.
    * - ``data.output_domain``
      - ``data.domain.output``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.preprocessing_dir``
      - ``data.source.preprocessing_dir``
      - 2026-07-31
@@ -207,7 +207,7 @@ These raise on load. Write the replacement.
    * - ``data.target_artifact``
      - ``data.domain.target_artifact``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.target_contrasts``
      - ``data.pairing.target_contrasts``
      - 2026-07-31
@@ -223,7 +223,7 @@ These raise on load. Write the replacement.
    * - ``device *(root)*``
      - ``run.device``
      - 2026-07-31
-     - A bare scalar at the document root, where a reader looks first and learns least. Resolution is unchanged: still only through `mriforge.core.compute_device` (non-negotiable 9b).
+     - A bare scalar at the document root, where a reader looks first and learns least. Resolution is unchanged: still only through `spectramr.core.compute_device` (non-negotiable 9b).
    * - ``logging.anomaly_check_interval``
      - ``logging.intervals.anomaly_check``
      - 2026-07-31
@@ -344,10 +344,70 @@ These raise on load. Write the replacement.
      - ``run.seed``
      - 2026-07-31
      - Two spellings of one seed. `training.seed` WON at runtime (pipelines/train.py prefers it), so 96 arms setting the root key were writing the loser. Both now name `run.seed`.
+   * - ``training.bloch_field.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the bloch_field strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.brenier_synthesis.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the brenier_synthesis strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.cartoon_texture_safe.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the cartoon_texture_safe strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.field_conditioned_inr.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the field_conditioned_inr strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.field_fno.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the field_fno strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.field_wiener.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the field_wiener strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.fisher_rao_geodesic.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the fisher_rao_geodesic strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.koopman_field.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the koopman_field strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.lora_modulation.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the lora_modulation strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.mccann_field_path.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the mccann_field_path strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.monotone_field.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the monotone_field strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.recoverability_vib.lambda_recon``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the recoverability_vib strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.scattering_besov.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the scattering_besov strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
    * - ``training.seed``
      - ``run.seed``
      - 2026-07-31
      - The seed is a fact about the RUN, not about the training paradigm — it also drives data shuffling and augmentation, neither of which lives under `training:`.
+   * - ``training.steerable_synthesis.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the steerable_synthesis strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
+   * - ``training.ulf_redegrad_tta.lambda_l1``
+     - ``losses.image_losses``
+     - 2026-09-03
+     - The inline L1 weight of the ulf_redegrad_tta strategy was read from its own training sub-block while losses.image_losses documented another value (16 mrixfields arms said 10.0 and ran 1.0). The loss-weight table is the one owner: declare `- {name: l1, weight: <w>}` on losses.image_losses (an author-written losses.reconstruction.lambda_l1 still wins there). The 43 arms that declared this key were drained, so it retires at raise.
    * - ``validation.hallucination_test``
      - ``validation.gates.hallucination_test``
      - 2026-07-31
@@ -522,7 +582,7 @@ Accepted for now and folded into place. Migrate at your convenience;
    * - ``data.target_channels``
      - ``data.domain.target_channels``
      - 2026-07-31
-     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/mriforge, already carried in KNOWN_UNCONSUMED.
+     - What representation the loader hands the model -- image or k-space, how many target channels, which artifact variants, and whether the sample arrives as a graph. `output_domain` drops its suffix inside `domain:` (the block supplies the noun, as with `expose:`), which also disambiguates it from `losses.output_domain`. `return_image_domain` stays FLAT: no reader in src/spectramr, already carried in KNOWN_UNCONSUMED.
    * - ``data.train_sites``
      - ``data.split.train_sites``
      - 2026-07-31

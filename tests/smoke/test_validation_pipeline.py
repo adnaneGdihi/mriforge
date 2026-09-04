@@ -50,7 +50,7 @@ def stub_dataloader_director(monkeypatch):
         return getattr(self, "_test_loaders", default_loaders)
 
     monkeypatch.setattr(
-        "mriforge.infrastructure.builders.directors.data_pipeline_director."
+        "spectramr.infrastructure.builders.directors.data_pipeline_director."
         "DataPipelineDirector.build_dataloaders",
         _build_dataloaders,
         raising=False,
@@ -59,13 +59,13 @@ def stub_dataloader_director(monkeypatch):
 
 # Lazy imports helpers
 def get_TrainingSettings():
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings
 
 
 def get_run_training_pipeline():
-    from mriforge.pipelines import run_training_pipeline
+    from spectramr.pipelines import run_training_pipeline
 
     return run_training_pipeline
 
@@ -131,7 +131,7 @@ def create_base_config(test_dir, training_mode="diffusion", strategy_class=None,
             "batch_size": 2,
             "output_dir": test_dir,
             "strategy_class": strategy_class
-            or "mriforge.infrastructure.training.strategies.DiffusionTrainingStrategy",
+            or "spectramr.infrastructure.training.strategies.DiffusionTrainingStrategy",
             "diffusion": {"num_timesteps": 100},
             "latent": {"latent_dim": 256},
         },
@@ -223,7 +223,7 @@ class TestValidationPipeline(unittest.TestCase):
         config = create_base_config(
             self.test_dir,
             training_mode="reconstruction",
-            strategy_class="mriforge.infrastructure.training.strategies.ReconstructionTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.ReconstructionTrainingStrategy",
         )
 
         print("\n[TEST] Running reconstruction strategy validation test...")
@@ -243,7 +243,7 @@ class TestValidationPipeline(unittest.TestCase):
         config = create_base_config(
             self.test_dir,
             training_mode="gan",
-            strategy_class="mriforge.infrastructure.training.strategies.GANTrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.GANTrainingStrategy",
         )
 
         print("\n[TEST] Running GAN strategy validation test...")
@@ -262,7 +262,7 @@ class TestValidationPipeline(unittest.TestCase):
         config = create_base_config(
             self.test_dir,
             training_mode="vae",
-            strategy_class="mriforge.infrastructure.training.strategies.VAETrainingStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.VAETrainingStrategy",
         )
 
         print("\n[TEST] Running VAE strategy validation test...")

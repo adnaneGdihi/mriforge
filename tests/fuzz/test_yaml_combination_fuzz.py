@@ -21,9 +21,9 @@ pytestmark = pytest.mark.fuzz
 
 def test_fuzz_harness_imports() -> None:
     # The two halves the fuzz drives must import + compose.
-    from mriforge.domain.entities import ResolvedExperimentContext
-    from mriforge.infrastructure.validation.compatibility_matrix import check_combination
-    from mriforge.infrastructure.validation.context_resolver import resolve
+    from spectramr.domain.entities import ResolvedExperimentContext
+    from spectramr.infrastructure.validation.compatibility_matrix import check_combination
+    from spectramr.infrastructure.validation.context_resolver import resolve
 
     assert callable(resolve)
     ctx = ResolvedExperimentContext(config_version="6.1", model_type="unet", strategy_name="GAN")
@@ -33,9 +33,9 @@ def test_fuzz_harness_imports() -> None:
 
 def _grid_contexts():
     """Enumerate synthetic resolved contexts across the rule-relevant axes."""
-    from mriforge.domain.entities import ResolvedExperimentContext
-    from mriforge.domain.entities.experiment_context import DataProfile
-    from mriforge.models.capabilities import LossCapabilities, ModelCapabilities
+    from spectramr.domain.entities import ResolvedExperimentContext
+    from spectramr.domain.entities.experiment_context import DataProfile
+    from spectramr.models.capabilities import LossCapabilities, ModelCapabilities
 
     data_domains = (None, "image", "kspace", "complex_image")
     model_in = (None, "image", "kspace")
@@ -75,7 +75,7 @@ def test_full_combination_sweep_binary_and_wellformed() -> None:
     capability declarations are merged into the trunk — until then most registry
     components carry no capabilities and the rules would skip vacuously.)
     """
-    from mriforge.infrastructure.validation.compatibility_matrix import (
+    from spectramr.infrastructure.validation.compatibility_matrix import (
         CompatMessage,
         check_combination,
     )
@@ -99,10 +99,10 @@ def test_full_combination_sweep_binary_and_wellformed() -> None:
 
 
 def test_known_invalid_combo_is_rejected_with_error() -> None:
-    from mriforge.domain.entities import ResolvedExperimentContext
-    from mriforge.domain.entities.experiment_context import DataProfile
-    from mriforge.infrastructure.validation.compatibility_matrix import check_combination
-    from mriforge.models.capabilities import ModelCapabilities
+    from spectramr.domain.entities import ResolvedExperimentContext
+    from spectramr.domain.entities.experiment_context import DataProfile
+    from spectramr.infrastructure.validation.compatibility_matrix import check_combination
+    from spectramr.models.capabilities import ModelCapabilities
 
     ctx = ResolvedExperimentContext(
         config_version="6.1",

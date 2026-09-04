@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.blocks.block_registry import create_block
+from spectramr.models.blocks.block_registry import create_block
 
 
 def test_unet_blocks_dispatch_and_shapes():

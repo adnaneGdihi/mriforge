@@ -1,17 +1,17 @@
-"""Every module under ``src/mriforge`` must import cleanly.
+"""Every module under ``src/spectramr`` must import cleanly.
 
 Catches syntax errors, broken imports and import-time side effects before a
 run reaches the cluster.
 
 Two things this file used to get wrong, both worth keeping in view:
 
-* ``SRC_ROOT``/``prefix`` predated the 2026-05 ``src`` -> ``src/mriforge``
-  refactor, so it imported the package a *second* time as ``src.mriforge.*``.
+* ``SRC_ROOT``/``prefix`` predated the 2026-05 ``src`` -> ``src/spectramr``
+  refactor, so it imported the package a *second* time as ``src.spectramr.*``.
   Every ``@register_*`` module then collided with its own real registration
   (861 failures in cluster job 8000966), and every module without a decorator
   succeeded, leaving ~1000 shadow module objects resident for the session.
 * The import ran in-process. The conftest chain has already imported most of
-  ``mriforge`` by then, so ``importlib.import_module`` was a ``sys.modules``
+  ``spectramr`` by then, so ``importlib.import_module`` was a ``sys.modules``
   dict hit -- verified by breaking ``core/compute_device.py`` and watching the
   in-process form still report green. The sweep therefore runs in one pristine
   subprocess (:mod:`tests.smoke._import_sweep`), shared across the whole
@@ -33,7 +33,7 @@ import pytest
 from _pytest.config import parse_warning_filter
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PACKAGE_ROOT = REPO_ROOT / "src" / "mriforge"
+PACKAGE_ROOT = REPO_ROOT / "src" / "spectramr"
 SWEEP_SCRIPT = Path(__file__).resolve().parent / "_import_sweep.py"
 SWEEP_TIMEOUT_S = 900
 
@@ -130,7 +130,7 @@ def test_discovery_covers_the_package() -> None:
     assert (
         len(ALL_MODULES) > 500
     ), f"only {len(ALL_MODULES)} modules discovered under {PACKAGE_ROOT}"
-    assert all(m.startswith("mriforge.") for m in ALL_MODULES)
+    assert all(m.startswith("spectramr.") for m in ALL_MODULES)
 
 
 @pytest.mark.smoke
@@ -142,6 +142,6 @@ def test_module_imports(
     if failure is None:
         return
     missing = failure["missing_module"]
-    if missing and not missing.startswith("mriforge"):
+    if missing and not missing.startswith("spectramr"):
         pytest.skip(f"third-party dependency '{missing}' is not installed")
     pytest.fail(f"{module_name}: {failure['type']}: {failure['message']}")

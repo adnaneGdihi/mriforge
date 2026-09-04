@@ -17,7 +17,7 @@ class TestMetricsTrackerIOPS:
 
     def test_headers_cached_after_first_read(self, tmp_path):
         """Verify headers are cached after first CSV access."""
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path), save_images=False)
 
@@ -34,7 +34,7 @@ class TestMetricsTrackerIOPS:
 
     def test_no_file_read_on_subsequent_appends(self, tmp_path):
         """Verify subsequent appends use cache, not file reads."""
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path), save_images=False)
 
@@ -74,7 +74,7 @@ class TestMetricsTrackerDroppedWarning:
         We verify the functional behavior (metric is not saved) rather than
         log capture, since the logger uses stdout handlers that caplog doesn't capture.
         """
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path), save_images=False)
 
@@ -103,14 +103,14 @@ class TestMetricsTrackerDroppedWarning:
 
     def test_no_warning_when_all_metrics_match(self, tmp_path, caplog):
         """Verify no warning when all metrics are in headers."""
-        from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+        from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
         tracker = MetricsTracker(output_dir=str(tmp_path), save_images=False)
 
         csv_path = tracker.training_csv
 
         with caplog.at_level(
-            logging.WARNING, logger="mriforge.infrastructure.services.metrics_tracker"
+            logging.WARNING, logger="spectramr.infrastructure.services.metrics_tracker"
         ):
             # Log only metrics that are in the standard headers
             tracker._append_to_csv(

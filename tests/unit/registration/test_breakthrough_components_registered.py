@@ -55,7 +55,7 @@ _METRIC_ALIASES = [
 @pytest.mark.parametrize("alias", _METRIC_ALIASES)
 def test_metric_alias_resolves_from_cold_import(alias: str) -> None:
     check = (
-        "from mriforge.core.metrics import get_metric; "
+        "from spectramr.core.metrics import get_metric; "
         f"m = get_metric({alias!r}); "
         "assert m is not None, 'get_metric returned None'"
     )
@@ -75,7 +75,7 @@ def test_loss_alias_resolves_from_cold_import(alias: str) -> None:
     """If `spectral_triple_loss` is dropped from src/models/losses/__init__.py,
     this test fails — the @register_loss decorator no longer fires."""
     check = (
-        "from mriforge.models.losses.registry import LossRegistry; "
+        "from spectramr.models.losses.registry import LossRegistry; "
         f"loss = LossRegistry.create({alias!r}); "
         "assert loss is not None"
     )
@@ -98,11 +98,11 @@ _GENERATOR_NAMES = [
 @pytest.mark.parametrize("name", _GENERATOR_NAMES)
 def test_generator_resolves_from_cold_import(name: str) -> None:
     """A `@register_model` decorator on an un-imported generator file is dead.
-    This test forces a cold load of `mriforge.models.generators` (which mounts the
+    This test forces a cold load of `spectramr.models.generators` (which mounts the
     breakthrough module) and checks the registry."""
     check = (
-        "import mriforge.models.generators; "
-        "from mriforge.models.registry import MODEL_REGISTRY; "
+        "import spectramr.models.generators; "
+        "from spectramr.models.registry import MODEL_REGISTRY; "
         f"entry = MODEL_REGISTRY.get({name!r}); "
         f"assert entry is not None, 'missing {name}'"
     )
@@ -138,7 +138,7 @@ _STRATEGY_ALIASES = [
 @pytest.mark.parametrize("alias", _STRATEGY_ALIASES)
 def test_strategy_alias_in_class_paths(alias: str) -> None:
     check = (
-        "from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory; "
+        "from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory; "
         f"assert {alias!r} in TrainingStrategyFactory.STRATEGY_CLASS_PATHS"
     )
     rc, out = _run_cold(check)
@@ -147,7 +147,7 @@ def test_strategy_alias_in_class_paths(alias: str) -> None:
 
 def test_sle_kappa_mask_type_present() -> None:
     check = (
-        "from mriforge.infrastructure.physics.sampling import MaskType; "
+        "from spectramr.infrastructure.physics.sampling import MaskType; "
         "assert MaskType.SLE_KAPPA.value == 'sle_kappa'"
     )
     rc, out = _run_cold(check)
@@ -156,7 +156,7 @@ def test_sle_kappa_mask_type_present() -> None:
 
 def test_sle_trajectory_exposed_from_transforms_package() -> None:
     check = (
-        "from mriforge.data.transforms import build_sle_kspace_mask, kappa_to_dimension, sample_sle_trace; "
+        "from spectramr.data.transforms import build_sle_kspace_mask, kappa_to_dimension, sample_sle_trace; "
         "assert callable(build_sle_kspace_mask)"
     )
     rc, out = _run_cold(check)
@@ -183,8 +183,8 @@ def test_vf_parm_mode_registered_in_strategy_paths_and_constraints(mode: str) ->
     so the gap cannot reopen.
     """
     check = (
-        "from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory; "
-        "from mriforge.config.validation_constants import VALID_TRAINING_MODES, TRAINING_MODE_CONSTRAINTS; "
+        "from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory; "
+        "from spectramr.config.validation_constants import VALID_TRAINING_MODES, TRAINING_MODE_CONSTRAINTS; "
         f"assert {mode!r} in TrainingStrategyFactory.STRATEGY_CLASS_PATHS, 'missing from STRATEGY_CLASS_PATHS'; "
         f"assert {mode!r} in TRAINING_MODE_CONSTRAINTS, 'missing from TRAINING_MODE_CONSTRAINTS'; "
         f"assert {mode!r} in VALID_TRAINING_MODES, 'missing from VALID_TRAINING_MODES'"
@@ -205,7 +205,7 @@ def test_training_modes_include_breakthrough_aliases() -> None:
         "'tropical_quantitative_maps','frontdoor_scanner']"
     )
     check = (
-        "from mriforge.config.validation_constants import VALID_TRAINING_MODES, TRAINING_MODE_CONSTRAINTS; "
+        "from spectramr.config.validation_constants import VALID_TRAINING_MODES, TRAINING_MODE_CONSTRAINTS; "
         f"aliases = {aliases}; "
         "missing_modes = [a for a in aliases if a not in VALID_TRAINING_MODES]; "
         "missing_constr = [a for a in aliases if a not in TRAINING_MODE_CONSTRAINTS]; "

@@ -2,7 +2,7 @@
 
 import torch
 
-from mriforge.models.losses.mind_ssc_loss import MINDSSCLoss
+from spectramr.models.losses.mind_ssc_loss import MINDSSCLoss
 
 
 class TestMINDSSCLoss:

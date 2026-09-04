@@ -1,6 +1,6 @@
 """Tests for configuration enumeration types.
 
-Targets ``mriforge.config.schemas.enums``. Every enum is a ``str`` Enum so
+Targets ``spectramr.config.schemas.enums``. Every enum is a ``str`` Enum so
 the value can flow through Pydantic validation as either the enum
 member or the bare string.
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.enums import (
+from spectramr.config.schemas.enums import (
     AccelerationSchedule,
     ActivationFunction,
     ArtifactOrigin,
@@ -225,7 +225,7 @@ def test_maturity_docstring_describes_the_enforced_live_rule() -> None:
     a registered forward model (operator OR signal model), a regime-tagged
     strategy, AND regime-tagged metrics. Pinned on the clauses, not exact prose.
     """
-    from mriforge.config.schemas.enums import Maturity
+    from spectramr.config.schemas.enums import Maturity
 
     doc = Maturity.__doc__ or ""
     lines = doc.splitlines()
@@ -256,7 +256,7 @@ def test_maturity_docstring_records_why_losses_are_not_a_live_clause() -> None:
     only be satisfied by mis-tagging L1 as structural-only. The docstring has to
     carry the reason, because the rule looks arbitrary without it.
     """
-    from mriforge.config.schemas.enums import Maturity
+    from spectramr.config.schemas.enums import Maturity
 
     doc = (Maturity.__doc__ or "").lower()
     assert "does not require tagged **losses**".lower() in doc or (
@@ -279,7 +279,7 @@ class TestOptimizerTypeVocabulary:
     """The enum is the SSOT the registry must cover."""
 
     def test_values_are_lowercase_and_unique(self) -> None:
-        from mriforge.config.schemas.enums import OptimizerType
+        from spectramr.config.schemas.enums import OptimizerType
 
         values = [m.value for m in OptimizerType]
         assert values == [v.lower() for v in values]
@@ -287,12 +287,12 @@ class TestOptimizerTypeVocabulary:
 
     def test_names_frozenset_tracks_the_enum(self) -> None:
         """OPTIMIZER_NAMES is derived, not restated — a copy could drift."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES, OptimizerType
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES, OptimizerType
 
         assert OPTIMIZER_NAMES == {m.value for m in OptimizerType}
 
     def test_covers_the_three_declared_tiers(self) -> None:
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         torch_tier = {"adam", "adamw", "sgd", "rmsprop", "adamax", "nadam", "radam"}
         in_repo_tier = {"lars", "lamb", "lion"}
@@ -304,7 +304,7 @@ class TestOptimizerTypeVocabulary:
     def test_every_alias_resolves_to_a_real_name(self) -> None:
         """An alias pointing at a nonexistent canonical name would make the
         validator reject a spelling it advertises."""
-        from mriforge.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
 
         for alias, canonical in OPTIMIZER_ALIASES.items():
             assert canonical in OPTIMIZER_NAMES, (
@@ -314,7 +314,7 @@ class TestOptimizerTypeVocabulary:
 
     def test_no_alias_shadows_a_canonical_name(self) -> None:
         """A canonical name appearing as an alias key is a silent redirect."""
-        from mriforge.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
 
         assert not (set(OPTIMIZER_ALIASES) & OPTIMIZER_NAMES)
 
@@ -323,7 +323,7 @@ class TestOptimizerTypeVocabulary:
         single-backward seam a lone ``step()`` would perturb the weights and
         never restore them, so the run would train on w + rho*g and report
         success -- strictly worse than the name being absent."""
-        from mriforge.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_ALIASES, OPTIMIZER_NAMES
 
         assert "sam" not in OPTIMIZER_NAMES
         assert "sam" not in OPTIMIZER_ALIASES.values()
@@ -331,7 +331,7 @@ class TestOptimizerTypeVocabulary:
     def test_lookahead_is_absent_because_it_is_a_wrapper(self) -> None:
         """Lookahead wraps a base optimizer; as a standalone name it would be
         meaningless. It lives at optimization.optimizer.lookahead instead."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         assert "lookahead" not in OPTIMIZER_NAMES
 
@@ -340,6 +340,6 @@ class TestOptimizerTypeVocabulary:
         the reflective getattr(torch.optim, ...) path and TypeError'd on the
         unconditionally-forwarded weight_decay default; naming them makes that a
         designed, tested drop instead of a crash."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         assert {"lbfgs", "sparseadam"} <= OPTIMIZER_NAMES

@@ -7,9 +7,9 @@ import math
 import pytest
 import torch
 
-from mriforge.models.blocks.progressive import FadeIn, MinibatchStdDev, PixelNorm
-from mriforge.models.gans.progressive_gan import ProgressiveGAN
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.blocks.progressive import FadeIn, MinibatchStdDev, PixelNorm
+from spectramr.models.gans.progressive_gan import ProgressiveGAN
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 
 class TestProgressiveBlocks:

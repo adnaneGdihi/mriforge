@@ -22,7 +22,7 @@ import pytest
 import torch
 from torch.nn import functional
 
-from mriforge.core.metrics.evaluation_metrics import PSNR, SNR, SSIMMetric
+from spectramr.core.metrics.evaluation_metrics import PSNR, SNR, SSIMMetric
 
 
 @pytest.fixture()

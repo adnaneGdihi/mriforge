@@ -8,7 +8,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.trellis_norm import ChannelLayerNorm32, GroupNorm32, LayerNorm32
+from spectramr.models.blocks.trellis_norm import ChannelLayerNorm32, GroupNorm32, LayerNorm32
 
 
 class TestLayerNorm32:

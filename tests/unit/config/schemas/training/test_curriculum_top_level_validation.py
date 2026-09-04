@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
 
 def test_curriculum_fields_validate_at_top_level() -> None:

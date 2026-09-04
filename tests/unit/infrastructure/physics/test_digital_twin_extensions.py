@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (
+from spectramr.infrastructure.physics.digital_twin_extensions import (
     DEGRADATION_REGISTRY,
     apply_degradation,
     degrade_complex_gaussian_noise,
@@ -117,7 +117,7 @@ class TestSpecificDegradations:
         # is 3.01 dB hotter than requested (critique physics 4.3).
         import math
 
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         # A large random phantom for a low-variance Monte-Carlo SNR estimate.
         x = torch.complex(torch.randn(1, 1, 96, 96), torch.randn(1, 1, 96, 96))
@@ -163,7 +163,7 @@ class TestSpecificDegradations:
 
 import itertools  # noqa: E402
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
     DECLARED_THETA_ZERO_PEDESTAL,
     KNOWN_COLLINEAR_PAIRS,
     MAGNITUDE,
@@ -174,7 +174,7 @@ from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E
     is_phase_only,
     phase_only_degradations,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c  # noqa: E402
 
 _ALL_AXES = sorted(DEGRADATION_REGISTRY)
 
@@ -524,12 +524,12 @@ def test_resolution_snr_is_distinct_from_pure_blur_and_pure_noise() -> None:
     theta). This is the anti-facade check that the coupling actually fires."""
     import torch
 
-    from mriforge.infrastructure.physics.digital_twin_extensions import (
+    from spectramr.infrastructure.physics.digital_twin_extensions import (
         degrade_complex_gaussian_noise,
         degrade_resolution_snr,
         degrade_t2star_blur,
     )
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     torch.manual_seed(0)
     n = 64
@@ -556,7 +556,7 @@ def test_motion_types_are_distinct_schedules() -> None:
     identity for the deterministic-schedule axes (anti-facade: the new axes fire)."""
     import torch
 
-    from mriforge.infrastructure.physics.digital_twin_extensions import apply_degradation
+    from spectramr.infrastructure.physics.digital_twin_extensions import apply_degradation
 
     torch.manual_seed(0)
     n = 48
@@ -580,7 +580,7 @@ def test_advisor_major_axis_repairs() -> None:
     localized central-FOV spike (not a flat image-wide pedestal)."""
     import torch
 
-    from mriforge.infrastructure.physics.digital_twin_extensions import apply_degradation
+    from spectramr.infrastructure.physics.digital_twin_extensions import apply_degradation
 
     torch.manual_seed(0)
     n = 64
@@ -622,7 +622,7 @@ def test_advisor_units_honesty_reconciliations() -> None:
     peak, and geometric_warp is labelled a per-mode scale rather than px."""
     import torch
 
-    from mriforge.infrastructure.physics.digital_twin_extensions import (
+    from spectramr.infrastructure.physics.digital_twin_extensions import (
         DEGRADATION_REGISTRY,
         apply_degradation,
     )
@@ -668,7 +668,7 @@ class TestRicianScaleInvariance:
     @pytest.mark.parametrize("theta", [0.05, 0.5, 1.0])
     def test_severity_is_invariant_to_input_scale(self, theta: float) -> None:
         """The same theta must mean the same damage at any input scale."""
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_rician_noise,
         )
 
@@ -690,7 +690,7 @@ class TestRicianScaleInvariance:
         means the two noise axes are on incompatible severity yardsticks and no
         cross-axis aggregate over them is meaningful.
         """
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_rician_noise,
         )
 
@@ -709,7 +709,7 @@ class TestRicianScaleInvariance:
         The spec said "fraction of max signal" while the code applied an
         absolute intensity — an unwired declaration (pitfall #15).
         """
-        from mriforge.infrastructure.physics.digital_twin_extensions import _SEVERITY
+        from spectramr.infrastructure.physics.digital_twin_extensions import _SEVERITY
 
         (param,) = _SEVERITY["rician"].params
         assert param.name == "sigma"
@@ -717,7 +717,7 @@ class TestRicianScaleInvariance:
 
         # And the operator honours it: at theta=1 the background (zero signal)
         # settles at the Rayleigh mean sigma*sqrt(pi/2) with sigma = 0.3 * p99.
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_rician_noise,
         )
 
@@ -729,7 +729,7 @@ class TestRicianScaleInvariance:
         assert float(background.mean()) == pytest.approx(expected, rel=0.1)
 
     def test_all_zero_input_does_not_divide_by_zero(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             degrade_rician_noise,
         )
 
@@ -742,7 +742,7 @@ class TestDeriveAxisSeed:
     uses. Its contract: distinct per axis, stable across processes."""
 
     def test_distinct_axes_get_distinct_seeds(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
             derive_axis_seed,
         )
@@ -761,7 +761,7 @@ class TestDeriveAxisSeed:
         import sys
 
         snippet = (
-            "from mriforge.infrastructure.physics.digital_twin_extensions import "
+            "from spectramr.infrastructure.physics.digital_twin_extensions import "
             "derive_axis_seed; print(derive_axis_seed(42, 'rician'))"
         )
         runs = {
@@ -778,7 +778,7 @@ class TestDeriveAxisSeed:
 
     def test_seed_does_not_depend_on_severity(self) -> None:
         """theta must stay the only free variable across a severity grid."""
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             derive_axis_seed,
         )
 

@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster before promoting to active/
+# UNVERIFIED: validate via spectramr audit on cluster before promoting to active/
 # Minimal settings fixture for the diffusion family.
 # Covers strategy keys: diffusion, rectified_flow, flow_matching,
 #   fisher_rao_flow, resetting_diffusion, levy_diffusion,
@@ -16,12 +16,12 @@ metadata:
     - diffusion
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: reconstruction
-  output_dir: /tmp/mriforge_test/diffusion
+  output_dir: /tmp/spectramr_test/diffusion
   enable_mixed_precision: false
   enable_gradient_checkpointing: false
   physics_informed: false

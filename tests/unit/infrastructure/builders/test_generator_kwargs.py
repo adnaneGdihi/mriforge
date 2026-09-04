@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import pydantic
 import pytest
 
-from mriforge.infrastructure.builders.generator_kwargs import (
+from spectramr.infrastructure.builders.generator_kwargs import (
     _SKIP_MODEL_FIELDS,
     ResolvedGeneratorKwargs,
     apply_gradient_checkpointing,
@@ -406,7 +406,7 @@ class TestDCNoiseKeysAreForwarded:
         )
 
     def test_declared_noise_levels_reach_the_kwargs(self) -> None:
-        from mriforge.infrastructure.builders.generator_kwargs import (
+        from spectramr.infrastructure.builders.generator_kwargs import (
             resolve_generator_kwargs,
         )
 
@@ -420,10 +420,10 @@ class TestDCNoiseKeysAreForwarded:
 
     def test_the_forwarded_set_comes_from_the_shared_table(self) -> None:
         """One owner (NN17): a key added to DC_SSOT_KEYS must be forwarded."""
-        from mriforge.infrastructure.builders.generator_kwargs import (
+        from spectramr.infrastructure.builders.generator_kwargs import (
             resolve_generator_kwargs,
         )
-        from mriforge.infrastructure.physics.dc_settings import DC_SSOT_KEYS
+        from spectramr.infrastructure.physics.dc_settings import DC_SSOT_KEYS
 
         kwargs = resolve_generator_kwargs(
             self._config(), model_type="kspace_cold_diffusion"

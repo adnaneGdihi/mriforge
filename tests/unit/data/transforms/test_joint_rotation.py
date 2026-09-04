@@ -11,12 +11,12 @@ import numpy as np
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.joint_rotation import (
+from spectramr.data.transforms.joint_rotation import (
     JointKSpaceImageRotation,
     rotate_image,
     rotate_kspace,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def test_rotate_image_shape_and_finite():

@@ -3,7 +3,7 @@ from pathlib import Path
 import matplotlib as mpl
 import pytest
 
-from mriforge.infrastructure.reporting import style as style_mod
+from spectramr.infrastructure.reporting import style as style_mod
 
 
 def test_nature_style_file_exists_and_is_sans_serif():
@@ -82,7 +82,7 @@ def test_panel_label_respects_global_disable():
 
 
 def test_pretty_label_known_keys():
-    from mriforge.infrastructure.reporting.style import pretty_label
+    from spectramr.infrastructure.reporting.style import pretty_label
 
     assert pretty_label("psnr") == "PSNR (dB)"
     assert pretty_label("ssim") == "SSIM"
@@ -92,7 +92,7 @@ def test_pretty_label_known_keys():
 
 
 def test_pretty_label_expands_split_prefixes():
-    from mriforge.infrastructure.reporting.style import pretty_label
+    from spectramr.infrastructure.reporting.style import pretty_label
 
     assert pretty_label("val_ssim") == "validation SSIM"
     assert pretty_label("train_psnr") == "training PSNR (dB)"
@@ -100,7 +100,7 @@ def test_pretty_label_expands_split_prefixes():
 
 
 def test_pretty_label_unknown_key_degrades_to_words():
-    from mriforge.infrastructure.reporting.style import pretty_label
+    from spectramr.infrastructure.reporting.style import pretty_label
 
     assert pretty_label("my_custom_metric") == "my custom metric"
     # bare prefix (no remainder) must not recurse forever
@@ -108,7 +108,7 @@ def test_pretty_label_unknown_key_degrades_to_words():
 
 
 def test_caption_templates_for_new_figures():
-    from mriforge.infrastructure.reporting.style import caption_for
+    from spectramr.infrastructure.reporting.style import caption_for
 
     assert "Spearman" in caption_for("metric_correlation")
     assert "Generalization gap" in caption_for("train_val_gap", metric="SSIM")
@@ -138,12 +138,12 @@ class TestUnregisteredMethodsAreNotAllBlack:
 
     @pytest.mark.parametrize("method", _PREVIOUSLY_MISSING)
     def test_the_nine_are_registered(self, method):
-        from mriforge.infrastructure.reporting.style import METHOD_COLOURS
+        from spectramr.infrastructure.reporting.style import METHOD_COLOURS
 
         assert method in METHOD_COLOURS
 
     def test_black_stays_reserved_for_the_baseline(self):
-        from mriforge.infrastructure.reporting.style import colour_for
+        from spectramr.infrastructure.reporting.style import colour_for
 
         assert colour_for("baseline") == "#000000"
         assert colour_for("zero_filled") == "#000000"
@@ -152,13 +152,13 @@ class TestUnregisteredMethodsAreNotAllBlack:
         "unknown", ["not_a_registered_method", "another_unknown", "third_unknown"]
     )
     def test_an_unknown_never_gets_the_baseline_colour(self, unknown):
-        from mriforge.infrastructure.reporting.style import colour_for
+        from spectramr.infrastructure.reporting.style import colour_for
 
         assert colour_for(unknown) != "#000000"
 
     def test_two_unknowns_are_not_forced_to_the_same_colour(self):
         """The systematic collision is what made the old fallback misleading."""
-        from mriforge.infrastructure.reporting.style import colour_for
+        from spectramr.infrastructure.reporting.style import colour_for
 
         colours = {colour_for(f"unknown_method_{i}") for i in range(6)}
         assert len(colours) > 1, "every unknown still resolves to one colour"
@@ -166,13 +166,13 @@ class TestUnregisteredMethodsAreNotAllBlack:
     def test_the_fallback_is_stable_across_calls(self):
         """`hash()` is salted per process, so it would give one method different
         colours in two figures of the same report."""
-        from mriforge.infrastructure.reporting.style import colour_for
+        from spectramr.infrastructure.reporting.style import colour_for
 
         assert colour_for("some_new_arm") == colour_for("some_new_arm")
 
     def test_an_explicit_index_still_wins(self):
         """Callers that colour by enumerate order must keep working."""
-        from mriforge.infrastructure.reporting.style import (
+        from spectramr.infrastructure.reporting.style import (
             _FALLBACK_PALETTE,
             colour_for,
         )
@@ -183,6 +183,6 @@ class TestUnregisteredMethodsAreNotAllBlack:
         """One method must not change colour because a caller spelled it
         differently -- `cyclegan` is the registered strategy, `cycle_gan` the
         spelling older figures used."""
-        from mriforge.infrastructure.reporting.style import colour_for
+        from spectramr.infrastructure.reporting.style import colour_for
 
         assert colour_for("cyclegan") == colour_for("cycle_gan")

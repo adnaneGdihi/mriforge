@@ -1,4 +1,4 @@
-"""Unit tests for mriforge.config.config_builder.ConfigBuilder.
+"""Unit tests for spectramr.config.config_builder.ConfigBuilder.
 
 PART A — Task III.3.
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.config_builder import (
+from spectramr.config.config_builder import (
     ConfigBuilder,
     ConfigTemplates,
     build_config,
@@ -300,8 +300,8 @@ class TestPrepareForYamlPydanticV2:
     Pydantic model via v2 ``model_dump()``, not the deprecated v1 ``.dict()``.
 
     The v1 ``.dict()`` shim emits a ``DeprecationWarning`` from
-    ``mriforge.config.config_builder``, which the repo's
-    ``error::DeprecationWarning:mriforge.*`` filter promotes to an error — so if the
+    ``spectramr.config.config_builder``, which the repo's
+    ``error::DeprecationWarning:spectramr.*`` filter promotes to an error — so if the
     bug regressed, this test would *error* rather than merely assert-fail.
     """
 

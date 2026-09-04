@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import importlib
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 def _resolve(short_name: str) -> type:

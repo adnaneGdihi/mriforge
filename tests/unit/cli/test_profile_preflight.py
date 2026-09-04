@@ -1,4 +1,4 @@
-"""Pre-flight refusals for ``mriforge profile`` — one planted violation per shape.
+"""Pre-flight refusals for ``spectramr profile`` — one planted violation per shape.
 
 Both checks here replace a failure that already happened, correctly, minutes
 later. So the thing these tests must prove is not "it raises" but "it raises for
@@ -26,8 +26,8 @@ import argparse
 
 import pytest
 
-from mriforge.cli import profile_preflight as pf
-from mriforge.config.settings import TrainingSettings
+from spectramr.cli import profile_preflight as pf
+from spectramr.config.settings import TrainingSettings
 
 # --------------------------------------------------------------------- helpers
 

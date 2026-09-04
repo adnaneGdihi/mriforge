@@ -10,10 +10,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.factories.model_factory import ModelFactory
-from mriforge.models.generators.convolution_variants import EnhancedUNet
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.factories.model_factory import ModelFactory
+from spectramr.models.generators.convolution_variants import EnhancedUNet
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -56,7 +56,7 @@ class TestEnhancedUNetNameIsUndivided:
         assert MODEL_REGISTRY["enhanced_unet"]["class"] is _factory_class("enhanced_unet")
 
     def test_it_resolves_to_the_configurable_unet(self):
-        from mriforge.models.reconstruction.unet import UNet
+        from spectramr.models.reconstruction.unet import UNet
 
         assert MODEL_REGISTRY["enhanced_unet"]["class"] is UNet
         assert _factory_class("enhanced_unet") is UNet

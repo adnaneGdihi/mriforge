@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.virtual_fiducial import (
+from spectramr.infrastructure.physics.virtual_fiducial import (
     MotionTrajectory,
     VirtualFiducial,
 )
@@ -134,7 +134,7 @@ class TestFiducialJitter:
         pooling — the resolution the estimator actually sees, not full-res."""
         import torch.nn.functional as F
 
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         k = fft2c(F.avg_pool2d(field, 2)).abs()[0, 0]
         return float((k > 0.01 * k.max()).float().mean())
@@ -150,7 +150,7 @@ class TestFiducialJitter:
     def test_jitter_is_what_makes_the_shift_recoverable(self) -> None:
         import torch.nn.functional as F
 
-        from mriforge.infrastructure.physics.subpixel_registration import (
+        from spectramr.infrastructure.physics.subpixel_registration import (
             estimate_subpixel_shifts,
             fourier_shift,
         )
@@ -280,7 +280,7 @@ class TestPhysicalUnits:
         otherwise the sizing rule would be correct in theory and useless."""
         import torch.nn.functional as F
 
-        from mriforge.infrastructure.physics.subpixel_registration import (
+        from spectramr.infrastructure.physics.subpixel_registration import (
             estimate_subpixel_shifts,
             fourier_shift,
         )

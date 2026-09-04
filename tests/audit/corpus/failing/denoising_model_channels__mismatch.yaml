@@ -11,7 +11,7 @@ metadata:
   name: Failing — denoising_model_channels (mismatch)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
   max_iterations: 10
   device: cuda
   task: diffusion

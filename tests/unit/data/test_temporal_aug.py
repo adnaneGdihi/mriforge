@@ -9,7 +9,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.temporal_aug import (
+from spectramr.data.transforms.temporal_aug import (
     FrameDropoutTransform,
     PhaseShiftTransform,
     TemporalFlipTransform,

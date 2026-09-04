@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.hyper_mamba_unet import HyperMambaUNet
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.generators.hyper_mamba_unet import HyperMambaUNet
+from spectramr.models.registry import MODEL_REGISTRY
 from tests.utils.optional_backends import requires_cuda_for_mamba
 
 
@@ -59,7 +59,7 @@ class TestHyperMambaUNet:
 
         # Check that at least one MambaLayer2D in the backbone has its
         # _ssm_mod_proj initialized (proves params were consumed)
-        from mriforge.models.generators.mamba_unet import MambaLayer2D
+        from spectramr.models.generators.mamba_unet import MambaLayer2D
 
         found_initialized = False
         for m in model.backbone.modules():
@@ -102,7 +102,7 @@ class TestHyperMambaUNet:
         arm (coil_processing_mode=svd) passes the ``data_model_compatibility``
         audit instead of being rejected as 'kspace data vs image model'.
         """
-        from mriforge.models.registry import get_model_capabilities
+        from spectramr.models.registry import get_model_capabilities
 
         caps = get_model_capabilities("hyper_mamba_unet")
         assert caps is not None

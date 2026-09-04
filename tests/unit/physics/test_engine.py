@@ -1,6 +1,6 @@
 """Regression tests for ``PhysicsEngine`` knob-wiring contracts.
 
-Targets ``mriforge.infrastructure.physics.engine``. These tests pin the
+Targets ``spectramr.infrastructure.physics.engine``. These tests pin the
 post-fix contracts from the WS-4 forward-operator review:
 
 * ``dc_type`` dispatch is exhaustive: an advertised-but-unwired / unknown value
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.engine import PhysicsEngine
+from spectramr.infrastructure.physics.engine import PhysicsEngine
 
 
 # ---------------------------------------------------------------------------
@@ -34,7 +34,7 @@ def test_unknown_dc_type_raises() -> None:
 
 
 def test_soft_dc_type_still_builds_simple_module() -> None:
-    from mriforge.infrastructure.physics.data_consistency import SimpleDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import SimpleDataConsistency
 
     engine = PhysicsEngine(dc_type="soft")
     assert isinstance(engine.get_dc_module(), SimpleDataConsistency)

@@ -41,7 +41,15 @@ CURRENT_SCANS = {
 #: Baselines a scanner here cannot re-derive on its own. The two signature-drift
 #: baselines are produced by ``test_signature_drift.py`` from collectors that
 #: need its canonical-call predicate, so staleness there is that file's to own.
-NOT_REPRODUCIBLE_HERE = {"step_signature_drift.txt", "builder_signature_drift.txt"}
+#: ``unresolved_imports.txt`` likewise: deciding whether a name resolves means
+#: actually IMPORTING the target module, which every scanner here deliberately
+#: avoids (they are pure-AST). Its staleness is owned by
+#: ``test_import_names_resolve.py::test_baseline_has_no_stale_entries``.
+NOT_REPRODUCIBLE_HERE = {
+    "step_signature_drift.txt",
+    "builder_signature_drift.txt",
+    "unresolved_imports.txt",
+}
 
 #: Flat per-baseline slack a hard growth gate would use (00_MASTER.md §5):
 #: 25 for LOC, 0 for counts. Flat, never proportional.

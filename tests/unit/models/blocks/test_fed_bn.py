@@ -1,6 +1,6 @@
 r"""Tests for ``FedBN`` (idea 8 §8.2).
 
-Targets ``mriforge.models.blocks.fed_bn``.
+Targets ``spectramr.models.blocks.fed_bn``.
 
 Categories:
 
@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.fed_bn import FedBN
+from spectramr.models.blocks.fed_bn import FedBN
 
 
 # ---------------------------------------------------------------------------

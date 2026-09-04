@@ -9,7 +9,7 @@ experiments can be audit-clean.
 
 from __future__ import annotations
 
-from mriforge.config.validation_constants import (
+from spectramr.config.validation_constants import (
     CONTRAST_THREADED_STRATEGIES,
     TRAINING_MODE_CONSTRAINTS,
     VALID_TRAINING_MODES,
@@ -70,7 +70,7 @@ def test_generative_mode_in_constraints():
 
 
 def test_multi_acquisition_mode_registered() -> None:
-    from mriforge.config.validation_constants import (
+    from spectramr.config.validation_constants import (
         TRAINING_MODE_CONSTRAINTS,
         VALID_TRAINING_MODES,
     )
@@ -89,7 +89,7 @@ def test_orphan_training_modes_are_gone() -> None:
     resolution (pitfall #9). Removed 2026-07-19; see docs/training_mode_ssot.rst
     for the replacements (``mae``/``ssl``, an architecture axis, and ``pinn``).
     """
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -106,7 +106,7 @@ def test_advertised_modes_are_all_dispatchable() -> None:
     the table is still missing 121 dispatchable modes, which the follow-up
     reconciliation addresses by deleting the table outright.
     """
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

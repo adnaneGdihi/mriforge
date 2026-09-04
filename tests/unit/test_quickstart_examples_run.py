@@ -10,7 +10,7 @@ the export, with an error blaming the reader's install::
     Did you `pip install -e .` from the repo root?
 
 The install was fine. ``MODEL_REGISTRY`` is **empty on a bare**
-``import mriforge`` -- 0 models before ``populate_model_registry()`` and 586
+``import spectramr`` -- 0 models before ``populate_model_registry()`` and 586
 after -- so the example was reading an unpopulated registry and reporting it as
 the reader's fault.
 
@@ -68,7 +68,7 @@ def test_the_examples_were_actually_found() -> None:
 @pytest.mark.parametrize("example", _EXAMPLES, ids=lambda p: p.stem)
 def test_example_runs_clean_in_a_cold_interpreter(example: Path) -> None:
     env = dict(os.environ)
-    env["MRIFORGE_SUPPRESS_CLINICAL_WARNING"] = "1"
+    env["SPECTRAMR_SUPPRESS_CLINICAL_WARNING"] = "1"
     src = _ROOT / "src"
     if src.is_dir():
         # A worktree runs against its own src, not whatever is pip-installed.

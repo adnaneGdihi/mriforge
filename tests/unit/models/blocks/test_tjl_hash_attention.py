@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.tjl_hash_attention import (
+from spectramr.models.blocks.tjl_hash_attention import (
     TJLHashAttention,
     tensorised_jl_hash,
 )

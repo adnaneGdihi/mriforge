@@ -2,12 +2,12 @@ import unittest
 
 import torch
 
-from mriforge.infrastructure.physics.implementations import FFT2DOperator
-from mriforge.models.diffusion.score_sde.physics_guidance import (
+from spectramr.infrastructure.physics.implementations import FFT2DOperator
+from spectramr.models.diffusion.score_sde.physics_guidance import (
     MeasurementConsistencyGuidance,
 )
-from mriforge.models.generators.physics_driven_network import UnrolledPhysicsNetwork
-from mriforge.models.losses.physics_losses import HFENLoss, SpectralKSpaceLoss
+from spectramr.models.generators.physics_driven_network import UnrolledPhysicsNetwork
+from spectramr.models.losses.physics_losses import HFENLoss, SpectralKSpaceLoss
 
 
 class TestPhysicsDrivenDL(unittest.TestCase):

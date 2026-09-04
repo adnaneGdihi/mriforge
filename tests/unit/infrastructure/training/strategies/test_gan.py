@@ -19,9 +19,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.loop_state import LoopState  # noqa: E402
-from mriforge.infrastructure.training.strategies import gan as gan_mod  # noqa: E402
-from mriforge.infrastructure.training.strategies.gan import (  # noqa: E402
+from spectramr.infrastructure.training.loop_state import LoopState  # noqa: E402
+from spectramr.infrastructure.training.strategies import gan as gan_mod  # noqa: E402
+from spectramr.infrastructure.training.strategies.gan import (  # noqa: E402
     GANTrainingStrategy,
 )
 
@@ -70,6 +70,6 @@ def test_train_step_uses_live_loop_iteration(monkeypatch: pytest.MonkeyPatch) ->
 
 
 def test_get_last_metrics_does_not_sync_the_gpu(no_gpu_sync):
-    from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+    from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
     no_gpu_sync(GANTrainingStrategy.get_last_metrics)

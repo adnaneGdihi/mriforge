@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch.utils.data as _torch_data
 
-from mriforge.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
+from spectramr.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
 
 
 def test_preprocessed_mri_dataset_inherits_from_torch_dataset() -> None:

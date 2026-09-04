@@ -9,8 +9,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 
@@ -35,7 +35,7 @@ def _patch_loss_builder_ssot():
         getattr(bi, _m).return_value = bi
     bi.build.return_value = {}
     with patch(
-        "mriforge.infrastructure.training.builders.loss_builder.LossBuilder", builder
+        "spectramr.infrastructure.training.builders.loss_builder.LossBuilder", builder
     ):
         yield
 
@@ -155,9 +155,9 @@ class TestDisentangledStrategySSOT:
         return env
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_loss_weights_property_returns_dict(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -169,9 +169,9 @@ class TestDisentangledStrategySSOT:
         assert isinstance(weights, dict), "loss_weights should return a dict"
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_loss_weights_includes_configured_losses(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -197,9 +197,9 @@ class TestDisentangledStrategySSOT:
         assert weights["kl"] == 0.01
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_loss_weights_excludes_zero_weights(
         self, mock_logger, mock_bloch, mock_config, mock_env, mock_state
     ):
@@ -217,9 +217,9 @@ class TestDisentangledStrategySSOT:
         assert "focal_frequency" not in weights
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_loss_weights_is_dynamic(
         self, mock_logger, mock_bloch, mock_config, mock_env, mock_state
     ):
@@ -243,9 +243,9 @@ class TestDisentangledStrategySSOT:
         assert new_recon_weight != initial_recon_weight
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_get_loss_weight_helper_reads_from_recon_config(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -257,9 +257,9 @@ class TestDisentangledStrategySSOT:
         assert weight == 5.0, "Should read lambda_bloch from reconstruction config"
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_get_loss_weight_helper_reads_from_latent_config(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -271,9 +271,9 @@ class TestDisentangledStrategySSOT:
         assert weight == 0.01, "Should read lambda_kl from latent config"
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_get_loss_weight_helper_returns_default_when_not_found(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -293,7 +293,7 @@ class TestDisentangledStrategySSOT:
         seam ``(loss_name, epoch=0, **kwargs)`` — a generic caller would have
         bound ``epoch`` to ``default`` and silently received ``float(epoch)``
         as a loss weight, losing the warm-up masking."""
-        from mriforge.infrastructure.training.strategies.base import (
+        from spectramr.infrastructure.training.strategies.base import (
             BaseTrainingStrategy,
         )
 
@@ -305,9 +305,9 @@ class TestDisentangledStrategySSOT:
         assert hasattr(DisentangledTrainingStrategy, "_resolve_prefixed_loss_weight")
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_no_lambda_instance_variables_exist(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -337,9 +337,9 @@ class TestDisentangledStrategySSOT:
             ), f"{attr} should not exist as instance variable (SSOT violation)"
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_tissue_bounds_hardcoded_to_zero(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -348,9 +348,9 @@ class TestDisentangledStrategySSOT:
         assert not hasattr(strategy, "lambda_tissue_bounds")
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_magnitude_scaling_hyperparameters_exist(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -359,9 +359,9 @@ class TestDisentangledStrategySSOT:
         assert not hasattr(strategy, "use_magnitude_scaling")
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_kl_capacity_hyperparameters_exist(
         self, mock_logger, mock_bloch, mock_env, mock_state
     ):
@@ -442,9 +442,9 @@ class TestDisentangledStrategySSOTIntegration:
         return config
 
     @patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     )
-    @patch("mriforge.infrastructure.training.strategies.disentangled_strategy.logger")
+    @patch("spectramr.infrastructure.training.strategies.disentangled_strategy.logger")
     def test_ssot_pattern_no_duplication(
         self, mock_logger, mock_bloch, full_mock_config
     ):

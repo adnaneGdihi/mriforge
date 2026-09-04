@@ -15,17 +15,17 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     DataModesSchema,
     ModeConfigSchema,
     ModeSamplerSchema,
 )
-from mriforge.data.builders.sampler_factory import (
+from spectramr.data.builders.sampler_factory import (
     PATCH_SAMPLER_TYPES,
     build_patch_sampler,
 )
-from mriforge.data.builders.torchio_queue_builder import (
+from spectramr.data.builders.torchio_queue_builder import (
     TorchIOQueueConfig,
     config_to_sampler_view,
 )

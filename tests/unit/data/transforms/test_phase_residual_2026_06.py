@@ -11,7 +11,7 @@ import math
 import pytest
 import torch
 
-from mriforge.data.transforms.phase_residual import PhaseResidualTransform
+from spectramr.data.transforms.phase_residual import PhaseResidualTransform
 
 
 class _Img:
@@ -79,7 +79,7 @@ def test_phase_residual_is_registered_under_its_config_name() -> None:
     Before the registry it existed on disk with no way to be constructed from
     any config, so the consumer chain that reads its output was dead at link 0.
     """
-    from mriforge.data.transforms.registry import get_transform
+    from spectramr.data.transforms.registry import get_transform
 
     entry = get_transform("phase_residual")
     assert entry.cls is PhaseResidualTransform

@@ -10,8 +10,8 @@ from collections.abc import Iterator
 
 import pytest
 
-from mriforge.domain.entities.data import DatasetEntity
-from mriforge.domain.entities.data.dataset_registry import (
+from spectramr.domain.entities.data import DatasetEntity
+from spectramr.domain.entities.data.dataset_registry import (
     DatasetRegistry,
     get_dataset_registry,
 )
@@ -83,6 +83,6 @@ def test_data_package_all_is_minimal() -> None:
     # competing with `data.batch_types.TrainingBatch` (309 references), and it
     # had ZERO importers. Narrowing here is the same direction this test already
     # pushes -- minimal means minimal.
-    import mriforge.domain.entities.data as data_pkg
+    import spectramr.domain.entities.data as data_pkg
 
     assert set(data_pkg.__all__) == {"DatasetEntity"}

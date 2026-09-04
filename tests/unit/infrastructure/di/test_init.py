@@ -1,4 +1,4 @@
-from mriforge.infrastructure.di import (
+from spectramr.infrastructure.di import (
     DIContainer,
     get_global_container,
     register_service,

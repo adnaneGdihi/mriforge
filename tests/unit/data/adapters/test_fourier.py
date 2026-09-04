@@ -15,8 +15,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.data.adapters.fourier import FFTImageToKspace, IFFTKspaceToImage
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.data.adapters.fourier import FFTImageToKspace, IFFTKspaceToImage
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def test_ifft_adapter_deinterleaves_real_interleaved_to_one_complex_channel():

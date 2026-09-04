@@ -8,12 +8,12 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.nll_bits_per_dim import NLLBitsPerDim  # noqa: E402
-from mriforge.models.losses.registry import LossRegistry  # noqa: E402
+from spectramr.models.losses.nll_bits_per_dim import NLLBitsPerDim  # noqa: E402
+from spectramr.models.losses.registry import LossRegistry  # noqa: E402
 
 
 def test_registered_under_canonical_and_aliases() -> None:
-    import mriforge.models.losses  # noqa: F401  triggers registration
+    import spectramr.models.losses  # noqa: F401  triggers registration
 
     assert "nll_bits_per_dim" in LossRegistry._custom_losses
     for alias in ("bits_per_dim", "bpd"):

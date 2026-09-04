@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.bloch_synth_losses import (
+from spectramr.models.losses.bloch_synth_losses import (
     BlochSourceConsistencyLoss,
     DispersionPriorLoss,
 )
@@ -41,7 +41,7 @@ def test_source_consistency_positive_when_not() -> None:
 
 
 def test_reachable_via_create_loss() -> None:
-    from mriforge.models.losses import create_loss
+    from spectramr.models.losses import create_loss
 
     assert isinstance(create_loss("dispersion_prior"), DispersionPriorLoss)
     assert isinstance(

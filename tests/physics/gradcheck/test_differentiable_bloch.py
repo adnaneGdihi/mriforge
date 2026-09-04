@@ -26,8 +26,8 @@ import pytest
 import torch
 from torch.autograd import gradcheck
 
-from mriforge.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
-from mriforge.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
+from spectramr.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
+from spectramr.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
 
 # ---------------------------------------------------------------------------
 # Helpers

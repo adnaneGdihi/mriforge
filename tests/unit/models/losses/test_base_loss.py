@@ -1,6 +1,6 @@
 """Tests for ``BaseLoss`` and ``IComputableLoss`` protocol.
 
-Targets ``mriforge.models.losses.base_loss``. Common reduction +
+Targets ``spectramr.models.losses.base_loss``. Common reduction +
 input-validation logic shared by all loss subclasses.
 
 Categories:
@@ -19,7 +19,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.base_loss import BaseLoss, IComputableLoss
+from spectramr.models.losses.base_loss import BaseLoss, IComputableLoss
 
 
 # ---------------------------------------------------------------------------

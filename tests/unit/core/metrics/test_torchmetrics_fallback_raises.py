@@ -17,7 +17,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics import evaluation_metrics as em  # noqa: E402
+from spectramr.core.metrics import evaluation_metrics as em  # noqa: E402
 
 
 def _force_unavailable(monkeypatch: pytest.MonkeyPatch) -> None:

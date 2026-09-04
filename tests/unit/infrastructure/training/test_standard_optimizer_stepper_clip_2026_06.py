@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.training.optimizers.standard_optimizer_stepper import (
+from spectramr.infrastructure.training.optimizers.standard_optimizer_stepper import (
     StandardOptimizerStepper,
 )
 

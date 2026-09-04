@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.cli.profile_diagnostics import (
+from spectramr.cli.profile_diagnostics import (
     KNOWN_FAILURES,
     TAIL_BYTES,
     FailureSignature,

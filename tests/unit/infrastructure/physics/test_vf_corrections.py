@@ -2,7 +2,7 @@
 
 import torch
 
-from mriforge.infrastructure.physics.vf_corrections import (
+from spectramr.infrastructure.physics.vf_corrections import (
     AnalyticalPSFSolver,
     BiasFieldCorrector,
     EPINyquistGhostCorrector,
@@ -285,7 +285,7 @@ class TestKSpacePhaseAutofocus:
     """Tests for KSpacePhaseAutofocus alias."""
 
     def test_alias_is_rigid_kinematic(self) -> None:
-        from mriforge.infrastructure.physics.vf_operators import RigidKinematicOperator
+        from spectramr.infrastructure.physics.vf_operators import RigidKinematicOperator
 
         assert KSpacePhaseAutofocus is RigidKinematicOperator
 

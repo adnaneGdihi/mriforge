@@ -11,7 +11,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.dwi_adc_monoexp_loss import (
+from spectramr.models.losses.dwi_adc_monoexp_loss import (
     DWIADCMonoexpLoss,
     fit_adc_loglinear,
 )
@@ -91,6 +91,6 @@ def test_negative_weight_rejected() -> None:
 
 
 def test_registered_in_loss_registry() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     assert LossRegistry.is_registered("dwi_adc_monoexp")

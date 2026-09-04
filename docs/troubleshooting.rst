@@ -4,10 +4,10 @@
 Troubleshooting & FAQ
 =========================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
 This guide covers the most common errors encountered when developing,
-running, and debugging experiments in the MRIForge framework.
+running, and debugging experiments in the spectraMR framework.
 
 .. contents:: Table of Contents
    :depth: 2
@@ -46,7 +46,7 @@ Run dry-run to validate before training:
 
 .. code-block:: bash
 
-   python -m mriforge.cli train --config my.yaml --dry_run
+   python -m spectramr.cli train --config my.yaml --dry_run
 
 ``RuntimeError: size mismatch for conv1.weight``
 -------------------------------------------------
@@ -200,7 +200,7 @@ Reduce validation batch size:
 ------------------------------------------------------
 
 The phase-aware complex self-attention in
-:class:`mriforge.models.blocks.dual_domain_attention_kan.ComplexMHA` formed a
+:class:`spectramr.models.blocks.dual_domain_attention_kan.ComplexMHA` formed a
 dense ``[B, h, N, N]`` score matrix over the full feature-map sequence
 (``N = H*W``). On a 256² map this is tens of GiB and OOM'd every
 ``experiment_11`` KAN dual-domain arm on the 44 GiB cluster GPUs (2026-06
@@ -222,9 +222,9 @@ score line (``Tried to allocate 256.00 MiB`` at
 ``dual_domain_attention_kan.py:158``): the chunked score was still built in
 **complex** before ``.real`` was taken, doubling its bytes. Because
 ``Re(q kᴴ) = qr·krᵀ + qi·kiᵀ``, the score is now computed from two **real**
-matmuls via :func:`mriforge.models.blocks.dual_domain_attention_kan._phase_aware_real_scores`,
+matmuls via :func:`spectramr.models.blocks.dual_domain_attention_kan._phase_aware_real_scores`,
 and the value aggregation keeps the weight tensor real via
-:func:`mriforge.models.blocks.dual_domain_attention_kan._complex_weighted_sum`
+:func:`spectramr.models.blocks.dual_domain_attention_kan._complex_weighted_sum`
 (``ComplexMHA`` and ``CrossDomainAttention`` both use them). The result is
 numerically identical (max abs diff ``~4e-7``, pinned by
 ``test_phase_aware_real_scores_matches_complex_reference``,
@@ -268,16 +268,16 @@ Distributed (DDP) validation metrics are summed across ranks
 =============================================================
 
 Under DDP the validation loader is wrapped in a ``DistributedSampler``
-(:func:`mriforge.pipelines.parallel._apply_distributed_samplers`) which *shards
+(:func:`spectramr.pipelines.parallel._apply_distributed_samplers`) which *shards
 and pads* the val set, so each rank validates only ``~1/world_size`` of it.
 ``_run_validation`` previously finalised ``v_sum / val_count`` on the **local**
 shard and never reduced across ranks, so rank-0 reported (and early-stopped on)
 a single padded shard's metric rather than the true full-set value.
-:func:`mriforge.pipelines.train._all_reduce_val_metrics` now all-reduce-SUMs
+:func:`spectramr.pipelines.train._all_reduce_val_metrics` now all-reduce-SUMs
 both the per-metric running-sums and the sample count before dividing, giving
 the correct sample-weighted global mean. It is a **no-op** when
 ``torch.distributed`` is not initialised (the default single-process
-``mriforge train`` path), so single-GPU runs are unaffected. Pinned by
+``spectramr train`` path), so single-GPU runs are unaffected. Pinned by
 ``tests/unit/pipelines/test_train.py::test_all_reduce_val_metrics_noop_without_process_group``
 and ``::test_all_reduce_val_metrics_single_rank_identity``.
 
@@ -287,7 +287,7 @@ Mixed precision: ``precision.dtype`` selects the autocast dtype
 
 ``optimization.precision.dtype`` chooses the autocast precision when
 ``optimization.precision.enabled: true``. It maps to the AMP policy in
-:func:`mriforge.infrastructure.training.mixed_precision.resolve_amp_precision`:
+:func:`spectramr.infrastructure.training.mixed_precision.resolve_amp_precision`:
 
 .. note::
 
@@ -359,7 +359,7 @@ a check that allowed one half-precision path would leave it half-enforced.
 .. rubric:: How the check decides an arm is "diffusion"
 
 It resolves the strategy class through
-:meth:`~mriforge.infrastructure.training.strategy_factory.TrainingStrategyFactory.get_strategy_class`
+:meth:`~spectramr.infrastructure.training.strategy_factory.TrainingStrategyFactory.get_strategy_class`
 (the SSOT dispatch) and unions two runtime signals, because measured across all
 204 ``training_mode`` keys **neither is sufficient alone**:
 
@@ -420,7 +420,7 @@ model's declared ``capabilities.accepts_complex`` and
 what "complex" means.
 
 ``ComplexConv2d`` is deliberately **not** a signal.
-:class:`~mriforge.models.layers.complex_conv.ComplexConv2d` stores real and
+:class:`~spectramr.models.layers.complex_conv.ComplexConv2d` stores real and
 imaginary parts as separate *real* tensors and performs a single fused real
 ``F.conv2d`` against a block weight matrix, returning ``float32`` — it compiles
 cleanly under ``fullgraph=True``. "Uses complex arithmetic" and "carries a
@@ -447,7 +447,7 @@ For OOM relief prefer ``bfloat16``: it does **not** need loss scaling and does
 **Mamba arms and fp16.** ``amp_dtype: float16`` *is* viable for the
 ``hilbert_mamba`` arms — they are ``domain=image`` (real fp16 autocast, the
 ``GradScaler`` is wired in ``steppers.py``), and
-:class:`mriforge.models.blocks.mamba_block.MambaBlock` force-runs the SSM/GRU
+:class:`spectramr.models.blocks.mamba_block.MambaBlock` force-runs the SSM/GRU
 recurrence in fp32 (``autocast(enabled=False)`` + ``.float()``) regardless of
 ``amp_dtype``, so the precision-fragile long recurrence (L = H·W) and the
 cuDNN-GRU-under-fp16 crash are both avoided. bf16 is still preferred (no
@@ -470,7 +470,7 @@ Distributed training (single-node multi-GPU & multi-node)
 DDP is config-driven via ``config.parallel`` (``ParallelismConfigSchema``) and
 launched with ``torchrun``; the ``train-distributed`` CLI verb forces
 ``parallel.strategy='ddp'`` and ``num_devices=WORLD_SIZE`` when a torchrun launch
-is detected (:func:`mriforge.pipelines.distributed.run_distributed_training`).
+is detected (:func:`spectramr.pipelines.distributed.run_distributed_training`).
 Data is sharded with a ``DistributedSampler``; very large models can shard
 parameters with FSDP (``parallel.fsdp.enabled: true``, ``mixed_precision: bf16``).
 
@@ -478,7 +478,7 @@ parameters with FSDP (``parallel.fsdp.enabled: true``, ``mixed_precision: bf16``
 
 .. code-block:: bash
 
-   torchrun --nproc_per_node=4 -m mriforge.cli train-distributed \
+   torchrun --nproc_per_node=4 -m spectramr.cli train-distributed \
        --config experiments/inprogress/hilbert_mamba/exp_hm_05_mm_mamba.yaml
 
 **Multiple nodes** (rendezvous on the first node):
@@ -487,7 +487,7 @@ parameters with FSDP (``parallel.fsdp.enabled: true``, ``mixed_precision: bf16``
 
    torchrun --nnodes=2 --node_rank=$NODE_RANK --nproc_per_node=4 \
        --rdzv_backend=c10d --rdzv_endpoint=$MASTER_ADDR:$MASTER_PORT \
-       -m mriforge.cli train-distributed --config <yaml>
+       -m spectramr.cli train-distributed --config <yaml>
 
 On SLURM use the committed launcher
 ``scripts/training/train_distributed.sbatch`` (matches the cluster's
@@ -665,7 +665,7 @@ an empty training split.
 manifest (32 paired records, depths 27/150/156) yields ≥1 depth-16 slab per
 volume — so the empty split is specific to the cluster manifest. **Diagnose on
 the cluster**: dump the train/val record counts the 3-D slab path
-(:class:`~mriforge.data.datasets.slice_dataset.SliceVolumeDataset`) produces for
+(:class:`~spectramr.data.datasets.slice_dataset.SliceVolumeDataset`) produces for
 these two arms; the suspect is the interaction of ``allow_unpaired: true`` with
 the slab windowing leaving the train split empty.
 
@@ -691,7 +691,7 @@ optimiser step. **Recommended cluster-side iteration**: lower ``learning_rate``
 
 Mamba/SSM models (``hilbert_mamba``, ``geomamba``, ``d2_mamba``, ``bloch_mamba``,
 …) **require** the official ``mamba_ssm`` CUDA kernel.
-:class:`mriforge.models.blocks.mamba_block.MambaBlock` now **raises** at
+:class:`spectramr.models.blocks.mamba_block.MambaBlock` now **raises** at
 construction when it is missing or its kernel failed to build, rather than
 silently substituting a Gated-Conv+GRU block — that fallback is **not an SSM**,
 so a silent substitution would train a GRU under the "Mamba" label and make
@@ -699,8 +699,8 @@ every result scientifically mislabelled (pitfall #9 / #16).
 
 This is also caught **at audit time** (before any GPU work) by the
 ``mamba_models_require_mamba_ssm`` health check: a ``model_type`` containing
-``mamba`` with no importable kernel fails ``mriforge audit`` (``error``), or warns
-if ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` is set (the run would be a non-SSM GRU).
+``mamba`` with no importable kernel fails ``spectramr audit`` (``error``), or warns
+if ``SPECTRAMR_ALLOW_MAMBA_FALLBACK`` is set (the run would be a non-SSM GRU).
 
 **Fix** — install the kernel (needs CUDA + ``nvcc``):
 
@@ -712,7 +712,7 @@ if ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` is set (the run would be a non-SSM GRU).
 The error message distinguishes *not installed* from *installed-but-kernel-broken*
 (CUDA/PyTorch version mismatch — rebuild with ``--no-build-isolation``).
 
-**Opt-in GRU fallback (CPU/CI wiring only).** ``MRIFORGE_ALLOW_MAMBA_FALLBACK=1``
+**Opt-in GRU fallback (CPU/CI wiring only).** ``SPECTRAMR_ALLOW_MAMBA_FALLBACK=1``
 re-enables the GRU approximation with a loud warning, for shape/wiring tests on
 boxes without the kernel. The pytest ``conftest`` sets it for the test session
 (set ``=0`` to exercise the raise path). **Never** set it for a real Mamba
@@ -984,7 +984,7 @@ Cluster path layout differs from local. Use path aliases:
 .. code-block:: yaml
 
    data:
-     data_root: /project/<allocation>/<user>/mriforge/databases/
+     data_root: /project/<allocation>/<user>/spectramr/databases/
 
 
 Training Not Improving
@@ -1046,7 +1046,7 @@ FFT wrapper (not raw ``torch.fft``):
    kspace = torch.fft.fft2(image)
 
    # ✅
-   from mriforge.infrastructure.physics.fft_ops import fft2c
+   from spectramr.infrastructure.physics.fft_ops import fft2c
    kspace = fft2c(image)    # handles centering and normalization
 
 ``Hermitian symmetry violation``
@@ -1084,7 +1084,7 @@ seam ``BaseTrainingStrategy._ensure_image_domain_target`` before using it:
    target_complex = self._ensure_image_domain_target(target_complex)  # k-space -> image (once)
 
 The seam's domain decision is delegated to
-:func:`mriforge.infrastructure.training.utils.domain_inference.needs_ifft_for_visualization`,
+:func:`spectramr.infrastructure.training.utils.domain_inference.needs_ifft_for_visualization`,
 **not** a raw ``dataset_type == "kspace"`` check — because
 ``coil_processing_mode: rss_image`` / ``magnitude`` already IFFT inside the
 dataset's TorchIO pipeline, so those arms read ``dataset_type: kspace`` yet
@@ -1113,7 +1113,7 @@ Invoke with ``--resume`` on a pre-trained checkpoint:
 
 .. code-block:: bash
 
-   python -m mriforge.cli predict \
+   python -m spectramr.cli predict \
        --model checkpoints/hypermamba_best.safetensors \
        --config experiments/training/exp_tto.yaml
 
@@ -1244,7 +1244,7 @@ Useful Debug Commands
 .. code-block:: bash
 
    # Config dry-run (no GPU)
-   python -m mriforge.cli train --config my.yaml --dry_run
+   python -m spectramr.cli train --config my.yaml --dry_run
 
    # Smoke tests (quick sanity check)
    pytest tests/smoke/ -v --tb=short

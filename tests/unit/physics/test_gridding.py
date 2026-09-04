@@ -37,7 +37,7 @@ def _radial_traj(n_spokes: int, n_per_spoke: int) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_gridding_imports():
     """All public symbols import cleanly."""
-    from mriforge.infrastructure.physics.gridding import (
+    from spectramr.infrastructure.physics.gridding import (
         RadialDCF,
         IterativeDCF,
         KaiserBesselKernel,
@@ -48,7 +48,7 @@ def test_canary_gridding_imports():
 @pytest.mark.physics
 def test_canary_radial_dcf_trivial():
     """RadialDCF forward on a tiny trajectory returns positive weights."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     dcf = RadialDCF(num_spokes=4, samples_per_spoke=8)
     traj = _radial_traj(4, 8)   # [32, 2]
     w = dcf(traj)
@@ -59,7 +59,7 @@ def test_canary_radial_dcf_trivial():
 @pytest.mark.physics
 def test_canary_iterative_dcf_trivial():
     """IterativeDCF forward on a small trajectory completes."""
-    from mriforge.infrastructure.physics.gridding import IterativeDCF
+    from spectramr.infrastructure.physics.gridding import IterativeDCF
     dcf = IterativeDCF(num_iters=3)
     traj = _radial_traj(4, 8)   # [32, 2]
     w = dcf(traj)
@@ -70,7 +70,7 @@ def test_canary_iterative_dcf_trivial():
 @pytest.mark.physics
 def test_canary_kaiser_bessel_trivial():
     """KaiserBesselKernel evaluates on distance range."""
-    from mriforge.infrastructure.physics.gridding import KaiserBesselKernel
+    from spectramr.infrastructure.physics.gridding import KaiserBesselKernel
     kb = KaiserBesselKernel()
     d = torch.linspace(0.0, 3.0, 20)
     out = kb(d)
@@ -95,7 +95,7 @@ def test_canary_kaiser_bessel_trivial():
     ids=["sp8-s16", "sp16-s32", "sp4-s64"],
 )
 def test_radial_dcf_shape(n_spokes, n_per_spoke):
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     dcf = RadialDCF(num_spokes=n_spokes, samples_per_spoke=n_per_spoke)
     traj = _radial_traj(n_spokes, n_per_spoke)
     w = dcf(traj)
@@ -107,7 +107,7 @@ def test_radial_dcf_shape(n_spokes, n_per_spoke):
 @pytest.mark.physics
 def test_radial_dcf_central_sample_weight():
     """The central (k_r≈0) sample gets the special 1/(2*nspokes) weight."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     n_spokes, n_per_spoke = 8, 17
     dcf = RadialDCF(num_spokes=n_spokes, samples_per_spoke=n_per_spoke)
     # Build trajectory where the middle sample of each spoke is k_r=0
@@ -136,7 +136,7 @@ def test_radial_dcf_central_sample_weight():
     ids=["n16-it3", "n32-it5", "n64-it3"],
 )
 def test_iterative_dcf_shape(n_pts, n_iters):
-    from mriforge.infrastructure.physics.gridding import IterativeDCF
+    from spectramr.infrastructure.physics.gridding import IterativeDCF
     dcf = IterativeDCF(num_iters=n_iters)
     traj = _radial_traj(4, n_pts // 4)[: n_pts]
     w = dcf(traj)
@@ -152,7 +152,7 @@ def test_iterative_dcf_shape(n_pts, n_iters):
 @pytest.mark.parametrize("kernel_width, beta", [(4.0, 13.9), (6.0, 10.0), (2.0, 5.0)])
 def test_kb_kernel_support(kernel_width, beta):
     """Kernel is zero outside its support (|d| > kernel_width/2)."""
-    from mriforge.infrastructure.physics.gridding import KaiserBesselKernel
+    from spectramr.infrastructure.physics.gridding import KaiserBesselKernel
     kb = KaiserBesselKernel(kernel_width=kernel_width, beta=beta)
     # Sample just outside support
     outside = torch.tensor([kernel_width / 2.0 + 0.1, kernel_width + 1.0])
@@ -166,7 +166,7 @@ def test_kb_kernel_support(kernel_width, beta):
 @pytest.mark.physics
 def test_radial_dcf_edge_single_spoke():
     """RadialDCF with 1 spoke does not raise."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     dcf = RadialDCF(num_spokes=1, samples_per_spoke=8)
     traj = _radial_traj(1, 8)
     w = dcf(traj)
@@ -177,7 +177,7 @@ def test_radial_dcf_edge_single_spoke():
 @pytest.mark.physics
 def test_kb_kernel_edge_zero_distance():
     """At d=0 the kernel should be at its maximum (I_0(beta))."""
-    from mriforge.infrastructure.physics.gridding import KaiserBesselKernel
+    from spectramr.infrastructure.physics.gridding import KaiserBesselKernel
     kb = KaiserBesselKernel(kernel_width=4.0, beta=13.9)
     d = torch.tensor([0.0])
     val = kb(d)
@@ -187,7 +187,7 @@ def test_kb_kernel_edge_zero_distance():
 @pytest.mark.physics
 def test_kb_kernel_normalization_property():
     """KaiserBesselKernel.normalization returns a positive float."""
-    from mriforge.infrastructure.physics.gridding import KaiserBesselKernel
+    from spectramr.infrastructure.physics.gridding import KaiserBesselKernel
     kb = KaiserBesselKernel()
     assert isinstance(kb.normalization, float)
     assert kb.normalization > 0
@@ -200,7 +200,7 @@ def test_kb_kernel_normalization_property():
 @pytest.mark.physics
 def test_radial_dcf_raises_bad_traj_shape():
     """RadialDCF forward must raise ValueError when traj last dim != 2."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     dcf = RadialDCF(num_spokes=4, samples_per_spoke=8)
     bad_traj = torch.rand(32, 3)   # last dim is 3, not 2
     with pytest.raises(ValueError):
@@ -210,7 +210,7 @@ def test_radial_dcf_raises_bad_traj_shape():
 @pytest.mark.physics
 def test_iterative_dcf_raises_wrong_rank():
     """IterativeDCF forward requires [N, 2] input."""
-    from mriforge.infrastructure.physics.gridding import IterativeDCF
+    from spectramr.infrastructure.physics.gridding import IterativeDCF
     dcf = IterativeDCF(num_iters=2)
     bad_traj = torch.rand(4, 8, 2)  # 3-D instead of 2-D
     with pytest.raises(ValueError):
@@ -220,7 +220,7 @@ def test_iterative_dcf_raises_wrong_rank():
 @pytest.mark.physics
 def test_radial_dcf_raises_zero_spokes():
     """RadialDCF init must raise ValueError for num_spokes < 1."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     with pytest.raises(ValueError):
         RadialDCF(num_spokes=0, samples_per_spoke=8)
 
@@ -228,7 +228,7 @@ def test_radial_dcf_raises_zero_spokes():
 @pytest.mark.physics
 def test_radial_dcf_raises_too_few_samples():
     """RadialDCF init must raise ValueError for samples_per_spoke < 2."""
-    from mriforge.infrastructure.physics.gridding import RadialDCF
+    from spectramr.infrastructure.physics.gridding import RadialDCF
     with pytest.raises(ValueError):
         RadialDCF(num_spokes=4, samples_per_spoke=1)
 
@@ -236,7 +236,7 @@ def test_radial_dcf_raises_too_few_samples():
 @pytest.mark.physics
 def test_kb_kernel_raises_bad_params():
     """KaiserBesselKernel init must raise ValueError for non-positive params."""
-    from mriforge.infrastructure.physics.gridding import KaiserBesselKernel
+    from spectramr.infrastructure.physics.gridding import KaiserBesselKernel
     with pytest.raises(ValueError):
         KaiserBesselKernel(kernel_width=0.0, beta=13.9)
     with pytest.raises(ValueError):
@@ -246,6 +246,6 @@ def test_kb_kernel_raises_bad_params():
 @pytest.mark.physics
 def test_iterative_dcf_raises_bad_params():
     """IterativeDCF init must raise ValueError for non-positive kernel_width/beta."""
-    from mriforge.infrastructure.physics.gridding import IterativeDCF
+    from spectramr.infrastructure.physics.gridding import IterativeDCF
     with pytest.raises(ValueError):
         IterativeDCF(kernel_width=0.0, beta=13.9)

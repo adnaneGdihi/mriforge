@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.signal_models.flow_encoding import (
+from spectramr.infrastructure.physics.signal_models.flow_encoding import (
     four_point_reference_decode,
     four_point_reference_encode,
     pc_adjoint,
@@ -70,7 +70,7 @@ def test_invalid_venc_raises() -> None:
 
 
 def test_operator_registered_and_roundtrips() -> None:
-    from mriforge.infrastructure.physics.registry import (
+    from spectramr.infrastructure.physics.registry import (
         create_operator,
         list_operators,
     )

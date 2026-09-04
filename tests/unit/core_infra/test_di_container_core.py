@@ -2,7 +2,7 @@
 
 import pytest
 
-from mriforge.infrastructure.di.di_container import (
+from spectramr.infrastructure.di.di_container import (
     DIContainer,
     get_global_container,
     init_container,
@@ -132,7 +132,7 @@ class TestGlobalDIContainer:
     def reset_global_container(self):
         """Clear the global container state before and after each test."""
         # Reset the module level variable
-        import mriforge.infrastructure.di.di_container as di_module
+        import spectramr.infrastructure.di.di_container as di_module
 
         di_module._global_container = None
         yield

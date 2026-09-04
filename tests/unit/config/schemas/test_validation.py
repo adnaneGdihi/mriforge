@@ -1,6 +1,6 @@
 """Tests for ``ValidationConfigSchema``.
 
-Targets ``mriforge.config.schemas.validation``. Focused on the
+Targets ``spectramr.config.schemas.validation``. Focused on the
 ``empty_cache_before_validation`` knob added by the wasted-compute audit
 (backlog_wasted_compute_audit_2026_05_29 PIPE-2): the per-validation
 ``torch.cuda.empty_cache()`` is now wired to this flag so memory-headroom runs
@@ -15,7 +15,7 @@ import re
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.validation import ValidationConfigSchema
+from spectramr.config.schemas.validation import ValidationConfigSchema
 
 
 def test_empty_cache_before_validation_defaults_true() -> None:
@@ -72,7 +72,7 @@ def _flag_tokens(text: str) -> set[str]:
 
 def _real_cli_flags() -> set[str]:
     """Every option string the real CLI parser accepts, across all subcommands."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     flags: set[str] = set()
     stack = [build_parser()]
@@ -98,7 +98,7 @@ def test_the_interval_steps_help_names_a_flag_the_cli_actually_accepts() -> None
     the CLI only ever accepted ``--override``/``-O``. Nothing caught it because
     no gate crosses prose against argparse -- so this test does.
     """
-    from mriforge.config.schemas.validation import ValidationScheduleConfigSchema
+    from spectramr.config.schemas.validation import ValidationScheduleConfigSchema
 
     description = ValidationScheduleConfigSchema.model_fields["interval_steps"].description or ""
     assert description, "the interval_steps description went missing"
@@ -128,20 +128,20 @@ class TestValidationCascadeBlock:
         a later change to the framework default would then silently move an
         arm that had made no decision, or fail to move one that had.
         """
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         assert ValidationConfigSchema().cascade.levels is None
 
     def test_a_declared_ladder_is_stored_deduped_and_ascending(self):
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         cfg = ValidationConfigSchema(cascade={"levels": [8, 2, 8, 4]})
         assert cfg.cascade.levels == [2.0, 4.0, 8.0]
 
     def test_the_resolver_and_the_schema_agree_on_a_declared_ladder(self):
         """One owner for "is this ladder legal" (non-negotiable 17)."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
-        from mriforge.core.cascading_validation import resolve_cascade_levels
+        from spectramr.config.schemas.validation import ValidationConfigSchema
+        from spectramr.core.cascading_validation import resolve_cascade_levels
 
         cfg = ValidationConfigSchema(cascade={"levels": [4, 16]})
         assert resolve_cascade_levels(cfg) == (4, 16)
@@ -154,21 +154,57 @@ class TestValidationCascadeBlock:
         """
         import pytest as _pytest
 
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         with _pytest.raises(ValueError, match="boolean"):
             ValidationConfigSchema(cascade={"levels": [True]})
 
     @pytest.mark.parametrize("bad", [[], [0.5], [float("inf")]])
     def test_an_illegal_ladder_is_refused_at_load_time(self, bad):
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         with pytest.raises(ValueError):
             ValidationConfigSchema(cascade={"levels": bad})
 
     def test_the_cascade_sub_block_forbids_an_unknown_key(self):
         """New sub-blocks are born strict (`_VAL_SUBBLOCK`)."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         with pytest.raises(ValueError):
             ValidationConfigSchema(cascade={"levls": [2, 8]})
+
+
+class TestValidationEnsembleKnobs:
+    """``validation.sampling.ensemble_samples`` / ``coverage_k`` (review follow-up item 2).
+
+    Planted refusals first: every rule the schema claims is watched going red.
+    """
+
+    def test_defaults_are_a_single_deterministic_sample(self) -> None:
+        sampling = ValidationConfigSchema().sampling
+        assert sampling.ensemble_samples == 1
+        assert sampling.coverage_k == 2.0
+
+    def test_an_ensemble_needs_the_multistep_sampler(self) -> None:
+        """N > 1 on the single-step forward would be N identical members."""
+        with pytest.raises(ValidationError, match="enable_multistep_cold"):
+            ValidationConfigSchema(sampling={"ensemble_samples": 2})
+
+    def test_five_members_are_refused(self) -> None:
+        with pytest.raises(ValidationError, match="less than or equal to 4"):
+            ValidationConfigSchema(sampling={"enable_multistep_cold": True, "ensemble_samples": 5})
+
+    def test_zero_members_are_refused(self) -> None:
+        with pytest.raises(ValidationError, match="greater than or equal to 1"):
+            ValidationConfigSchema(sampling={"enable_multistep_cold": True, "ensemble_samples": 0})
+
+    def test_a_nonpositive_coverage_k_is_refused(self) -> None:
+        with pytest.raises(ValidationError, match="greater than 0"):
+            ValidationConfigSchema(sampling={"coverage_k": 0.0})
+
+    def test_an_ensemble_of_four_loads_with_the_multistep_sampler(self) -> None:
+        cfg = ValidationConfigSchema(
+            sampling={"enable_multistep_cold": True, "ensemble_samples": 4, "coverage_k": 1.5}
+        )
+        assert cfg.sampling.ensemble_samples == 4
+        assert cfg.sampling.coverage_k == 1.5

@@ -37,7 +37,7 @@ import torch
 # ---------------------------------------------------------------------------
 sp = pytest.importorskip("sigpy")
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test shapes — regular, odd, prime dimensions to exercise fftshift paths

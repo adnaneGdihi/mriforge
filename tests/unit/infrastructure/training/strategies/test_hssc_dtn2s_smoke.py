@@ -16,9 +16,9 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.dtn2s_strategy import DTN2SStrategy
-from mriforge.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategies.dtn2s_strategy import DTN2SStrategy
+from spectramr.infrastructure.training.strategies.hssc_strategy import HSSCStrategy
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 class TestRegistration:
@@ -109,7 +109,7 @@ class TestHSSCMaskContract:
         return torch.complex(torch.randn(1, 1, 8, 8), torch.randn(1, 1, 8, 8))
 
     def test_mask_read_from_batch_runs(self) -> None:
-        from mriforge.data.batch_types import TrainingBatch
+        from spectramr.data.batch_types import TrainingBatch
 
         s = self._strategy()
         k = self._kspace()
@@ -120,7 +120,7 @@ class TestHSSCMaskContract:
         assert "g_total_loss" in out
 
     def test_missing_mask_everywhere_raises(self) -> None:
-        from mriforge.data.batch_types import TrainingBatch
+        from spectramr.data.batch_types import TrainingBatch
 
         s = self._strategy()
         k = self._kspace()
@@ -131,7 +131,7 @@ class TestHSSCMaskContract:
     def test_iteration_threaded_from_loop_state(self) -> None:
         """The loss computer must see the real loop iteration, not a frozen 0
         from ``kwargs.get('step', 0)`` (the loop passes ``iteration``)."""
-        from mriforge.data.batch_types import TrainingBatch
+        from spectramr.data.batch_types import TrainingBatch
 
         s = self._strategy()
         s.loop_state = SimpleNamespace(iteration=42)

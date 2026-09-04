@@ -1,6 +1,6 @@
 """Tests for the diffusion sampler registry.
 
-Targets ``mriforge.models.diffusion.samplers.registry`` — the
+Targets ``spectramr.models.diffusion.samplers.registry`` — the
 ``@register_sampler`` dispatch + lookup helpers introduced by
 ``CC-1`` of ``TODO/backlog_paradigm_expansion_roadmap.md``.
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.diffusion.samplers import (
+from spectramr.models.diffusion.samplers import (
     SAMPLER_REGISTRY,
     SamplerRegistry,
     get_sampler,

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.disentangled_vae_strategy import (
+from spectramr.infrastructure.training.strategies.disentangled_vae_strategy import (
     DisentangledVAETrainingStrategy,
 )
 
@@ -112,7 +112,7 @@ def flow_strategy():
     """
     from types import SimpleNamespace
 
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.registry import create_loss
 
     s = DisentangledVAETrainingStrategy.__new__(DisentangledVAETrainingStrategy)
     s.device = torch.device("cpu")

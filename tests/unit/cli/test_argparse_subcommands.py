@@ -1,4 +1,4 @@
-"""Argparse-validation tests for every ``mriforge`` subcommand.
+"""Argparse-validation tests for every ``spectramr`` subcommand.
 
 Strategy
 --------
@@ -27,15 +27,15 @@ import pytest
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    """Return the REAL ``mriforge`` parser.
+    """Return the REAL ``spectramr`` parser.
 
     Was a ~200-line hand-mirror of the ``app.main`` subparsers; now delegates to
-    the extracted :func:`mriforge.cli.app.build_parser` (PR #130) so this test can
+    the extracted :func:`spectramr.cli.app.build_parser` (PR #130) so this test can
     never drift from the real entry point. The optional subcommands the mirror
     skipped are now present, but every assertion here is per-subcommand
     (required-arg parse / ``--help`` exit-0), so the extra verbs are harmless.
     """
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     return build_parser()
 
@@ -372,7 +372,7 @@ class TestAuditSubcommand:
         assert ns.probe is False
         # D01#2 (2026-08-22): strict is ON by default. CLAUDE.md
         # non-negotiable 4 has always said so; argparse said otherwise until
-        # this flip, so a bare `mriforge audit <arm>` exited 1 on warnings and
+        # this flip, so a bare `spectramr audit <arm>` exited 1 on warnings and
         # read as a soft pass. `--no-strict` is the opt-out.
         assert ns.strict is True
         assert ns.json is False

@@ -1,6 +1,6 @@
 """Tests for the physics-operator interfaces.
 
-Targets ``mriforge.infrastructure.physics.interfaces``. Three coordinate
+Targets ``spectramr.infrastructure.physics.interfaces``. Three coordinate
 abstractions:
 
 - ``IPhysicsOperator`` (Protocol) — duck-typed forward / adjoint pair
@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.interfaces import (
+from spectramr.infrastructure.physics.interfaces import (
     BasePhysicsOperator,
     IDataConsistency,
     IPhysicsOperator,

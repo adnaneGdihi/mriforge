@@ -7,7 +7,7 @@ injecting marker priors into the decoder.
 import pytest
 import torch
 
-from mriforge.models.blocks.spade import SPADEBlock, SPADEEncoder
+from spectramr.models.blocks.spade import SPADEBlock, SPADEEncoder
 
 
 class TestSPADEBlock:

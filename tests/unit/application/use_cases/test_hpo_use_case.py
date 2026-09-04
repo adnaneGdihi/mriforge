@@ -4,8 +4,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.application.use_cases.hpo_use_case import HPORequest, HPOUseCase
-from mriforge.infrastructure.services.logging_service import LoggingService
+from spectramr.application.use_cases.hpo_use_case import HPORequest, HPOUseCase
+from spectramr.infrastructure.services.logging_service import LoggingService
 
 
 @pytest.fixture
@@ -23,8 +23,8 @@ def use_case(mock_logging_service):
 class TestHPOUseCase:
     """Test HPOUseCase functionality."""
 
-    @patch("mriforge.application.use_cases.hpo_use_case.TrainingSettings")
-    @patch("mriforge.application.use_cases.hpo_use_case.HPOCoordinator")
+    @patch("spectramr.application.use_cases.hpo_use_case.TrainingSettings")
+    @patch("spectramr.application.use_cases.hpo_use_case.HPOCoordinator")
     def test_execute_success(self, mock_coordinator_cls, mock_settings_cls, use_case):
         """Test successful execution of HPO."""
         # Mock settings. The path is `data.source.root`, NOT the retired
@@ -65,8 +65,8 @@ class TestHPOUseCase:
         assert call_kwargs["objective_metric"] == "val_loss"
         assert call_kwargs["max_iter_per_trial"] == 30000
 
-    @patch("mriforge.application.use_cases.hpo_use_case.TrainingSettings")
-    @patch("mriforge.application.use_cases.hpo_use_case.HPOCoordinator")
+    @patch("spectramr.application.use_cases.hpo_use_case.TrainingSettings")
+    @patch("spectramr.application.use_cases.hpo_use_case.HPOCoordinator")
     def test_execute_request_overrides_propagate(
         self, mock_coordinator_cls, mock_settings_cls, use_case
     ):
@@ -121,7 +121,7 @@ class TestHPOUseCase:
         with pytest.raises(ValueError, match="n_trials must be >= 1"):
             use_case.execute(request)
 
-    @patch("mriforge.application.use_cases.hpo_use_case.TrainingSettings")
+    @patch("spectramr.application.use_cases.hpo_use_case.TrainingSettings")
     def test_execute_failure(self, mock_settings_cls, use_case):
         """Test handling of execution failure."""
         mock_settings_cls.from_yaml.side_effect = Exception("Config error")

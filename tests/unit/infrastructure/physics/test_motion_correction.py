@@ -1,6 +1,6 @@
 """Tests for image-domain motion-correction primitives.
 
-Targets ``mriforge.infrastructure.physics.motion_correction``. Verifies the
+Targets ``spectramr.infrastructure.physics.motion_correction``. Verifies the
 identity property of each aligner (a stack of identical frames returns
 the input unchanged), shift recovery on synthetic translations, and
 fail-loud shape validation per CLAUDE.md #9.
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.motion_correction import (
+from spectramr.infrastructure.physics.motion_correction import (
     CenterOfMassAlign,
     CrossCorrelationShift,
 )

@@ -28,7 +28,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from mriforge.config.schemas.renames import RENAMES
+from spectramr.config.schemas.renames import RENAMES
 
 _MISSING = object()
 

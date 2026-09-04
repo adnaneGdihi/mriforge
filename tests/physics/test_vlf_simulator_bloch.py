@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.data.synthesis.vlf_simulator import VLFSimulator
+from spectramr.data.synthesis.vlf_simulator import VLFSimulator
 
 
 @pytest.fixture

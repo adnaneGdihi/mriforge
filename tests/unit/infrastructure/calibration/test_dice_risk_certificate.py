@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.calibration.dice_risk_certificate import (
+from spectramr.infrastructure.calibration.dice_risk_certificate import (
     DiceRiskCertificate,
     hoeffding_risk_upper_bound,
     rcps_threshold,
@@ -23,9 +23,7 @@ def test_ucb_above_empirical_and_clamped() -> None:
 
 
 def test_ucb_gap_shrinks_with_n() -> None:
-    assert hoeffding_risk_upper_bound(0.1, 50, 0.05) > hoeffding_risk_upper_bound(
-        0.1, 5000, 0.05
-    )
+    assert hoeffding_risk_upper_bound(0.1, 50, 0.05) > hoeffding_risk_upper_bound(0.1, 5000, 0.05)
 
 
 def test_ucb_validates() -> None:
@@ -63,3 +61,15 @@ def test_certificate_rejects_high_risk() -> None:
     rep = cert.certify(empirical_risk=0.5, n=200)
     assert not rep.is_certified
     assert rep.to_dict()["empirical_risk"] == 0.5
+
+
+def test_report_records_the_independence_unit_and_the_scored_count() -> None:
+    """#1707: the report says what one draw was and how many images formed the draws."""
+    rep = DiceRiskCertificate(alpha=0.2, delta=0.05).certify(
+        0.05, 3, independence_unit="subject", n_samples_scored=360
+    )
+    d = rep.to_dict()
+    assert d["n"] == 3 and d["n_samples_scored"] == 360 and d["independence_unit"] == "subject"
+    # three draws, not 360: the Hoeffding gap is the wide one
+    assert rep.certified_risk_upper_bound > hoeffding_risk_upper_bound(0.05, 360, 0.05)
+    assert DiceRiskCertificate().certify(0.05, 10).independence_unit == "sample"

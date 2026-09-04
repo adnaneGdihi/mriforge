@@ -152,7 +152,8 @@ from typing import Any
 import pytest
 import yaml
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.physics.dc_settings import DC_SSOT_KEYS
 from tests.utils.corpus import tracked_yamls
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -1042,22 +1043,62 @@ def test_data_consistency_is_hard_unless_dc_is_the_variable(arm: Path) -> None:
 
 
 @pytest.mark.parametrize("arm", _ALL_ARMS, ids=lambda p: p.name)
-def test_physics_and_model_dc_method_agree(arm: Path) -> None:
-    """Both declarations are merged into ONE layer; a mismatch is a silent split.
+def test_physics_and_model_dc_settings_agree(arm: Path) -> None:
+    """Both declarations are merged into ONE layer; a mismatch is not survivable.
 
-    ``model_builder._reconcile`` overwrites ``model_kwargs.dc_method`` with
-    ``physics.data_consistency.method``, so a stale model-side value is not a
-    conflict the reader can see — it is simply ignored, and the YAML then
-    documents an operator the run never builds (pitfall #16).
+    ``physics.data_consistency`` is the SSOT: ``generator_kwargs`` step 3c
+    forwards every row of :data:`DC_SSOT_KEYS` from it, and raises when
+    ``model_kwargs`` declares the same fact differently. ``dc_method`` alone is
+    reconciled silently instead -- ``model_builder._reconcile`` overwrites it,
+    so a stale model-side value is not a conflict the reader can see; the YAML
+    simply documents an operator the run never builds (pitfall #16).
+
+    This iterates the tuple rather than naming a key, because the version that
+    checked ``dc_method`` ALONE was blind to the five other rows for as long as
+    they existed -- and `experiment_11_attention_none` sat unbuildable behind
+    that blind spot, its ``physics.weight`` drifted to 1.0 against a
+    ``model_kwargs.dc_weight`` of 0.5, while this guard stayed green. Naming the
+    keys here would make the guard a second, unsynced owner of the mapping
+    (non-negotiable 17); the noise rows joined ``DC_SSOT_KEYS`` in #1525 and no
+    enumeration followed them.
+
+    Note the two spellings differ across the blocks (``dc_weight`` <->
+    ``weight``), so neither a key-name grep nor a same-name dict intersection
+    can see these divergences. ``DC_SSOT_KEYS`` is the only place the pairing
+    is written down.
     """
     settings = TrainingSettings.from_yaml(str(arm))
-    method = settings.physics.data_consistency.method
-    resolved = str(getattr(method, "value", method))
-    declared = (settings.model.model_kwargs or {}).get("dc_method")
-    assert declared == resolved, (
-        f"{arm.name}: model_kwargs.dc_method={declared!r} but "
-        f"physics.data_consistency.method={resolved!r}."
-    )
+    dc = settings.physics.data_consistency
+    declared_kwargs = settings.model.model_kwargs or {}
+
+    for kwarg, field in DC_SSOT_KEYS:
+        if not hasattr(dc, field):
+            continue
+        ssot = getattr(dc, field)
+        ssot = str(getattr(ssot, "value", ssot)) if field == "method" else ssot
+
+        if kwarg == "dc_method":
+            # Presence is required for dc_method and only dc_method: every arm
+            # in this cohort declares it, and dropping the ratchet to
+            # "agree if present" would silently accept its removal.
+            declared = declared_kwargs.get(kwarg)
+            assert declared == ssot, (
+                f"{arm.name}: model_kwargs.dc_method={declared!r} but "
+                f"physics.data_consistency.method={ssot!r}."
+            )
+            continue
+
+        if kwarg not in declared_kwargs:
+            # Absent is the SSOT-clean state -- physics supplies the value.
+            continue
+        declared = declared_kwargs[kwarg]
+        assert declared == ssot, (
+            f"{arm.name}: model_kwargs.{kwarg}={declared!r} but "
+            f"physics.data_consistency.{field}={ssot!r}. These describe the "
+            "same fact; physics.data_consistency is the SSOT, so this arm "
+            "raises at generator construction. Remove the model_kwargs copy "
+            "once you have decided which value is the intended one."
+        )
 
 
 def test_the_cross_contrast_exemption_is_not_a_blanket_pass() -> None:

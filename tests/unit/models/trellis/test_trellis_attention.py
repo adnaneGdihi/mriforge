@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.blocks.trellis_attention import (
+from spectramr.models.blocks.trellis_attention import (
     FeedForwardNet,
     ModulatedTransformerCrossBlock,
     MultiHeadAttention,

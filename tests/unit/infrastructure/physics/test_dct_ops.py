@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.dct_ops import (
+from spectramr.infrastructure.physics.dct_ops import (
     dct1d,
     dct2_neumann,
     idct1d,

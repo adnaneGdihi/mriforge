@@ -249,8 +249,23 @@ class TestCoverageIsWholeTree:
     def test_ruff_visits_every_tracked_python_file(self):
         import subprocess
 
+        # Ask the GATE what it scans, rather than restating ``["."]`` here.
+        # Spelling it out made this test a second owner of the gate's reach
+        # (non-negotiable 17): it measured ``.`` while the gate had been widened
+        # to descend into dot-directories, so the assertion could not see the fix
+        # to the very gate it audits.
+        from scripts.ci.check_f821_ratchet import ruff_scan_roots
+
         visited = subprocess.run(
-            ["ruff", "check", "--no-cache", "--select", "F821", "--show-files", "."],
+            [
+                "ruff",
+                "check",
+                "--no-cache",
+                "--select",
+                "F821",
+                "--show-files",
+                *ruff_scan_roots(_REPO_ROOT),
+            ],
             cwd=_REPO_ROOT,
             capture_output=True,
             text=True,

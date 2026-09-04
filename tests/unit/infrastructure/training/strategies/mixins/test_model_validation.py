@@ -19,7 +19,7 @@ from tests.utils.block_config_stub import ValidationConfigStub
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.model_validation import (
+from spectramr.infrastructure.training.strategies.mixins.model_validation import (
     ModelValidationMixin,
 )
 
@@ -179,7 +179,7 @@ def test_fallback_no_longer_derives_its_own_data_range():
     """
     import inspect
 
-    from mriforge.infrastructure.training.strategies.mixins import model_validation
+    from spectramr.infrastructure.training.strategies.mixins import model_validation
 
     src = inspect.getsource(model_validation)
     assert "resolve_image_data_range" in src, (
@@ -199,7 +199,7 @@ def test_fallback_and_canonical_psnr_agree_on_a_dark_slice():
     """
     import math
 
-    from mriforge.core.metrics.evaluation_metrics import (
+    from spectramr.core.metrics.evaluation_metrics import (
         PSNR,
         resolve_image_data_range,
     )
@@ -227,8 +227,8 @@ def test_fallback_and_canonical_psnr_agree_on_a_dark_slice():
 
 
 def test_fallback_declines_rather_than_inventing_on_unnormalized_data():
-    from mriforge.core.metrics.evaluation_metrics import resolve_image_data_range
-    from mriforge.core.metrics.outcome import MetricNotApplicableError
+    from spectramr.core.metrics.evaluation_metrics import resolve_image_data_range
+    from spectramr.core.metrics.outcome import MetricNotApplicableError
 
     import pytest
 

@@ -2,7 +2,7 @@
 
 The task description references ``src/infrastructure/reporting/pipeline.py``,
 which does not currently exist in the repo. The reporting subsystem that is
-actually present today is :mod:`mriforge.infrastructure.reporting.advanced_reporting`,
+actually present today is :mod:`spectramr.infrastructure.reporting.advanced_reporting`,
 whose :class:`TrainingReport.generate_complete_report` is the pipeline that
 chains text-report + plots + CSV + JSON serialisation. These tests cover that
 real pipeline so the coverage gain is real, and they will also opportunistically
@@ -22,7 +22,7 @@ matplotlib.use("Agg")
 
 import pytest
 
-from mriforge.infrastructure.reporting.advanced_reporting import (
+from spectramr.infrastructure.reporting.advanced_reporting import (
     TrainingReport,
     create_training_report,
 )
@@ -162,10 +162,10 @@ def test_pipeline_factory_returns_report_with_started_state(tmp_path, fake_confi
 
 
 def test_optional_future_pipeline_module_smoke(tmp_path):
-    """If ``mriforge.infrastructure.reporting.pipeline`` is ever introduced, run a
+    """If ``spectramr.infrastructure.reporting.pipeline`` is ever introduced, run a
     minimal import check so the test stays in lockstep with the planned API."""
 
-    pipeline = pytest.importorskip("mriforge.infrastructure.reporting.pipeline")
+    pipeline = pytest.importorskip("spectramr.infrastructure.reporting.pipeline")
     # We don't pin a specific API; we only assert that the module exposes some
     # callable entry-point (function or class) so it isn't an empty stub.
     public_attrs = [a for a in dir(pipeline) if not a.startswith("_")]

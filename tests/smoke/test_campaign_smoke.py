@@ -45,7 +45,7 @@ def synthetic_state(campaign_dir: Path):
 
     Simulates 3 completed experiments with NPZ metric files.
     """
-    from mriforge.infrastructure.orchestration.campaign_state import (
+    from spectramr.infrastructure.orchestration.campaign_state import (
         CampaignState,
         ExperimentStatus,
     )
@@ -106,7 +106,7 @@ class TestCampaignSchemaValidation:
     @pytest.mark.parametrize("campaign_path", CAMPAIGNS)
     def test_campaign_parses(self, project_root: Path, campaign_path: str):
         """Each campaign YAML must parse without errors."""
-        from mriforge.config.schemas.campaign import CampaignConfigSchema
+        from spectramr.config.schemas.campaign import CampaignConfigSchema
 
         full_path = project_root / campaign_path
         if not full_path.exists():
@@ -121,7 +121,7 @@ class TestCampaignSchemaValidation:
     @pytest.mark.parametrize("campaign_path", CAMPAIGNS)
     def test_experiment_configs_exist(self, project_root: Path, campaign_path: str):
         """All experiment config paths referenced in campaigns must exist."""
-        from mriforge.config.schemas.campaign import CampaignConfigSchema
+        from spectramr.config.schemas.campaign import CampaignConfigSchema
 
         full_path = project_root / campaign_path
         if not full_path.exists():
@@ -139,7 +139,7 @@ class TestCampaignSchemaValidation:
     @pytest.mark.parametrize("campaign_path", CAMPAIGNS)
     def test_baseline_exists(self, project_root: Path, campaign_path: str):
         """Each campaign should have at least one baseline experiment."""
-        from mriforge.config.schemas.campaign import CampaignConfigSchema
+        from spectramr.config.schemas.campaign import CampaignConfigSchema
 
         full_path = project_root / campaign_path
         if not full_path.exists():
@@ -240,7 +240,7 @@ class TestStatePersistence:
 
     def test_save_load_round_trip(self, synthetic_state, campaign_dir: Path):
         """State must survive JSON serialisation."""
-        from mriforge.infrastructure.orchestration.campaign_state import CampaignState
+        from spectramr.infrastructure.orchestration.campaign_state import CampaignState
 
         state_path = campaign_dir / "campaign_state.json"
         assert state_path.exists()
@@ -269,7 +269,7 @@ class TestDryRunSubmission:
 
     def test_dry_run_generates_scripts(self, project_root: Path, tmp_path: Path):
         """Dry-run should create state + experiment dirs without calling sbatch."""
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -298,7 +298,7 @@ class TestDryRunSubmission:
 
     def test_slurm_script_content(self, project_root: Path):
         """Generated SLURM scripts should contain required directives."""
-        from mriforge.infrastructure.orchestration.slurm_backend import SLURMBackend
+        from spectramr.infrastructure.orchestration.slurm_backend import SLURMBackend
 
         script = SLURMBackend.generate_job_script(
             experiment_name="test_exp",
@@ -319,10 +319,10 @@ class TestDryRunSubmission:
         assert "#SBATCH --gpus=1" in script
         # The entry point, not a literal command line. This asserted
         # "python src/main.py train" until job 8000966 — a path that stopped
-        # existing at the 2026-05 `src -> src/mriforge` refactor. `slurm_backend`
+        # existing at the 2026-05 `src -> src/spectramr` refactor. `slurm_backend`
         # emits two TRAIN_CMD forms (bare python, and torchrun for multi-GPU);
         # both route through the module CLI, which is the part that must hold.
-        assert "-m mriforge.cli train --config" in script
+        assert "-m spectramr.cli train --config" in script
         assert "src/main.py" not in script, "retired entry point resurrected"
         assert "dummy_basic.yaml" in script
         # Auto-inference section
@@ -337,8 +337,8 @@ class TestAblationGeneration:
 
     def test_kspace_campaign_ablation(self, project_root: Path, tmp_path: Path):
         """K-space campaign ablation axis should generate valid configs."""
-        from mriforge.config.schemas.campaign import CampaignConfigSchema
-        from mriforge.infrastructure.orchestration.ablation_config_generator import (
+        from spectramr.config.schemas.campaign import CampaignConfigSchema
+        from spectramr.infrastructure.orchestration.ablation_config_generator import (
             AblationConfigGenerator,
         )
 
@@ -383,8 +383,8 @@ class TestEvaluatorPipeline:
 
     def test_full_evaluation(self, synthetic_state, campaign_dir: Path):
         """Full evaluation should produce leaderboard + pairwise + significance."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -417,8 +417,8 @@ class TestEvaluatorPipeline:
 
     def test_leaderboard_ranking_correct(self, synthetic_state):
         """Better model (higher PSNR offset) should rank first."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -438,8 +438,8 @@ class TestEvaluatorPipeline:
 
     def test_significance_detected(self, synthetic_state):
         """With 2.5 dB offset and n=50, t-test should detect significance."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -458,8 +458,8 @@ class TestEvaluatorPipeline:
 
     def test_effect_sizes_computed(self, synthetic_state):
         """Cohen's d should be computed for all pairwise comparisons."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -484,8 +484,8 @@ class TestEvaluatorPipeline:
 
     def test_fdr_correction(self, synthetic_state):
         """FDR correction should produce corrected p-values."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -512,11 +512,11 @@ class TestReportGeneration:
 
     def test_html_dashboard(self, synthetic_state, campaign_dir: Path):
         """Dashboard HTML + plots should be generated."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
-        from mriforge.infrastructure.orchestration.campaign_report_generator import (
+        from spectramr.infrastructure.orchestration.campaign_report_generator import (
             CampaignReportGenerator,
         )
 
@@ -550,8 +550,8 @@ class TestReportGeneration:
 
     def test_latex_table(self, synthetic_state):
         """LaTeX export should produce valid table markup."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -577,8 +577,8 @@ class TestReportGeneration:
 
     def test_report_json_serialisation(self, synthetic_state, campaign_dir: Path):
         """Report should serialise to valid JSON with all sections."""
-        from mriforge.config.schemas.campaign import EvaluationConfigSchema
-        from mriforge.infrastructure.orchestration.campaign_evaluator import (
+        from spectramr.config.schemas.campaign import EvaluationConfigSchema
+        from spectramr.infrastructure.orchestration.campaign_evaluator import (
             CampaignEvaluator,
         )
 
@@ -622,7 +622,7 @@ class TestParseElapsed:
         ],
     )
     def test_parse_elapsed(self, elapsed: str, expected: float):
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             _parse_elapsed,
         )
 
@@ -630,7 +630,7 @@ class TestParseElapsed:
         assert result == pytest.approx(expected)
 
     def test_parse_elapsed_invalid(self):
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             _parse_elapsed,
         )
 

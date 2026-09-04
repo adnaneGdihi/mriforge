@@ -19,11 +19,11 @@ from types import SimpleNamespace
 import pytest
 import torch.nn as _nn
 
-from mriforge.models.registry import register_model as _register_model
+from spectramr.models.registry import register_model as _register_model
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.infrastructure.training.builders.model_builder import (  # noqa: E402
+from spectramr.infrastructure.training.builders.model_builder import (  # noqa: E402
     ModelBuilder,
 )
 
@@ -370,7 +370,7 @@ class TestFsdpIsNotWrappedTwice:
         import inspect
         import textwrap
 
-        from mriforge.infrastructure.training.builders import model_builder
+        from spectramr.infrastructure.training.builders import model_builder
 
         return ast.parse(
             textwrap.dedent(inspect.getsource(model_builder.ModelBuilder.build))
@@ -445,7 +445,7 @@ class TestKSpaceLogScaledIsInjectedFromTheDataBlock:
         ``**kwargs`` would be invisible to it and silently never injected."""
         import inspect
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -462,7 +462,7 @@ class TestKSpaceLogScaledIsInjectedFromTheDataBlock:
         The injection is contract-gated against the registered generator, so a
         duck-typed config would exercise a different path than training does.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings(
             model={
@@ -491,7 +491,7 @@ class TestKSpaceLogScaledIsInjectedFromTheDataBlock:
         """
         import torch
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         models = (
             ModelBuilder(self._config(True), torch.device("cpu"))
@@ -512,7 +512,7 @@ class TestKSpaceLogScaledIsInjectedFromTheDataBlock:
         """
         import torch
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         models = (
             ModelBuilder(self._config(False), torch.device("cpu"))
@@ -527,7 +527,7 @@ class TestKSpaceLogScaledIsInjectedFromTheDataBlock:
         import pytest
         import torch
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         config = self._config(False, {"kspace_log_scaled": True})
         with pytest.raises(ValueError, match="kspace_log_scaled"):
@@ -606,7 +606,7 @@ def test_builder_uses_the_shared_resolver_not_its_own_vocabulary() -> None:
     The fix extracts this one rather than writing a sixth, so the binding here
     is what keeps them from drifting apart again.
     """
-    import mriforge.infrastructure.training.builders.model_builder as mb
+    import spectramr.infrastructure.training.builders.model_builder as mb
 
     assert hasattr(mb, "resolve_state_dict"), (
         "model_builder no longer shares the extracted reader; the other five "
@@ -628,7 +628,7 @@ def test_build_generator_passes_its_device_to_kwarg_resolution(monkeypatch) -> N
     happens with the device, not that some downstream model looks right, so it
     cannot be satisfied by a coincidence further down the chain.
     """
-    import mriforge.infrastructure.training.builders.model_builder as mb_mod
+    import spectramr.infrastructure.training.builders.model_builder as mb_mod
 
     seen: dict = {}
 

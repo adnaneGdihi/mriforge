@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import importlib
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 def test_sle_compressed_sensing_alias_registered() -> None:

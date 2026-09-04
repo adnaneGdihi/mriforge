@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/infrastructure/physics/biot_savart.py.
+"""Unit tests for src/spectramr/infrastructure/physics/biot_savart.py.
 
 Covers:
   - compute_b1_minus_biot_savart: output shape, dtype, physics properties
@@ -28,7 +28,7 @@ from tests.utils.shape_matrices import shape_id
 @pytest.mark.physics
 def test_canary_biot_savart_imports() -> None:
     """Module imports cleanly."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     assert compute_b1_minus_biot_savart is not None
 
@@ -37,7 +37,7 @@ def test_canary_biot_savart_imports() -> None:
 def test_canary_biot_savart_runs_tiny() -> None:
     """compute_b1_minus_biot_savart runs on the smallest valid inputs and returns
     a complex tensor of shape (num_coils, H, W)."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     num_coils = 2
     H, W = 8, 8
@@ -73,7 +73,7 @@ _GRID_COIL_PARAMS: list[tuple[tuple[int, int], int]] = [
 )
 def test_output_shape(grid_shape: tuple[int, int], num_coils: int) -> None:
     """Output shape is (num_coils, H, W) for all tested configs."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     H, W = grid_shape
     out = compute_b1_minus_biot_savart(
@@ -93,7 +93,7 @@ def test_output_shape(grid_shape: tuple[int, int], num_coils: int) -> None:
 )
 def test_output_finite(grid_shape: tuple[int, int], num_coils: int) -> None:
     """All output values are finite (no NaN/Inf)."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     out = compute_b1_minus_biot_savart(
         grid_shape=grid_shape,
@@ -118,7 +118,7 @@ def test_output_finite(grid_shape: tuple[int, int], num_coils: int) -> None:
 )
 def test_sanity_shape_biot_savart(grid_shape: tuple[int, int]) -> None:
     """Output tensor matches documented shape contract (num_coils, H, W)."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     num_coils = 4
     out = compute_b1_minus_biot_savart(grid_shape=grid_shape, num_coils=num_coils)
@@ -134,7 +134,7 @@ def test_sanity_shape_biot_savart(grid_shape: tuple[int, int]) -> None:
 @pytest.mark.physics
 def test_edge_single_coil() -> None:
     """Single coil (num_coils=1) produces shape (1, H, W) complex tensor."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     out = compute_b1_minus_biot_savart(grid_shape=(16, 16), num_coils=1, num_segments=32)
     assert out.shape == (1, 16, 16)
@@ -144,7 +144,7 @@ def test_edge_single_coil() -> None:
 @pytest.mark.physics
 def test_edge_large_num_segments() -> None:
     """Increasing num_segments does not crash and preserves shape/dtype."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     out = compute_b1_minus_biot_savart(grid_shape=(16, 16), num_coils=4, num_segments=256)
     assert out.shape == (4, 16, 16)
@@ -154,7 +154,7 @@ def test_edge_large_num_segments() -> None:
 @pytest.mark.physics
 def test_edge_non_square_grid() -> None:
     """Non-square (H != W) grid produces the correct rectangular output."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     H, W, C = 24, 48, 3
     out = compute_b1_minus_biot_savart(grid_shape=(H, W), num_coils=C)
@@ -164,7 +164,7 @@ def test_edge_non_square_grid() -> None:
 @pytest.mark.physics
 def test_edge_fov_smaller_than_cylinder() -> None:
     """fov < cylinder_radius (field of view entirely inside the coil array) still runs."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     # Very small fov — all observation points are near the origin
     out = compute_b1_minus_biot_savart(
@@ -185,7 +185,7 @@ def test_edge_fov_smaller_than_cylinder() -> None:
 @pytest.mark.physics
 def test_physics_nonzero_field() -> None:
     """At least some pixels have non-zero |B1-| magnitude after normalisation."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     out = compute_b1_minus_biot_savart(grid_shape=(32, 32), num_coils=8)
     # After internal RSS normalisation the max should be finite and > 0
@@ -201,7 +201,7 @@ def test_physics_coil_symmetry() -> None:
     is centred and square.  We test the weaker condition that the two coils have
     the same total energy.
     """
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     # Use even grid so the symmetry is exact
     out = compute_b1_minus_biot_savart(
@@ -231,7 +231,7 @@ def test_physics_far_field_decay() -> None:
     order-of-magnitude check — exact Biot-Savart 1/r³ applies only along
     the coil axis; in the transverse plane the exponent differs slightly.
     """
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     N = 64
     out = compute_b1_minus_biot_savart(
@@ -271,7 +271,7 @@ def test_physics_far_field_decay() -> None:
 @pytest.mark.physics
 def test_raises_zero_num_coils() -> None:
     """num_coils=0 must raise ValueError (empty array is meaningless, pitfall #9 guard)."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     with pytest.raises(ValueError, match="num_coils must be a positive integer"):
         compute_b1_minus_biot_savart(grid_shape=(16, 16), num_coils=0)
@@ -280,7 +280,7 @@ def test_raises_zero_num_coils() -> None:
 @pytest.mark.physics
 def test_raises_negative_num_coils() -> None:
     """num_coils=-1 must also raise ValueError (covers the <= 0 guard branch)."""
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     with pytest.raises(ValueError, match="num_coils must be a positive integer"):
         compute_b1_minus_biot_savart(grid_shape=(16, 16), num_coils=-1)
@@ -304,7 +304,7 @@ def test_convention_returns_conj_b1_minus() -> None:
     and assert the returned ``real``/``imag`` match ``+Bx``/``+By`` (and NOT the
     conventional ``Bx - i By``), pinning the documented convention.
     """
-    from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+    from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
     grid, num_segments = (32, 32), 64
     coil_radius, cylinder_radius, fov = 0.1, 0.15, 0.2

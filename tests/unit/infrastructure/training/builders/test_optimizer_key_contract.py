@@ -23,7 +23,7 @@ def test_environment_opt_g_property_only_reads_canonical_key() -> None:
     ``self.optimizers.get("main")``; that fallback is what masked the
     builder/consumer key mismatch in the first place.
     """
-    from mriforge.infrastructure.training.builders.environment import (
+    from spectramr.infrastructure.training.builders.environment import (
         TrainingEnvironment,
     )
 
@@ -41,7 +41,7 @@ def test_optimization_builder_uses_canonical_key_for_single_optimizer() -> None:
     while the GAN branch wrote ``"opt_g"``/``"opt_d"`` — two keys for
     the same role.
     """
-    from mriforge.infrastructure.training.builders import optimization_builder
+    from spectramr.infrastructure.training.builders import optimization_builder
 
     src = inspect.getsource(optimization_builder)
     # Builder no longer assigns the "main" key anywhere.
@@ -53,7 +53,7 @@ def test_optimization_builder_uses_canonical_key_for_single_optimizer() -> None:
 
 def test_train_pipeline_does_not_fall_back_to_main_key() -> None:
     """``train.py`` reads ``"opt_g"`` directly — no ``or get("main")`` chain."""
-    from mriforge.pipelines import train as train_module
+    from spectramr.pipelines import train as train_module
 
     src = inspect.getsource(train_module)
     # The fallback chain is gone; the canonical key is the only access path.
@@ -63,7 +63,7 @@ def test_train_pipeline_does_not_fall_back_to_main_key() -> None:
 
 def test_training_environment_dataclass_property_set() -> None:
     """The five canonical optimizer-related properties are all defined."""
-    from mriforge.infrastructure.training.builders.environment import (
+    from spectramr.infrastructure.training.builders.environment import (
         TrainingEnvironment,
     )
 

@@ -1,12 +1,20 @@
 name: Release
 
+# Publishing is irreversible: PyPI never re-issues a filename it has seen, so a
+# wheel that is wrong reaching the index costs a version number rather than an
+# amend. `workflow_dispatch` therefore builds and verifies the exact artefacts a
+# tag would publish, and publishes nothing -- rehearse there, then tag.
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
+# NOT declared at workflow level. `id-token: write` mints an OIDC token that is
+# a PyPI upload credential, and a workflow-level grant hands it to every job --
+# including `build`, which executes the build backend and whatever the tree's
+# dependencies bring with it. It is granted to the one job that publishes.
 permissions:
-  contents: write
-  id-token: write   # Required for PyPI Trusted Publishing
+  contents: read
 
 jobs:
   build:
@@ -16,8 +24,29 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install build
-      - run: python -m build
+
+      # build_dist.py reads src/spectramr/__init__.py as *text*, so verification
+      # never imports the package and needs none of its 5.1 GB of dependencies.
+      - run: pip install build twine
+
+      - name: Build and verify the distribution
+        # Interpolation goes through env, not into the command line: a ref name
+        # reaches this runner from the event payload, and pasting it into a
+        # shell string is the standard script-injection seam.
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$EVENT" = "push" ]; then
+            # The tag becomes a fifth version source. v0.1.1 pushed at a tree
+            # still declaring 0.1.0 would otherwise publish spectramr-0.1.0 under
+            # a v0.1.1 release and burn that filename permanently.
+            python scripts/release/build_dist.py --expect-version "$REF_NAME"
+          else
+            # A dispatch runs from a branch, whose name states no version.
+            python scripts/release/build_dist.py
+          fi
+
       - uses: actions/upload-artifact@v4
         with:
           name: dist
@@ -25,19 +54,24 @@ jobs:
 
   pypi:
     needs: build
+    # A dry run must not be able to reach the index by any path.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     environment: pypi
+    permissions:
+      id-token: write   # OIDC Trusted Publishing -- scoped to this job alone
     steps:
       - uses: actions/download-artifact@v8
         with:
           name: dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
-        # OIDC Trusted Publishing — no token needed.
+        # OIDC Trusted Publishing -- no token needed.
         # Configure on PyPI first; see manual step §19.4.
 
   github-release:
     needs: pypi
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: write

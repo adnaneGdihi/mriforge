@@ -167,10 +167,10 @@ class TestSummaryAccounting:
 
 
 class TestRegistryTable:
-    def test_every_declared_registry_names_a_real_mriforge_package(self):
+    def test_every_declared_registry_names_a_real_spectramr_package(self):
         """A typo in the table would silently probe nothing and report clean."""
         for reg in mod.REGISTRIES:
-            assert reg.home.startswith("mriforge."), reg.kind
+            assert reg.home.startswith("spectramr."), reg.kind
             assert reg.cold and reg.names, reg.kind
 
     def test_kinds_are_unique(self):

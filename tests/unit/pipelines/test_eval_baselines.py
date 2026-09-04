@@ -25,7 +25,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.models.registry import get_model_class
+from spectramr.models.registry import get_model_class
 
 _RESNET_TINY = {"ngf": 8, "n_blocks": 1}
 _SPLIT = "Validating_prospective"
@@ -38,7 +38,7 @@ _SPLIT = "Validating_prospective"
 
 def _save_resnet_ckpt(path):
     """Save a tiny ResNet generator in the ``{"model": {"netG.<k>": v}}`` layout."""
-    import mriforge.infrastructure.evaluation.mrixfields_baselines.generator_loader  # noqa: F401
+    import spectramr.infrastructure.evaluation.mrixfields_baselines.generator_loader  # noqa: F401
 
     gen = get_model_class("cyclegan_generator")(input_nc=1, output_nc=1, **_RESNET_TINY)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -167,11 +167,11 @@ class _ShapeRecordingSeg:
 
 @pytest.mark.unit
 def test_dry_run_returns_one_result_per_task(tmp_path):
-    from mriforge.infrastructure.evaluation.mrixfields_baselines.discovery import (
+    from spectramr.infrastructure.evaluation.mrixfields_baselines.discovery import (
         build_eval_tasks,
         discover_baselines,
     )
-    from mriforge.pipelines.eval_baselines import BaselineResult, run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import BaselineResult, run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut", "cyclegan"))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -208,7 +208,7 @@ def test_dry_run_returns_one_result_per_task(tmp_path):
 
 @pytest.mark.unit
 def test_dry_run_writes_results_json(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -235,7 +235,7 @@ def test_dry_run_writes_results_json(tmp_path):
 
 @pytest.mark.unit
 def test_full_run_computes_registry_metrics_no_segmenter(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path, n_subjects=2)
@@ -279,7 +279,7 @@ def test_full_run_computes_registry_metrics_no_segmenter(tmp_path):
 
 @pytest.mark.unit
 def test_full_run_with_segmenter_includes_synthseg_dice(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -304,7 +304,7 @@ def test_full_run_with_segmenter_includes_synthseg_dice(tmp_path):
 @pytest.mark.unit
 def test_seg_metric_omitted_when_no_segmenter(tmp_path):
     """A requested seg metric is silently OMITTED (never faked) without a segmenter."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -332,7 +332,7 @@ def test_seg_metric_omitted_when_no_segmenter(tmp_path):
 
 @pytest.mark.unit
 def test_unknown_segmenter_raises(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -350,7 +350,7 @@ def test_unknown_segmenter_raises(tmp_path):
 
 @pytest.mark.unit
 def test_unknown_task3_pairs_raises(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -378,9 +378,9 @@ def test_ssim_aggregation_is_per_axial_slice_mean():
     This pins the aggregation axis so a subtle 5-D-vs-slice-batch mistake cannot
     silently poison every reported SSIM.
     """
-    from mriforge.core.metrics.computer import create_validation_metrics_computer
-    from mriforge.core.metrics.registry import get_metric
-    from mriforge.pipelines.eval_baselines import volume_to_slice_batch
+    from spectramr.core.metrics.computer import create_validation_metrics_computer
+    from spectramr.core.metrics.registry import get_metric
+    from spectramr.pipelines.eval_baselines import volume_to_slice_batch
 
     rng = np.random.default_rng(0)
     h, w, d = 16, 16, 5
@@ -410,8 +410,8 @@ def test_ssim_aggregation_is_per_axial_slice_mean():
 @pytest.mark.unit
 def test_nrmse_l2_is_global_volume_ratio():
     """nrmse_l2 over a ``[D,1,H,W]`` batch is a single global L2 ratio (full-volume)."""
-    from mriforge.core.metrics.computer import create_validation_metrics_computer
-    from mriforge.pipelines.eval_baselines import volume_to_slice_batch
+    from spectramr.core.metrics.computer import create_validation_metrics_computer
+    from spectramr.pipelines.eval_baselines import volume_to_slice_batch
 
     rng = np.random.default_rng(3)
     h, w, d = 12, 12, 4
@@ -439,7 +439,7 @@ def test_nrmse_l2_is_global_volume_ratio():
 
 @pytest.mark.unit
 def test_two_seed0_runs_identical_metrics(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path, n_subjects=2)
@@ -470,7 +470,7 @@ def test_two_seed0_runs_identical_metrics(tmp_path):
 @pytest.mark.unit
 def test_ordinal_pairing_scores_cross_field_distinct_ids(tmp_path):
     """C1/C2: ordinal (default) pairs per-field-distinct ids -> n_subjects > 0."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_cross_field_manifest(tmp_path)
@@ -492,7 +492,7 @@ def test_ordinal_pairing_scores_cross_field_distinct_ids(tmp_path):
 @pytest.mark.unit
 def test_zero_subjects_fails_loud(tmp_path):
     """C2: subject_id pairing on per-field-distinct ids scores 0 -> ValueError."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_cross_field_manifest(tmp_path)
@@ -512,7 +512,7 @@ def test_zero_subjects_fails_loud(tmp_path):
 
 @pytest.mark.unit
 def test_unknown_pairing_raises(tmp_path):
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -536,7 +536,7 @@ def test_unknown_pairing_raises(tmp_path):
 @pytest.mark.unit
 def test_synthseg_without_model_raises(tmp_path):
     """I1: segmenter='synthseg' with no model fails loud, naming --synthseg-model."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -556,7 +556,7 @@ def test_synthseg_without_model_raises(tmp_path):
 @pytest.mark.unit
 def test_synthseg_model_stamped_in_provenance(tmp_path):
     """I1/#15: an injected synthseg model is recorded in provenance."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -583,7 +583,7 @@ def test_synthseg_model_stamped_in_provenance(tmp_path):
 @pytest.mark.unit
 def test_seg_metric_runs_on_3d_volume(tmp_path):
     """I2: the segmenter sees the [1,1,D,H,W] 3-D volume, NOT the [D,1,H,W] batch."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path, shape=(16, 16, 4))
@@ -617,7 +617,7 @@ def test_seg_metric_runs_on_3d_volume(tmp_path):
 @pytest.mark.unit
 def test_label_dice_with_volume_consistency_raises(tmp_path):
     """I3: label_dice cannot express the 14 DGM labels volume_consistency needs."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -637,7 +637,7 @@ def test_label_dice_with_volume_consistency_raises(tmp_path):
 @pytest.mark.unit
 def test_label_dice_with_synthseg_dice_ok(tmp_path):
     """I3: label_dice remains a valid smoke proxy for synthseg_dice (not volume)."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -681,7 +681,7 @@ def _make_fake_keras_model(n_classes: int = 14):
 @pytest.mark.unit
 def test_keras_shim_3d_shape_round_trip():
     """I4: shim maps [B,1,D,H,W] -> [B,n_classes,D,H,W] for the 3-D eval path."""
-    from mriforge.pipelines.eval_baselines import _KerasSynthSegShim
+    from spectramr.pipelines.eval_baselines import _KerasSynthSegShim
 
     shim = _KerasSynthSegShim(_make_fake_keras_model(n_classes=14))
     inp = torch.rand(1, 1, 4, 8, 8)
@@ -693,7 +693,7 @@ def test_keras_shim_3d_shape_round_trip():
 @pytest.mark.unit
 def test_keras_shim_2d_shape_round_trip():
     """I4: shim maps [B,1,H,W] -> [B,n_classes,H,W] for 2-D slice inputs."""
-    from mriforge.pipelines.eval_baselines import _KerasSynthSegShim
+    from spectramr.pipelines.eval_baselines import _KerasSynthSegShim
 
     shim = _KerasSynthSegShim(_make_fake_keras_model(n_classes=14))
     inp = torch.rand(2, 1, 16, 16)
@@ -705,7 +705,7 @@ def test_keras_shim_2d_shape_round_trip():
 @pytest.mark.unit
 def test_keras_shim_multichannel_raises():
     """I4: shim raises immediately on multi-channel input (SynthSeg is magnitude-only)."""
-    from mriforge.pipelines.eval_baselines import _KerasSynthSegShim
+    from spectramr.pipelines.eval_baselines import _KerasSynthSegShim
 
     shim = _KerasSynthSegShim(_make_fake_keras_model())
     with pytest.raises(ValueError, match="single-channel"):
@@ -715,8 +715,8 @@ def test_keras_shim_multichannel_raises():
 @pytest.mark.unit
 def test_keras_shim_argmax_gives_label_map():
     """I4: SynthSegBackend.segment(shim) produces an integer label map [B,D,H,W]."""
-    from mriforge.core.metrics.quantitative.segmentation import SynthSegBackend
-    from mriforge.pipelines.eval_baselines import _KerasSynthSegShim
+    from spectramr.core.metrics.quantitative.segmentation import SynthSegBackend
+    from spectramr.pipelines.eval_baselines import _KerasSynthSegShim
 
     shim = _KerasSynthSegShim(_make_fake_keras_model(n_classes=14))
     backend = SynthSegBackend(n_classes=14, model=shim)
@@ -737,7 +737,7 @@ def test_resolve_h5_without_keras_raises(tmp_path):
     import sys
     import unittest.mock as mock
 
-    from mriforge.pipelines.eval_baselines import _resolve_synthseg_model
+    from spectramr.pipelines.eval_baselines import _resolve_synthseg_model
 
     fake_h5 = tmp_path / "synthseg.h5"
     fake_h5.write_bytes(b"")  # existence doesn't matter; keras import fails first
@@ -755,7 +755,7 @@ def test_resolve_h5_with_keras_returns_shim(tmp_path):
     import types
     import unittest.mock as mock
 
-    from mriforge.pipelines.eval_baselines import _KerasSynthSegShim, _resolve_synthseg_model
+    from spectramr.pipelines.eval_baselines import _KerasSynthSegShim, _resolve_synthseg_model
 
     fake_h5 = tmp_path / "synthseg.h5"
     fake_h5.write_bytes(b"")
@@ -774,7 +774,7 @@ def test_resolve_h5_with_keras_returns_shim(tmp_path):
 @pytest.mark.unit
 def test_resolve_none_raises():
     """I5: None model fails loud with a message naming --synthseg-model."""
-    from mriforge.pipelines.eval_baselines import _resolve_synthseg_model
+    from spectramr.pipelines.eval_baselines import _resolve_synthseg_model
 
     with pytest.raises(ValueError, match="synthseg-model"):
         _resolve_synthseg_model(None, torch.device("cpu"))
@@ -787,7 +787,7 @@ def test_resolve_none_raises():
 @pytest.mark.unit
 def test_synthseg_device_adapter_round_trips_device():
     """Adapter moves input to model device and output back to input device."""
-    from mriforge.pipelines.eval_baselines import _SynthSegDeviceAdapter
+    from spectramr.pipelines.eval_baselines import _SynthSegDeviceAdapter
 
     cpu = torch.device("cpu")
 
@@ -807,7 +807,7 @@ def test_synthseg_device_adapter_eval_delegates():
     """adapter.eval() calls eval() on the wrapped model and returns self."""
     import unittest.mock as mock
 
-    from mriforge.pipelines.eval_baselines import _SynthSegDeviceAdapter
+    from spectramr.pipelines.eval_baselines import _SynthSegDeviceAdapter
 
     inner = mock.MagicMock()
     adapter = _SynthSegDeviceAdapter(inner, torch.device("cpu"))
@@ -821,7 +821,7 @@ def test_resolve_pt_uses_jit_load(tmp_path):
     """_resolve_synthseg_model uses torch.jit.load for .pt files (TorchScript)."""
     import unittest.mock as mock
 
-    from mriforge.pipelines.eval_baselines import _resolve_synthseg_model
+    from spectramr.pipelines.eval_baselines import _resolve_synthseg_model
 
     # Build a minimal real TorchScript model so torch.jit.load succeeds.
     model = torch.jit.trace(torch.nn.Identity(), torch.zeros(1))
@@ -836,7 +836,7 @@ def test_resolve_pt_uses_jit_load(tmp_path):
 @pytest.mark.unit
 def test_run_baseline_evaluation_synthseg_device_in_provenance(tmp_path):
     """synthseg_device is stamped into each result's provenance when segmenter=synthseg."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -861,7 +861,7 @@ def test_chunked_voxel_compute_matches_full_for_ssim():
     """_chunked_voxel_compute with chunk_size=1 gives the same result as chunk_size=0."""
     from unittest.mock import MagicMock
 
-    from mriforge.pipelines.eval_baselines import _chunked_voxel_compute
+    from spectramr.pipelines.eval_baselines import _chunked_voxel_compute
 
     pred = torch.rand(4, 1, 8, 8)
     target = torch.rand(4, 1, 8, 8)
@@ -888,7 +888,7 @@ def test_chunked_voxel_compute_matches_full_for_ssim():
 @pytest.mark.unit
 def test_metric_slice_chunk_stamped_in_provenance(tmp_path):
     """metric_slice_chunk is written into provenance (#15 — every knob stamped)."""
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
@@ -919,11 +919,11 @@ def test_prewarm_dummy_size_does_not_trigger_metric_warning(tmp_path, caplog):
     """
     import logging
 
-    from mriforge.pipelines.eval_baselines import run_baseline_evaluation
+    from spectramr.pipelines.eval_baselines import run_baseline_evaluation
 
     root = _build_baselines_tree(tmp_path, methods=("cut",))
     manifest_path, data_root = _build_manifest_and_data(tmp_path)
-    with caplog.at_level(logging.WARNING, logger="mriforge.core.metrics.computer"):
+    with caplog.at_level(logging.WARNING, logger="spectramr.core.metrics.computer"):
         run_baseline_evaluation(
             root,
             manifest_path,

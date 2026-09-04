@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.core.metrics.evaluation_metrics import RobustMRI_PSNR
+from spectramr.core.metrics.evaluation_metrics import RobustMRI_PSNR
 
 
 class TestRobustMRIPSNROutlier:

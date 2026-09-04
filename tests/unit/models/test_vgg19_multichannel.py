@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.losses.gan_loss_library import VGG19FeatureExtractor
+from spectramr.models.losses.gan_loss_library import VGG19FeatureExtractor
 
 
 class TestVGG19FeatureExtractor:

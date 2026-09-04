@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.models.shape_inference`.
+"""Unit tests for :mod:`spectramr.models.shape_inference`.
 
 The module provides analytical (no-tensor) shape inference for conv2d
 and maxpool2d stacks plus a couple of parameter validators. These are
@@ -30,7 +30,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.shape_inference import (
+from spectramr.models.shape_inference import (
     FOURIER_KAN_ENCODER_LAYERS,
     WAVELET_KAN_ENCODER_LAYERS,
     compute_flattened_size,

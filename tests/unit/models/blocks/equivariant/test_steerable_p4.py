@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.blocks.equivariant.steerable_p4 import (
+from spectramr.models.blocks.equivariant.steerable_p4 import (
     P4GroupConv2d,
     P4LiftingConv2d,
     p4_group_norm,

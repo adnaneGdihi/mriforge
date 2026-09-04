@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.distributed.checkpoint_adapters import (
+from spectramr.infrastructure.distributed.checkpoint_adapters import (
     DEEPSPEED_TAG_PREFIX,
     DeepSpeedCheckpointAdapter,
     DefaultCheckpointAdapter,
@@ -21,7 +21,7 @@ from mriforge.infrastructure.distributed.checkpoint_adapters import (
     IParallelCheckpointAdapter,
     resolve_checkpoint_adapter,
 )
-from mriforge.infrastructure.distributed.strategy_registry import (
+from spectramr.infrastructure.distributed.strategy_registry import (
     ParallelRuntime,
     list_parallel_strategies,
     resolve_parallel_strategy,
@@ -191,7 +191,7 @@ class TestDeepSpeedNativeArtifacts:
     def test_consolidated_best_is_published_for_non_deepspeed_consumers(
         self, tmp_path: Path
     ) -> None:
-        """discover_best_checkpoint / campaign eval / `mriforge infer` all open a
+        """discover_best_checkpoint / campaign eval / `spectramr infer` all open a
         FILE. Without this the run is resume-only."""
         engine = _FakeEngine()
         path = DeepSpeedCheckpointAdapter().save_native(
@@ -257,7 +257,7 @@ class TestDeepSpeedNativeArtifacts:
 
     def test_engines_are_duck_typed_not_isinstance_checked(self) -> None:
         """So this module never imports deepspeed and stays testable without it."""
-        import mriforge.infrastructure.distributed.checkpoint_adapters as mod
+        import spectramr.infrastructure.distributed.checkpoint_adapters as mod
 
         assert "import deepspeed" not in Path(mod.__file__).read_text()
 

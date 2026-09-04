@@ -34,7 +34,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import MaskGenerator, MaskType
+from spectramr.infrastructure.physics.sampling import MaskGenerator, MaskType
 from tests.utils.tolerances import tol_for
 
 # ---------------------------------------------------------------------------

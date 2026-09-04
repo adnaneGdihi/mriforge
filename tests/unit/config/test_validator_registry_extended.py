@@ -1,4 +1,4 @@
-"""Extended unit tests for mriforge.config.schemas.validator_registry.
+"""Extended unit tests for spectramr.config.schemas.validator_registry.
 
 PART A — Task III.3: Config-validator unit tests.
 
@@ -21,7 +21,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.config.schemas.validator_registry import (
+from spectramr.config.schemas.validator_registry import (
     ValidationRule,
     ValidatorRegistry,
     _validate_batch_size_positive,
@@ -57,7 +57,7 @@ class TestCanaryValidConfig:
             "optimization": {"learning_rate": 1e-4, "epochs": 100},
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies."
+                    "spectramr.infrastructure.training.strategies."
                     "reconstruction.ReconstructionTrainingStrategy"
                 )
             },
@@ -102,7 +102,7 @@ PARADIGM_DICTS: list[tuple[str, dict[str, Any]]] = [
             "optimization": {"learning_rate": 1e-4, "epochs": 50},
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies."
+                    "spectramr.infrastructure.training.strategies."
                     "reconstruction.ReconstructionTrainingStrategy"
                 )
             },
@@ -116,7 +116,7 @@ PARADIGM_DICTS: list[tuple[str, dict[str, Any]]] = [
             "optimization": {"learning_rate": 2e-4, "epochs": 200},
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy"
+                    "spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy"
                 ),
                 "training_mode": "gan",
             },
@@ -135,7 +135,7 @@ PARADIGM_DICTS: list[tuple[str, dict[str, Any]]] = [
             "optimization": {"learning_rate": 2e-4},
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
+                    "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy"
                 ),
                 "max_iterations": 100,
             },
@@ -245,7 +245,7 @@ class TestEdgeCases:
         config = {
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies."
+                    "spectramr.infrastructure.training.strategies."
                     "reconstruction.ReconstructionTrainingStrategy"
                 )
             }
@@ -309,7 +309,7 @@ class TestExpectedFailures:
             "config_version": "1.0",
             "training": {
                 "strategy_class": (
-                    "mriforge.infrastructure.training.strategies."
+                    "spectramr.infrastructure.training.strategies."
                     "reconstruction.ReconstructionTrainingStrategy"
                 ),
                 "max_iterations": 10,
@@ -349,7 +349,7 @@ class TestExpectedFailures:
         yaml_path = tmp_path / "freeze_test.yaml"
         yaml_path.write_text(yaml.dump(cfg))
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings.from_yaml(yaml_path)
         assert settings.run.seed == 42
@@ -374,7 +374,7 @@ class TestExpectedFailures:
         The pitfall-#9 guarantee is unchanged -- an unknown mode still hard-fails
         the load. This test pins that the guarantee is still *somewhere*.
         """
-        from mriforge.infrastructure.validation.config_validation import (
+        from spectramr.infrastructure.validation.config_validation import (
             _validate_training_mode_dispatchable,
         )
 
@@ -589,7 +589,7 @@ class TestVfAdvancedTrainingModesRegistered:
 
     @pytest.mark.parametrize("mode", ["ib_vf", "twin_dps"])
     def test_mode_in_allow_list_and_constraints(self, mode: str) -> None:
-        from mriforge.config.validation_constants import (
+        from spectramr.config.validation_constants import (
             TRAINING_MODE_CONSTRAINTS,
             VALID_TRAINING_MODES,
         )
@@ -600,8 +600,8 @@ class TestVfAdvancedTrainingModesRegistered:
     def test_allowlist_consistent_with_strategy_factory(self) -> None:
         """Every dispatchable training mode must be in the validator allow-list
         (this is the invariant that the ib_vf/twin_dps gap violated)."""
-        from mriforge.config.validation_constants import VALID_TRAINING_MODES
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.config.validation_constants import VALID_TRAINING_MODES
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
@@ -638,7 +638,7 @@ class TestAccelerationFactorsNoFlatLrAlias:
     """
 
     def test_flat_lr_alias_not_read(self) -> None:
-        from mriforge.config.schemas.validator_registry import (
+        from spectramr.config.schemas.validator_registry import (
             _validate_acceleration_factors,
         )
 
@@ -648,7 +648,7 @@ class TestAccelerationFactorsNoFlatLrAlias:
         assert msgs == []
 
     def test_canonical_lr_still_warns_when_high(self) -> None:
-        from mriforge.config.schemas.validator_registry import (
+        from spectramr.config.schemas.validator_registry import (
             _validate_acceleration_factors,
         )
 
@@ -666,7 +666,7 @@ class TestValidatorRegistryDuplicateRegistration:
     escape hatch."""
 
     def _rule(self, name: str):
-        from mriforge.config.schemas.validator_registry import ValidationRule
+        from spectramr.config.schemas.validator_registry import ValidationRule
 
         return ValidationRule(
             name=name,
@@ -678,7 +678,7 @@ class TestValidatorRegistryDuplicateRegistration:
     def test_duplicate_registration_raises(self) -> None:
         import pytest
 
-        from mriforge.config.schemas.validator_registry import ValidatorRegistry
+        from spectramr.config.schemas.validator_registry import ValidatorRegistry
 
         reg = ValidatorRegistry()
         reg.register(self._rule("dup_rule"))
@@ -686,7 +686,7 @@ class TestValidatorRegistryDuplicateRegistration:
             reg.register(self._rule("dup_rule"))
 
     def test_override_allows_replacement(self) -> None:
-        from mriforge.config.schemas.validator_registry import ValidatorRegistry
+        from spectramr.config.schemas.validator_registry import ValidatorRegistry
 
         reg = ValidatorRegistry()
         reg.register(self._rule("dup_rule"))

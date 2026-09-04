@@ -13,9 +13,9 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.pipeline_strategy import (
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.pipeline_strategy import (
     MultiTrainingStrategy,
 )
 

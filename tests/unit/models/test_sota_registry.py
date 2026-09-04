@@ -1,4 +1,4 @@
-"""Tests for the retired ``mriforge.models.sota_registry`` shim (2026-07-02).
+"""Tests for the retired ``spectramr.models.sota_registry`` shim (2026-07-02).
 
 History: this module used to fire ~41 dynamic ``register_model(...)`` calls,
 and once clobbered ``bloch_mamba_v2``'s decorator-declared
@@ -29,13 +29,13 @@ import pytest
 
 def test_shim_register_sota_models_is_a_noop() -> None:
     """Calling the retired entry point must not add or change registrations."""
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     before = dict(MODEL_REGISTRY)
 
-    sota = importlib.import_module("mriforge.models.sota_registry")
+    sota = importlib.import_module("spectramr.models.sota_registry")
     result = sota.register_sota_models()
 
     assert result is None
@@ -46,7 +46,7 @@ def test_shim_register_sota_models_is_a_noop() -> None:
 
 def test_shim_module_carries_no_dynamic_registrations() -> None:
     """The shim must stay inert — no model classes, no register calls at import."""
-    sota = importlib.import_module("mriforge.models.sota_registry")
+    sota = importlib.import_module("spectramr.models.sota_registry")
     public = [n for n in vars(sota) if not n.startswith("_")]
     assert public == ["register_sota_models"], (
         f"sota_registry shim grew unexpected attributes {public}; registrations "
@@ -56,11 +56,11 @@ def test_shim_module_carries_no_dynamic_registrations() -> None:
 
 def test_sota_names_resolve_via_walk_alone() -> None:
     """Spot-check former sota-registered names now owned by decorators+walk."""
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
 
-    from mriforge.models.registry import get_model_class, get_model_mode
+    from spectramr.models.registry import get_model_class, get_model_mode
 
     # (name, mode, class name) — one per former sota_registry phase.
     for name, mode, cls_name in (
@@ -85,11 +85,11 @@ def test_bloch_mamba_v2_capabilities_survive_migration() -> None:
     get_model_capabilities returned None and the audit's
     check_data_model_compatibility was silently skipped.
     """
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
 
-    from mriforge.models.registry import get_model_capabilities
+    from spectramr.models.registry import get_model_capabilities
 
     caps = get_model_capabilities("bloch_mamba_v2")
     assert caps is not None, (
@@ -104,11 +104,11 @@ def test_bloch_mamba_v2_capabilities_survive_migration() -> None:
 
 def test_bloch_mamba_v2_registered_once_with_correct_mode() -> None:
     """The model is still registered and resolvable under reconstruction mode."""
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
 
-    from mriforge.models.registry import get_model_class, get_model_mode
+    from spectramr.models.registry import get_model_class, get_model_mode
 
     assert get_model_mode("bloch_mamba_v2") == "reconstruction"
     cls = get_model_class("bloch_mamba_v2")
@@ -117,11 +117,11 @@ def test_bloch_mamba_v2_registered_once_with_correct_mode() -> None:
 
 def test_spec_card_exposes_bloch_mamba_v2_capabilities() -> None:
     """The audit surface (spec_card._derive_model_form) sees non-None caps."""
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
 
-    from mriforge.infrastructure.validation.spec_card import _derive_model_form
+    from spectramr.infrastructure.validation.spec_card import _derive_model_form
 
     config = SimpleNamespace(model=SimpleNamespace(model_type="bloch_mamba_v2"))
     form = _derive_model_form(config)

@@ -20,8 +20,8 @@ from tests.utils.data_config_stub import (
 
 def test_every_block_is_a_real_schema_instance() -> None:
     """The stub must build blocks from the schema, never hand-write them."""
-    import mriforge.config.schemas.data as data_mod
-    from mriforge.config.schemas.data import DataConfigSchema
+    import spectramr.config.schemas.data as data_mod
+    from spectramr.config.schemas.data import DataConfigSchema
 
     blocks = nested_blocks()
     assert blocks, "the stub declares no sub-blocks"
@@ -47,7 +47,7 @@ def test_the_stub_covers_every_sub_block_the_schema_mounts() -> None:
     """
     from pydantic import BaseModel
 
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     mounted = {
         name
@@ -101,7 +101,7 @@ def test_flat_aliases_agree_with_the_rename_ssot() -> None:
     Two tables that disagree is the problem the rename SSOT was created to
     remove; a test-only copy is no more exempt than a production one.
     """
-    from mriforge.config.schemas.renames import RENAMES
+    from spectramr.config.schemas.renames import RENAMES
 
     for legacy, rec in RENAMES.items():
         if rec.posture != "fold" or not rec.canonical.startswith("data."):
@@ -146,7 +146,7 @@ def test_a_mapped_flat_kwarg_lands_canonically_and_not_flat() -> None:
 
 def test_defaults_come_from_the_schema_not_from_literals() -> None:
     """Pins rule 1: restating a default is how `int(None)` happened."""
-    from mriforge.config.schemas.data import (
+    from spectramr.config.schemas.data import (
         DataLoaderConfigSchema,
         MRIxFieldsDataConfigSchema,
     )

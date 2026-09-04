@@ -1,6 +1,6 @@
 """Tests for ``DeviceManager``.
 
-Targets ``mriforge.infrastructure.services.device_manager``. Wraps
+Targets ``spectramr.infrastructure.services.device_manager``. Wraps
 ``DevicePolicy`` + a `torch.device` selection for clean DI consumption.
 
 Categories:
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.services.device_manager import DeviceManager
+from spectramr.infrastructure.services.device_manager import DeviceManager
 
 
 # ---------------------------------------------------------------------------

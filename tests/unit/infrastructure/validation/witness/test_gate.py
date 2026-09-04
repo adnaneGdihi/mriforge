@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.witness import gate as gate_mod
-from mriforge.infrastructure.validation.witness.gate import (
+from spectramr.infrastructure.validation.witness import gate as gate_mod
+from spectramr.infrastructure.validation.witness.gate import (
     WitnessGateError,
     assert_no_errors,
     run_witnesses,
     scheduled_witnesses,
 )
-from mriforge.infrastructure.validation.witness.registry import (
+from spectramr.infrastructure.validation.witness.registry import (
     Severity,
     Stage,
     Subject,
@@ -20,7 +20,7 @@ from mriforge.infrastructure.validation.witness.registry import (
     WitnessRegistry,
     WitnessVerdict,
 )
-from mriforge.infrastructure.validation.witness.subject import WitnessSubject
+from spectramr.infrastructure.validation.witness.subject import WitnessSubject
 
 
 @pytest.fixture

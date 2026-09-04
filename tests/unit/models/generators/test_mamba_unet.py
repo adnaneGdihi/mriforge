@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.mamba_unet import (  # noqa: E402  (after importorskip)
+from spectramr.models.generators.mamba_unet import (  # noqa: E402  (after importorskip)
     MambaLayer2D,
     MambaUNet,
 )

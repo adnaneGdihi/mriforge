@@ -2,7 +2,7 @@
 
 **NOT FOR CLINICAL USE.**
 
-MRIForge is research software provided for academic and methodological investigation
+spectraMR is research software provided for academic and methodological investigation
 only. It is not a medical device. It has not been evaluated by the U.S. Food and
 Drug Administration, the European Medicines Agency, the U.K. Medicines and
 Healthcare products Regulatory Agency, the Japanese Pharmaceuticals and Medical

@@ -1,6 +1,6 @@
 """Tests for ``ensure_text_features_disabled``.
 
-Targets ``mriforge.shared.utils.text_guard``. TRELLIS text-conditioned
+Targets ``spectramr.shared.utils.text_guard``. TRELLIS text-conditioned
 features are intentionally out of scope for this codebase — accessing
 them must always raise ``NotImplementedError``.
 """
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.shared.utils.text_guard import (
+from spectramr.shared.utils.text_guard import (
     TEXT_FEATURES_SUPPORTED,
     ensure_text_features_disabled,
 )

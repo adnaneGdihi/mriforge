@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.components.conditioning_encoder import ConditioningEncoder
+from spectramr.models.components.conditioning_encoder import ConditioningEncoder
 
 
 class TestConditioningEncoder:

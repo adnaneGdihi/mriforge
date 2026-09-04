@@ -11,16 +11,16 @@ Every environment variable the framework reads is listed and documented in
 
 ```bash
 cp .env.example .env
-$EDITOR .env                          # set MRIFORGE_DATA_ROOT, etc.
+$EDITOR .env                          # set SPECTRAMR_DATA_ROOT, etc.
 make env-show                         # inspect what's resolved
 ```
 
-The Python module [src/mriforge/core/env.py](../src/mriforge/core/env.py) is
+The Python module [src/spectramr/core/env.py](../src/spectramr/core/env.py) is
 the single source of truth — every framework call site that reads an env
 var should reference a constant from there, e.g.:
 
 ```python
-from mriforge.core import env
+from spectramr.core import env
 data_root = env.data_root()                       # Path, falls back to ./databases
 if env.suppress_clinical_warning():
     ...
@@ -35,8 +35,8 @@ Categories (full content in `.env.example`):
 
 | Category | Variables |
 |---|---|
-| Path resolution | `MRIFORGE_DATA_ROOT`, `PROJECT_ROOT`, `MRIFORGE_CLUSTER_ROOT`, `MRIFORGE_CACHE_ROOT`, `MRIFORGE_LEGACY_ABS_PREFIXES`, `MRIFORGE_LEGACY_CLUSTER_PREFIX`, `FASTMRI_DATASETS_ROOT` |
-| Device / determinism | `MRIFORGE_SUPPRESS_CLINICAL_WARNING`, `FORCE_CPU`, `MRIFORGE_DEVICE`, `MRIFORGE_NO_GPU_PROBE`, `PYTHONHASHSEED`, `CUBLAS_WORKSPACE_CONFIG` |
+| Path resolution | `SPECTRAMR_DATA_ROOT`, `PROJECT_ROOT`, `SPECTRAMR_CLUSTER_ROOT`, `SPECTRAMR_CACHE_ROOT`, `SPECTRAMR_LEGACY_ABS_PREFIXES`, `SPECTRAMR_LEGACY_CLUSTER_PREFIX`, `FASTMRI_DATASETS_ROOT` |
+| Device / determinism | `SPECTRAMR_SUPPRESS_CLINICAL_WARNING`, `FORCE_CPU`, `SPECTRAMR_DEVICE`, `SPECTRAMR_NO_GPU_PROBE`, `PYTHONHASHSEED`, `CUBLAS_WORKSPACE_CONFIG` |
 | CUDA / PyTorch tuning | `CUDA_VISIBLE_DEVICES`, `PYTORCH_CUDA_ALLOC_CONF`, `CUDA_CACHE_MAXSIZE`, `CUDA_CACHE_CONFIG`, `TORCH_HOME` |
 | Threading | `OMP_NUM_THREADS`, `MKL_NUM_THREADS`, `OPENBLAS_NUM_THREADS` |
 | Distributed (set by torchrun) | `RANK`, `LOCAL_RANK`, `WORLD_SIZE`, `MASTER_ADDR`, `MASTER_PORT` |
@@ -50,26 +50,26 @@ Categories (full content in `.env.example`):
 The container entrypoint, the smoke-test wrapper, the multi-node launcher and the
 SLURM job template do the same, but they belong to the internal deployment tree
 and are not published with this release. If you write your own launcher, source
-`.env` before invoking any `mriforge` verb -- that is the whole contract.
+`.env` before invoking any `spectramr` verb -- that is the whole contract.
 
-## Resolving paths via `MRIFORGE_DATA_ROOT`
+## Resolving paths via `SPECTRAMR_DATA_ROOT`
 
-MRIForge does not ship with data. Every shipped YAML uses the placeholder
-`${MRIFORGE_DATA_ROOT}` for paths outside the package source tree; the
+spectraMR does not ship with data. Every shipped YAML uses the placeholder
+`${SPECTRAMR_DATA_ROOT}` for paths outside the package source tree; the
 Pydantic-v2 loader expands the variable before validating the path.
 
 ```bash
 # Local development
-export MRIFORGE_DATA_ROOT="$HOME/mriforge/databases"
+export SPECTRAMR_DATA_ROOT="$HOME/spectramr/databases"
 
 # HPC / cluster
-export MRIFORGE_DATA_ROOT="/project/<your-account>/mriforge/databases"
+export SPECTRAMR_DATA_ROOT="/project/<your-account>/spectramr/databases"
 ```
 
 If unset, the framework falls back to `./databases` relative to the current
-working directory (see `mriforge/bootstrap.py`). The path-resolution layer in
-`mriforge.data.metadata.path_resolver` honours `PROJECT_ROOT` and
-`MRIFORGE_LEGACY_ABS_PREFIXES` for finer-grained control. The
+working directory (see `spectramr/bootstrap.py`). The path-resolution layer in
+`spectramr.data.metadata.path_resolver` honours `PROJECT_ROOT` and
+`SPECTRAMR_LEGACY_ABS_PREFIXES` for finer-grained control. The
 `tests/unit/test_no_cluster_paths.py` regression test fails CI if a literal
 `/project/<user>/...` path ever leaks back into the shipped tree.
 
@@ -79,17 +79,17 @@ The `hardcoded_cluster_paths` health check rejects YAMLs that contain
 *another* team's cluster prefix (a literal `/project/<allocation>/...` or
 `/scratch/<allocation>/...` copied from an old config). It explicitly
 **exempts** paths that live under the value of your own
-`MRIFORGE_DATA_ROOT` or `PROJECT_ROOT` — that's where your data is supposed
+`SPECTRAMR_DATA_ROOT` or `PROJECT_ROOT` — that's where your data is supposed
 to be, not a leak.
 
 ```bash
 # This combination passes the audit:
-export MRIFORGE_DATA_ROOT=/project/<me>/mriforge
-# YAML can contain: data_root: /project/<me>/mriforge/databases/fastmri  ✅
+export SPECTRAMR_DATA_ROOT=/project/<me>/spectramr
+# YAML can contain: data_root: /project/<me>/spectramr/databases/fastmri  ✅
 
 # This still fails the audit:
-export MRIFORGE_DATA_ROOT=/project/<me>/mriforge
-# YAML containing: data_root: /project/<someone-else>/mriforge/...      ❌
+export SPECTRAMR_DATA_ROOT=/project/<me>/spectramr
+# YAML containing: data_root: /project/<someone-else>/spectramr/...      ❌
 ```
 
 The exemption uses a trailing-slash prefix match (so
@@ -230,13 +230,13 @@ After running `scripts/preprocessing/preprocessing.py`, each dataset gets a `_im
 
 ## Recommended layout — raw vs processed, internal vs external (2026-06-07)
 
-The compilation in `TODO/scientific_validation/DATASETS_compilation.md` adds ~40
+An internal dataset compilation (an operations note, not distributed) adds ~40
 candidate datasets. Organize them by **mutability + cost**, not by topic — so the
 expensive-to-refetch raw data is safe, the regenerable stuff is disposable, and
 configs never break when you re-organize.
 
 ```
-$MRIFORGE_DATA_ROOT/databases/
+$SPECTRAMR_DATA_ROOT/databases/
 ├── <family>/                       # curated families (fastmri, m4raw, ulf_paired, …)
 │   ├── …/<split>/                  #   RAW k-space/NIfTI (immutable; never auto-deleted)
 │   ├── m4raw/gre/                  #   ← the unused GRE set; manifest m4raw_gre.json
@@ -249,7 +249,7 @@ $MRIFORGE_DATA_ROOT/databases/
 │       ├── processed/              #     regenerable artifacts (optional)
 │       └── SOURCE.json             #     provenance: DOI, access, field_T, needs, n_samples
 │
-└── _cache  ->  $MRIFORGE_CACHE_ROOT  # symlink to SCRATCH (disposable intermediates)
+└── _cache  ->  $SPECTRAMR_CACHE_ROOT  # symlink to SCRATCH (disposable intermediates)
 ```
 
 **The three tiers (the load-bearing idea):**
@@ -277,23 +277,22 @@ So a full disk is recoverable: wipe `processed`/`cache`, keep `raw` + manifests.
    `SOURCE.json` (DOI, access, license, field, n_samples). Never edit files under
    `raw/` in place — derive into `processed/`.
 4. **Disk: big-immutable on `$PROJECT`, regenerable on `$SCRATCH`.** Point
-   `MRIFORGE_CACHE_ROOT`/`TMPDIR` at scratch; symlink `databases/_cache` there. The
+   `SPECTRAMR_CACHE_ROOT`/`TMPDIR` at scratch; symlink `databases/_cache` there. The
    ledger's `failed_diskspace` / `manual_required` rows tell you what's still
    **external** (not on disk) and why.
 5. **gitignored by design.** Both `databases/` and `data/manifests/` are
-   gitignored — they are *generated*. The tracked SSOT is
-   `TODO/scientific_validation/datasets.json` + the generator
-   (`scripts/data/gen_external_dataset_manifests.py`); regenerate manifests from
-   it, never hand-edit the stubs.
+   gitignored — they are *generated*. The tracked SSOT is an internal
+   `datasets.json` plus its manifest generator (neither is distributed);
+   regenerate the manifests from that pair, never hand-edit the stubs.
 
 **Bring-up order on a fresh cluster account:**
 
 ```bash
-export MRIFORGE_DATA_ROOT=/project/<you>/mriforge/databases
-export MRIFORGE_CACHE_ROOT=/scratch/<you>/mriforge_cache
-# Obtain each dataset from its own source, unpack under $MRIFORGE_DATA_ROOT/external/<id>/raw,
+export SPECTRAMR_DATA_ROOT=/project/<you>/spectramr/databases
+export SPECTRAMR_CACHE_ROOT=/scratch/<you>/spectramr_cache
+# Obtain each dataset from its own source, unpack under $SPECTRAMR_DATA_ROOT/external/<id>/raw,
 # then build the manifests:
-python scripts/data/regenerate_cluster_manifests.py --data-base "$MRIFORGE_DATA_ROOT"
+python scripts/data/regenerate_cluster_manifests.py --data-base "$SPECTRAMR_DATA_ROOT"
 # point an experiment:  data.index_path: data/manifests/external/fastmri_brain.json
 ```
 

@@ -1,6 +1,6 @@
 """Tests for the matrix-free ``expm_multiply`` scaling-and-squaring path.
 
-Targets ``mriforge.infrastructure.physics.magnus_exponential``. The BCH /
+Targets ``spectramr.infrastructure.physics.magnus_exponential``. The BCH /
 Magnus machinery reconstructs ``exp(op)·x`` from a Krylov projection; when
 the operator norm is large it scales the operator by ``1/2^s`` and applies
 the scaled exponential ``2^s`` times.
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.magnus_exponential import (
+from spectramr.infrastructure.physics.magnus_exponential import (
     LinearOperator,
     expm_multiply,
 )

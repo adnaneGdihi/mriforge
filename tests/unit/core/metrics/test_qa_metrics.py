@@ -1,6 +1,6 @@
 """Tests for ``QI1Metric`` and ``WM2MaxMetric``.
 
-Targets ``mriforge.core.metrics.qa_metrics``. These are MRIQC-derived
+Targets ``spectramr.core.metrics.qa_metrics``. These are MRIQC-derived
 artifact metrics:
 
 - **QI1**: proportion of background voxels with intensity exceeding 2σ
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.qa_metrics import QI1Metric, WM2MaxMetric
+from spectramr.core.metrics.qa_metrics import QI1Metric, WM2MaxMetric
 
 pytestmark = pytest.mark.unit
 
@@ -233,7 +233,7 @@ def test_wm2max_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_qa_metrics_registered_under_documented_names() -> None:
     """``qi1`` and ``wm2max`` are both in the metric registry."""
-    from mriforge.core.metrics.registry import list_available
+    from spectramr.core.metrics.registry import list_available
 
     available = list_available()
     assert "qi1" in available

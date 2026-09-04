@@ -19,8 +19,8 @@ import logging
 
 import pytest
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.infrastructure.validation.workflow_ledger import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.infrastructure.validation.workflow_ledger import (
     _declared_workflows,
     _iter_strategy_classes,
     losses_tagged,
@@ -35,7 +35,7 @@ from mriforge.infrastructure.validation.workflow_ledger import (
 
 
 def test_declared_workflows_reads_the_class_it_is_declared_on() -> None:
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -52,7 +52,7 @@ def test_declared_workflows_ignores_inherited_tags() -> None:
     the inherited claim was outright false for the DWI/dynamic/quantitative
     strategies that happen to subclass the structural one.
     """
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -66,10 +66,10 @@ def test_declared_workflows_honours_an_explicit_override() -> None:
     """Overriding the ClassVar IS opting in — that must still count."""
     from typing import ClassVar
 
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
-    from mriforge.models.capabilities import StrategyCapabilities
+    from spectramr.models.capabilities import StrategyCapabilities
 
     class _RetaggedSubclass(ReconstructionTrainingStrategy):
         capabilities: ClassVar[StrategyCapabilities] = StrategyCapabilities(
@@ -126,20 +126,20 @@ def test_structural_stays_tagged_after_the_leak_fix() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_broken_mriforge_strategy_import_raises(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A mriforge strategy that will not import must RAISE, not be skipped.
+def test_broken_spectramr_strategy_import_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A spectramr strategy that will not import must RAISE, not be skipped.
 
     Skipping it drops the strategy from the walk, so a regime it backs reports
     "no strategy is tagged" — an assertion failure that hides the ImportError.
     """
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
     monkeypatch.setattr(
         TrainingStrategyFactory,
         "STRATEGY_CLASS_PATHS",
-        {"broken": "mriforge.infrastructure.training.strategies.no_such_mod.Cls"},
+        {"broken": "spectramr.infrastructure.training.strategies.no_such_mod.Cls"},
     )
     with pytest.raises(ImportError, match="does not import"):
         list(_iter_strategy_classes())
@@ -147,14 +147,14 @@ def test_broken_mriforge_strategy_import_raises(monkeypatch: pytest.MonkeyPatch)
 
 def test_missing_class_in_real_module_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     """The registry naming a class that is not there is a registry bug."""
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
     monkeypatch.setattr(
         TrainingStrategyFactory,
         "STRATEGY_CLASS_PATHS",
-        {"ghost": "mriforge.infrastructure.training.strategies.base.NoSuchClass"},
+        {"ghost": "spectramr.infrastructure.training.strategies.base.NoSuchClass"},
     )
     with pytest.raises(AttributeError, match="does not exist in"):
         list(_iter_strategy_classes())
@@ -171,14 +171,14 @@ def test_absent_third_party_dependency_is_skipped_loudly(
     """
     import importlib
 
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
     monkeypatch.setattr(
         TrainingStrategyFactory,
         "STRATEGY_CLASS_PATHS",
-        {"optional": "mriforge.infrastructure.training.strategies.base.Whatever"},
+        {"optional": "spectramr.infrastructure.training.strategies.base.Whatever"},
     )
 
     def _raise_missing_third_party(name: str) -> object:
@@ -194,12 +194,12 @@ def test_absent_third_party_dependency_is_skipped_loudly(
 
 def test_walk_dedupes_aliased_dotted_paths(monkeypatch: pytest.MonkeyPatch) -> None:
     """~25 short names alias the same class; the walk must yield it once."""
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
     path = (
-        "mriforge.infrastructure.training.strategies.reconstruction."
+        "spectramr.infrastructure.training.strategies.reconstruction."
         "ReconstructionTrainingStrategy"
     )
     monkeypatch.setattr(

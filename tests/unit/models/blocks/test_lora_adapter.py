@@ -11,7 +11,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.adapters.lora import LoRAAdapter, inject_lora
+from spectramr.models.blocks.adapters.lora import LoRAAdapter, inject_lora
 
 
 class TestLoRAAdapterIdentityInit:

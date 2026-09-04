@@ -31,14 +31,14 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import mriforge
+import spectramr
 
 # Derived from the package, not from a path literal. The 2026-05 refactor
-# moved the tree to ``src/mriforge/`` and every hardcoded ``parents[N] / "src"``
+# moved the tree to ``src/spectramr/`` and every hardcoded ``parents[N] / "src"``
 # silently started pointing at a directory that does not exist -- 5 of cluster
 # job 8004252's failures, all reading as FileNotFoundError rather than as the
-# stale constant they were. ``mriforge.__file__`` cannot go stale on a move.
-SRC = Path(mriforge.__file__).resolve().parent
+# stale constant they were. ``spectramr.__file__`` cannot go stale on a move.
+SRC = Path(spectramr.__file__).resolve().parent
 
 FORBIDDEN_DIRS = (
     "application",
@@ -51,7 +51,7 @@ FORBIDDEN_DIRS = (
 # migrated to consume the already-loaded ``TrainingSettings`` instead of
 # re-parsing YAML. The test fails if any NEW path appears.
 KNOWN_VIOLATIONS: frozenset[str] = frozenset()
-"""All Phase 1 violations are now migrated to ``mriforge.config.io`` helpers.
+"""All Phase 1 violations are now migrated to ``spectramr.config.io`` helpers.
 This allowlist exists for transparently introducing *new* violations
 with an explicit acknowledgement — never as a permanent home for debt."""
 

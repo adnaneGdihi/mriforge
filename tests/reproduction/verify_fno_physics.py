@@ -5,7 +5,7 @@ import torch
 
 sys.path.insert(0, os.getcwd())
 
-from mriforge.models.generators.fno_generator import FNOGenerator
+from spectramr.models.generators.fno_generator import FNOGenerator
 
 
 def test_fno_sense_projection():

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from mriforge.config.schemas.defaults_provider import ConfigDefaultsProvider
+from spectramr.config.schemas.defaults_provider import ConfigDefaultsProvider
 
 
 class TestDefaultsProvider:
@@ -107,7 +107,7 @@ def test_base_default_blocks_are_loadable_by_their_own_schemas():
     ``enable_adaptive_ema`` alongside the two stability knobs that have no
     consumer (#1294).
     """
-    from mriforge.config.schemas.ema import EMAConfigSchema
+    from spectramr.config.schemas.ema import EMAConfigSchema
 
     defaults = ConfigDefaultsProvider(environment="base").get_defaults()
     ema = EMAConfigSchema.model_validate(defaults["ema"])

@@ -28,8 +28,8 @@ import pytest
 torch = pytest.importorskip("torch")
 import torch.nn.functional as F  # noqa: E402
 
-import mriforge.models  # noqa: F401, E402  triggers @register_model
-from mriforge.models.registry import get_model_class  # noqa: E402
+import spectramr.models  # noqa: F401, E402  triggers @register_model
+from spectramr.models.registry import get_model_class  # noqa: E402
 from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 
 # Substantive trainable backbones used by VF arms (>20k params).

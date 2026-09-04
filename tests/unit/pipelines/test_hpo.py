@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.pipelines.hpo import run_hpo_random
+from spectramr.pipelines.hpo import _build_trial_yaml, run_hpo_random
 
 pytestmark = pytest.mark.unit
 
@@ -43,10 +43,10 @@ class TestRunHpoRandomUnknownDistribution:
 
         with (
             patch(
-                "mriforge.pipelines.hpo.TrainingSettings.from_yaml",
+                "spectramr.pipelines.hpo.TrainingSettings.from_yaml",
                 return_value=MagicMock(name="base_config"),
             ),
-            patch("mriforge.pipelines.hpo.override_config_param") as mock_override,
+            patch("spectramr.pipelines.hpo.override_config_param") as mock_override,
         ):
             with pytest.raises(ValueError) as excinfo:
                 run_hpo_random(
@@ -67,3 +67,38 @@ class TestRunHpoRandomUnknownDistribution:
         assert "bogus_dist" in msg
         assert "optimization.optimizer.learning_rate" in msg
         mock_override.assert_not_called()
+
+
+def test_build_trial_yaml_applies_a_dotted_override(tmp_path):
+    """Regression: the override path must RUN, not merely be importable.
+
+    ``_build_trial_yaml`` is what every HPO trial calls, and it resolves
+    ``apply_dotted_override`` through a *function-local* import. Commit
+    ``366e3e1a6`` ("formating") deleted the re-export that import pointed at, so
+    every trial that applied an override raised ``ImportError`` -- i.e. every HPO
+    run. Nothing caught it:
+
+    * the import is function-local, and ``check_layering.sh``'s greps are all
+      anchored at ``^`` (non-negotiable 15's stated blind spot);
+    * ruff's F401 removed the re-export precisely BECAUSE it could not see the
+      downstream consumers, which is non-negotiable 19's "a mechanical rewrite is
+      locally well-formed everywhere it is wrong";
+    * the test that would have caught it could not even be COLLECTED -- the same
+      commit broke ``test_hpo_search_spaces.py``'s imports, and a collection error
+      makes pytest discard the whole session, so ``pytest tests/unit/`` ran nothing.
+
+    Asserting the symbol is importable would not reproduce that: the defect was on
+    a path only reached by calling the function. So this calls it.
+    """
+    out = _build_trial_yaml(
+        base_config={"optimization": {"optimizer": {"learning_rate": 1e-3}}},
+        trial_number=7,
+        overrides={"optimization.optimizer.learning_rate": 0.5},
+        output_root=tmp_path,
+        max_iterations=1,
+    )
+
+    import yaml
+
+    written = yaml.safe_load(out.read_text())
+    assert written["optimization"]["optimizer"]["learning_rate"] == 0.5

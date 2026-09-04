@@ -42,8 +42,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.physics.data_consistency import VALID_DC_METHODS
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.physics.data_consistency import VALID_DC_METHODS
 from tests.utils.corpus import tracked_yamls
 
 # Imported, never transcribed. This was a hand-copied mirror, on the premise that
@@ -140,7 +140,7 @@ def test_the_generator_validates_against_the_same_set_this_test_does() -> None:
     this file trivially satisfiable, so assert them directly rather than
     re-deriving the list.
     """
-    from mriforge.models.generators import kspace_cold_diffusion_generator as gen
+    from spectramr.models.generators import kspace_cold_diffusion_generator as gen
 
     assert gen.VALID_DC_METHODS is VALID_DC_METHODS, (
         "the generator no longer validates against "

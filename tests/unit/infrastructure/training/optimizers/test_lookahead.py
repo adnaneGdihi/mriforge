@@ -12,7 +12,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.optimizers.lookahead import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers.lookahead import (  # noqa: E402
     Lookahead,
 )
 
@@ -293,7 +293,7 @@ class TestScheduleFreeModeApiReachesTheInnerOptimizer:
         return Lookahead(self._ScheduleFreeSGD(model.parameters(), lr=0.1), 2, 0.5)
 
     def test_the_wrapper_advertises_the_inner_mode_api(self) -> None:
-        from mriforge.infrastructure.training.optimizers import (
+        from spectramr.infrastructure.training.optimizers import (
             supports_schedule_free_modes,
         )
 
@@ -313,7 +313,7 @@ class TestScheduleFreeModeApiReachesTheInnerOptimizer:
         wrapped arm would report as schedule-free and the predicate would stop
         meaning anything.
         """
-        from mriforge.infrastructure.training.optimizers import (
+        from spectramr.infrastructure.training.optimizers import (
             supports_schedule_free_modes,
         )
 

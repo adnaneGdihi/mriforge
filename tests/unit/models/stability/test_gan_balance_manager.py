@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.stability.gan_balance_manager import GANBalanceManager
+from spectramr.models.stability.gan_balance_manager import GANBalanceManager
 
 _CPU = torch.device("cpu")
 

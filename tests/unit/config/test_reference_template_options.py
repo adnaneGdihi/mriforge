@@ -10,7 +10,7 @@ generated once, by hand, and never re-derived: on ``training_mode`` alone it
 advertises three members the enum no longer has (``swarm_learning``,
 ``federated``, ``test_time_adaptation``) and omits six it does. Its header even
 cites ``src/config/validation_constants.py`` — a path that stopped existing at
-the 2026-05 ``src→mriforge`` refactor. Nothing failed when it rotted, because
+the 2026-05 ``src→spectramr`` refactor. Nothing failed when it rotted, because
 nothing checked it.
 
 So the option lists here are not maintained by hand either. They are compared,
@@ -52,12 +52,12 @@ import pytest
 import yaml
 from pydantic import BaseModel
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.config.schemas.introspection import nested_models
+from spectramr.config.settings import TrainingSettings
+from spectramr.config.schemas.introspection import nested_models
 
 TEMPLATE = (
     Path(__file__).resolve().parents[3]
-    / "src/mriforge/config/schemas/templates/v1.0_reference.yaml"
+    / "src/spectramr/config/schemas/templates/v1.0_reference.yaml"
 )
 
 # Indentation may sit on either side of the comment marker; both spellings are
@@ -71,19 +71,19 @@ _PATH_POINTER = re.compile(r"(?:[a-z_]+/)+[a-z_]+\.[A-Za-z_]\w*")
 # Value sets that live in a registry, not in an annotation. Each maps the text
 # the template points at to the symbol that must still exist.
 _POINTERS = {
-    "MODEL_REGISTRY": ("mriforge.models.registry", "MODEL_REGISTRY"),
+    "MODEL_REGISTRY": ("spectramr.models.registry", "MODEL_REGISTRY"),
     "TrainingStrategyFactory.STRATEGY_CLASS_PATHS": (
-        "mriforge.infrastructure.training.strategy_factory",
+        "spectramr.infrastructure.training.strategy_factory",
         "TrainingStrategyFactory",
     ),
-    "KANType": ("mriforge.config.schemas.enums", "KANType"),
+    "KANType": ("spectramr.config.schemas.enums", "KANType"),
     # The template used to point at MaskType here. It now deliberately points
     # at the accelerator registry and says "NOT MaskType" -- the two vocabularies
     # overlap but are different sets -- so the pointer that must still resolve is
     # the registry. Replaced rather than deleted: dropping the entry would have
     # left the template's one live pointer unchecked.
     "infrastructure/physics/sampling._ACCELERATOR_REGISTRY": (
-        "mriforge.infrastructure.physics.sampling",
+        "spectramr.infrastructure.physics.sampling",
         "_ACCELERATOR_REGISTRY",
     ),
 }
@@ -388,7 +388,7 @@ def test_registry_pointers_resolve(text, target):
     """A pointer to a registry must name something that still exists.
 
     The stale catalogue cites ``src/config/validation_constants.py``, a path
-    retired by the ``src→mriforge`` refactor. A pointer is documentation too.
+    retired by the ``src→spectramr`` refactor. A pointer is documentation too.
     """
     module_name, symbol = target
     assert TEMPLATE.read_text().count(text) >= 1, (

@@ -7,7 +7,7 @@ for correct transform pipeline composition.
 import pytest
 import torchio as tio
 
-from mriforge.data.builders.torchio_transform_builder import (
+from spectramr.data.builders.torchio_transform_builder import (
     IMPLEMENTED_NORMALIZATION_TYPES,
     TorchIOTransformBuilder,
     TorchIOTransformConfig,
@@ -61,7 +61,7 @@ class TestTorchIOTransformConfig:
     def test_the_accepted_set_is_the_shared_constant_not_a_copy(self):
         """The whole bug was two lists that drifted. If this module ever re-inlines
         its own tuple, the accept-set can silently outgrow the routed set again."""
-        from mriforge.infrastructure.physics.trajectories import TRAJECTORY_TYPES
+        from spectramr.infrastructure.physics.trajectories import TRAJECTORY_TYPES
 
         for traj in TRAJECTORY_TYPES:
             assert TorchIOTransformConfig(trajectory_type=traj).trajectory_type == traj
@@ -151,19 +151,15 @@ class TestTorchIOTransformConfig:
         owning it. Asserts the surviving behaviour: omit it, get the schema's
         value (normalised to 3-D by ``validate_patch_size``).
         """
-        from mriforge.config.schemas.data import DataSamplingConfigSchema
+        from spectramr.config.schemas.data import DataSamplingConfigSchema
 
-        config = TorchIOTransformConfig.from_training_config(
-            DataConfigStub(acceleration=None)
-        )
+        config = TorchIOTransformConfig.from_training_config(DataConfigStub(acceleration=None))
         assert config.patch_size == DataSamplingConfigSchema().patch_size == (320, 320, 1)
 
     def test_graph_encoding_config(self):
         """Test graph encoding configuration."""
         graph_config = {"k_neighbors": 16, "max_nodes": 8192}
-        config = TorchIOTransformConfig(
-            enable_graph_encoding=True, graph_config=graph_config
-        )
+        config = TorchIOTransformConfig(enable_graph_encoding=True, graph_config=graph_config)
         assert config.enable_graph_encoding is True
         assert config.graph_config == graph_config
 
@@ -215,26 +211,18 @@ class TestTorchIOTransformBuilder:
         """
         import inspect
 
-        assert not hasattr(
-            TorchIOTransformConfig(), "enable_geometric_standardization"
-        )
+        assert not hasattr(TorchIOTransformConfig(), "enable_geometric_standardization")
         # CODE only: the deletion note left in place necessarily names the
         # class it removed, so a raw substring check reads its own explanation
         # as a survival. (It did, on the first run of this test.)
         src = inspect.getsource(TorchIOTransformBuilder.build_train_transforms)
-        code = "\n".join(
-            line for line in src.splitlines() if not line.lstrip().startswith("#")
-        )
+        code = "\n".join(line for line in src.splitlines() if not line.lstrip().startswith("#"))
         assert "SmartGeometricStandardization" not in code
 
     def test_build_train_transforms_with_normalization(self):
         """Test that normalization options add transforms."""
-        config_no_norm = TorchIOTransformConfig(
-            normalize_kspace=False, normalize_images=False
-        )
-        transforms_no_norm = TorchIOTransformBuilder.build_train_transforms(
-            config_no_norm
-        )
+        config_no_norm = TorchIOTransformConfig(normalize_kspace=False, normalize_images=False)
+        transforms_no_norm = TorchIOTransformBuilder.build_train_transforms(config_no_norm)
 
         config_with_kspace_norm = TorchIOTransformConfig(normalize_kspace=True)
         transforms_with_kspace_norm = TorchIOTransformBuilder.build_train_transforms(
@@ -242,9 +230,7 @@ class TestTorchIOTransformBuilder:
         )
 
         # With kspace normalization should have more transforms
-        assert len(transforms_with_kspace_norm.transforms) > len(
-            transforms_no_norm.transforms
-        )
+        assert len(transforms_with_kspace_norm.transforms) > len(transforms_no_norm.transforms)
 
     def test_build_val_transforms_excludes_augmentation(self):
         """Test that validation transforms do not include augmentation."""
@@ -310,7 +296,7 @@ class TestTorchIOTransformBuilder:
         assert len(transforms.transforms) >= 5
 
         # First should be EnsureSpatialConsistency
-        from mriforge.data.transforms.geometric import EnsureSpatialConsistency
+        from spectramr.data.transforms.geometric import EnsureSpatialConsistency
 
         first_transform = transforms.transforms[0]
         assert isinstance(first_transform, EnsureSpatialConsistency)
@@ -334,7 +320,7 @@ class TestTorchIOTransformBuilder:
         transforms = TorchIOTransformBuilder.build_val_transforms(config)
 
         # First and last should be spatial consistency
-        from mriforge.data.transforms.geometric import EnsureSpatialConsistency
+        from spectramr.data.transforms.geometric import EnsureSpatialConsistency
 
         first_transform = transforms.transforms[0]
         assert isinstance(first_transform, EnsureSpatialConsistency)
@@ -350,9 +336,7 @@ class TestTorchIOTransformBuilder:
         for traj in trajectories:
             config = TorchIOTransformConfig(trajectory_type=traj)
             try:
-                train_transforms = TorchIOTransformBuilder.build_train_transforms(
-                    config
-                )
+                train_transforms = TorchIOTransformBuilder.build_train_transforms(config)
                 val_transforms = TorchIOTransformBuilder.build_val_transforms(config)
 
                 assert isinstance(train_transforms, tio.Compose)
@@ -466,9 +450,7 @@ class TestImageUndersamplingBridge:
     """The image→k-space bridge (exp_c1): opt-in, appended last, zero default blast radius."""
 
     def test_appended_when_flag_set(self):
-        cfg = TorchIOTransformConfig(
-            acceleration=4, center_fraction=0.08, image_undersampling=True
-        )
+        cfg = TorchIOTransformConfig(acceleration=4, center_fraction=0.08, image_undersampling=True)
         for build in (
             TorchIOTransformBuilder.build_train_transforms,
             TorchIOTransformBuilder.build_val_transforms,
@@ -486,8 +468,7 @@ class TestImageUndersamplingBridge:
     def test_absent_by_default(self):
         cfg = TorchIOTransformConfig(acceleration=4, center_fraction=0.08)
         names = [
-            type(t).__name__
-            for t in TorchIOTransformBuilder.build_train_transforms(cfg).transforms
+            type(t).__name__ for t in TorchIOTransformBuilder.build_train_transforms(cfg).transforms
         ]
         assert "RetrospectiveImageUndersampling" not in names
 
@@ -507,17 +488,13 @@ class TestValTransformsPicklable:
     def test_val_compose_is_picklable(self):
         import pickle
 
-        compose = TorchIOTransformBuilder.build_val_transforms(
-            TorchIOTransformConfig()
-        )
+        compose = TorchIOTransformBuilder.build_val_transforms(TorchIOTransformConfig())
         # Round-trips without PicklingError (the bug raised here).
         restored = pickle.loads(pickle.dumps(compose))
         assert isinstance(restored, tio.Compose)
 
     def test_debug_stats_is_module_level(self):
-        compose = TorchIOTransformBuilder.build_val_transforms(
-            TorchIOTransformConfig()
-        )
+        compose = TorchIOTransformBuilder.build_val_transforms(TorchIOTransformConfig())
         debug = [t for t in compose.transforms if type(t).__name__ == "_ValDebugStats"]
         assert debug, "_ValDebugStats probe missing from val transforms"
         # A module-level class has no '<locals>' in its qualname (the tell of a
@@ -538,7 +515,7 @@ class TestKSpaceScaleDomainWiring:
 
     @staticmethod
     def _cfg(**kw):
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformConfig,
         )
 
@@ -548,18 +525,14 @@ class TestKSpaceScaleDomainWiring:
 
     @staticmethod
     def _kspace_norm(pipeline):
-        from mriforge.data.transforms.normalization import KSpaceNormalizationTransform
+        from spectramr.data.transforms.normalization import KSpaceNormalizationTransform
 
-        return [
-            t
-            for t in pipeline.transforms
-            if isinstance(t, KSpaceNormalizationTransform)
-        ]
+        return [t for t in pipeline.transforms if isinstance(t, KSpaceNormalizationTransform)]
 
     @pytest.mark.parametrize("domain", ["kspace", "image"])
     @pytest.mark.parametrize("which", ["train", "val"])
     def test_scale_domain_forwarded_to_both_pipelines(self, domain, which):
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformBuilder,
         )
 
@@ -574,8 +547,8 @@ class TestKSpaceScaleDomainWiring:
         assert found[0].scale_domain == domain
 
     def test_from_training_config_reads_the_data_knob(self):
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformConfig,
         )
 
@@ -608,8 +581,7 @@ class TestKSpaceScaleDomainWiring:
                 return getattr(self._d, name)
 
         assert (
-            TorchIOTransformConfig.from_training_config(_Proxy(data)).kspace_scale_domain
-            == "image"
+            TorchIOTransformConfig.from_training_config(_Proxy(data)).kspace_scale_domain == "image"
         )
 
 
@@ -643,9 +615,7 @@ class TestUnknownNormalizationTypeRaises:
 
     def test_train_path_raises(self):
         with pytest.raises(ValueError, match="Unknown normalization_type"):
-            TorchIOTransformBuilder.build_train_transforms(
-                self._cfg(normalization_type="scalar")
-            )
+            TorchIOTransformBuilder.build_train_transforms(self._cfg(normalization_type="scalar"))
 
     def test_val_path_raises(self):
         """The path that previously had NO unknown-type branch at all.
@@ -655,9 +625,7 @@ class TestUnknownNormalizationTypeRaises:
         validation metric was computed on, with nothing to grep for.
         """
         with pytest.raises(ValueError, match="Unknown normalization_type"):
-            TorchIOTransformBuilder.build_val_transforms(
-                self._cfg(normalization_type="scalar")
-            )
+            TorchIOTransformBuilder.build_val_transforms(self._cfg(normalization_type="scalar"))
 
     @pytest.mark.parametrize("which", ["train", "val"])
     def test_message_names_the_offending_value_and_the_implemented_set(self, which):
@@ -672,26 +640,23 @@ class TestUnknownNormalizationTypeRaises:
             assert repr(valid) in message, f"{valid!r} missing from the error text"
 
     @pytest.mark.parametrize("which", ["train", "val"])
-    def test_kspace_normalization_logs_the_skip_instead_of_raising(self, which):
+    def test_kspace_normalization_logs_the_skip_instead_of_raising(self, which, caplog):
         """``normalize_kspace=True`` deliberately skips image normalization.
 
         Image norms (ZNormalization / RescaleIntensity) assume magnitude images
         and clamp or shift values, which destroys complex k-space, so the whole
-        image-normalization block -- the raise included -- sits behind ``if not
-        config.normalize_kspace``. The value is therefore never dispatched and
-        must not raise; the run says so in the log instead.
+        image-normalization block -- the raise included -- sits behind the
+        k-space gate inside ``resolve_image_normalization``. The value is
+        therefore never dispatched and must not raise; the run says so in the
+        log instead. The line is the resolver's, so it is patched there: the
+        builder no longer has a copy of it to emit.
         """
-        from unittest.mock import patch as mock_patch
-
         cfg = self._cfg(normalize_kspace=True, normalization_type="scalar")
-        with mock_patch(
-            "mriforge.data.builders.torchio_transform_builder.logger.info"
-        ) as mock_info:
+        with caplog.at_level("INFO", logger="spectramr.data.transforms.normalization"):
             pipeline = _builder(which)(cfg)  # must NOT raise
 
         assert isinstance(pipeline, tio.Compose)
-        logged = " ".join(str(call) for call in mock_info.call_args_list)
-        assert "Image normalization 'scalar' SKIPPED" in logged
+        assert "Image normalization 'scalar' SKIPPED" in caplog.text
 
     @pytest.mark.parametrize("which", ["train", "val"])
     @pytest.mark.parametrize("normalization_type", IMPLEMENTED_NORMALIZATION_TYPES)
@@ -719,48 +684,59 @@ class TestUnknownNormalizationTypeRaises:
         renamed, so this was a stale test rather than the environment gap the
         ``ImportError`` on job 8004252 made it look like.
         """
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationTransform,
         )
 
         pipeline = _builder(which)(self._cfg(normalization_type="none"))
-        assert not [
-            t
-            for t in pipeline.transforms
-            if isinstance(t, ImageNormalizationTransform)
-        ]
+        assert not [t for t in pipeline.transforms if isinstance(t, ImageNormalizationTransform)]
 
 
 class TestNormalizationTypeSchemaBuilderBridge:
     """The schema Literal and the builder's implemented set must stay coherent.
 
     They are deliberately not identical: ``'robust_percentile'`` is accepted by
-    the schema and folded to ``'percentile'`` in ``from_training_config``. That
-    fold is the ONLY licensed gap -- without it a schema-legal arm would reach
-    the new raise, which is how ``'scalar'`` (a Literal member with no dispatch
-    branch on either path) survived unnoticed until it was removed.
+    the schema and folded to ``'percentile'`` by the alias table in
+    ``NormalizationStrategy.from_string``, which ``resolve_image_normalization``
+    reaches when a chain is built. That fold is the ONLY licensed gap --
+    without it a schema-legal arm would reach the raise, which is how
+    ``'scalar'`` (a Literal member with no dispatch branch on either path)
+    survived unnoticed until it was removed.
     """
 
-    def test_robust_percentile_folds_to_percentile(self):
+    def test_robust_percentile_is_kept_verbatim_and_folded_by_the_one_owner(self):
+        """``from_training_config`` used to fold the spelling itself.
+
+        That was a second copy of an alias the enum already owns (and the
+        predict path carried a third). The config now carries the declared
+        spelling untouched, and the chain built from it still normalizes with
+        PERCENTILE -- the fold happened in the resolver, not in the builder.
+        """
+        from spectramr.data.transforms.normalization import (
+            ImageNormalizationTransform,
+            NormalizationStrategy,
+        )
+
         cfg = TorchIOTransformConfig.from_training_config(
             DataConfigStub(normalization_type="robust_percentile")
         )
-        assert cfg.normalization_type == "percentile"
-        assert cfg.normalization_type in IMPLEMENTED_NORMALIZATION_TYPES
+        assert cfg.normalization_type == "robust_percentile"
+        assert cfg.normalization_type not in IMPLEMENTED_NORMALIZATION_TYPES
+
+        for build in (_builder("train"), _builder("val")):
+            norms = [t for t in build(cfg).transforms if isinstance(t, ImageNormalizationTransform)]
+            assert len(norms) == 1
+            assert norms[0].spec.config.strategy is NormalizationStrategy.PERCENTILE
 
     def test_the_fold_is_the_only_gap_between_the_two_sets(self):
         from typing import get_args
 
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
         accepted = set(
-            get_args(
-                DataProcessingConfigSchema.model_fields["normalization_type"].annotation
-            )
+            get_args(DataProcessingConfigSchema.model_fields["normalization_type"].annotation)
         )
-        assert accepted - set(IMPLEMENTED_NORMALIZATION_TYPES) == {
-            "robust_percentile"
-        }, (
+        assert accepted - set(IMPLEMENTED_NORMALIZATION_TYPES) == {"robust_percentile"}, (
             "a schema-accepted normalization_type has no dispatch branch and no "
             "fold -- declaring it would now raise at transform-build time"
         )
@@ -798,10 +774,7 @@ class TestConfigDrivenTransformRegistry:
             TorchIOTransformConfig.from_training_config(
                 DataConfigStub(
                     transforms=[
-                        {
-                            "name": "mriforge.data.transforms.slice_profile."
-                            "SliceProfileTransform"
-                        }
+                        {"name": "spectramr.data.transforms.slice_profile.SliceProfileTransform"}
                     ]
                 )
             )
@@ -818,9 +791,7 @@ class TestConfigDrivenTransformRegistry:
 
     def test_registered_name_lands_in_extra_transforms(self):
         cfg = TorchIOTransformConfig.from_training_config(
-            DataConfigStub(
-                transforms=[{"name": "phase_residual", "kwargs": {"kernel_size": 7}}]
-            )
+            DataConfigStub(transforms=[{"name": "phase_residual", "kwargs": {"kernel_size": 7}}])
         )
         assert cfg.extra_transforms == [("phase_residual", {"kernel_size": 7})]
 
@@ -828,9 +799,7 @@ class TestConfigDrivenTransformRegistry:
         """The committed ``graph_encoding`` arms write kwargs flat."""
         cfg = TorchIOTransformConfig.from_training_config(
             DataConfigStub(
-                transforms=[
-                    {"name": "graph_encoding", "k_neighbors": 12, "max_nodes": 512}
-                ]
+                transforms=[{"name": "graph_encoding", "k_neighbors": 12, "max_nodes": 512}]
             )
         )
         assert cfg.enable_graph_encoding is True
@@ -851,9 +820,7 @@ class TestConfigDrivenTransformRegistry:
 
     def test_transforms_are_appended_to_BOTH_chains(self):
         """Train-only application would grade the model on untransformed data."""
-        cfg = TorchIOTransformConfig(
-            extra_transforms=[("phase_residual", {"kernel_size": 5})]
-        )
+        cfg = TorchIOTransformConfig(extra_transforms=[("phase_residual", {"kernel_size": 5})])
         for chain in ("TRAIN", "VAL"):
             out = []
             TorchIOTransformBuilder._append_registry_transforms(out, cfg, chain)
@@ -862,9 +829,7 @@ class TestConfigDrivenTransformRegistry:
 
     def test_no_declarations_appends_nothing(self):
         out = []
-        TorchIOTransformBuilder._append_registry_transforms(
-            out, TorchIOTransformConfig(), "TRAIN"
-        )
+        TorchIOTransformBuilder._append_registry_transforms(out, TorchIOTransformConfig(), "TRAIN")
         assert out == []
 
     def test_the_guard_reads_the_field_directly_not_through_a_default(self):
@@ -896,7 +861,6 @@ class TestConfigDrivenTransformRegistry:
             )
 
 
-
 class TestPhysicsSyncCarriesTheDomainTheBuilderProved:
     """The builder resolves image-primary vs k-space, so it must SAY so.
 
@@ -910,19 +874,15 @@ class TestPhysicsSyncCarriesTheDomainTheBuilderProved:
 
     @staticmethod
     def _physics_sync_in(dataset_type):
-        from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         config = TorchIOTransformConfig(
-            augmentation_config=AugmentationConfigSchema(
-                enabled=True, enable_flip=True
-            ),
+            augmentation_config=AugmentationConfigSchema(enabled=True, enable_flip=True),
             dataset_type=dataset_type,
         )
         built = TorchIOTransformBuilder.build_train_transforms(config)
-        return [
-            t for t in built.transforms if isinstance(t, PhysicsSynchronization)
-        ]
+        return [t for t in built.transforms if isinstance(t, PhysicsSynchronization)]
 
     def test_image_primary_arm_declares_input_is_image(self):
         found = self._physics_sync_in("nifti_paired")
@@ -1049,3 +1009,120 @@ class TestChainOutputSurvivesPatchExtraction:
 
         assert out.input is out["input"], "attribute access reads a stale __dict__"
         assert float(out.input.data.abs().max()) < 44.0
+
+
+class TestBaseAccelerationIsAppliedLiterally:
+    """Cohort review 2026-09-02 (T0.3): the loader used to substitute ``max_acceleration``
+    whenever ``base_acceleration <= 1.0``, so "1.0 = fully sampled" became 8x."""
+
+    @staticmethod
+    def _config(base: float, maximum: float = 8.0):
+        class AccelConfig:
+            base_acceleration = base
+            max_acceleration = maximum
+            center_fraction = 0.08
+
+        return TorchIOTransformConfig.from_training_config(
+            DataConfigStub(patch_size=(64, 64), trajectory="cartesian", undersampling=AccelConfig())
+        )
+
+    def test_base_one_means_fully_sampled_not_the_maximum(self):
+        """The planted violation: base 1.0 with max 8.0 used to give 8.0."""
+        assert self._config(1.0, 8.0).acceleration == 1.0
+
+    def test_base_above_one_is_applied_as_declared(self):
+        assert self._config(4.0, 32.0).acceleration == 4.0
+
+
+class TestBothChainsResolveThroughTheOneOwner:
+    """Neither chain decides image normalization itself any more.
+
+    The three decisions -- k-space precedence, the ``robust_percentile`` fold
+    and the spec -- used to be copied into the train chain, the val chain and
+    ``pipelines/infer.py``. A copy that drifts does not raise; it produces a
+    differently scaled tensor on one side. So the guard is not "the outputs
+    agree today" but "there is exactly one call, and the transform appended is
+    the object that call returned".
+    """
+
+    @pytest.mark.parametrize("which", ["train", "val"])
+    def test_the_chain_makes_exactly_one_call_and_appends_its_answer(self, which, monkeypatch):
+        from spectramr.data.transforms import normalization as norm_mod
+        from spectramr.data.transforms.normalization import ImageNormalizationTransform
+
+        calls: list[tuple[dict, object]] = []
+        real = norm_mod.resolve_image_normalization
+
+        def _recording(**kwargs):
+            spec = real(**kwargs)
+            calls.append((kwargs, spec))
+            return spec
+
+        monkeypatch.setattr(norm_mod, "resolve_image_normalization", _recording)
+        cfg = TorchIOTransformConfig(
+            patch_size=(16, 16, 1),
+            normalization_type="robust_percentile",
+            dataset_type="nifti",
+        )
+        pipeline = _builder(which)(cfg)
+
+        assert len(calls) == 1, "one owner means one call per chain"
+        kwargs, spec = calls[0]
+        assert kwargs == {
+            "normalization_type": "robust_percentile",
+            "dataset_type": "nifti",
+            "normalization_kwargs": {},
+            "kspace_normalization_enabled": False,
+        }, "the chain hands the resolver the declared spelling, unfolded"
+        appended = [t for t in pipeline.transforms if isinstance(t, ImageNormalizationTransform)]
+        assert len(appended) == 1
+        assert appended[0].spec is spec, (
+            "the transform must carry the resolver's spec, not a re-derivation"
+        )
+
+    @pytest.mark.parametrize("which", ["train", "val"])
+    def test_a_none_answer_appends_nothing(self, which, monkeypatch):
+        """The k-space precedence verdict is the resolver's; the chain obeys it."""
+        from spectramr.data.transforms import normalization as norm_mod
+        from spectramr.data.transforms.normalization import ImageNormalizationTransform
+
+        monkeypatch.setattr(norm_mod, "resolve_image_normalization", lambda **kw: None)
+        cfg = TorchIOTransformConfig(patch_size=(16, 16, 1), normalization_type="percentile")
+        pipeline = _builder(which)(cfg)
+        assert not [t for t in pipeline.transforms if isinstance(t, ImageNormalizationTransform)]
+
+    def test_the_builder_no_longer_spells_the_fold(self):
+        """Source guard for the copy that was deleted, with its shape pinned.
+
+        The fold copy read ``if normalization_type == "robust_percentile"``.
+        A re-introduced copy in any spelling of that comparison turns this red.
+        """
+        import inspect
+
+        from spectramr.data.builders import torchio_transform_builder as mod
+
+        assert not _fold_copies(inspect.getsource(mod)), (
+            "the builder folds robust_percentile itself again; the alias table "
+            "in NormalizationStrategy.from_string is the one owner"
+        )
+
+    def test_the_source_guard_sees_a_planted_copy(self):
+        """A guard is only a guard for the shape it has been watched to catch."""
+        planted = 'x = 1\nif normalization_type == "robust_percentile":\n    normalization_type = "percentile"\n'
+        assert _fold_copies(planted) == [2]
+        planted_single = "if nt == 'robust_percentile': nt = 'percentile'"
+        assert _fold_copies(planted_single) == [1]
+        assert _fold_copies("# the fold lives in from_string\n") == []
+
+
+def _fold_copies(source: str) -> list[int]:
+    """Line numbers of ``== "robust_percentile"`` comparisons in code (not comments)."""
+    import re
+
+    pattern = re.compile(r"""==\s*['"]robust_percentile['"]""")
+    hits = []
+    for lineno, line in enumerate(source.splitlines(), start=1):
+        code = line.split("#", 1)[0]
+        if pattern.search(code):
+            hits.append(lineno)
+    return hits

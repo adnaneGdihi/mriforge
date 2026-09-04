@@ -13,7 +13,7 @@ from tests.utils.data_config_stub import DataConfigStub
 
 import pytest
 
-from mriforge.data.metadata.index_builder import IndexBuilder
+from spectramr.data.metadata.index_builder import IndexBuilder
 
 
 def MockDataConfig(  # noqa: N802 - kept as a constructor-shaped name for call sites
@@ -77,7 +77,7 @@ class TestParseNiftiFiltering:
         config = MockDataConfig(data_root=str(root_path), contrasts=None)
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -95,7 +95,7 @@ class TestParseNiftiFiltering:
         config = MockDataConfig(data_root=str(root_path), contrasts=["T1w"])
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -110,7 +110,7 @@ class TestParseNiftiFiltering:
         config = MockDataConfig(data_root=str(root_path), contrasts=["T1w", "T2w"])
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -128,7 +128,7 @@ class TestParseNiftiFiltering:
         config = MockDataConfig(data_root=str(root_path), contrasts=["t1w"])
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -147,7 +147,7 @@ class TestParseNiftiFiltering:
         )
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -166,7 +166,7 @@ class TestParseNiftiFiltering:
         )
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             # With OR logic: files matching EITHER contrasts OR target_contrasts are included
@@ -184,7 +184,7 @@ class TestParseNiftiFiltering:
         config = MockDataConfig(data_root=str(root_path), contrasts=["NonExistent"])
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -225,7 +225,7 @@ class TestPairedNiftiFiltering:
         )
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder._build_paired_nifti_index(
@@ -245,7 +245,7 @@ class TestPairedNiftiFiltering:
         )
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder._build_paired_nifti_index(
@@ -296,7 +296,7 @@ class TestFastMRIManifestFiltering:
         data_dir = tmp_path / "data"
         data_dir.mkdir()
 
-        from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+        from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
         # Test without contrast filter
         index = parse_fastmri_index(str(manifest_path), data_root=str(data_dir))
@@ -356,7 +356,7 @@ class TestFastMRIManifestFiltering:
         data_dir = tmp_path / "data"
         data_dir.mkdir()
 
-        from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+        from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
         # Test with target contrast filter
         index = parse_fastmri_index(
@@ -391,7 +391,7 @@ class TestIntegrationContrastFiltering:
         )
 
         with patch(
-            "mriforge.data.metadata.index_builder.PathResolver.resolve"
+            "spectramr.data.metadata.index_builder.PathResolver.resolve"
         ) as mock_resolve:
             mock_resolve.side_effect = lambda x: str(x)
             index = IndexBuilder.build_nifti_index(config, split="train")
@@ -412,7 +412,7 @@ def test_parse_fastmri_index_preserves_shape(tmp_path):
     queue-build (1024 x 38MB ~= 39GB -> host OOM, independent of num_workers)."""
     import json
 
-    from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+    from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
     manifest = {
         "manifest_version": "3.0",

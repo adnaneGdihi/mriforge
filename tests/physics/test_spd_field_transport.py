@@ -1,6 +1,6 @@
 r"""Physics tests for SPD-manifold field-transport harmonization (SPD-FT).
 
-Targets ``mriforge.infrastructure.physics.spd_field_transport``.
+Targets ``spectramr.infrastructure.physics.spd_field_transport``.
 
 Manifold-valued MRI estimands (diffusion / structure / conductivity tensors) live
 on the cone :math:`\mathrm{Sym}^+(n)` and are field-dependent. SPD-FT models the
@@ -32,7 +32,7 @@ def _spd(n: int, seed: int, scale: float = 1.0) -> torch.Tensor:
 
 
 def test_transport_preserves_positive_definiteness() -> None:
-    from mriforge.infrastructure.physics.spd_field_transport import (
+    from spectramr.infrastructure.physics.spd_field_transport import (
         affine_invariant_transport_operator,
         spd_field_transport,
     )
@@ -48,7 +48,7 @@ def test_transport_preserves_positive_definiteness() -> None:
 
 
 def test_operator_maps_source_mean_to_target_mean() -> None:
-    from mriforge.infrastructure.physics.spd_field_transport import (
+    from spectramr.infrastructure.physics.spd_field_transport import (
         affine_invariant_transport_operator,
         spd_field_transport,
     )
@@ -62,7 +62,7 @@ def test_operator_maps_source_mean_to_target_mean() -> None:
 
 def test_combat_scalar_limit() -> None:
     """Commuting scalar tensors: transport is a multiplicative scalar correction."""
-    from mriforge.infrastructure.physics.spd_field_transport import (
+    from spectramr.infrastructure.physics.spd_field_transport import (
         affine_invariant_transport_operator,
         spd_field_transport,
     )
@@ -79,7 +79,7 @@ def test_combat_scalar_limit() -> None:
 
 
 def test_same_field_transport_is_identity() -> None:
-    from mriforge.infrastructure.physics.spd_field_transport import (
+    from spectramr.infrastructure.physics.spd_field_transport import (
         affine_invariant_transport_operator,
         spd_field_transport,
     )
@@ -91,7 +91,7 @@ def test_same_field_transport_is_identity() -> None:
 
 
 def test_estimate_transport_from_pairs() -> None:
-    from mriforge.infrastructure.physics.spd_field_transport import (
+    from spectramr.infrastructure.physics.spd_field_transport import (
         estimate_transport_from_pairs,
         spd_field_transport,
     )

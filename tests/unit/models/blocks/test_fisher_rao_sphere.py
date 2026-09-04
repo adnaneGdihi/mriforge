@@ -6,7 +6,7 @@ import math
 
 import torch
 
-from mriforge.models.blocks.fisher_rao_sphere import (
+from spectramr.models.blocks.fisher_rao_sphere import (
     angle_to_intensity,
     fisher_rao_geodesic_distance,
     fisher_rao_geodesic_step,

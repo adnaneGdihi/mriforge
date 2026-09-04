@@ -10,7 +10,7 @@ This module tests complete workflows including:
 import pytest
 import torch
 
-from mriforge.data.batch_types import BatchAdapter, TrainingBatch
+from spectramr.data.batch_types import BatchAdapter, TrainingBatch
 
 
 class TestEnd2EndTrainingWorkflow:

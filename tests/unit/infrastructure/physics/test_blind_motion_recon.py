@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import ifft2c
-from mriforge.infrastructure.physics.blind_motion_recon import (
+from spectramr.infrastructure.physics.fft_ops import ifft2c
+from spectramr.infrastructure.physics.blind_motion_recon import (
     estimate_blind_motion,
     gradient_entropy,
     simulate_segmented_motion,

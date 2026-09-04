@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.pipelines.train import (
+from spectramr.pipelines.train import (
     SANITY_MIN_ITERS,
     _evaluate_sanity_overfit,
 )

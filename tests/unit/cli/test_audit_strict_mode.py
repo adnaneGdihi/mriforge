@@ -1,4 +1,4 @@
-"""Unit test for the ``python -m mriforge.cli audit --strict`` exit-code semantics.
+"""Unit test for the ``python -m spectramr.cli audit --strict`` exit-code semantics.
 
 Under ``--strict`` a "passed-with-warnings" outcome must produce exit
 code 2 (failure), not 1. This is what makes the smoke wrapper's
@@ -6,7 +6,7 @@ no-silent-fallbacks gate actually bite.
 
 Import note: the historical ``src/cli.py`` module-vs-package shadow has
 been resolved (see ``src/cli/__init__.py`` and ``src/cli/app.py``).
-``audit`` is now reachable directly via ``from mriforge.cli import audit``.
+``audit`` is now reachable directly via ``from spectramr.cli import audit``.
 """
 
 from __future__ import annotations
@@ -17,8 +17,8 @@ from typing import Any
 
 import pytest
 
-from mriforge.cli import audit as audit_command
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.cli import audit as audit_command
+from spectramr.infrastructure.validation.config_health_checker import (
     HealthCheckReport,
     HealthCheckResult,
 )
@@ -34,7 +34,7 @@ def _stub_loader(monkeypatch: pytest.MonkeyPatch) -> None:
             return cls()
 
     monkeypatch.setattr(
-        "mriforge.config.settings.TrainingSettings", _StubSettings, raising=True
+        "spectramr.config.settings.TrainingSettings", _StubSettings, raising=True
     )
 
     # Default: report says one warning, no errors.
@@ -56,7 +56,7 @@ def _stub_loader(monkeypatch: pytest.MonkeyPatch) -> None:
         return fake_report
 
     monkeypatch.setattr(
-        "mriforge.infrastructure.validation.config_health_checker.validate_config_health",
+        "spectramr.infrastructure.validation.config_health_checker.validate_config_health",
         _fake_validate,
         raising=True,
     )
@@ -108,9 +108,9 @@ def test_audit_returns_0_when_clean(
         def from_yaml(cls, _path: str) -> Any:
             return cls()
 
-    monkeypatch.setattr("mriforge.config.settings.TrainingSettings", _StubSettings, raising=True)
+    monkeypatch.setattr("spectramr.config.settings.TrainingSettings", _StubSettings, raising=True)
     monkeypatch.setattr(
-        "mriforge.infrastructure.validation.config_health_checker.validate_config_health",
+        "spectramr.infrastructure.validation.config_health_checker.validate_config_health",
         lambda _cfg, **_kw: HealthCheckReport(results=[
             HealthCheckResult(passed=True, check_name="x", message="ok", severity="info"),
         ]),
@@ -129,7 +129,7 @@ def test_audit_returns_0_when_clean(
 # says it in a docstring and `scripts/ci/cluster_verify.sh` says it in a
 # comment; only argparse disagreed (`action="store_true"`, default False).
 #
-# Corpus measurement before the flip (`mriforge audit experiments/inprogress`,
+# Corpus measurement before the flip (`spectramr audit experiments/inprogress`,
 # 647 arms, Tier-0+1): 507 pass / 3 warn / 137 error. The flip moves exactly
 # the **3** `vf/exp_vf_01_subvoxel_superres*_v2.yaml` arms from exit 1 to
 # exit 2; the 137 already exit 2 and are unaffected.
@@ -137,7 +137,7 @@ def test_audit_returns_0_when_clean(
 
 
 def _audit_subparser():
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     parser = build_parser()
     subparsers = next(
@@ -189,7 +189,7 @@ def test_a_failed_probe_is_an_error_never_a_warning() -> None:
     """
     import inspect
 
-    from mriforge.cli import app
+    from spectramr.cli import app
 
     src = inspect.getsource(app._audit_one if hasattr(app, "_audit_one") else app)
     assert 'probe_record.get("severity") == "warning"' not in src

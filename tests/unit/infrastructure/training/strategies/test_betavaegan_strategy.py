@@ -15,8 +15,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies import gan as gan_mod  # noqa: E402
-from mriforge.infrastructure.training.strategies.betavaegan_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies import gan as gan_mod  # noqa: E402
+from spectramr.infrastructure.training.strategies.betavaegan_strategy import (  # noqa: E402
     BetaVAEGANStrategy,
 )
 

@@ -1,6 +1,6 @@
 """Regression test for the audit-15-F13 fix.
 
-``mriforge/main.py`` and ``mriforge/accelerator.py`` both set
+``spectramr/main.py`` and ``spectramr/accelerator.py`` both set
 ``PYTORCH_CUDA_ALLOC_CONF``. main.py sets it at module-import-time
 (before ``import torch``); accelerator.py uses ``os.environ.setdefault``
 as a fallback for callers that didn't pre-set. The two strings must
@@ -41,16 +41,16 @@ def _package_source(repo: Path, module: str) -> str:
     """Read a module out of the package, failing with the reason if it moved.
 
     Both files were read from ``src/`` directly until the 2026-05
-    ``src -> src/mriforge`` refactor, after which this test died on a raw
+    ``src -> src/spectramr`` refactor, after which this test died on a raw
     ``FileNotFoundError`` out of ``pathlib`` — a message that names a missing
     path and not the fact that a guard had stopped guarding. It was red on every
     run from then until job 8000966 surfaced it. The two literals had NOT
     drifted in the meantime; the invariant held unattended.
     """
-    path = repo / "src" / "mriforge" / module
+    path = repo / "src" / "spectramr" / module
     if not path.is_file():
         raise AssertionError(
-            f"{path} does not exist — mriforge.{module.removesuffix('.py')} "
+            f"{path} does not exist — spectramr.{module.removesuffix('.py')} "
             "moved, and this sync guard cannot see the file it grades. "
             "Repoint it rather than letting it fail as a missing file."
         )
@@ -80,7 +80,7 @@ def test_pytorch_cuda_alloc_conf_in_sync() -> None:
 # "an entry point that bypasses main.py gets [less] than training expects" --
 # always covered the whole env block. The gap was paid for on 2026-08-16:
 # main.py set six cache variables inline and accelerator.py repeated three of
-# them by hand, so `torchrun -m mriforge.cli train-distributed` (which never
+# them by hand, so `torchrun -m spectramr.cli train-distributed` (which never
 # imports main.py) ran with TRITON_CACHE_DIR and XDG_CACHE_HOME unset. Both are
 # written by `import deepspeed`, so DeepSpeed's caches went to the cluster $HOME
 # and the import died with a bare PermissionError before any config was read.
@@ -108,7 +108,7 @@ def test_both_entry_points_configure_caches_through_the_shared_helper(
     src = _package_source(repo, module)
 
     assert "configure_cache_environment()" in src, (
-        f"mriforge/{module} does not call configure_cache_environment(). If this "
+        f"spectramr/{module} does not call configure_cache_environment(). If this "
         "is the path a launcher uses, it will run with the library caches "
         "defaulting under $HOME — which is how `import deepspeed` came to fail "
         "on a cluster home directory."
@@ -129,7 +129,7 @@ def test_no_entry_point_sets_a_cache_variable_by_hand(module: str, var: str) -> 
 
     for form in (f'os.environ["{var}"]', f'os.environ.setdefault("{var}"'):
         assert form not in src, (
-            f"mriforge/{module} sets {var} directly ({form}). The cache layout is "
+            f"spectramr/{module} sets {var} directly ({form}). The cache layout is "
             "owned by infrastructure.config.env_resolver."
             "configure_cache_environment — setting it here re-creates the split "
             "that left the distributed entry point without it."

@@ -26,10 +26,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.phase_stego_score import (  # noqa: E402
+from spectramr.models.losses.phase_stego_score import (  # noqa: E402
     PhaseStegoScoreLoss,
 )
-from mriforge.models.losses.registry import list_available  # noqa: E402
+from spectramr.models.losses.registry import list_available  # noqa: E402
 
 
 def test_registered() -> None:

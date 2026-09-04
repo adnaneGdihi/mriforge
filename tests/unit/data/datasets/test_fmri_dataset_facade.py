@@ -19,20 +19,20 @@ class TestFacadeIdentity:
     @pytest.mark.parametrize(
         ("name", "module"),
         [
-            ("FMRIVolumeDataset", "mriforge.data.datasets.fmri_volume_dataset"),
-            ("build_fmri_index", "mriforge.data.datasets.fmri_volume_dataset"),
-            ("FMRIBoldSeriesDataset", "mriforge.data.datasets.fmri_bold_series_dataset"),
-            ("CorticalSurfaceDataset", "mriforge.data.datasets.cortical_surface_dataset"),
+            ("FMRIVolumeDataset", "spectramr.data.datasets.fmri_volume_dataset"),
+            ("build_fmri_index", "spectramr.data.datasets.fmri_volume_dataset"),
+            ("FMRIBoldSeriesDataset", "spectramr.data.datasets.fmri_bold_series_dataset"),
+            ("CorticalSurfaceDataset", "spectramr.data.datasets.cortical_surface_dataset"),
         ],
     )
     def test_facade_exposes_the_definition_not_a_copy(self, name: str, module: str) -> None:
         """One owner per symbol (NN17)."""
-        from mriforge.data.datasets import fmri_dataset
+        from spectramr.data.datasets import fmri_dataset
 
         assert getattr(fmri_dataset, name) is getattr(importlib.import_module(module), name)
 
     def test_all_lists_exactly_the_four_public_names(self) -> None:
-        from mriforge.data.datasets import fmri_dataset
+        from spectramr.data.datasets import fmri_dataset
 
         assert set(fmri_dataset.__all__) == {
             "CorticalSurfaceDataset",
@@ -42,8 +42,8 @@ class TestFacadeIdentity:
         }
 
     def test_package_init_still_re_exports_through_the_facade(self) -> None:
-        from mriforge.data import datasets
-        from mriforge.data.datasets import fmri_dataset
+        from spectramr.data import datasets
+        from spectramr.data.datasets import fmri_dataset
 
         assert datasets.FMRIVolumeDataset is fmri_dataset.FMRIVolumeDataset
         assert datasets.CorticalSurfaceDataset is fmri_dataset.CorticalSurfaceDataset
@@ -58,15 +58,15 @@ class TestImportGraphIsAcyclic:
     @pytest.mark.parametrize(
         "first",
         [
-            "mriforge.data.datasets.cortical_surface_dataset",
-            "mriforge.data.datasets.fmri_bold_series_dataset",
-            "mriforge.data.datasets.fmri_volume_dataset",
-            "mriforge.data.datasets.fmri_dataset",
+            "spectramr.data.datasets.cortical_surface_dataset",
+            "spectramr.data.datasets.fmri_bold_series_dataset",
+            "spectramr.data.datasets.fmri_volume_dataset",
+            "spectramr.data.datasets.fmri_dataset",
         ],
     )
     def test_any_module_imports_first_without_a_cycle(self, first: str) -> None:
         for mod in list(sys.modules):
-            if (mod.startswith("mriforge.data.datasets.") and "fmri" in mod) or mod.endswith(
+            if (mod.startswith("spectramr.data.datasets.") and "fmri" in mod) or mod.endswith(
                 "cortical_surface_dataset"
             ):
                 sys.modules.pop(mod, None)
@@ -76,7 +76,7 @@ class TestImportGraphIsAcyclic:
         """A definition left behind is a second owner waiting to drift."""
         import inspect
 
-        from mriforge.data.datasets import fmri_dataset
+        from spectramr.data.datasets import fmri_dataset
 
         own = [
             n

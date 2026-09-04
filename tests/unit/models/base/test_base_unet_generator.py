@@ -2,7 +2,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.base.base_unet_generator import BaseUNetGenerator
+from spectramr.models.base.base_unet_generator import BaseUNetGenerator
 
 
 class SimpleDecoderBlock(nn.Module):

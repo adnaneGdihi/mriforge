@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     AcquisitionParamsSchema,
     MultiContrastConfigSchema,
     ReferenceTissuePanelConfig,
 )
-from mriforge.config.schemas.training import (
+from spectramr.config.schemas.training import (
     TrainingConfigCorruptionCalibration,
     TrainingConfigDataEfficiencyHarness,
     TrainingConfigPairedSynthesis,

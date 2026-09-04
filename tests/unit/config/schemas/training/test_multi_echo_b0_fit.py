@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.multi_echo_b0_fit import MultiEchoB0FitConfig
+from spectramr.config.schemas.training.multi_echo_b0_fit import MultiEchoB0FitConfig
 
 
 def test_t_shift_is_required_and_positive() -> None:

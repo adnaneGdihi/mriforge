@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
     ConformalCalibrationStrategy,
 )
-from mriforge.pipelines.train import _VALIDATION_FORWARD_FIELDS
+from spectramr.pipelines.train import _VALIDATION_FORWARD_FIELDS
 
 
 class TestCalibrationValidationSeam:

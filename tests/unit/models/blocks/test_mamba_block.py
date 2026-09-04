@@ -3,7 +3,7 @@
 The GRU fallback is **NOT equivalent to the SSM** and is disabled by default:
 a missing/broken ``mamba_ssm`` must fail loud (pitfall #9) so an experiment
 never silently trains a GRU under the "Mamba" label. The fallback survives only
-as an explicit ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` opt-in for CPU/CI wiring tests.
+as an explicit ``SPECTRAMR_ALLOW_MAMBA_FALLBACK`` opt-in for CPU/CI wiring tests.
 """
 
 import importlib.util
@@ -11,14 +11,14 @@ import importlib.util
 import pytest
 import torch
 
-from mriforge.models.blocks.mamba_block import MambaBlock
+from spectramr.models.blocks.mamba_block import MambaBlock
 
 _MAMBA_SSM_AVAILABLE = importlib.util.find_spec("mamba_ssm") is not None
 
 
 def test_mamba_ssm_importable_reflects_environment() -> None:
     """The audit helper must report the true install state of mamba_ssm."""
-    from mriforge.models.blocks.mamba_block import _mamba_ssm_importable
+    from spectramr.models.blocks.mamba_block import _mamba_ssm_importable
 
     assert _mamba_ssm_importable() is _MAMBA_SSM_AVAILABLE
 
@@ -31,14 +31,14 @@ class TestMambaBlockRequiresKernel:
     """Default behaviour: no kernel → raise, do not silently degrade to GRU."""
 
     def test_raises_when_kernel_absent_and_fallback_not_allowed(self, monkeypatch):
-        monkeypatch.delenv("MRIFORGE_ALLOW_MAMBA_FALLBACK", raising=False)
+        monkeypatch.delenv("SPECTRAMR_ALLOW_MAMBA_FALLBACK", raising=False)
         with pytest.raises((ImportError, RuntimeError), match="mamba"):
             MambaBlock(d_model=16, d_state=8)
 
     def test_fallback_flag_allows_gru_with_warning(self, monkeypatch, caplog):
         import logging
 
-        monkeypatch.setenv("MRIFORGE_ALLOW_MAMBA_FALLBACK", "1")
+        monkeypatch.setenv("SPECTRAMR_ALLOW_MAMBA_FALLBACK", "1")
         with caplog.at_level(logging.WARNING):
             blk = MambaBlock(d_model=16, d_state=8)
         assert blk.use_official is False
@@ -58,7 +58,7 @@ class TestMambaBlockFallback:
     @pytest.fixture
     def block(self, monkeypatch) -> MambaBlock:
         """Create a MambaBlock via the explicit opt-in GRU fallback."""
-        monkeypatch.setenv("MRIFORGE_ALLOW_MAMBA_FALLBACK", "1")
+        monkeypatch.setenv("SPECTRAMR_ALLOW_MAMBA_FALLBACK", "1")
         blk = MambaBlock(d_model=32, d_state=16, d_conv=4, expand=2)
         assert blk.use_official is False  # opt-in fallback engaged (no kernel)
         return blk

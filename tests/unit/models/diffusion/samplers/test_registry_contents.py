@@ -19,9 +19,9 @@ import pytest
 @pytest.mark.parametrize(
     "module_path,canonical",
     [
-        ("mriforge.models.diffusion.ddim_sampler", "ddim"),
-        ("mriforge.models.diffusion.physics_guided_sampler", "physics_guided"),
-        ("mriforge.models.diffusion.pula_sampler", "pula"),
+        ("spectramr.models.diffusion.ddim_sampler", "ddim"),
+        ("spectramr.models.diffusion.physics_guided_sampler", "physics_guided"),
+        ("spectramr.models.diffusion.pula_sampler", "pula"),
     ],
 )
 def test_sampler_registers_on_import(module_path: str, canonical: str) -> None:
@@ -29,7 +29,7 @@ def test_sampler_registers_on_import(module_path: str, canonical: str) -> None:
     import importlib
 
     importlib.import_module(module_path)
-    from mriforge.models.diffusion.samplers import list_available
+    from spectramr.models.diffusion.samplers import list_available
 
     assert canonical in list_available(), (
         f"Importing {module_path} should register sampler {canonical!r}"
@@ -40,8 +40,8 @@ def test_pula_module_exposes_three_samplers() -> None:
     """``pula_sampler`` registers PULA, MCG, and DPS-MRI."""
     import importlib
 
-    importlib.import_module("mriforge.models.diffusion.pula_sampler")
-    from mriforge.models.diffusion.samplers import list_available
+    importlib.import_module("spectramr.models.diffusion.pula_sampler")
+    from spectramr.models.diffusion.samplers import list_available
 
     available = set(list_available())
     assert {"pula", "mcg", "dps_mri"} <= available
@@ -51,9 +51,9 @@ def test_aliases_dispatch_to_canonical() -> None:
     """Common upper-case aliases route to the canonical samplers."""
     import importlib
 
-    importlib.import_module("mriforge.models.diffusion.ddim_sampler")
-    importlib.import_module("mriforge.models.diffusion.pula_sampler")
-    from mriforge.models.diffusion.samplers import SamplerRegistry
+    importlib.import_module("spectramr.models.diffusion.ddim_sampler")
+    importlib.import_module("spectramr.models.diffusion.pula_sampler")
+    from spectramr.models.diffusion.samplers import SamplerRegistry
 
     assert SamplerRegistry.is_registered("DDIM") is True
     assert SamplerRegistry.is_registered("PULA") is True

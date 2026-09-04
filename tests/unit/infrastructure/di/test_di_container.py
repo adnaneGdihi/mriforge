@@ -4,7 +4,7 @@ from typing import Optional, Protocol, Union, runtime_checkable
 import pytest
 import torch
 
-from mriforge.infrastructure.di.di_container import (
+from spectramr.infrastructure.di.di_container import (
     DIContainer,
     ServiceResolutionError,
     get_global_container,
@@ -359,7 +359,7 @@ def test_init_container_idempotent() -> None:
     The global container singleton must not be re-created on subsequent calls,
     which would silently drop all registered services.
     """
-    import mriforge.infrastructure.di.di_container as di_module
+    import spectramr.infrastructure.di.di_container as di_module
 
     # Reset to known-clean state for this test only
     original = di_module._global_container
@@ -565,7 +565,7 @@ def test_concurrent_singleton_constructs_exactly_once() -> None:
 
 def test_typing_localns_cached_at_module_load():
     """The auto-wire typing namespace is computed once, not per-resolve."""
-    from mriforge.infrastructure.di import di_container as dic
+    from spectramr.infrastructure.di import di_container as dic
 
     assert isinstance(dic._TYPING_LOCALNS, dict)
     # Sanity: it carries the public typing names used to resolve string

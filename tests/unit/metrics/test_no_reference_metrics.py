@@ -29,7 +29,7 @@ def _img(b: int = 1, c: int = 1, h: int = 32, w: int = 32, seed: int = 0) -> tor
 class TestTenengradVariance:
     @pytest.fixture
     def tv(self):
-        from mriforge.core.metrics.no_reference_metrics import TenengradVariance
+        from spectramr.core.metrics.no_reference_metrics import TenengradVariance
         return TenengradVariance()
 
     # canary
@@ -87,7 +87,7 @@ class TestTenengradVariance:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.no_reference_metrics import TenengradVariance
+        from spectramr.core.metrics.no_reference_metrics import TenengradVariance
         b, c, h, w = shape
         x = _img(b, c, h, w)
         result = TenengradVariance()(x)
@@ -102,7 +102,7 @@ class TestTenengradVariance:
 class TestLaplacianVariance:
     @pytest.fixture
     def lv(self):
-        from mriforge.core.metrics.no_reference_metrics import LaplacianVariance
+        from spectramr.core.metrics.no_reference_metrics import LaplacianVariance
         return LaplacianVariance()
 
     def test_canary_finite_nonnegative(self, lv):
@@ -146,7 +146,7 @@ class TestLaplacianVariance:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.no_reference_metrics import LaplacianVariance
+        from spectramr.core.metrics.no_reference_metrics import LaplacianVariance
         b, c, h, w = shape
         result = LaplacianVariance()(_img(b, c, h, w))
         assert math.isfinite(result)
@@ -160,7 +160,7 @@ class TestLaplacianVariance:
 class TestNIQE:
     @pytest.fixture
     def niqe(self):
-        from mriforge.core.metrics.no_reference_metrics import NIQE
+        from spectramr.core.metrics.no_reference_metrics import NIQE
         return NIQE()
 
     # canary with large enough image
@@ -198,7 +198,7 @@ class TestNIQE:
 class TestBRISQUE:
     @pytest.fixture
     def brisque(self):
-        from mriforge.core.metrics.no_reference_metrics import BRISQUE
+        from spectramr.core.metrics.no_reference_metrics import BRISQUE
         return BRISQUE()
 
     def test_canary_finite_nonnegative(self, brisque):
@@ -229,7 +229,7 @@ class TestBRISQUE:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.no_reference_metrics import BRISQUE
+        from spectramr.core.metrics.no_reference_metrics import BRISQUE
         b, c, h, w = shape
         result = BRISQUE()(_img(b, c, h, w))
         assert math.isfinite(result)

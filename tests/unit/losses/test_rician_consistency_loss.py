@@ -4,7 +4,7 @@ import math
 
 import torch
 
-from mriforge.models.losses.rician_consistency_loss import (
+from spectramr.models.losses.rician_consistency_loss import (
     RicianConsistencyLoss,
     _estimate_sigma_mad,
     _rician_unbiased,
@@ -126,7 +126,7 @@ class TestRicianConsistencyLoss:
 
     def test_kspace_forwad_via_registry(self):
         """Loss created via registry with k-space bridge runs correctly."""
-        from mriforge.models.losses import create_loss
+        from spectramr.models.losses import create_loss
 
         loss_fn = create_loss("rician_consistency", use_fourier_bridge=True)
         # 2-channel stacked k-space [B, 2, H, W]

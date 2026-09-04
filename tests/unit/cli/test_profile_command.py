@@ -1,4 +1,4 @@
-"""Tests for the ``mriforge profile`` vocabulary and argv construction.
+"""Tests for the ``spectramr profile`` vocabulary and argv construction.
 
 The three tests that earn their keep here are the ones pinning facts that are
 true *outside* this repo and would otherwise rot silently:
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.cli.profile_command import (
+from spectramr.cli.profile_command import (
     FOCUS_PRESETS,
     OUTPUT_INJECTION,
     PROFILE_MODES,
@@ -52,13 +52,13 @@ def _child_argv(argv: list[str]) -> list[str]:
 def test_program_path_is_package_root_not_cli_dir():
     """Scalene defaults --program-path to the profiled script's directory.
 
-    That default would be ``src/mriforge/cli/``, which excludes
+    That default would be ``src/spectramr/cli/``, which excludes
     ``pipelines/training_loop.py`` — a green run with an empty profile. This
     asserts the override points at the package root and that the loop is under
     it, which is the property that actually matters.
     """
     root = program_path()
-    assert root.name == "mriforge"
+    assert root.name == "spectramr"
     assert entry_script().parent == root / "cli"
     assert (root / "pipelines" / "training_loop.py").is_file()
     assert entry_script().parent != root, "the naive default would scope to cli/"
@@ -172,7 +172,7 @@ def test_built_argv_is_accepted_by_the_real_child_parser(target):
     This is the test that would have caught ``infer`` not accepting
     ``--override`` — the reason OUTPUT_INJECTION is per-target at all.
     """
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     extra = ["--checkpoint", "ckpt.pt", "--input", "data/test/"] if target == "infer" else []
     argv = build_scalene_command(
@@ -192,7 +192,7 @@ def test_excluded_verbs_are_excluded_for_a_real_reason(verb):
     into subprocesses Scalene cannot see. Only the mechanical half is checkable
     here, so check that and keep the list honest.
     """
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     assert verb not in PROFILE_TARGETS
     sub = next(a for a in build_parser()._actions if a.dest == "command")
@@ -273,7 +273,7 @@ def test_no_target_is_told_to_write_into_the_arms_real_results_dir(target):
     fix applied only to the `--override` rows would have left it corrupting
     `experiments/results/<exp>/inference/`.
     """
-    from mriforge.cli.profile_paths import resolve_profile_paths
+    from spectramr.cli.profile_paths import resolve_profile_paths
 
     paths = resolve_profile_paths("exp_11", "run-1")
     argv = build_scalene_command(

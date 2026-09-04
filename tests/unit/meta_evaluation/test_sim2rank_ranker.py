@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import (
+from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import (
     Sim2RankConfig,
     Sim2RankRanker,
     compute_adr,
@@ -134,7 +134,7 @@ def test_sim2rank_non_measuring_excluded_from_composite(small_dataset, metric_se
 
 def test_masked_normalise_sinks_non_measuring() -> None:
     """Unit: non-measuring entries → 0; measuring entries ranked among themselves."""
-    from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import _masked_normalise
+    from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import _masked_normalise
 
     values = [0.3, 0.2, 0.0, 0.0]
     mask = [True, True, False, False]

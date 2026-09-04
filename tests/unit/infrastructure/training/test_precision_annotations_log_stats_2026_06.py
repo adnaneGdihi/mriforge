@@ -13,7 +13,7 @@ import logging
 
 import torch
 
-from mriforge.infrastructure.training.precision_annotations import (
+from spectramr.infrastructure.training.precision_annotations import (
     PrecisionAwareCaster,
     VAEPrecisionManager,
 )
@@ -21,7 +21,7 @@ from mriforge.infrastructure.training.precision_annotations import (
 
 def test_cast_to_fp32_does_not_sync_when_debug_disabled(monkeypatch):
     caster = PrecisionAwareCaster("vae")
-    logger = logging.getLogger("mriforge.infrastructure.training.precision_annotations")
+    logger = logging.getLogger("spectramr.infrastructure.training.precision_annotations")
     logger.setLevel(logging.WARNING)  # DEBUG disabled
 
     calls = {"min": 0}

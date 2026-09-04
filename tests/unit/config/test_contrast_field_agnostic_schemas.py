@@ -1,8 +1,8 @@
 r"""Unit tests for the contrast/field-agnostic bundle training schemas.
 
-Targets ``mriforge.config.schemas.training.acq_hypernetwork`` (M3 LCAH),
-``mriforge.config.schemas.training.dispersion_bloch_ae`` (M4 DL-BAE) and
-``mriforge.config.schemas.training.mcgi`` (M2 MCGI).
+Targets ``spectramr.config.schemas.training.acq_hypernetwork`` (M3 LCAH),
+``spectramr.config.schemas.training.dispersion_bloch_ae`` (M4 DL-BAE) and
+``spectramr.config.schemas.training.mcgi`` (M2 MCGI).
 
 All three are ``frozen``/``extra="forbid"`` per the config non-negotiable, and
 both wrappers must be reachable through the ``training_mode`` discriminated
@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training import (
+from spectramr.config.schemas.training import (
     _MODE_DISPATCH,
     AcqHypernetworkConfig,
     DispersionBlochAEConfig,

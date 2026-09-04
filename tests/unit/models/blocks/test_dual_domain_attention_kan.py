@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.dual_domain_attention_kan import (
+from spectramr.models.blocks.dual_domain_attention_kan import (
     ComplexMHA,
     CrossDomainAttention,
     MultiScaleFreqBandAttention,
@@ -24,10 +24,10 @@ from mriforge.models.blocks.dual_domain_attention_kan import (
     _haar_reconstruct_2d,
     _interleaved_to_complex,
 )
-from mriforge.models.blocks.dual_domain_attention_kan import (
+from spectramr.models.blocks.dual_domain_attention_kan import (
     KANGatedDualDomainAttention as _KANGatedDualDomainAttention,
 )
-from mriforge.models.blocks.dual_domain_attention_kan import (
+from spectramr.models.blocks.dual_domain_attention_kan import (
     WaveletFreqAttentionBlock as _WaveletFreqAttentionBlock,
 )
 
@@ -319,7 +319,7 @@ class TestWaveletFreqAttentionBlock:
         assert diff > 1e-6, f"KAN and MLP wavelet gates identical (facade): {diff}"
 
     def test_kan_gate_contains_kanlayer_mlp_does_not(self):
-        from mriforge.models.blocks.kan_layer import KANLayer
+        from spectramr.models.blocks.kan_layer import KANLayer
 
         kan = WaveletFreqAttentionBlock(in_channels=8, gate_type="kan")
         mlp = WaveletFreqAttentionBlock(in_channels=8, gate_type="mlp")
@@ -619,7 +619,7 @@ class TestKANGatedDualDomainAttention:
         for a block unit test)."""
         import inspect
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -699,11 +699,11 @@ class TestFeatureDomainContract:
         Descriptors are image-anchored in both modes, so the two modes are
         exact conjugates. Run without smap conditioning (the FiLM beta term is
         a documented, benign cross-mode difference)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.models.blocks.attention_domains import (
             complex_to_interleaved as c2i,
         )
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 
@@ -723,11 +723,11 @@ class TestFeatureDomainContract:
         torch.testing.assert_close(out_k, rhs, rtol=1e-4, atol=1e-4)
 
     def test_wavelet_conjugacy_image_vs_kspace(self):
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.models.blocks.attention_domains import (
             complex_to_interleaved as c2i,
         )
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 
@@ -749,8 +749,8 @@ class TestFeatureDomainContract:
     def test_kspace_mode_radial_branch_sees_native_tensor(self):
         """In kspace mode the radial-band branch (a k-space annuli prior) must
         receive the UN-transformed input; in image mode it receives fft2c(x)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 
@@ -784,8 +784,8 @@ class TestFeatureDomainContract:
 
     def test_gate_descriptor_uses_image_view_in_both_modes(self):
         """_phase_aware_gap must be fed the image view regardless of mode."""
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
-        from mriforge.models.blocks.attention_domains import (
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.models.blocks.attention_domains import (
             interleaved_to_complex as i2c,
         )
 

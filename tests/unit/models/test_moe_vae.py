@@ -8,8 +8,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.moe.top1_router import Top1Router
-from mriforge.models.vae.moe_vae import MoEVAE
+from spectramr.models.blocks.moe.top1_router import Top1Router
+from spectramr.models.vae.moe_vae import MoEVAE
 
 from ._vae_base import (
     assert_gradient_flows,

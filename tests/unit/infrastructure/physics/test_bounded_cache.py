@@ -1,10 +1,10 @@
-"""Unit tests for :mod:`mriforge.infrastructure.physics.bounded_cache`."""
+"""Unit tests for :mod:`spectramr.infrastructure.physics.bounded_cache`."""
 
 from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.bounded_cache import (
+from spectramr.infrastructure.physics.bounded_cache import (
     DEFAULT_CACHE_CAPACITY,
     BoundedLRUCache,
 )

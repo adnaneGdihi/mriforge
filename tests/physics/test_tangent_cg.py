@@ -18,7 +18,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.tangent_cg import cg_data_consistency  # noqa: E402
+from spectramr.infrastructure.physics.tangent_cg import cg_data_consistency  # noqa: E402
 
 
 def test_cg_identity_operator_matches_closed_form() -> None:

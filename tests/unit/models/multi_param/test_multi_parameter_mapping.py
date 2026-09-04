@@ -1,6 +1,6 @@
 r"""Tests for ``MultiParameterHead`` and ``UncertaintyWeightedMultiTaskLoss``.
 
-Targets ``mriforge.models.multi_param.multi_parameter_mapping`` — idea 10.
+Targets ``spectramr.models.multi_param.multi_parameter_mapping`` — idea 10.
 
 Plan acceptance criteria (§10.6):
 
@@ -24,7 +24,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.multi_param.multi_parameter_mapping import (
+from spectramr.models.multi_param.multi_parameter_mapping import (
     MultiParameterHead,
     UncertaintyWeightedMultiTaskLoss,
 )

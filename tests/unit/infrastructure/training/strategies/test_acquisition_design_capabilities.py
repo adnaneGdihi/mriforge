@@ -18,13 +18,13 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.enums import Regime, Task
-from mriforge.domain.workflows import WORKFLOW_PROFILES
-from mriforge.infrastructure.training.strategies.bald_acquisition_strategy import (
+from spectramr.config.schemas.enums import Regime, Task
+from spectramr.domain.workflows import WORKFLOW_PROFILES
+from spectramr.infrastructure.training.strategies.bald_acquisition_strategy import (
     BALDAcquisitionStrategy,
 )
-from mriforge.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.pilot_strategy import PILOTStrategy
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 

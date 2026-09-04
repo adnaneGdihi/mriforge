@@ -1,6 +1,6 @@
 import pytest
 
-from mriforge.config.schemas.multi_stage_config_validator import (
+from spectramr.config.schemas.multi_stage_config_validator import (
     DependencyList,
     MultiStageConfigValidator,
     MultiStageMode,

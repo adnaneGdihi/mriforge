@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
     ConformalCalibrationStrategy,
 )
 
@@ -32,9 +32,7 @@ def _bare_strategy(dice_cfg, model: nn.Module | None = None) -> ConformalCalibra
     strat = object.__new__(ConformalCalibrationStrategy)
     strat.device = torch.device("cpu")
     strat._enabled_certs = ["dice_risk"]
-    strat.config = types.SimpleNamespace(
-        certification=types.SimpleNamespace(dice_risk=dice_cfg)
-    )
+    strat.config = types.SimpleNamespace(certification=types.SimpleNamespace(dice_risk=dice_cfg))
     strat.env = types.SimpleNamespace(generator=model if model is not None else _Identity())
     return strat
 
@@ -48,6 +46,9 @@ def _cfg(**over):
         n_classes=5,
         checkpoint_path=None,
         output_artefact=None,
+        # The batches below carry no subject id, so they are scored as independent
+        # samples; the subject-grouped default is exercised by its own tests.
+        independence_unit="sample",
     )
     base.update(over)
     return types.SimpleNamespace(**base)
@@ -58,9 +59,7 @@ def test_dice_risk_branch_certifies_perfect_reconstruction(tmp_path) -> None:
     # cohort (n=32) makes the Hoeffding gap small enough to certify at alpha=0.3.
     model = _Identity()
     strat = _bare_strategy(_cfg(alpha=0.3, checkpoint_path=_write_ckpt(tmp_path, model)), model)
-    loader = [
-        {"input": (x := torch.rand(4, 1, 16, 16)), "target": x} for _ in range(8)
-    ]
+    loader = [{"input": (x := torch.rand(4, 1, 16, 16)), "target": x} for _ in range(8)]
     reports = strat.run_calibration(loader)
     assert "r6_dice_risk" in reports
     rep = reports["r6_dice_risk"]
@@ -76,8 +75,7 @@ def test_dice_risk_branch_rejects_when_budget_too_tight(tmp_path) -> None:
     model = _Identity()
     strat = _bare_strategy(_cfg(alpha=0.01, checkpoint_path=_write_ckpt(tmp_path, model)), model)
     loader = [
-        {"input": torch.rand(2, 1, 16, 16), "target": torch.rand(2, 1, 16, 16)}
-        for _ in range(3)
+        {"input": torch.rand(2, 1, 16, 16), "target": torch.rand(2, 1, 16, 16)} for _ in range(3)
     ]
     reports = strat.run_calibration(loader)
     assert reports["r6_dice_risk"]["is_certified"] is False
@@ -124,7 +122,7 @@ def test_dice_risk_enabled_collection() -> None:
 
 
 def test_split_calibration_test_disjoint_halves() -> None:
-    from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+    from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
         _split_calibration_test,
     )
 
@@ -135,7 +133,7 @@ def test_split_calibration_test_disjoint_halves() -> None:
 
 
 def test_split_calibration_test_too_few_to_hold_out() -> None:
-    from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+    from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
         _split_calibration_test,
     )
 
@@ -145,7 +143,7 @@ def test_split_calibration_test_too_few_to_hold_out() -> None:
 
 
 def test_calibration_input_target_unpacks_dict_and_tuple() -> None:
-    from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+    from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
         _calibration_input_target,
     )
 
@@ -158,11 +156,11 @@ def test_calibration_input_target_unpacks_dict_and_tuple() -> None:
 def test_runner_measures_coverage_only_with_test_split() -> None:
     """End-to-end: empirical_coverage is None without a test loader (the old
     bug) and a real number once a disjoint test split is supplied."""
-    from mriforge.infrastructure.calibration import (
+    from spectramr.infrastructure.calibration import (
         ConformalCalibrationRunner,
         ConformalCalibrator,
     )
-    from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+    from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
         _calibration_input_target,
         _split_calibration_test,
     )
@@ -173,8 +171,7 @@ def test_runner_measures_coverage_only_with_test_split() -> None:
         return (pred - target).abs().flatten(1).amax(1)
 
     batches = [
-        {"input": torch.randn(2, 1, 8, 8), "target": torch.randn(2, 1, 8, 8)}
-        for _ in range(6)
+        {"input": torch.randn(2, 1, 8, 8), "target": torch.randn(2, 1, 8, 8)} for _ in range(6)
     ]
     calib, test = _split_calibration_test(batches)
     runner = ConformalCalibrationRunner(
@@ -195,7 +192,67 @@ def test_run_calibration_passes_held_out_test_split() -> None:
     import pathlib
 
     src = pathlib.Path(
-        "src/mriforge/infrastructure/training/strategies/conformal_calibration_strategy.py"
+        "src/spectramr/infrastructure/training/strategies/conformal_calibration_strategy.py"
     ).read_text(encoding="utf-8")
     assert "runner.run(calib_batches, test_batches)" in src
     assert "_split_calibration_test(batches)" in src
+
+
+# ── #1707: one Hoeffding draw per INDEPENDENT unit ─────────────────────────────
+
+
+def test_subject_unit_counts_subjects_not_slices(tmp_path) -> None:
+    """Planted violation: 3 subjects x 8 slices used to certify with n = 24."""
+    model = _Identity()
+    strat = _bare_strategy(
+        _cfg(alpha=0.3, independence_unit="subject", checkpoint_path=_write_ckpt(tmp_path, model)),
+        model,
+    )
+    loader = []
+    for sid in ("s1", "s2", "s3"):
+        for _ in range(2):
+            x = torch.rand(4, 1, 16, 16)
+            loader.append({"input": x, "target": x, "subject_id": [sid] * 4})
+    rep = strat.run_calibration(loader)["r6_dice_risk"]
+    assert rep["n"] == 3 and rep["n_samples_scored"] == 24
+    assert rep["independence_unit"] == "subject"
+
+
+def test_subject_unit_uses_the_per_subject_mean_risk(tmp_path) -> None:
+    """Two subjects: one perfect (risk ~0), one scored on a mismatched pair; the empirical
+    risk is the mean of the two subject means, not of the 8 slices."""
+    model = _Identity()
+    strat = _bare_strategy(
+        _cfg(alpha=0.3, independence_unit="subject", checkpoint_path=_write_ckpt(tmp_path, model)),
+        model,
+    )
+    good = torch.rand(4, 1, 16, 16)
+    bad_in, bad_tgt = torch.rand(4, 1, 16, 16), torch.rand(4, 1, 16, 16)
+    loader = [
+        {"input": good, "target": good, "subject_id": ["a"] * 4},
+        {"input": bad_in, "target": bad_tgt, "subject_id": ["b"] * 4},
+    ]
+    rep = strat.run_calibration(loader)["r6_dice_risk"]
+    assert rep["n"] == 2
+    assert 0.0 < rep["empirical_risk"] < 1.0
+
+
+def test_subject_unit_refuses_a_batch_without_subject_ids(tmp_path) -> None:
+    """No silent fallback to slice counting (the inflation #1707 describes)."""
+    model = _Identity()
+    strat = _bare_strategy(
+        _cfg(independence_unit="subject", checkpoint_path=_write_ckpt(tmp_path, model)), model
+    )
+    x = torch.rand(4, 1, 16, 16)
+    with pytest.raises(ValueError, match="subject_id"):
+        strat.run_calibration([{"input": x, "target": x}])
+
+
+def test_sample_unit_keeps_the_old_count_and_says_so(tmp_path) -> None:
+    model = _Identity()
+    strat = _bare_strategy(_cfg(checkpoint_path=_write_ckpt(tmp_path, model)), model)
+    x = torch.rand(4, 1, 16, 16)
+    rep = strat.run_calibration([{"input": x, "target": x, "subject_id": ["a"] * 4}])[
+        "r6_dice_risk"
+    ]
+    assert rep["n"] == 4 and rep["independence_unit"] == "sample" and rep["n_samples_scored"] == 4

@@ -39,7 +39,7 @@ def test_the_cohorts_are_not_empty() -> None:
 
 @pytest.mark.parametrize("path", ARMS, ids=lambda p: p.stem)
 def test_arm_constructs_a_real_training_settings(path: pathlib.Path) -> None:
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     TrainingSettings.from_yaml(str(path))
 
@@ -53,7 +53,7 @@ def test_subvoxel_arms_carry_no_anti_super_resolution_smoothness(
     built for and not for super-resolution, where the supervised quantity is
     anatomy: TV(truth) measures 1.66x TV(a blurred reconstruction), so the
     term's optimum is strictly smoother than the target."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     macq = TrainingSettings.from_yaml(str(path)).physics.multi_acquisition
     if macq.method != "subvoxel_sr":
@@ -67,7 +67,7 @@ def test_subvoxel_arms_carry_a_high_frequency_term(path: pathlib.Path) -> None:
     targets the detail these arms exist to recover, and the strategy never reads
     a `losses:` block so HFEN/adversarial/perceptual are absent by
     construction."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     macq = TrainingSettings.from_yaml(str(path)).physics.multi_acquisition
     if macq.method != "subvoxel_sr":

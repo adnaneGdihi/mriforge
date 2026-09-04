@@ -10,7 +10,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.mixins.adversarial import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.mixins.adversarial import (  # noqa: E402
     AdversarialMixin,
 )
 

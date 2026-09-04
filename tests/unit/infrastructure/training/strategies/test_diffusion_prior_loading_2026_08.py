@@ -26,7 +26,7 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 
@@ -87,7 +87,7 @@ def _stub_builder(monkeypatch, model: torch.nn.Module):
         def build(self):
             return model
 
-    import mriforge.infrastructure.builders.leaf.model_builders as leaf
+    import spectramr.infrastructure.builders.leaf.model_builders as leaf
 
     monkeypatch.setattr(leaf, "GeneratorBuilder", _Builder)
 

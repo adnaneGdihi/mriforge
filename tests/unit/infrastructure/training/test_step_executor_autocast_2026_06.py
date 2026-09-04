@@ -20,8 +20,8 @@ import inspect
 
 import torch
 
-from mriforge.infrastructure.training import step_executor as step_executor_mod
-from mriforge.infrastructure.training.mixed_precision import (
+from spectramr.infrastructure.training import step_executor as step_executor_mod
+from spectramr.infrastructure.training.mixed_precision import (
     MixedPrecisionConfig,
     MixedPrecisionIntegrationHelper,
 )

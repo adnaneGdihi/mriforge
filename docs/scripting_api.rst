@@ -1,10 +1,10 @@
-Scripting API (``mriforge.api``)
+Scripting API (``spectramr.api``)
 ===============================
 
-MRIForge supports four ways to launch work. Three are *declarative* — you write a
+spectraMR supports four ways to launch work. Three are *declarative* — you write a
 YAML config and the framework builds and runs everything:
 
-* a single config-driven run (``mriforge train --config X.yaml``),
+* a single config-driven run (``spectramr train --config X.yaml``),
 * a **campaign** that fans one research question out over many arms,
 * a **container / cluster** backend (Docker, Apptainer, SLURM) that wraps a run.
 
@@ -12,7 +12,7 @@ The fourth is *imperative* — the **scripting mode** documented here. Because t
 framework is ``pip``-installable, you can write a plain Python script that builds
 the components you want and runs them directly, bypassing the YAML schema and the
 audit ladder. This is the fast path for prototyping, and the way to use custom
-losses / models / metrics that live **outside** the ``mriforge`` source tree.
+losses / models / metrics that live **outside** the ``spectramr`` source tree.
 
 .. note::
 
@@ -25,15 +25,16 @@ losses / models / metrics that live **outside** the ``mriforge`` source tree.
 The public import surface
 -------------------------
 
-The public names are re-exported from the top-level package *lazily* (so
-``import mriforge`` stays cheap and does not drag in the whole torch import chain),
-and eagerly from the :mod:`mriforge.api` facade. Both resolve to the same objects:
+The public names are re-exported *lazily* from both the top-level package and the
+:mod:`spectramr.api` facade (so ``import spectramr`` stays cheap and does not drag in
+the whole torch import chain). Both share one export table, so they resolve to the
+*identical* objects:
 
 .. code-block:: python
 
    # either of these works and gives identical objects
-   from mriforge import register_model, settings_from_dict, make_model
-   from mriforge.api import register_model, settings_from_dict, make_model
+   from spectramr import register_model, settings_from_dict, make_model
+   from spectramr.api import register_model, settings_from_dict, make_model
 
 Currently exported:
 
@@ -65,7 +66,7 @@ consumed by the strategy, not a facade.
 
 .. code-block:: python
 
-   from mriforge.api import fit
+   from spectramr.api import fit
 
    # reconstruction (default)
    result = fit(model, train_loader, val_loader=val_loader, device="cuda", epochs=50)
@@ -116,7 +117,7 @@ times:
 
 .. code-block:: python
 
-   from mriforge.api import Trainer
+   from spectramr.api import Trainer
 
    trainer = Trainer(device="cuda", epochs=50)
    trainer.fit(model, train_loader, val_loader=val_loader)
@@ -160,7 +161,7 @@ generator-only env (validation is generator-centric); for a paradigm whose
 ``strategy=`` to the ``Trainer``.
 
 ``Trainer.predict`` is **path-based** — it delegates to the SSOT
-:func:`~mriforge.pipelines.infer.run_inference_pipeline`, which is config +
+:func:`~spectramr.pipelines.infer.run_inference_pipeline`, which is config +
 checkpoint driven by design (data loading and result writes live in the data
 layer via ``OutputWriter``, never in the scripting layer). It reconstructs the
 run from its training YAML + a saved checkpoint, so it takes paths, not a live
@@ -188,11 +189,15 @@ and decorate it. The decorator registers it by name immediately on import:
 .. code-block:: python
 
    import torch.nn as nn
-   from mriforge.api import register_model
+   from spectramr.api import register_model
 
-   @register_model("my_unet")
+   @register_model("my_unet", "reconstruction")
    class MyUNet(nn.Module):
        ...
+
+``training_mode`` is required, not optional — it is the paradigm the model
+belongs to (``"reconstruction"``, ``"gan"``, ``"diffusion"``, …), and omitting
+it raises ``TypeError``.
 
 For the component to resolve by name when the framework populates its registries
 (e.g. on a config-driven run), the module that defines it must be *imported*. In
@@ -211,7 +216,7 @@ optional on this path.
 
 .. code-block:: python
 
-   from mriforge.api import settings_from_dict, make_model, make_optimizer
+   from spectramr.api import settings_from_dict, make_model, make_optimizer
 
    cfg = settings_from_dict(
        {
@@ -228,8 +233,42 @@ optional on this path.
 The ``make_*`` helpers accept either an in-memory ``config=`` **or** a
 ``config_path=`` to a YAML file (the original form); passing neither raises.
 
+Data helpers: ``make_dataset`` / ``make_dataloader``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both build through the canonical ``DataPipelineDirector``, so a scripted loader
+is the same object training gets.
+
+.. code-block:: python
+
+   from spectramr.api import make_dataloader
+
+   loader, meta = make_dataloader(config=cfg, split="train", device="cuda")
+   meta["split_resolved"]   # the loader actually read — see the note below
+   meta["shuffle"]          # read off the constructed loader, not inferred
+
+``split`` accepts ``"train"``, ``"val"`` (or ``"validation"``) and ``"test"``.
+**Anything else raises.** It previously fell through to the *training* loader,
+so a typo returned training data while the metadata echoed the bogus name back.
+
+.. warning::
+
+   There is **no held-out test set yet** (issue #665 — ``data.test_split`` is
+   declared by 467 arms and read by nothing). ``split="test"`` therefore returns
+   the *validation* loader, and the metadata records that as
+   ``split_resolved: "val"``. Do not report a number from it as a test-set
+   result until that issue lands.
+
+Batch size is **not** a parameter of these helpers — set
+``data.loader.batch_size`` in the config. ``make_dataloader`` used to accept a
+``batch_size=`` it silently ignored, and an override would not be harmless: the
+director exposes only a validation-side batch-size knob, the validation
+*stride* is derived from it (so it changes which records the validation set
+contains, not merely their grouping), and ``dataset_type: cine`` has a
+batch-size guard it would route around.
+
 .. seealso::
 
    * :doc:`plugins` — automatic discovery of out-of-tree components via
-     entry-points and the ``MRIFORGE_PLUGINS`` environment variable.
+     entry-points and the ``SPECTRAMR_PLUGINS`` environment variable.
    * :doc:`cli_reference` — the config-driven and campaign launch modes.

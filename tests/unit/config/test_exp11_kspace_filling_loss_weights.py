@@ -22,8 +22,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.models.losses.weights import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.models.losses.weights import (
     LAMBDA_SECTIONS,
     _loss_name_for_field,
     build_loss_weight_table,

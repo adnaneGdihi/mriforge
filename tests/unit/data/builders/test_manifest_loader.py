@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.data.builders.manifest_loader import ManifestLoader
+from spectramr.data.builders.manifest_loader import ManifestLoader
 from tests.utils.data_config_stub import DataConfigStub
 
 
@@ -21,36 +21,28 @@ def _records(n: int) -> list[dict]:
 
 class TestApplySubjectCap:
     def test_none_caps_are_noop(self):
-        cfg = SimpleNamespace(
-            split=SimpleNamespace(max_train_subjects=None, max_val_subjects=None)
-        )
+        cfg = SimpleNamespace(split=SimpleNamespace(max_train_subjects=None, max_val_subjects=None))
         train, val = _records(10), _records(5)
         out_train, out_val = ManifestLoader._apply_subject_cap(cfg, train, val)
         assert len(out_train) == 10
         assert len(out_val) == 5
 
     def test_caps_truncate_each_split(self):
-        cfg = SimpleNamespace(
-            split=SimpleNamespace(max_train_subjects=4, max_val_subjects=2)
-        )
+        cfg = SimpleNamespace(split=SimpleNamespace(max_train_subjects=4, max_val_subjects=2))
         train, val = _records(10), _records(5)
         out_train, out_val = ManifestLoader._apply_subject_cap(cfg, train, val)
         assert len(out_train) == 4
         assert len(out_val) == 2
 
     def test_cap_larger_than_split_keeps_all(self):
-        cfg = SimpleNamespace(
-            split=SimpleNamespace(max_train_subjects=100, max_val_subjects=100)
-        )
+        cfg = SimpleNamespace(split=SimpleNamespace(max_train_subjects=100, max_val_subjects=100))
         train, val = _records(10), _records(5)
         out_train, out_val = ManifestLoader._apply_subject_cap(cfg, train, val)
         assert len(out_train) == 10
         assert len(out_val) == 5
 
     def test_cap_is_idempotent(self):
-        cfg = SimpleNamespace(
-            split=SimpleNamespace(max_train_subjects=4, max_val_subjects=2)
-        )
+        cfg = SimpleNamespace(split=SimpleNamespace(max_train_subjects=4, max_val_subjects=2))
         train, val = _records(10), _records(5)
         once_t, once_v = ManifestLoader._apply_subject_cap(cfg, train, val)
         twice_t, twice_v = ManifestLoader._apply_subject_cap(cfg, once_t, once_v)
@@ -58,9 +50,7 @@ class TestApplySubjectCap:
         assert len(twice_v) == 2
 
     def test_keeps_leading_records_in_order(self):
-        cfg = SimpleNamespace(
-            split=SimpleNamespace(max_train_subjects=3, max_val_subjects=None)
-        )
+        cfg = SimpleNamespace(split=SimpleNamespace(max_train_subjects=3, max_val_subjects=None))
         train = _records(10)
         out_train, _ = ManifestLoader._apply_subject_cap(cfg, train, [])
         assert out_train == train[:3]
@@ -81,9 +71,7 @@ class TestApplySubjectCap:
         why the read is unguarded.
         """
         with pytest.raises(AttributeError):
-            ManifestLoader._apply_subject_cap(
-                SimpleNamespace(), _records(7), _records(3)
-            )
+            ManifestLoader._apply_subject_cap(SimpleNamespace(), _records(7), _records(3))
 
 
 # ── WS1: random-split delegates to the honest split_index SSOT ─────────────────
@@ -96,7 +84,7 @@ class TestRandomSplitDelegation:
 
     @staticmethod
     def _patch_seams(monkeypatch, full_index):
-        from mriforge.data.builders import manifest_loader as ml
+        from spectramr.data.builders import manifest_loader as ml
 
         monkeypatch.setattr(
             ml.ManifestLoader, "_resolve_data_root", classmethod(lambda cls, c: "/x")
@@ -132,14 +120,14 @@ class TestRandomSplitDelegation:
         )
 
     def test_single_file_random_split_raises(self, monkeypatch):
-        from mriforge.data.builders.manifest_loader import ManifestLoader
+        from spectramr.data.builders.manifest_loader import ManifestLoader
 
         self._patch_seams(monkeypatch, [{"primary_path": "a.h5"}])
         with pytest.raises(ValueError, match="single file"):
             ManifestLoader.load_fastmri_splits(self._config(0.2))
 
     def test_multi_file_random_split_is_disjoint(self, monkeypatch):
-        from mriforge.data.builders.manifest_loader import ManifestLoader
+        from spectramr.data.builders.manifest_loader import ManifestLoader
 
         full = [{"primary_path": f"{i}.h5"} for i in range(10)]
         self._patch_seams(monkeypatch, full)
@@ -176,9 +164,7 @@ class TestOnTheFlySplitRouting:
             (d / f"{name}_{i}.h5").write_bytes(b"")
         return d
 
-    def test_both_lands_in_train_so_the_random_split_can_divide_it(
-        self, tmp_path
-    ) -> None:
+    def test_both_lands_in_train_so_the_random_split_can_divide_it(self, tmp_path) -> None:
         """``both`` alone is CORRECT today. Its records go to ``train_index`` and
         to ``full_index``, ``val_index`` stays empty, and the caller's random
         split then draws validation from the whole pool — which is what "both"
@@ -217,13 +203,9 @@ class TestOnTheFlySplitRouting:
         full, train, val = ManifestLoader._build_on_the_fly_index(self._config(sources))
         assert len(full) == 5
         assert len(train) == 3 and len(val) == 2
-        assert {r["primary_path"] for r in train}.isdisjoint(
-            {r["primary_path"] for r in val}
-        )
+        assert {r["primary_path"] for r in train}.isdisjoint({r["primary_path"] for r in val})
 
-    def test_an_unrouted_split_member_raises_rather_than_meaning_train(
-        self, tmp_path
-    ) -> None:
+    def test_an_unrouted_split_member_raises_rather_than_meaning_train(self, tmp_path) -> None:
         """The schema's Literal is the first line of defence; this is the second.
 
         If a member is later added to ``DatasetSourceSchema.split`` without a
@@ -234,3 +216,66 @@ class TestOnTheFlySplitRouting:
         src = self._source("a", "holdout", self._h5_dir(tmp_path, "a"))
         with pytest.raises(ValueError, match="does not route"):
             ManifestLoader._build_on_the_fly_index(self._config([src]))
+
+
+class TestLosoEmptyValidationRaises:
+    """Cohort review 2026-09-02 (T0.2): an empty LOSO validation set used to
+    warn and continue while an empty TRAIN set raised two lines later, so a
+    typo'd ``holdout_site`` selected every "best" checkpoint on nothing."""
+
+    @staticmethod
+    def _patch_seams(monkeypatch, full_index):
+        import spectramr.data.builders.manifest_loader as ml
+
+        monkeypatch.setattr(
+            ml.ManifestLoader,
+            "_extract_sensitivity_params",
+            classmethod(lambda cls, c: (None, None)),
+        )
+        monkeypatch.setattr(
+            ml.ManifestLoader,
+            "_build_on_the_fly_index",
+            classmethod(lambda cls, c: (list(full_index), [], [])),
+        )
+        monkeypatch.setattr(
+            ml.ManifestLoader,
+            "_apply_subject_cap",
+            classmethod(lambda cls, c, tr, va: (tr, va)),
+        )
+        monkeypatch.setattr(
+            ml.ManifestLoader,
+            "_log_split_stats",
+            classmethod(lambda cls, full, tr, va: None),
+        )
+
+    @staticmethod
+    def _config(holdout_site):
+        return DataConfigStub(
+            index_path=None,
+            validation_index_path=None,
+            holdout_site=holdout_site,
+            validation_split=0.2,
+        )
+
+    def test_holdout_matching_no_site_raises(self, monkeypatch):
+        """The planted violation: no record carries the holdout site."""
+        from spectramr.data.builders.manifest_loader import ManifestLoader
+
+        full = [{"primary_path": f"{i}.h5", "metadata": {"site": "hospital_a"}} for i in range(6)]
+        self._patch_seams(monkeypatch, full)
+        with pytest.raises(RuntimeError, match="matched no samples"):
+            ManifestLoader.load_fastmri_splits(self._config("nowhere"))
+
+    def test_holdout_matching_a_site_partitions(self, monkeypatch):
+        from spectramr.data.builders.manifest_loader import ManifestLoader
+
+        full = [
+            {
+                "primary_path": f"{i}.h5",
+                "metadata": {"site": "hospital_a" if i < 4 else "hospital_b"},
+            }
+            for i in range(6)
+        ]
+        self._patch_seams(monkeypatch, full)
+        train, val = ManifestLoader.load_fastmri_splits(self._config("hospital_b"))
+        assert len(train) == 4 and len(val) == 2

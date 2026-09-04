@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.forward_probe import (  # noqa: E402
+from spectramr.infrastructure.validation.forward_probe import (  # noqa: E402
     synthetic_forward_probe,
 )
 from tests.utils.data_config_stub import DataConfigStub  # noqa: E402

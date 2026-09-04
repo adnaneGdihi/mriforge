@@ -1,7 +1,7 @@
 import json
 
-from mriforge.infrastructure.reporting.metadata import RunMetadata
-from mriforge.infrastructure.reporting.report_manifest import write_report_manifest
+from spectramr.infrastructure.reporting.metadata import RunMetadata
+from spectramr.infrastructure.reporting.report_manifest import write_report_manifest
 
 
 def test_manifest_lists_artifacts_with_checksums(tmp_path):

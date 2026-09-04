@@ -2,7 +2,7 @@
 
 Hyperparameter optimization in this repo is a thin layer over Optuna with three things bolted on for research-friendliness:
 
-1. **Subprocess-isolated trials** — each trial spawns its own `python -m mriforge.cli train` so a single trial crash (NaN, OOM, lib mismatch) cannot poison the parent study's TPE state.
+1. **Subprocess-isolated trials** — each trial spawns its own `python -m spectramr.cli train` so a single trial crash (NaN, OOM, lib mismatch) cannot poison the parent study's TPE state.
 2. **Auto-write-back of `best_config.yaml` + `best_params.json`** at study completion — the winning hyperparameters land as a runnable YAML you can directly feed into `train --config best_config.yaml`.
 3. **Schema-aware search spaces** — every dotted-path field in `TrainingSettings` is targetable, including per-loss weights via `[name=foo]` list-selector syntax. There are 1176 dotted paths total; 5 named presets cover the common cases.
 
@@ -10,7 +10,7 @@ Hyperparameter optimization in this repo is a thin layer over Optuna with three 
 
 ```bash
 # Most common: search the plan §4.2 KAN dual-domain space
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config experiments/inprogress/kspace_filling/experiment_11_kan_dual_domain.yaml \
     --model-type kspace_cold_diffusion \
     --search-preset kan_dual_domain \
@@ -24,7 +24,7 @@ python -m mriforge.cli hpo \
 #   └── trial_NNNN/        ← per-trial configs + checkpoints + metrics
 
 # Train the winner directly
-python -m mriforge.cli train --config <output_dir>/best_config.yaml
+python -m spectramr.cli train --config <output_dir>/best_config.yaml
 ```
 
 ## Three ways to specify the search space
@@ -36,7 +36,7 @@ Pick the *least invasive* mechanism that fits your needs.
 5 named presets ship with the repo:
 
 ```bash
-python -m mriforge.cli hpo --list-presets
+python -m spectramr.cli hpo --list-presets
 ```
 
 | Preset | Dimension | What it tunes |
@@ -55,7 +55,7 @@ Pick one with `--search-preset <name>`.
 
 ```bash
 # Combine two presets
-python -m mriforge.cli hpo --config <yaml> -m <model> \
+python -m spectramr.cli hpo --config <yaml> -m <model> \
     --search-preset optimizer_basic \
     --search-preset loss_weights_only
 ```
@@ -68,13 +68,13 @@ For arbitrary search spaces, write your own YAML:
 
 ```bash
 # Generate a starter template
-python -m mriforge.cli hpo --print-template > my_space.yaml
+python -m spectramr.cli hpo --print-template > my_space.yaml
 
 # List every dotted-path field TrainingSettings exposes (1176 of them)
-python -m mriforge.cli hpo --list-schema-paths
+python -m spectramr.cli hpo --list-schema-paths
 
 # Run with your spec
-python -m mriforge.cli hpo --config <yaml> -m <model> --search-space my_space.yaml
+python -m spectramr.cli hpo --config <yaml> -m <model> --search-space my_space.yaml
 ```
 
 YAML format:
@@ -115,7 +115,7 @@ Distributions supported: `uniform(low, high)`, `loguniform(low, high)`, `int_uni
 ### Tune just the loss weights for the headline KAN dual-domain
 
 ```bash
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config experiments/inprogress/kspace_filling/experiment_11_kan_dual_domain.yaml \
     --model-type kspace_cold_diffusion \
     --search-preset loss_weights_only \
@@ -132,7 +132,7 @@ Two-pass HPO is often more efficient than searching everything at once because T
 
 ```bash
 # Pass 1: KAN block hyperparams
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config experiments/inprogress/kspace_filling/experiment_11_kan_dual_domain.yaml \
     -m kspace_cold_diffusion \
     --search-preset full_kan_block \
@@ -140,7 +140,7 @@ python -m mriforge.cli hpo \
     --storage sqlite:///experiments/hpo/pass1.db
 
 # Pass 2: optimizer + curriculum, starting from Pass 1's best_config.yaml
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config experiments/results/<pass1_output>/hpo/hpo_kspace_cold_diffusion/best_config.yaml \
     -m kspace_cold_diffusion \
     --search-preset optimizer_basic \
@@ -169,7 +169,7 @@ model.model_kwargs.kan_dc_kwargs.kan_hidden:
 ```
 
 ```bash
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config experiments/inprogress/kspace_filling/attention_enhancements/experiment_11_attn_kan_smap.yaml \
     -m kspace_cold_diffusion \
     --search-space my_smap_kan_adc.yaml \
@@ -180,7 +180,7 @@ python -m mriforge.cli hpo \
 ### Multi-objective: PSNR vs training time
 
 ```bash
-python -m mriforge.cli hpo \
+python -m spectramr.cli hpo \
     --config <yaml> -m <model> \
     --search-preset full_kan_block \
     --multi-objective \
@@ -198,7 +198,7 @@ The `--storage sqlite:///path.db` URL makes the study resumable across machine r
 
 ```bash
 # Same command, same study name (defaults to model_type), --load-if-exists is implicit
-python -m mriforge.cli hpo --config <yaml> -m <model> \
+python -m spectramr.cli hpo --config <yaml> -m <model> \
     --search-preset kan_dual_domain \
     --n-trials 30 \
     --storage sqlite:///experiments/hpo/kan.db
@@ -208,7 +208,7 @@ To parallelize across nodes (each worker contributes additional trials to the sa
 
 ```bash
 # On each node — same storage URL, same model_type, fresh n-trials per worker
-python -m mriforge.cli hpo --config <yaml> -m <model> --search-preset kan_dual_domain \
+python -m spectramr.cli hpo --config <yaml> -m <model> --search-preset kan_dual_domain \
     --n-trials 20 --storage sqlite:///shared/hpo.db
 ```
 
@@ -219,7 +219,7 @@ NFS-backed SQLite works for ≤4 workers; for more, consider PostgreSQL via `--s
 Default pruner is Hyperband with intermediate reports at iters 4K / 8K / 16K / 32K. To switch:
 
 ```bash
-python -m mriforge.cli hpo --config <yaml> -m <model> \
+python -m spectramr.cli hpo --config <yaml> -m <model> \
     --search-preset kan_dual_domain \
     --pruner median           # or successive_halving, threshold, none
 ```
@@ -264,9 +264,9 @@ The output directory defaults to `<base.training.output_dir>/hpo` so HPO trial a
 For HPO from inside a Python script (a notebook, a custom analysis):
 
 ```python
-from mriforge.application.use_cases.hpo_use_case import HPORequest, HPOUseCase
-from mriforge.infrastructure.logging import LoggingService
-from mriforge.pipelines.hpo_search_spaces import SearchSpace, load_preset, load_presets
+from spectramr.application.use_cases.hpo_use_case import HPORequest, HPOUseCase
+from spectramr.infrastructure.logging import LoggingService
+from spectramr.pipelines.hpo_search_spaces import SearchSpace, load_preset, load_presets
 
 # Three ways to build a search space:
 

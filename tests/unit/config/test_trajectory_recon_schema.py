@@ -10,7 +10,7 @@ import pytest
 
 
 def test_trajectory_recon_config_fields_and_validation():
-    from mriforge.config.schemas.training.strategy_knobs_2026_06 import (
+    from spectramr.config.schemas.training.strategy_knobs_2026_06 import (
         TrainingConfigTrajectoryRecon,
     )
 
@@ -26,7 +26,7 @@ def test_trajectory_recon_config_fields_and_validation():
 
 
 def test_trajectory_recon_mounted_on_training_schema():
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     s = TrainingStrategyConfigSchema(trajectory_recon={"read_measured_trajectory": True})
     assert s.trajectory_recon is not None
@@ -34,11 +34,11 @@ def test_trajectory_recon_mounted_on_training_schema():
 
 
 def test_trajectory_recon_in_valid_modes_constraints_and_strategy_paths():
-    from mriforge.config.validation_constants import (
+    from spectramr.config.validation_constants import (
         TRAINING_MODE_CONSTRAINTS,
         VALID_TRAINING_MODES,
     )
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -46,4 +46,4 @@ def test_trajectory_recon_in_valid_modes_constraints_and_strategy_paths():
     assert "trajectory_recon" in VALID_TRAINING_MODES
     assert "trajectory_recon" in TRAINING_MODE_CONSTRAINTS
     assert "trajectory_recon" in paths
-    assert paths["trajectory_recon"].startswith("mriforge.")
+    assert paths["trajectory_recon"].startswith("spectramr.")

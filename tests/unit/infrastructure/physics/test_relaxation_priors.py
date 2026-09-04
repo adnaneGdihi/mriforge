@@ -1,6 +1,6 @@
 """Tests for ``bottomley_t1`` (XField-FM / idea 2 §2.5).
 
-Targets ``mriforge.infrastructure.physics.relaxation_priors``.
+Targets ``spectramr.infrastructure.physics.relaxation_priors``.
 
 Plan acceptance criterion (§2.8):
 
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.relaxation_priors import (
+from spectramr.infrastructure.physics.relaxation_priors import (
     BottomleyCoefficients,
     TissueClass,
     bottomley_t1,
@@ -153,7 +153,7 @@ def test_bottomley_t1_tensor_matches_scalar_and_is_batched_differentiable() -> N
     """A-5.2: the batched/differentiable Bottomley T1(B0) matches the scalar bottomley_t1."""
     import torch
 
-    from mriforge.infrastructure.physics.relaxation_priors import (
+    from spectramr.infrastructure.physics.relaxation_priors import (
         TissueClass,
         bottomley_t1,
         bottomley_t1_tensor,

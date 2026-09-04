@@ -1,4 +1,4 @@
-from mriforge.config.schemas.training.federated import (
+from spectramr.config.schemas.training.federated import (
     FederatedConfig,
     TrainingConfigFederated,
 )

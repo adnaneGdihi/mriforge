@@ -17,8 +17,8 @@ from unittest.mock import MagicMock
 
 import torch
 
-from mriforge.infrastructure.training.strategies import pma_varnet_strategy
-from mriforge.infrastructure.training.strategies.pma_varnet_strategy import (
+from spectramr.infrastructure.training.strategies import pma_varnet_strategy
+from spectramr.infrastructure.training.strategies.pma_varnet_strategy import (
     ConcretePMAVarNetStrategy,
 )
 
@@ -39,7 +39,7 @@ def test_strategy_does_not_overwrite_the_device_the_base_resolved(
     ``self.device``. Anything the subclass then does to ``self.device`` is the
     behaviour this test exists to pin.
     """
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     def fake_init(self, env, device=None, **kwargs):
         self.device = env.device

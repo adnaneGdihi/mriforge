@@ -20,7 +20,7 @@ import torch
 import yaml
 from torch.utils.data import DataLoader, TensorDataset
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 # ============================================================================
 # Directory Fixtures

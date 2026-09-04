@@ -5,7 +5,7 @@ Integration tests for service wiring and DI container.
 import pytest
 
 try:
-    from mriforge.infrastructure.services.di_container import DIContainer
+    from spectramr.infrastructure.services.di_container import DIContainer
 except ImportError:
     DIContainer = None
 

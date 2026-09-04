@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch.nn as nn
 
-from mriforge.models.generators.unrolled_reconstruction_generator import (
+from spectramr.models.generators.unrolled_reconstruction_generator import (
     RegularizationBlock,
     UnrolledReconstructionGenerator,
 )
@@ -55,7 +55,7 @@ class TestVariationalNetworkOutputActivation:
 
     @staticmethod
     def _build(output_activation):
-        from mriforge.models.generators.unrolled_reconstruction_generator import (
+        from spectramr.models.generators.unrolled_reconstruction_generator import (
             VariationalNetworkGenerator,
         )
 

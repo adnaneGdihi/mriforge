@@ -1,7 +1,7 @@
 import torch
 import torch.fft
 
-from mriforge.core.verification.property_testing import floats, given, tensors
+from spectramr.core.verification.property_testing import floats, given, tensors
 
 # Tolerance for float32 comparisons
 ATOL = 1e-4

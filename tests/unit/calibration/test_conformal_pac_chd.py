@@ -26,18 +26,18 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.calibration.conformal import ConformalCalibrator
-from mriforge.infrastructure.calibration.pac_bayes_certificate import (
+from spectramr.infrastructure.calibration.conformal import ConformalCalibrator
+from spectramr.infrastructure.calibration.pac_bayes_certificate import (
     PACBayesCertificate,
     PACBayesReport,
     mcallester_complexity_term,
     pac_bayes_bound,
 )
-from mriforge.infrastructure.calibration.chd import (
+from spectramr.infrastructure.calibration.chd import (
     CalibratedHallucinationDetector,
     dkw_slack,
 )
-from mriforge.infrastructure.calibration.scores import (
+from spectramr.infrastructure.calibration.scores import (
     absolute_residual,
     conformalised_quantile_regression,
     quantile_regression,

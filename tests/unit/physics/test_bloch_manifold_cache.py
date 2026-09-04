@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.manifolds import BlochRelaxationManifold
+from spectramr.infrastructure.physics.manifolds import BlochRelaxationManifold
 
 
 def test_cache_matches_uncached_to_tolerance() -> None:

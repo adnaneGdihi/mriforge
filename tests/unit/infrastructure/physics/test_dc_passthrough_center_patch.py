@@ -26,7 +26,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import (
+from spectramr.infrastructure.physics.data_consistency import (
     dc_passthrough_center_patch,
 )
 
@@ -271,7 +271,7 @@ def _blobness(kspace: torch.Tensor) -> float:
     (the brain occupies the centre of the FOV but the periphery is not
     empty); for a DC/low-frequency-only spectrum it is much larger.
     """
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
 
     img = ifft2c(kspace).abs().sum(dim=1)[0]  # coil-sum magnitude [H, W]
     H, W = img.shape
@@ -301,7 +301,7 @@ def test_passthrough_manufactures_dc_blob_when_hf_is_weak():
     raise the image-domain centre/periphery ratio far above what the
     untouched (already weak) output had.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     torch.manual_seed(0)
     B, C, H, W = 1, 4, 64, 64

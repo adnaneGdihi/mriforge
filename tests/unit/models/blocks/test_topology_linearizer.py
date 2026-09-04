@@ -13,7 +13,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.kspace_trajectory_generator import (
+from spectramr.infrastructure.physics.kspace_trajectory_generator import (
     TRAJECTORY_REGISTRY,
     archimedean_spiral,
     cartesian_sequential,
@@ -21,7 +21,7 @@ from mriforge.infrastructure.physics.kspace_trajectory_generator import (
     epi_boustrophedon,
     radial_golden_angle,
 )
-from mriforge.models.blocks.topology_linearizer import (
+from spectramr.models.blocks.topology_linearizer import (
     ImageTopologyLinearizer,
     _hilbert_2d_indices,
     _hilbert_3d_indices,
@@ -118,13 +118,13 @@ class TestResolutionAgnosticMode:
     """The shared strict->rect Hilbert remap SSOT."""
 
     def test_maps_strict_hilbert_to_rect(self):
-        from mriforge.models.blocks.topology_linearizer import resolution_agnostic_mode
+        from spectramr.models.blocks.topology_linearizer import resolution_agnostic_mode
 
         assert resolution_agnostic_mode("hilbert_2d") == "hilbert_2d_rect"
         assert resolution_agnostic_mode("hilbert_3d") == "hilbert_3d_rect"
 
     def test_passthrough_for_other_modes(self):
-        from mriforge.models.blocks.topology_linearizer import resolution_agnostic_mode
+        from spectramr.models.blocks.topology_linearizer import resolution_agnostic_mode
 
         for m in ("morton_2d", "snake_2d", "raster_2d", "hilbert_2d_rect"):
             assert resolution_agnostic_mode(m) == m

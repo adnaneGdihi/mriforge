@@ -13,10 +13,10 @@ from unittest.mock import MagicMock
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.builders.directors.checkpoint_director import (
+from spectramr.infrastructure.builders.directors.checkpoint_director import (
     CheckpointDirector,
 )
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):

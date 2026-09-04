@@ -7,7 +7,7 @@ from unittest.mock import patch
 import nibabel as nib
 import numpy as np
 
-from mriforge.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
+from spectramr.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
 from types import SimpleNamespace
 
 
@@ -87,9 +87,9 @@ class TestArtifactSelection(unittest.TestCase):
         every attribute the factory might read — which drifts every time
         the factory adds a new field.
         """
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.context import BuilderContext
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.context import BuilderContext
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             DataPipelineDirector,
         )
 
@@ -109,7 +109,7 @@ class TestArtifactSelection(unittest.TestCase):
 
         # We need to mock PreprocessedMRIDataset to check args passed
         with patch(
-            "mriforge.data.datasets.preprocessed_dataset.PreprocessedMRIDataset"
+            "spectramr.data.datasets.preprocessed_dataset.PreprocessedMRIDataset"
         ) as MockDataset:
             # Set length to avoid DataLoader error
             MockDataset.return_value.__len__.return_value = 10

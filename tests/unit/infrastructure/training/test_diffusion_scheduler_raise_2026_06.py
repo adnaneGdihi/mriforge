@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.training.schedulers.diffusion_scheduler import (
+from spectramr.infrastructure.training.schedulers.diffusion_scheduler import (
     DiffusionScheduler,
 )
 

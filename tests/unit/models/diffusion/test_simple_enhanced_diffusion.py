@@ -10,7 +10,7 @@ dropped).
 import pytest
 import torch
 
-from mriforge.models.diffusion.simple_enhanced_diffusion import (
+from spectramr.models.diffusion.simple_enhanced_diffusion import (
     SimpleChiSquareDiffusionUNet,
     SimpleEnhancedDiffusionUNet,
     SimpleGaussianDiffusionUNet,

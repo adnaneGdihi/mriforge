@@ -21,14 +21,14 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     DataModesSchema,
     ModeConfigSchema,
     ModeSamplerSchema,
 )
-from mriforge.data.builders.torchio_queue_builder import TorchIOQueueConfig
+from spectramr.data.builders.torchio_queue_builder import TorchIOQueueConfig
 
 
 # ── Section 1: legacy → modes derivation ────────────────────────────────────

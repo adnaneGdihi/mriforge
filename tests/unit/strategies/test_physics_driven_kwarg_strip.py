@@ -28,7 +28,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
 STRATEGY = (
-    REPO / "src" / "mriforge" / "infrastructure" / "training" / "strategies"
+    REPO / "src" / "spectramr" / "infrastructure" / "training" / "strategies"
     / "physics_driven_strategy.py"
 )
 

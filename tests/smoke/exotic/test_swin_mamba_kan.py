@@ -11,7 +11,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.topological.swin_mamba_kan import SwinMambaKAN, SwinMambaKANBlock
+from spectramr.models.topological.swin_mamba_kan import SwinMambaKAN, SwinMambaKANBlock
 from tests.utils.optional_backends import requires_cuda_for_mamba
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -1,6 +1,6 @@
 import inspect
 
-from mriforge.pipelines import train
+from spectramr.pipelines import train
 from tests.utils.config_block_stub import block_stub
 
 
@@ -163,7 +163,7 @@ class TestRunSummaryIsOnDiskBeforeTheHookDraws:
         import torch.nn as nn
         from torch.utils.data import DataLoader, TensorDataset
 
-        from mriforge.infrastructure.training.builders.environment import (
+        from spectramr.infrastructure.training.builders.environment import (
             TrainingEnvironment,
         )
 
@@ -183,8 +183,8 @@ class TestRunSummaryIsOnDiskBeforeTheHookDraws:
     ) -> None:
         from pathlib import Path
 
-        import mriforge.pipelines.training_loop as training_loop_mod
-        from mriforge.config.settings import TrainingSettings
+        import spectramr.pipelines.training_loop as training_loop_mod
+        from spectramr.config.settings import TrainingSettings
 
         cfg = TrainingSettings.settings_from_dict(self._config_dict(tmp_path))
         env = self._env(cfg)
@@ -216,3 +216,52 @@ class TestRunSummaryIsOnDiskBeforeTheHookDraws:
         # And the emission is real, not just ordered: guard against a future
         # change that satisfies the order by never writing the file at all.
         assert (seen["run_dir"] / "run_summary.json").exists()
+
+
+class TestOnlyRankZeroWritesTheEndOfRunArtifacts(
+    TestRunSummaryIsOnDiskBeforeTheHookDraws
+):
+    """Every rank used to reach the end-of-run artifact block.
+
+    ``run_dir`` is rank-INVARIANT, so under DDP all N ranks wrote the same
+    paths concurrently -- ``report_cases/case_0.npz``, ``per_call_metrics.csv``,
+    ``run_summary.json`` -- and then the reporting hook read them back. A
+    ``np.savez_compressed`` torn by a second writer stays a structurally valid
+    zip whose member fails its CRC, so the observed symptom was
+    ``reporting hook: generation failed (Bad CRC-32 for file 'input.npy')`` on
+    3 of 4 ranks, pointing at the reader rather than at the concurrent write.
+
+    Inherits the harness above so the planted shape runs through the SAME real
+    ``run_training_pipeline`` call, not a re-stubbed approximation of it.
+    """
+
+    def _fired(self, monkeypatch, tmp_path, *, rank_zero: bool) -> bool:
+        import spectramr.pipelines.training_loop as training_loop_mod
+        from spectramr.config.settings import TrainingSettings
+
+        cfg = TrainingSettings.settings_from_dict(self._config_dict(tmp_path))
+        env = self._env(cfg)
+
+        calls: list[int] = []
+        monkeypatch.setattr(train, "_maybe_run_reporting", lambda *a, **k: calls.append(1))
+        monkeypatch.setattr(train, "is_rank_zero", lambda _cfg: rank_zero)
+        monkeypatch.setattr(
+            training_loop_mod,
+            "_execute_training_loop",
+            lambda *a, **k: {"success": True, "iterations_completed": 1},
+        )
+        train.run_training_pipeline(cfg, env=env, device="cpu")
+        return bool(calls)
+
+    def test_a_secondary_rank_writes_nothing(self, monkeypatch, tmp_path) -> None:
+        """The planted violation (CLAUDE.md #15): rank 1 must not reach the
+        writes at all. Before the gate this returned True and three such ranks
+        raced rank 0 for every path in the run dir."""
+        assert self._fired(monkeypatch, tmp_path, rank_zero=False) is False
+        assert not (tmp_path / "run_summary.json").exists()
+
+    def test_rank_zero_still_writes(self, monkeypatch, tmp_path) -> None:
+        """The other half: a gate that silences every rank would 'fix' the
+        corruption by producing no report at all."""
+        assert self._fired(monkeypatch, tmp_path, rank_zero=True) is True
+        assert (tmp_path / "run_summary.json").exists()

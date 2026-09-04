@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.blocks.hyena_block import HyenaOperator
-from mriforge.models.blocks.s4d_block import S4DBlock
+from spectramr.models.blocks.hyena_block import HyenaOperator
+from spectramr.models.blocks.s4d_block import S4DBlock
 
 
 def test_s4d_block_shape_preserved() -> None:

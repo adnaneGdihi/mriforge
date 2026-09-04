@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.stein.ksd import (
+from spectramr.core.metrics.stein.ksd import (
     kernelised_stein_discrepancy,
     ksd_p_value,
 )

@@ -21,10 +21,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from mriforge.core.topology import RunTopology
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.pipelines import training_loop as tl
-from mriforge.pipelines.training_loop import TrainingLoop
+from spectramr.core.topology import RunTopology
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.pipelines import training_loop as tl
+from spectramr.pipelines.training_loop import TrainingLoop
 from tests.utils.corpus import tracked_yamls
 
 # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ def test_training_loop_run_delegates_with_all_collaborators(monkeypatch):
     """``run()`` forwards every held collaborator + ``start_iteration`` to the
     loop body exactly once. The body now lives module-level in
     ``pipelines/training_loop.py`` (WS-3 PR-2), so patch it there."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     captured: dict = {}
 
@@ -160,7 +160,7 @@ def test_loop_advances_strategy_loop_state_each_iteration():
     ``env.step``). A full loop OOM-kills a dev box, so pin the wiring at source
     level — the same pattern the repo uses for other loop-body invariants
     (e.g. the step_executor scheduler-cadence read)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     # The loop writes the live counters through the seam each step.
@@ -176,7 +176,7 @@ def test_invariant_config_lookups_hoisted_above_loop():
     config + a fixed strategy/step_executor), so they must be resolved ONCE
     above the ``for iteration`` header, not re-``getattr``-ed every step. A full
     loop OOM-kills a dev box, so pin this at source level (repo convention)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     loop_at = src.index("for iteration in pbar:")
@@ -200,7 +200,7 @@ def test_divergence_guard_piggybacks_on_postfix_sync():
     — tensor truthiness (also a sync) that made a legitimate 0.0
     ``g_total_loss`` fall through to the wrong key. Pin at source level (a
     full loop OOM-kills a dev box — same pattern as the loop_state test)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
 
@@ -232,7 +232,7 @@ def test_evaluate_wraps_run_validation_in_eval_mode(monkeypatch):
     the loop uses at each eval_interval — eval mode, no optimizer steps — and
     returns its aggregated metrics. Patch the validator so this stays a light
     wiring test (a real validation pass OOM-kills a dev box)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     captured: dict = {}
 
@@ -279,7 +279,7 @@ def test_evaluate_wraps_run_validation_in_eval_mode(monkeypatch):
 def test_evaluate_returns_empty_dict_when_validator_yields_none(monkeypatch):
     """A validator that returns ``None`` (e.g. no val batches) must surface as an
     empty dict, never ``None`` — callers do ``metrics["..."]`` lookups."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     monkeypatch.setattr(training_loop_mod, "_run_validation", lambda *a, **k: None)
     pipeline = MagicMock()
@@ -298,7 +298,7 @@ def test_loop_constructs_loss_schedule_controller_when_enabled():
     """The loop body builds a LossScheduleController, gated on
     ``config.loss_schedule.enabled``, and passes the full config for base-weight
     resolution. Absent/disabled => no controller (no-op)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     assert "config.loss_schedule and config.loss_schedule.enabled" in src
@@ -310,7 +310,7 @@ def test_loop_invokes_controller_on_iteration_and_validation():
     """Clock triggers resolve every step (on_iteration); plateau/threshold +
     post-change windows resolve at validation cadence (on_validation). Both write
     the override map the loss computer reads."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     loop = training_loop_mod._execute_training_loop
 
@@ -336,7 +336,7 @@ def test_loop_publishes_overrides_to_loss_computer_for_all_paradigms():
     so the override reaches the loss computer for EVERY strategy, not just
     reconstruction (the critical "silent no-op outside reconstruction" finding).
     Source-level pin: a full loop OOM-kills a dev box."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     assert "strategy.sync_scheduled_loss_weights()" in src
@@ -345,7 +345,7 @@ def test_loop_publishes_overrides_to_loss_computer_for_all_paradigms():
 def test_loop_stamps_loss_schedule_events_into_final_metrics():
     """Provenance (#15): each fire/rollback is stamped into final_metrics.json so
     a dynamic loss curriculum is auditable, not inferred."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     assert '"loss_schedule_events"' in src
@@ -356,7 +356,7 @@ def test_loop_saves_checkpoint_before_a_triggered_change():
     """When a loss-schedule trigger fires, the loop saves a checkpoint (throttled
     by the controller's configurable interval) before proceeding — checked at both
     the clock seam (on_iteration) and the plateau seam (on_validation)."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     loop = training_loop_mod._execute_training_loop
 
@@ -385,7 +385,7 @@ def test_loop_gates_shared_writes_on_main_rank():
     ``is_main_process`` ORed with that requirement, and the adapter -- not this
     predicate -- decides which rank actually writes.
     """
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     assert "is_main_process = RankUtility.is_main_rank()" in src
@@ -413,7 +413,7 @@ def test_loss_schedule_decision_is_broadcast_from_rank0():
     identical everywhere, *who participates* in doing it depends on the parallel
     strategy. See TestCollectiveCheckpointGate.
     """
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     # Unchanged: the decision is still computed once and broadcast.
@@ -427,7 +427,7 @@ def test_best_checkpoint_path_broadcast_before_restore():
     """DDP: only rank 0 wrote best.pt, so its path is broadcast before
     restore_best_weights — otherwise non-main ranks keep their latest weights and
     the final model differs across ranks."""
-    import mriforge.pipelines.training_loop as training_loop_mod
+    import spectramr.pipelines.training_loop as training_loop_mod
 
     src = inspect.getsource(training_loop_mod._execute_training_loop)
     bcast = src.index(
@@ -440,8 +440,8 @@ def test_best_checkpoint_path_broadcast_before_restore():
 def test_throttle_interval_lives_in_controller_not_save_helper():
     """The user-set throttle interval is read by the controller's
     consume_checkpoint_request, NOT hardcoded/duplicated in the I/O save helper."""
-    import mriforge.pipelines.training_loop as training_loop_mod
-    from mriforge.infrastructure.training import loss_schedule_controller as lsc
+    import spectramr.pipelines.training_loop as training_loop_mod
+    from spectramr.infrastructure.training import loss_schedule_controller as lsc
 
     helper_src = inspect.getsource(training_loop_mod._save_loss_schedule_checkpoint)
     consume_src = inspect.getsource(
@@ -487,7 +487,7 @@ class TestScheduleFreeOptimizerModeBoundary:
         return _SF([param], lr=0.1), calls
 
     def test_eval_then_train_round_trip(self) -> None:
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         opt, calls = self._schedule_free()
         pipeline = self._pipeline_with({"opt_g": opt})
@@ -501,7 +501,7 @@ class TestScheduleFreeOptimizerModeBoundary:
         99% of arms that use one."""
         import torch
 
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         param = torch.nn.Parameter(torch.zeros(1))
         pipeline = self._pipeline_with({"opt_g": torch.optim.Adam([param])})
@@ -511,14 +511,14 @@ class TestScheduleFreeOptimizerModeBoundary:
     def test_tolerates_a_missing_optimizers_mapping_and_none_entries(self) -> None:
         from types import SimpleNamespace
 
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         _set_optimizer_eval_mode(SimpleNamespace(), train=False)
         _set_optimizer_eval_mode(self._pipeline_with({"opt_d": None}), train=True)
 
     def test_applies_to_every_optimizer_not_just_the_generator(self) -> None:
         """A GAN's discriminator optimizer needs the same swap."""
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         opt_g, calls_g = self._schedule_free()
         opt_d, calls_d = self._schedule_free()
@@ -538,7 +538,7 @@ class TestScheduleFreeOptimizerModeBoundary:
         """
         import torch
 
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         calls: list[str] = []
 
@@ -559,8 +559,8 @@ class TestScheduleFreeOptimizerModeBoundary:
         true`` put a ``Lookahead`` in this mapping, and it exposed no mode API,
         so validation silently graded the un-averaged iterate.
         """
-        from mriforge.infrastructure.training.optimizers.lookahead import Lookahead
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.infrastructure.training.optimizers.lookahead import Lookahead
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         opt, calls = self._schedule_free()
         pipeline = self._pipeline_with({"opt_g": Lookahead(opt, 2, 0.5)})
@@ -585,7 +585,7 @@ class TestCollectiveCheckpointGate:
     def _source():
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         return inspect.getsource(training_loop)
 
@@ -674,7 +674,7 @@ class TestSchedulerStepFailuresRaise:
         import ast
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         tree = ast.parse(inspect.getsource(training_loop))
         for node in ast.walk(tree):
@@ -703,7 +703,7 @@ class TestParallelStepPolicyInstall:
 
     @staticmethod
     def _install(strategy, runtime):
-        from mriforge.pipelines.training_loop import _install_parallel_step_policy
+        from spectramr.pipelines.training_loop import _install_parallel_step_policy
 
         return _install_parallel_step_policy(strategy, runtime)
 
@@ -774,7 +774,7 @@ class TestCsvMetricNames:
         """The regression. A drained arm declares `metrics.compute` and NO
         flags, so every flag sits at a schema default it never asked for.
         Reading only the flags is what dropped the columns."""
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         # Exactly the drained shape: the list is the arm's answer, and the
         # flags below carry the DEFAULTS, which are the inverse of it.
@@ -790,7 +790,7 @@ class TestCsvMetricNames:
 
     def test_flags_still_select_columns_when_no_list_is_declared(self):
         """~500 inprogress arms are undrained. The list must not displace them."""
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         assert _csv_metric_names({"compute_hfen": True, "compute_psnr": True}) == {
             "hfen",
@@ -813,7 +813,7 @@ class TestCsvMetricNames:
         The discarded-value half is real, and is now caught loudly at the row
         writer instead of being made impossible by over-promising columns.
         """
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         both = {"compute_psnr": True, "compute": ["hfen"]}
         assert _csv_metric_names(both) == {"hfen"}
@@ -821,7 +821,7 @@ class TestCsvMetricNames:
     def test_the_flags_are_the_fallback_when_the_list_is_empty(self):
         """#696's protection, restated: precedence only applies when the arm
         actually declared a list. An unmigrated arm still reads its flags."""
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         assert _csv_metric_names({"compute_psnr": True, "compute": []}) == {"psnr"}
         assert _csv_metric_names({"compute_psnr": True}) == {"psnr"}
@@ -835,11 +835,11 @@ class TestCsvMetricNames:
         pytest.importorskip("yaml")
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         arm = Path(
             "experiments/inprogress/kspace_filling/attention_shootout/"
@@ -871,7 +871,7 @@ class TestCsvMetricNames:
         import ast
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         tree = ast.parse(src)
@@ -902,8 +902,8 @@ class TestCsvMetricNames:
         original protection — the header still cannot shrink below the selection
         set — and adds the half it was missing.
         """
-        from mriforge.core.metrics.flag_map import schema_flag_to_metric
-        from mriforge.pipelines.training_loop import _CSV_METRIC_NAME_MAP
+        from spectramr.core.metrics.flag_map import schema_flag_to_metric
+        from spectramr.pipelines.training_loop import _CSV_METRIC_NAME_MAP
 
         ssot = schema_flag_to_metric()
         assert ssot, "the SSOT map is empty -- this test has gone vacuous"
@@ -919,11 +919,11 @@ class TestCsvMetricNames:
         pytest.importorskip("yaml")
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         arm = Path(
             "experiments/inprogress/kspace_filling/experiment_11_kan_dual_domain.yaml"
@@ -966,7 +966,7 @@ def test_execute_training_loop_returns_best_metrics_on_every_path():
     import ast
     import inspect
 
-    from mriforge.pipelines import training_loop
+    from spectramr.pipelines import training_loop
 
     tree = ast.parse(inspect.getsource(training_loop._execute_training_loop))
     returns = [
@@ -993,7 +993,7 @@ def test_run_summary_reads_the_same_key_the_loop_returns():
     import ast
     import inspect
 
-    from mriforge.pipelines import train
+    from spectramr.pipelines import train
 
     src = inspect.getsource(train)
     tree = ast.parse(src)
@@ -1032,7 +1032,7 @@ class TestPersistentlyNonFiniteMonitorIsFatal:
     def _escalation_source(self):
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         start = src.index("consecutive_nonfinite_monitor += 1")
@@ -1055,7 +1055,7 @@ class TestPersistentlyNonFiniteMonitorIsFatal:
         """A transient NaN must be tolerated; only a PERSISTENT one is fatal."""
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         assert (
@@ -1084,8 +1084,8 @@ class TestMonitorNotApplicableReason:
         )
 
     def test_it_names_the_reason_for_the_monitored_metric(self):
-        from mriforge.core.metrics.outcome import NotApplicableReason
-        from mriforge.pipelines.training_loop import _monitor_not_applicable_reason
+        from spectramr.core.metrics.outcome import NotApplicableReason
+        from spectramr.pipelines.training_loop import _monitor_not_applicable_reason
 
         strategy = self._strategy_with(
             {"psnr": NotApplicableReason.DATA_RANGE_UNRESOLVED}
@@ -1096,8 +1096,8 @@ class TestMonitorNotApplicableReason:
         assert "data_range_unresolved" in text
 
     def test_it_falls_back_to_listing_what_was_excluded(self):
-        from mriforge.core.metrics.outcome import NotApplicableReason
-        from mriforge.pipelines.training_loop import _monitor_not_applicable_reason
+        from spectramr.core.metrics.outcome import NotApplicableReason
+        from spectramr.pipelines.training_loop import _monitor_not_applicable_reason
 
         strategy = self._strategy_with(
             {"ssim": NotApplicableReason.DATA_RANGE_UNRESOLVED}
@@ -1108,7 +1108,7 @@ class TestMonitorNotApplicableReason:
 
     def test_no_recorded_reason_blames_the_metric_not_the_config(self):
         """An unrecorded NaN is a diverged model, and must not be mislabelled."""
-        from mriforge.pipelines.training_loop import _monitor_not_applicable_reason
+        from spectramr.pipelines.training_loop import _monitor_not_applicable_reason
 
         text = _monitor_not_applicable_reason(self._strategy_with({}), "val_psnr")
 
@@ -1119,7 +1119,7 @@ class TestMonitorNotApplicableReason:
         become a second failure inside the first."""
         from types import SimpleNamespace
 
-        from mriforge.pipelines.training_loop import _monitor_not_applicable_reason
+        from spectramr.pipelines.training_loop import _monitor_not_applicable_reason
 
         text = _monitor_not_applicable_reason(SimpleNamespace(), "val_psnr")
 
@@ -1137,8 +1137,8 @@ class TestCsvMetricColumnsDeriveFromTheSchema:
     """
 
     def test_the_map_is_the_ssot_map(self):
-        from mriforge.core.metrics.flag_map import schema_flag_to_metric
-        from mriforge.pipelines.training_loop import _CSV_METRIC_NAME_MAP
+        from spectramr.core.metrics.flag_map import schema_flag_to_metric
+        from spectramr.pipelines.training_loop import _CSV_METRIC_NAME_MAP
 
         assert dict(_CSV_METRIC_NAME_MAP) == schema_flag_to_metric()
 
@@ -1147,7 +1147,7 @@ class TestCsvMetricColumnsDeriveFromTheSchema:
         import inspect
         import re
 
-        from mriforge import pipelines
+        from spectramr import pipelines
 
         src = inspect.getsource(pipelines.training_loop)
         head = src.split("def _csv_metric_names")[0]
@@ -1167,10 +1167,70 @@ class TestCsvMetricColumnsDeriveFromTheSchema:
         `psnr` it asserted came from a schema default no arm declared. That is
         the surplus column, not the #696 regression.
         """
-        from mriforge.pipelines.training_loop import _csv_metric_names
+        from spectramr.pipelines.training_loop import _csv_metric_names
 
         names = _csv_metric_names({"compute_psnr": True, "compute": ["hfen", "ssim"]})
         assert names == {"hfen", "ssim"}
+
+
+class TestLearningRateColumnsReachTheHeader:
+    """`lr_opt_g` was measured every iteration and discarded on every row.
+
+    The row producer writes one `lr_<scheduler>` key per entry in
+    `pipeline.schedulers`; the header builder promised no `lr_*` column at all.
+    `csv.DictWriter(..., extrasaction="ignore")` drops a key with no column
+    silently, so the entire learning-rate curve was absent from
+    `training_metrics.csv` for every arm that has a scheduler -- and it was one
+    of the three keys the write-time discard check named on
+    experiment_11_attention_none.
+    """
+
+    def test_the_column_name_matches_the_key_the_producer_wrote(self):
+        """The observed key, pinned. `opt_g` is the generator optimizer's
+        scheduler name in this repo, so this is the exact column the run log
+        reported as DISCARDED."""
+        from spectramr.pipelines.training_loop import lr_column_name
+
+        assert lr_column_name("opt_g") == "lr_opt_g"
+
+    def test_the_header_covers_every_scheduler_the_producer_iterates(self):
+        """The planted shape (CLAUDE.md #15): a scheduler present in the
+        mapping the loop iterates must have a column."""
+        from spectramr.pipelines.training_loop import lr_column_name, lr_column_names
+
+        schedulers = {"opt_g": object(), "opt_d": object()}
+        header = lr_column_names(schedulers)
+        produced = {lr_column_name(name) for name in schedulers}
+        assert produced <= header, (
+            f"the producer writes {sorted(produced - header)} with no column; "
+            'extrasaction="ignore" discards them silently'
+        )
+
+    def test_no_schedulers_is_not_an_error(self):
+        """Most arms have none, and a pipeline may not carry the attribute."""
+        from spectramr.pipelines.training_loop import lr_column_names
+
+        assert lr_column_names(None) == set()
+        assert lr_column_names({}) == set()
+
+    def test_neither_site_re_spells_the_column(self):
+        """Structural, because the defect was two sites naming one column and
+        only one of them saying it (non-negotiable 17). A returning
+        `f"lr_{...}"` literal is the regression, not a wrong name."""
+        import inspect
+        import re
+
+        from spectramr import pipelines
+
+        src = inspect.getsource(pipelines.training_loop)
+        # Exactly one: `lr_column_name`'s own return. Any second occurrence is a
+        # caller spelling the column itself again.
+        spellings = re.findall(r'f"lr_\{[^}]*\}"', src)
+        assert len(spellings) == 1, (
+            f"expected 1 hand-spelled lr column name (the helper's own return), "
+            f"found {len(spellings)}: {spellings}. Call lr_column_name() so the "
+            "header and the producer cannot diverge."
+        )
 
 
 class TestTheGatedConverterActuallyBatches:
@@ -1221,10 +1281,10 @@ class TestTheGatedConverterActuallyBatches:
 
     def test_the_helper_is_imported_from_core(self):
         """Rightward import only: pipelines -> core is legal, the reverse is not."""
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         assert training_loop.fuse_to_host.__module__ == (
-            "mriforge.core.metrics.scalar_transfer"
+            "spectramr.core.metrics.scalar_transfer"
         )
 
     def test_non_scalar_entries_keep_the_per_item_path(self):
@@ -1255,7 +1315,7 @@ class TestEpochBasedValidationIsReachable:
     def _trigger_source():
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         # Anchored on the trigger's own unique landmark, NOT on "the second
@@ -1276,7 +1336,7 @@ class TestEpochBasedValidationIsReachable:
         """`interval_epochs` was declared, documented, and read by nothing."""
         import inspect
 
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         assert "eval_interval_epochs" in src
@@ -1303,7 +1363,7 @@ class TestOnEpochDefaultMatchesRealisedBehaviour:
     """
 
     def test_the_default_is_off(self):
-        from mriforge.config.schemas.validation import ValidationScheduleConfigSchema
+        from spectramr.config.schemas.validation import ValidationScheduleConfigSchema
 
         assert ValidationScheduleConfigSchema().on_epoch is False
 
@@ -1361,7 +1421,7 @@ class _Strategy:
 
 
 def test_drain_writes_the_rows_and_clears_them() -> None:
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     rows = [
         {"acceleration_level": 2.0, "heldout": False},
@@ -1377,7 +1437,7 @@ def test_drain_writes_the_rows_and_clears_them() -> None:
 
 def test_drain_is_a_no_op_for_a_strategy_without_a_cascade() -> None:
     """Most paradigms have no cascade and no attribute. Not an error."""
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     recorder = _Recorder()
     assert _drain_cascade_rows(_Strategy(), recorder, iteration=7, epoch=1) == 0
@@ -1387,7 +1447,7 @@ def test_drain_is_a_no_op_for_a_strategy_without_a_cascade() -> None:
 def test_draining_twice_does_not_republish_the_same_sweep() -> None:
     """The regression the clear exists to prevent: the same measurements
     reappearing under a later iteration as if they were fresh."""
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     rows = [{"acceleration_level": 2.0, "heldout": False}]
     strategy, recorder = _Strategy(rows), _Recorder()
@@ -1400,7 +1460,7 @@ def test_drain_averages_the_batches_instead_of_publishing_the_last_one() -> None
     """`validation_step` runs once per VAL BATCH, so a sweep arrives as
     n_batches x n_levels rows. Publishing the last batch would disagree with the
     `val_psnr_8x` column beside it, which is a mean over every batch."""
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     rows = [
         {"acceleration_level": 8.0, "heldout": False, "val_psnr": v}
@@ -1417,7 +1477,7 @@ def test_drain_writes_only_on_the_main_process() -> None:
     """Every rank validates its own shard, so every rank reaches the drain. They
     share one output dir, and `_write_csv_header` renames-then-rewrites on
     schema evolution -- concurrent ranks there can truncate the file."""
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     rows = [{"acceleration_level": 2.0, "heldout": False, "val_psnr": 1.0}]
     strategy, recorder = _Strategy(rows), _Recorder()
@@ -1432,7 +1492,7 @@ def test_a_non_writing_rank_still_clears_its_rows() -> None:
     """The clear cannot be inside the write branch: rows accumulate per batch,
     so a rank that never writes would grow them without bound and carry one
     validation's measurements into the next."""
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     strategy = _Strategy([{"acceleration_level": 2.0, "heldout": False}])
     _drain_cascade_rows(
@@ -1445,7 +1505,7 @@ def test_a_standalone_evaluate_publishes_its_sweep_too() -> None:
     """`evaluate()` runs the SAME cascade at the same GPU cost. Without a drain
     the rows sit on the strategy until the next in-training validation absorbs
     them -- computed and silently discarded, the failure this record removes."""
-    from mriforge.pipelines.training_loop import TrainingLoop
+    from spectramr.pipelines.training_loop import TrainingLoop
 
     recorder = _Recorder()
     strategy = _Strategy([{"acceleration_level": 2.0, "heldout": False}])
@@ -1462,7 +1522,7 @@ def test_a_standalone_evaluate_publishes_its_sweep_too() -> None:
     runner = TrainingLoop(strategy, _Pipeline(), None, "m", metrics_service=recorder)
     # `_run_validation` is the seam under the drain; stub it so this test is
     # about publication, not about running a real validation.
-    import mriforge.pipelines.training_loop as tl
+    import spectramr.pipelines.training_loop as tl
 
     original = tl._run_validation
     tl._run_validation = lambda *a, **k: {"val_psnr": 1.0}
@@ -1481,7 +1541,7 @@ def test_a_metrics_service_without_the_writer_warns_rather_than_dropping(
     """Fail soft but LOUD. Silently returning would recreate the exact bug this
     replaced -- values computed at real GPU cost, discarded, nothing in the log.
     """
-    from mriforge.pipelines.training_loop import _drain_cascade_rows
+    from spectramr.pipelines.training_loop import _drain_cascade_rows
 
     class _Log:
         def __init__(self):
@@ -1668,7 +1728,7 @@ class TestSchedulerCadenceReadsTheRequestedValue:
 
 def _execute_loop_ast() -> ast.AST:
     """Parse ``_execute_training_loop``'s source into an AST."""
-    from mriforge.pipelines import training_loop
+    from spectramr.pipelines import training_loop
 
     src = textwrap.dedent(inspect.getsource(training_loop._execute_training_loop))
     return ast.parse(src)
@@ -1856,7 +1916,7 @@ class TestTheTrainingCsvPromisesOnlyColumnsItCanWrite:
 
     def _header_source(self) -> str:
         """The header-construction region, up to the `writeheader()` call."""
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = textwrap.dedent(inspect.getsource(training_loop._execute_training_loop))
         head, sep, _ = src.partition("writer.writeheader()")
@@ -1903,7 +1963,7 @@ class TestTheTrainingCsvPromisesOnlyColumnsItCanWrite:
 
 class TestTheFailureSentinelIsNotReadAsAMetricVocabulary:
     def _sentinel_message(self) -> str:
-        from mriforge.pipelines.training_loop import _unresolvable_monitor_error
+        from spectramr.pipelines.training_loop import _unresolvable_monitor_error
 
         return _unresolvable_monitor_error(
             "val_hfen_mean", {"validation_error": 1.0}, 8
@@ -1944,7 +2004,7 @@ class TestAGenuinelyAbsentMonitorStillGetsTheOriginalMessage:
     -- #178's raise is the reason `checkpoint_best.pt` failures are catchable."""
 
     def _absent_message(self) -> str:
-        from mriforge.pipelines.training_loop import _unresolvable_monitor_error
+        from spectramr.pipelines.training_loop import _unresolvable_monitor_error
 
         return _unresolvable_monitor_error(
             "val_typo", {"val_psnr": 30.0, "val_ssim": 0.9}, 100
@@ -1964,7 +2024,7 @@ class TestAGenuinelyAbsentMonitorStillGetsTheOriginalMessage:
         """The sentinel branch keys on `val_metrics` being EXACTLY the sentinel.
         A run that produced metrics AND an error entry has a real vocabulary, so
         an unresolvable monitor there IS a config defect."""
-        from mriforge.pipelines.training_loop import _unresolvable_monitor_error
+        from spectramr.pipelines.training_loop import _unresolvable_monitor_error
 
         msg = _unresolvable_monitor_error(
             "val_typo", {"validation_error": 1.0, "val_psnr": 30.0}, 100
@@ -1979,7 +2039,7 @@ class TestTheLoopRaisesThroughTheHelper:
     def test_the_unresolved_branch_calls_the_message_helper(self):
         import inspect
 
-        from mriforge.pipelines import training_loop as training_loop_mod
+        from spectramr.pipelines import training_loop as training_loop_mod
 
         src = inspect.getsource(training_loop_mod._execute_training_loop)
         assert "_unresolvable_monitor_error(" in src, (
@@ -2320,7 +2380,7 @@ class TestTheDegenerateWarningDoesNotEatItself:
         assert "runs exactly ONCE" in messages
 
 
-_LOOP_LOGGER = "mriforge.pipelines.training_loop"
+_LOOP_LOGGER = "spectramr.pipelines.training_loop"
 
 
 def _banner(config, caplog, *, sanity=False):
@@ -2447,7 +2507,7 @@ def _flag_tokens_in_module_strings(module) -> dict[str, int]:
 
 def _real_cli_flags() -> set[str]:
     """Every option string the real CLI parser accepts, across all subcommands."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     flags: set[str] = set()
     stack = [build_parser()]
@@ -2610,7 +2670,7 @@ class TestCheckpointDirectorWiringInTheLoop:
 # ``BaseTrainingStrategy`` declares ``on_epoch_start`` / ``on_epoch_end`` /
 # ``on_validation_start`` / ``on_validation_end``; ``MultiTrainingStrategy`` overrides
 # two of them to implement ``end_to_end_finetune_epoch`` and per-stage
-# ``early_stopping``; and until this change nothing under ``src/mriforge`` ever
+# ``early_stopping``; and until this change nothing under ``src/spectramr`` ever
 # called any of them (audit dossier D12 §3.1).
 #
 # The BEHAVIOUR of the dispatch — order, once-per-epoch, the completed-epoch
@@ -2755,3 +2815,427 @@ class TestTheStrategyLifecycleContractIsDriven:
             assert "lifecycle." not in body_src, (
                 f"a lifecycle hook is dispatched under `if {test_src}`"
             )
+# ---------------------------------------------------------------------------
+# #1682 -- the training-CSV column set has ONE owner
+#
+# `csv.DictWriter(..., extrasaction="ignore")` drops any key with no column, so
+# a header resolved from the config alone silently discarded every value whose
+# name the config cannot produce. On `experiment_11_attention_none` that was
+# `lr_opt_g`, `pre_dc_kspace_l1` and `generator_loss` -- every step, all run.
+#
+# These tests pin BOTH halves: that each helper resolves the right names, and
+# that `_execute_training_loop` actually CALLS it (non-negotiable 16 -- a
+# resolver nothing calls is not a fix). The call-site pins walk the AST on
+# purpose: a `"resolve_scheduler_lr_columns" in source` assertion is satisfied
+# by a comment or a docstring that merely mentions the name.
+# ---------------------------------------------------------------------------
+
+
+def _called_names(source: str) -> set[str]:
+    """Bare function names CALLED in ``source``. Pure core, so it can be planted.
+
+    Split out from the pin below for the reason ``_fitness_lib`` splits its own
+    cores: a detector that can only be pointed at real production source can
+    never be shown a violation, and an unplantable detector is its own kind of
+    blind (`.agent/rules/detectors.md` §1).
+
+    Deliberately AST-based and deliberately ``ast.Name`` only:
+      * a name inside a comment, a docstring or a plain string literal is NOT a
+        call, and must not satisfy the pin -- that is precisely how a
+        ``"name" in source`` assertion gets satisfied by prose;
+      * an attribute call (``mod.f()``) is a different construct and is not
+        counted, which is honest about what this pin does and does not see.
+    """
+    import ast
+
+    tree = ast.parse(textwrap.dedent(source))
+    return {
+        node.func.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+    }
+
+
+def _membership_guard_names(source: str) -> set[str]:
+    """Names used as the CONTAINER of an ``in``/``not in`` test. Pure core."""
+    import ast
+    import textwrap as _tw
+
+    out: set[str] = set()
+    for node in ast.walk(ast.parse(_tw.dedent(source))):
+        if isinstance(node, ast.Compare):
+            for op, comp in zip(node.ops, node.comparators, strict=True):
+                if isinstance(op, ast.In | ast.NotIn) and isinstance(comp, ast.Name):
+                    out.add(comp.id)
+    return out
+
+
+def _attribute_calls(source: str) -> set[str]:
+    """``obj.method`` strings for every attribute call in ``source``. Pure core."""
+    import ast
+    import textwrap as _tw
+
+    out: set[str] = set()
+    for node in ast.walk(ast.parse(_tw.dedent(source))):
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if isinstance(node.func.value, ast.Name):
+                out.add(f"{node.func.value.id}.{node.func.attr}")
+    return out
+
+
+def _fstring_prefixes(source: str) -> list[str]:
+    """Literal parts of every f-string in ``source``. Pure core, plantable."""
+    import ast
+
+    tree = ast.parse(textwrap.dedent(source))
+    return [
+        "".join(v.value for v in node.values if isinstance(v, ast.Constant))
+        for node in ast.walk(tree)
+        if isinstance(node, ast.JoinedStr)
+    ]
+
+
+def _training_loop_source() -> str:
+    import inspect
+
+    from spectramr.pipelines.training_loop import _execute_training_loop
+
+    return inspect.getsource(_execute_training_loop)
+
+
+def _calls_in_training_loop() -> set[str]:
+    """Names of every function called directly inside ``_execute_training_loop``."""
+    return _called_names(_training_loop_source())
+
+
+class TestSchedulerLrColumns:
+    def test_no_schedulers_yields_no_columns(self):
+        from types import SimpleNamespace
+
+        from spectramr.pipelines.training_loop import resolve_scheduler_lr_columns
+
+        assert resolve_scheduler_lr_columns(SimpleNamespace(schedulers={})) == frozenset()
+        assert resolve_scheduler_lr_columns(SimpleNamespace(schedulers=None)) == frozenset()
+        assert resolve_scheduler_lr_columns(SimpleNamespace()) == frozenset()
+
+    def test_column_name_matches_the_emission_site_exactly(self):
+        """The resolver and the emitter are two ends of one column name.
+
+        They can no longer diverge by construction: ``lr_column_name`` is the
+        single owner of the spelling (non-negotiable 17) and BOTH ends call it,
+        so this pins the coupling at its source rather than comparing two
+        independent spellings. The original defect -- the emitter writing
+        ``lr_opt_g`` while the header promised no ``lr_*`` column at all, so
+        ``extrasaction="ignore"`` discarded every learning rate -- is
+        unreachable while one function returns the name for both sides.
+
+        The companion pin ``test_neither_site_re_spells_the_column`` asserts
+        that owner stays sole; this one asserts the emitter actually calls it.
+        """
+        from types import SimpleNamespace
+
+        from spectramr.pipelines.training_loop import resolve_scheduler_lr_columns
+
+        assert resolve_scheduler_lr_columns(SimpleNamespace(schedulers={"opt_g": object()})) == {
+            "lr_opt_g"
+        }
+        assert resolve_scheduler_lr_columns(
+            SimpleNamespace(schedulers={"opt_g": object(), "opt_d": object()})
+        ) == {"lr_opt_g", "lr_opt_d"}
+
+        assert "lr_column_name" in _calls_in_training_loop(), (
+            "the emission site no longer routes its column name through "
+            "lr_column_name(); it is spelling the column itself again, so "
+            "resolve_scheduler_lr_columns can start producing dead columns."
+        )
+        # The owner really does produce the prefix both ends depend on.
+        from spectramr.pipelines.training_loop import lr_column_name
+
+        assert _fstring_prefixes(inspect.getsource(lr_column_name)) == ["lr_"]
+
+    def test_production_path_calls_the_resolver(self):
+        assert "resolve_scheduler_lr_columns" in _calls_in_training_loop()
+
+
+class TestProducerDeclaredColumns:
+    def test_strategy_without_the_hook_declares_nothing(self):
+        from spectramr.pipelines.training_loop import resolve_producer_declared_columns
+
+        assert resolve_producer_declared_columns(object()) == frozenset()
+
+    def test_declared_keys_are_forwarded(self):
+        from types import SimpleNamespace
+
+        from spectramr.pipelines.training_loop import resolve_producer_declared_columns
+
+        strategy = SimpleNamespace(declared_metric_keys=lambda: frozenset({"pre_dc_kspace_l1"}))
+        assert resolve_producer_declared_columns(strategy) == {"pre_dc_kspace_l1"}
+
+    def test_production_path_calls_the_resolver(self):
+        assert "resolve_producer_declared_columns" in _calls_in_training_loop()
+
+
+class TestClassifyDiscardedKeys:
+    def test_executor_aliases_are_named_as_known(self):
+        from spectramr.pipelines.training_loop import classify_discarded_keys
+
+        known, unexplained = classify_discarded_keys({"generator_loss"})
+        assert known == ["generator_loss"]
+        assert unexplained == []
+
+    def test_unknown_key_is_unexplained(self):
+        from spectramr.pipelines.training_loop import classify_discarded_keys
+
+        known, unexplained = classify_discarded_keys({"pre_dc_kspace_l1"})
+        assert known == []
+        assert unexplained == ["pre_dc_kspace_l1"]
+
+    def test_classification_never_drops_a_key(self):
+        """Classifying is not suppressing.
+
+        A future 'optimisation' that returned only the unexplained half would
+        stop reporting real discards for the alias names -- the exact silent
+        direction #1682 is about. Every input key must appear in the output.
+        """
+        from spectramr.pipelines.training_loop import classify_discarded_keys
+
+        keys = {"generator_loss", "discriminator_loss", "pre_dc_kspace_l1", "lr_opt_g"}
+        known, unexplained = classify_discarded_keys(keys)
+        assert set(known) | set(unexplained) == keys
+        assert not set(known) & set(unexplained)
+
+    def test_alias_set_holds_only_exact_duplicates(self):
+        """Guard the exclusion set against growth.
+
+        Every member is an EXACT alias of a strategy-stamped total that IS in
+        the header. Adding a key here without such a twin would convert a real
+        discard into a silently-blessed one -- an allowlist by accretion.
+        """
+        from spectramr.pipelines.training_loop import _EXECUTOR_ALIAS_KEYS
+
+        assert frozenset({"generator_loss", "discriminator_loss"}) == _EXECUTOR_ALIAS_KEYS
+
+    def test_production_path_calls_the_classifier(self):
+        assert "classify_discarded_keys" in _calls_in_training_loop()
+
+
+class TestCallSitePinSeesTheShapesItClaimsTo:
+    """Planted violations for the call-site pins (`.agent/rules/detectors.md` §1).
+
+    The pins above assert that `_execute_training_loop` calls each resolver. A
+    pin like that is worth exactly what it catches, and the failure mode is
+    documented in this repo: a presence assertion over source text is satisfied
+    by a docstring or a comment that merely names the thing. Each plant below
+    feeds the pure core a source that VIOLATES the rule and asserts it is not
+    fooled -- and feeds it the compliant shapes and asserts it is not blind.
+    """
+
+    def test_absent_call_is_not_detected(self):
+        """The plant: the resolver is simply not called."""
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            "def f(pipeline):\n    expected_metrics.update(something_else(pipeline))\n"
+        )
+
+    def test_name_in_a_comment_does_not_satisfy_the_pin(self):
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            "def f(pipeline):\n    # calls resolve_scheduler_lr_columns(pipeline) eventually\n    pass\n"
+        )
+
+    def test_name_in_a_docstring_does_not_satisfy_the_pin(self):
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            'def f(pipeline):\n    """Delegates to resolve_scheduler_lr_columns(pipeline)."""\n    pass\n'
+        )
+
+    def test_name_as_a_string_literal_does_not_satisfy_the_pin(self):
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            'def f(pipeline):\n    return "resolve_scheduler_lr_columns"\n'
+        )
+
+    def test_name_referenced_without_being_called_does_not_satisfy_the_pin(self):
+        """A bare reference is not a call -- passing it around is not wiring it."""
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            "def f(pipeline):\n    return [resolve_scheduler_lr_columns]\n"
+        )
+
+    def test_direct_call_is_detected(self):
+        assert "resolve_scheduler_lr_columns" in _called_names(
+            "def f(pipeline):\n    expected_metrics.update(resolve_scheduler_lr_columns(pipeline))\n"
+        )
+
+    def test_call_nested_in_a_branch_is_detected(self):
+        """Shape variation: the real call site could move under a guard."""
+        assert "resolve_scheduler_lr_columns" in _called_names(
+            "def f(pipeline):\n"
+            "    if pipeline is not None:\n"
+            "        for _ in range(1):\n"
+            "            x = resolve_scheduler_lr_columns(pipeline)\n"
+        )
+
+    def test_call_inside_a_comprehension_is_detected(self):
+        assert "resolve_scheduler_lr_columns" in _called_names(
+            "def f(ps):\n    return [resolve_scheduler_lr_columns(p) for p in ps]\n"
+        )
+
+    def test_attribute_call_is_not_counted_and_that_is_documented(self):
+        """Honest limit, asserted rather than assumed.
+
+        `mod.resolve_scheduler_lr_columns()` is a different construct. The pin
+        does not see it. If the production call site ever moves behind a module
+        attribute, this test is the record that the pin would go red -- a false
+        alarm to fix deliberately, not a silent blindness to discover later.
+        """
+        assert "resolve_scheduler_lr_columns" not in _called_names(
+            "def f(pipeline):\n    return mod.resolve_scheduler_lr_columns(pipeline)\n"
+        )
+
+
+class TestEmissionPrefixPinSeesDrift:
+    """Planted violations for the `lr_` prefix agreement."""
+
+    def test_drifted_prefix_is_detected_as_missing(self):
+        """The plant: the emitter renames its column, the resolver does not."""
+        assert "lr_" not in _fstring_prefixes(
+            'def f(n):\n    losses_scalar[f"learningrate_{n}"] = 1.0\n'
+        )
+
+    def test_matching_prefix_is_found(self):
+        assert "lr_" in _fstring_prefixes('def f(n):\n    losses_scalar[f"lr_{n}"] = 1.0\n')
+
+    def test_prefix_in_a_comment_does_not_satisfy_the_pin(self):
+        assert "lr_" not in _fstring_prefixes(
+            'def f(n):\n    # writes lr_{n} somewhere\n    losses_scalar[f"learningrate_{n}"] = 1.0\n'
+        )
+
+    def test_plain_string_is_not_an_fstring(self):
+        """Only a JoinedStr counts -- a non-interpolated "lr_" is not the emitter."""
+        assert "lr_" not in _fstring_prefixes('def f(n):\n    x = "lr_"\n')
+
+
+class TestReadSchedulerLr:
+    """`read_scheduler_lr` reports absence instead of inferring it (#1682).
+
+    The two branches replaced here were both `pass`. They became defects only
+    once `resolve_scheduler_lr_columns` started promising a column per
+    scheduler: a silent miss then yields a header column that is empty for the
+    whole run, which a reader cannot tell from "validation never ran".
+    """
+
+    @staticmethod
+    def _read(sched):
+        from spectramr.pipelines.training_loop import read_scheduler_lr
+
+        return read_scheduler_lr(sched)
+
+    def test_working_scheduler_yields_the_first_group_lr(self):
+        from types import SimpleNamespace
+
+        lr, reason = self._read(SimpleNamespace(get_last_lr=lambda: [0.0003, 0.001]))
+        assert lr == pytest.approx(0.0003)
+        assert reason is None
+
+    def test_scheduler_without_the_method_names_its_type(self):
+        class NoSuchMethod:
+            pass
+
+        lr, reason = self._read(NoSuchMethod())
+        assert lr is None
+        assert "NoSuchMethod" in reason
+        assert "get_last_lr" in reason
+
+    def test_raising_scheduler_reports_the_exception_rather_than_passing(self):
+        from types import SimpleNamespace
+
+        def _boom():
+            raise RuntimeError("scheduler not stepped yet")
+
+        lr, reason = self._read(SimpleNamespace(get_last_lr=_boom))
+        assert lr is None
+        assert "RuntimeError" in reason
+        assert "not stepped yet" in reason
+
+    def test_empty_lr_list_is_reported_not_indexed(self):
+        from types import SimpleNamespace
+
+        lr, reason = self._read(SimpleNamespace(get_last_lr=lambda: []))
+        assert lr is None
+        assert "IndexError" in reason
+
+    def test_non_numeric_lr_is_reported(self):
+        from types import SimpleNamespace
+
+        lr, reason = self._read(SimpleNamespace(get_last_lr=lambda: ["warmup"]))
+        assert lr is None
+        assert reason is not None
+
+    @pytest.mark.parametrize(
+        "sched",
+        [
+            object(),
+            type("Raises", (), {"get_last_lr": lambda self: 1 / 0})(),
+            type("Empty", (), {"get_last_lr": lambda self: []})(),
+            type("Fine", (), {"get_last_lr": lambda self: [0.1]})(),
+        ],
+    )
+    def test_exactly_one_of_lr_and_reason_is_none(self, sched):
+        """The contract the caller's `if lr is not None ... elif` depends on."""
+        lr, reason = self._read(sched)
+        assert (lr is None) != (reason is None)
+
+
+class TestStructuralCoresSeeWhatTheyClaim:
+    """The cores behind the guard pins, exercised directly.
+
+    A pin is only as good as its core: `_membership_guard_names` exists
+    precisely because the substring pin it replaced scored a planted
+    `elif False:` green.
+    """
+
+    def test_membership_core_finds_the_container_not_the_member(self):
+        names = _membership_guard_names("if needle not in haystack:\n    pass\n")
+        assert "haystack" in names
+        assert "needle" not in names
+
+    def test_membership_core_ignores_a_bare_declaration(self):
+        """The exact shape that made the substring pin blind."""
+        assert _membership_guard_names("seen = set()\nseen.add(x)\n") == set()
+
+    def test_membership_core_sees_plain_in_as_well_as_not_in(self):
+        assert _membership_guard_names("if a in b:\n    pass\n") == {"b"}
+
+    def test_attribute_core_reports_object_and_method(self):
+        assert _attribute_calls("seen.add(x)\n") == {"seen.add"}
+
+    def test_attribute_core_ignores_a_bare_name_call(self):
+        assert _attribute_calls("helper(x)\n") == set()
+
+
+class TestSchedulerLrCallSiteIsPinned:
+    """A revert to the swallowed `pass` must turn this red (non-negotiable 15).
+
+    Pins the CALL, not the helper: a helper-only pin scores a call-site
+    regression green, which is how the original `except Exception: pass`
+    survived unnoticed.
+    """
+
+    def test_training_loop_reads_schedulers_through_the_reporting_helper(self):
+        assert "read_scheduler_lr" in _calls_in_training_loop()
+
+    def test_training_loop_no_longer_indexes_get_last_lr_inline(self):
+        source = _training_loop_source()
+        assert "get_last_lr()[0]" not in source, (
+            "The inline read is back; its absence path is silent again."
+        )
+
+    def test_the_warn_once_set_actually_guards_the_warning(self):
+        """Structural, not substring.
+
+        A substring pin on the name is satisfied by the DECLARATION and by the
+        `.add()` call, so replacing the guard with `elif False:` scored it
+        green -- caught by planting it. Only the container-of-a-membership-test
+        position is unique to the guard.
+        """
+        assert "csv_empty_lr_warned" in _membership_guard_names(_training_loop_source())
+
+    def test_the_warn_once_set_is_actually_populated(self):
+        """Without the `.add`, the guard stays true and the warning fires per row."""
+        assert "csv_empty_lr_warned.add" in _attribute_calls(_training_loop_source())

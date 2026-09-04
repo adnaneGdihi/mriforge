@@ -6,9 +6,9 @@ import torch
 # Ensure src is in path
 sys.path.append(str(Path(__file__).parents[2]))
 
-from mriforge.config.data_config import DataConfig
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+from spectramr.config.data_config import DataConfig
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (
     DataPipelineDirector,
 )
 

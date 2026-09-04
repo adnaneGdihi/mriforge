@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.cs_mno import (
+from spectramr.config.schemas.training.cs_mno import (
     ArchitectureConfig,
     CSMNOTrainingConfigSchema,
     ScanConfig,
@@ -37,5 +37,5 @@ def test_extra_fields_forbidden() -> None:
 
 def test_can_attach_to_training_strategy_section() -> None:
     """The cs_mno field is reachable from TrainingStrategyConfigSchema."""
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
     assert "cs_mno" in TrainingStrategyConfigSchema.model_fields

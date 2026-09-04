@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.optimization.constraints.bloch import BlochConstraint
+from spectramr.infrastructure.optimization.constraints.bloch import BlochConstraint
 
 
 def test_forward_returns_differentiable_tensor():

@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import get
-from mriforge.infrastructure.reporting.plotters import metric_distribution  # noqa: F401
+from spectramr.infrastructure.reporting.plotters import get
+from spectramr.infrastructure.reporting.plotters import metric_distribution  # noqa: F401
 
 
 def _frame():
@@ -41,7 +41,7 @@ def test_metric_distribution_multi_metric_panels_render(tmp_path):
     import numpy as np
     import pandas as pd
 
-    from mriforge.infrastructure.reporting.plotters import metric_distribution
+    from spectramr.infrastructure.reporting.plotters import metric_distribution
 
     rng = np.random.default_rng(0)
     rows = []

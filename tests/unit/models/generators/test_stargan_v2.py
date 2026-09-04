@@ -18,7 +18,7 @@ import torch
 
 pytestmark = pytest.mark.unit
 
-from mriforge.models.generators.stargan_v2 import (
+from spectramr.models.generators.stargan_v2 import (
     MappingNetwork,
     StarGANv2Generator,
     StyleEncoder,
@@ -83,8 +83,8 @@ def test_out_of_range_domain_index_raises() -> None:
 
 
 def test_generator_registered_and_resolvable() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY, get_model_class, get_model_mode
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY, get_model_class, get_model_mode
 
     populate_model_registry()
     assert "stargan_v2_generator" in MODEL_REGISTRY

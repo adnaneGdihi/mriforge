@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.config.schemas.enums import MetricMode
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.config.schemas.enums import MetricMode
 
 
 class TestEarlyStoppingConfigSchema:

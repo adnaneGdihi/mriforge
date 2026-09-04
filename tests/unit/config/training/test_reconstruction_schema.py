@@ -10,7 +10,7 @@ local rebind (``if obj is None: obj = ...``) and an always-firing
 
 from __future__ import annotations
 
-from mriforge.config.schemas.training.reconstruction import TrainingConfigReconstruction
+from spectramr.config.schemas.training.reconstruction import TrainingConfigReconstruction
 
 
 def test_default_construction_does_not_raise() -> None:

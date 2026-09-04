@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.physics.unwarp`.
+"""Unit tests for :mod:`spectramr.infrastructure.physics.unwarp`.
 
 ``PhysicalUnwarp`` composes the inverse displacement field from three
 sources of EPI distortion: B0 inhomogeneity, gradient nonlinearity,
@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.unwarp import PhysicalUnwarp
+from spectramr.infrastructure.physics.unwarp import PhysicalUnwarp
 
 
 def _ramp_volume(B: int = 1, C: int = 1, D: int = 4, H: int = 8, W: int = 8) -> torch.Tensor:

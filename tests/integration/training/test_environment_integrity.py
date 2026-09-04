@@ -4,10 +4,10 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.run import RunConfigSchema
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.director import TrainingEnvironmentDirector
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.config.schemas.run import RunConfigSchema
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.director import TrainingEnvironmentDirector
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 # Mock strategy concrete class for testing
@@ -171,22 +171,22 @@ def test_environment_optimizer_resolution(mode, expected_main_key, expect_opt_d)
 
     with (
         patch(
-            "mriforge.infrastructure.training.builders.director.ModelBuilder"
+            "spectramr.infrastructure.training.builders.director.ModelBuilder"
         ) as mock_mb_cls,
         patch(
-            "mriforge.infrastructure.training.builders.director.OptimizationBuilder"
+            "spectramr.infrastructure.training.builders.director.OptimizationBuilder"
         ) as mock_ob_cls,
         patch(
-            "mriforge.infrastructure.training.builders.director.LossBuilder"
+            "spectramr.infrastructure.training.builders.director.LossBuilder"
         ) as mock_lb_cls,
         patch(
-            "mriforge.infrastructure.training.builders.director.PhysicsBuilder"
+            "spectramr.infrastructure.training.builders.director.PhysicsBuilder"
         ) as mock_pb_cls,
         patch(
-            "mriforge.infrastructure.training.builders.director.DataBuilder"
+            "spectramr.infrastructure.training.builders.director.DataBuilder"
         ) as mock_db_cls,
         patch(
-            "mriforge.infrastructure.training.builders.director.InfrastructureBuilder"
+            "spectramr.infrastructure.training.builders.director.InfrastructureBuilder"
         ) as mock_ib_cls,
     ):
         mock_mb, mock_ob, _, _, _, _ = setup_builder_mocks(
@@ -244,7 +244,7 @@ def test_strategy_access_to_opt_g_manual_env():
     main_opt = MagicMock(spec=torch.optim.Optimizer)
     models = {"generator": nn.Linear(1, 1)}
 
-    from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+    from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
     env = TrainingEnvironment(
         models=models,

@@ -20,7 +20,7 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 class TestDataConsistencyAblation:
@@ -60,7 +60,7 @@ class TestDataConsistencyAblation:
                 "use_amp": False,
             },
             "training": {
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy",
             },
             "losses": {
                 "reconstruction": {
@@ -166,7 +166,7 @@ class TestLossFunctionAblation:
             "optimization": {"learning_rate": 1e-4},
             "training": {
                 "epochs": 1,
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
             },
             "physics": {"data_consistency": {"enabled": True}},
             "logging": {},
@@ -248,7 +248,7 @@ class TestLossFunctionAblation:
             "optimization": {"learning_rate": 1e-4},
             "training": {
                 "epochs": 1,
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
             },
             "physics": {"data_consistency": {"enabled": True}},
             "logging": {},
@@ -303,7 +303,7 @@ class TestAttentionMechanismAblation:
             "optimization": {"learning_rate": 1e-4},
             "training": {
                 "epochs": 1,
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
             },
             "losses": {"reconstruction": {"lambda_l1": 1.0}},
             "physics": {"data_consistency": {"enabled": True}},
@@ -360,7 +360,7 @@ class TestAttentionMechanismAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                    "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 },
                 "losses": {"reconstruction": {"lambda_l1": 1.0}},
                 "physics": {"data_consistency": {"enabled": True}},
@@ -406,7 +406,7 @@ class TestPhysicsConstraintsAblation:
             "optimization": {"learning_rate": 1e-4},
             "training": {
                 "epochs": 1,
-                "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
             },
             "physics": {"data_consistency": {"enabled": True}},
             "logging": {},
@@ -464,7 +464,7 @@ class TestPhysicsConstraintsAblation:
                     "optimization": {"learning_rate": 1e-4},
                     "training": {
                         "epochs": 1,
-                        "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                        "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                     },
                     "losses": {"reconstruction": {"lambda_l1": 1.0}},
                     "physics": {
@@ -521,7 +521,7 @@ class TestNormalizationAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                    "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 },
                 "losses": {"reconstruction": {"lambda_l1": 1.0}},
                 "physics": {"data_consistency": {"enabled": True}},
@@ -568,7 +568,7 @@ class TestNormalizationAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                    "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 },
                 "losses": {"reconstruction": {"lambda_l1": 1.0}},
                 "physics": {"data_consistency": {"enabled": True}},
@@ -616,7 +616,7 @@ class TestDiffusionTimestepsAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+                    "strategy_class": "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
                     "diffusion": {
                         "num_timesteps": num_t,
                         "cold_diffusion": True,
@@ -665,7 +665,7 @@ class TestDiffusionTimestepsAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+                    "strategy_class": "spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
                     "diffusion": {
                         "num_timesteps": 100,
                         "beta_schedule": schedule,
@@ -722,7 +722,7 @@ class TestModelArchitectureAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                    "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 },
                 "losses": {"reconstruction": {"lambda_l1": 1.0}},
                 "physics": {"data_consistency": {"enabled": True}},
@@ -768,7 +768,7 @@ class TestModelArchitectureAblation:
                 "optimization": {"learning_rate": 1e-4},
                 "training": {
                     "epochs": 1,
-                    "strategy_class": "mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
+                    "strategy_class": "spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy"
                 },
                 "losses": {"reconstruction": {"lambda_l1": 1.0}},
                 "physics": {"data_consistency": {"enabled": True}},

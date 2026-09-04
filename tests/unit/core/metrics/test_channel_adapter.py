@@ -1,4 +1,4 @@
-"""Tests for mriforge.core.metrics.channel_adapter.
+"""Tests for spectramr.core.metrics.channel_adapter.
 
 Covers every (mode × channel-count) combination and verifies the
 adapter never silently drops channels — the previous LPIPS code did
@@ -23,7 +23,7 @@ _ROOT = Path(__file__).resolve().parent.parent.parent.parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from mriforge.core.metrics.channel_adapter import ChannelMode, adapt_to_rgb  # noqa: E402
+from spectramr.core.metrics.channel_adapter import ChannelMode, adapt_to_rgb  # noqa: E402
 
 
 # ──────────────────────────────────────────────────────────────────────
@@ -203,7 +203,7 @@ def torchmetrics_available():
 def test_lpips_accepts_channel_count(C, torchmetrics_available):
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     metric = LPIPS(device="cpu")
     preds = torch.rand(2, C, 32, 32) * 0.5 + 0.25
@@ -219,7 +219,7 @@ def test_lpips_accepts_channel_count(C, torchmetrics_available):
 def test_lpips_odd_channel_raises_explicitly(torchmetrics_available):
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     metric = LPIPS(device="cpu")
     preds = torch.rand(2, 5, 32, 32)
@@ -232,7 +232,7 @@ def test_lpips_odd_channel_raises_explicitly(torchmetrics_available):
 def test_lpips_grayscale_mean_handles_odd_channels(torchmetrics_available):
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     metric = LPIPS(device="cpu", channel_mode="grayscale_mean")
     preds = torch.rand(2, 5, 32, 32)
@@ -246,7 +246,7 @@ def test_lpips_grayscale_mean_handles_odd_channels(torchmetrics_available):
 def test_fid_accepts_channel_count(C, torchmetrics_available):
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import FID
+    from spectramr.core.metrics.evaluation_metrics import FID
 
     fid = FID(device="cpu")
     preds = torch.rand(2, C, 75, 75)  # InceptionV3 wants >= 75
@@ -260,7 +260,7 @@ def test_fid_accepts_channel_count(C, torchmetrics_available):
 def test_kid_accepts_channel_count(C, torchmetrics_available):
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(device="cpu", subset_size=2)
     preds = torch.rand(2, C, 75, 75)
@@ -276,14 +276,14 @@ def test_kid_accepts_channel_count(C, torchmetrics_available):
 
 
 def test_lpips_constructor_accepts_channel_mode():
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     lpips = LPIPS(device="cpu", channel_mode="grayscale_mean")
     assert lpips.channel_mode == ChannelMode.GRAYSCALE_MEAN
 
 
 def test_lpips_default_channel_mode_is_auto():
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     lpips = LPIPS(device="cpu")
     assert lpips.channel_mode == ChannelMode.AUTO
@@ -291,7 +291,7 @@ def test_lpips_default_channel_mode_is_auto():
 
 @requires_torch_fidelity
 def test_fid_constructor_accepts_channel_mode():
-    from mriforge.core.metrics.evaluation_metrics import FID
+    from spectramr.core.metrics.evaluation_metrics import FID
 
     fid = FID(device="cpu", channel_mode="complex_rss")
     assert fid.channel_mode == ChannelMode.COMPLEX_RSS
@@ -299,14 +299,14 @@ def test_fid_constructor_accepts_channel_mode():
 
 @requires_torch_fidelity
 def test_kid_constructor_accepts_channel_mode():
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(device="cpu", channel_mode="auto")
     assert kid.channel_mode == ChannelMode.AUTO
 
 
 def test_lpips_invalid_channel_mode_raises():
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     with pytest.raises(ValueError):
         LPIPS(device="cpu", channel_mode="invalid_mode_that_does_not_exist")
@@ -325,7 +325,7 @@ def test_no_silent_channel_truncation(torchmetrics_available):
     """
     if not torchmetrics_available:
         pytest.skip("torchmetrics not installed")
-    from mriforge.core.metrics.evaluation_metrics import LPIPS
+    from spectramr.core.metrics.evaluation_metrics import LPIPS
 
     metric = LPIPS(device="cpu")
     torch.manual_seed(0)

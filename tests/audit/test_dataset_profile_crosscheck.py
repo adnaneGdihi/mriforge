@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.data import profiler
+from spectramr.data import profiler
 
 _REPO = Path(__file__).resolve().parents[2]
 _MANIFEST_DIR = _REPO / "data" / "manifests" / "external"

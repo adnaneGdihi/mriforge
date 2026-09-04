@@ -5,13 +5,13 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.strategies.test_time_adaptation_strategy import (
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.strategies.test_time_adaptation_strategy import (
     TttAdaptationStrategy,
 )
 
 # Shared patch target for BaseTrainingStrategy.__init__ LossBuilder dependency
-_LOSS_BUILDER_PATCH = "mriforge.infrastructure.training.builders.loss_builder.LossBuilder"
+_LOSS_BUILDER_PATCH = "spectramr.infrastructure.training.builders.loss_builder.LossBuilder"
 
 
 def _mock_loss_builder():

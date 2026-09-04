@@ -1,6 +1,6 @@
 """Tests for convolutional building blocks.
 
-Targets ``mriforge.models.blocks.convolutional``. Common 2D / 3D
+Targets ``spectramr.models.blocks.convolutional``. Common 2D / 3D
 convolutional blocks used across U-Net / generator architectures.
 
 Categories:
@@ -20,7 +20,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.convolutional import (
+from spectramr.models.blocks.convolutional import (
     ConvBlock2D,
     ConvBlock3D,
     DoubleConv,

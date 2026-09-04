@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.utils.shape_validator import (
+from spectramr.models.utils.shape_validator import (
     assert_shape_equals,
     validate_5d_or_4d_tensor,
     validate_batch_size,

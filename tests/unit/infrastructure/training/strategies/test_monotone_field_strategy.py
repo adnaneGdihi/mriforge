@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.monotone_field_strategy import (
+from spectramr.infrastructure.training.strategies.monotone_field_strategy import (
     MonotoneFieldStrategy,
     compute_monotone_field_loss,
 )
-from mriforge.models.generators.monotone_field_generator import (
+from spectramr.models.generators.monotone_field_generator import (
     MonotoneFieldOrderedGenerator,
 )
 
@@ -37,9 +37,9 @@ def test_loss_keys_and_finite() -> None:
 def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim) fold onto the inline objective via the
     loss-SSOT seam; the inline l1 placeholder is skipped (no double-count)."""
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(MonotoneFieldStrategy)
     strat.env = types.SimpleNamespace(
@@ -115,8 +115,8 @@ def test_validation_forward_raises_without_field() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "monotone_field" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "monotone_field" in TrainingStrategyConfigSchema.model_fields
@@ -130,7 +130,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(MonotoneFieldStrategy)

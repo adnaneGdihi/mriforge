@@ -11,14 +11,14 @@ the signature primitives.
 
 from __future__ import annotations
 
-from mriforge.data.transforms.signature import (
+from spectramr.data.transforms.signature import (
     compute_infer_signature,
     diff_signatures,
 )
 
 
 def _settings():
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     class _Settings:
         def __init__(self):
@@ -63,7 +63,7 @@ def test_compute_infer_signature_tracks_the_config() -> None:
     Guards the premise the whole gate rests on: a signature that ignored the
     config would compare equal forever and the check would be decorative.
     """
-    from mriforge.config.schemas.data import DataConfigSchema, DataSamplingConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema, DataSamplingConfigSchema
 
     baseline = compute_infer_signature(_settings())
 

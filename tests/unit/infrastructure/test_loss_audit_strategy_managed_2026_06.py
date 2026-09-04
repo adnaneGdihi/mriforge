@@ -13,7 +13,7 @@ from __future__ import annotations
 
 
 def test_loss_audit_imports_the_builder_ssot_constant():
-    from mriforge.infrastructure.training.builders.loss_builder import (
+    from spectramr.infrastructure.training.builders.loss_builder import (
         STRATEGY_MANAGED_LOSSES,
     )
 
@@ -31,8 +31,8 @@ def test_auditor_skip_set_is_superset_of_builder_skip_set():
     """The auditor must not flag anything the builder deliberately skips."""
     import inspect
 
-    from mriforge.infrastructure import loss_audit
-    from mriforge.infrastructure.training.builders.loss_builder import (
+    from spectramr.infrastructure import loss_audit
+    from spectramr.infrastructure.training.builders.loss_builder import (
         STRATEGY_MANAGED_LOSSES,
     )
 

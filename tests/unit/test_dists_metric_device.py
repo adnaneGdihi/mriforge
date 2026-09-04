@@ -23,7 +23,7 @@ class TestDISTSMetricDeviceRouting:
     """Pin the device-routing invariant for the DISTS metric wrapper."""
 
     def test_constructed_on_cpu_has_cpu_weights(self) -> None:
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         m = get_metric("dists", device="cpu")
         first_param = next(m._impl.parameters())
@@ -35,7 +35,7 @@ class TestDISTSMetricDeviceRouting:
     def test_constructed_on_cuda_has_cuda_weights(self) -> None:
         if not torch.cuda.is_available():
             pytest.skip("CUDA not available")
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         m = get_metric("dists", device="cuda")
         first_param = next(m._impl.parameters())
@@ -45,7 +45,7 @@ class TestDISTSMetricDeviceRouting:
         )
 
     def test_eval_mode_and_no_grad(self) -> None:
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         m = get_metric("dists", device="cpu")
         # Eval mode prevents BN/dropout drift, and requires_grad=False
@@ -58,7 +58,7 @@ class TestDISTSMetricDeviceRouting:
             ), "DISTS VGG19 params must have requires_grad=False"
 
     def test_per_call_device_guard_accepts_mismatched_input(self) -> None:
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         m = get_metric("dists", device="cpu")
         # Inputs of different shapes are OK as long as the metric
@@ -70,7 +70,7 @@ class TestDISTSMetricDeviceRouting:
 
     def test_vgg19_stays_fp32(self) -> None:
         """VGG19 weights must remain fp32 even when constructed under autocast."""
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         # Even if the user *thinks* they're in bf16-land, DISTS pins fp32.
         with torch.amp.autocast(
@@ -86,7 +86,7 @@ class TestDISTSMetricDeviceRouting:
 
     def test_outer_autocast_does_not_change_output(self) -> None:
         """DISTS output must be the same whether or not the caller is under autocast."""
-        from mriforge.core.metrics import get_metric
+        from spectramr.core.metrics import get_metric
 
         m = get_metric("dists", device="cpu")
         torch.manual_seed(0)

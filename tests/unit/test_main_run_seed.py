@@ -18,9 +18,9 @@ import inspect
 
 import pytest
 
-from mriforge.config.schemas.renames import RENAMES
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.renames import RENAMES
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.settings import TrainingSettings
 
 
 def _settings(seed: int) -> TrainingSettings:
@@ -58,8 +58,8 @@ def test_no_entry_point_still_reads_the_retired_spelling():
     cannot appear in a fixed file even as documentation: every one of these
     modules names the NEW path in its comment, so a match is a real reader.
     """
-    from mriforge import main
-    from mriforge.pipelines import train
+    from spectramr import main
+    from spectramr.pipelines import train
 
     for mod in (main, train):
         src = inspect.getsource(mod)

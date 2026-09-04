@@ -1,4 +1,4 @@
-from mriforge.shared.utils.mask_generator import MaskGenerator
+from spectramr.shared.utils.mask_generator import MaskGenerator
 
 
 def verify_cartesian_mask():

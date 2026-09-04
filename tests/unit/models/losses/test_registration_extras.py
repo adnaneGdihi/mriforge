@@ -1,6 +1,6 @@
 """Tests for extra registration regularizers.
 
-Targets ``mriforge.models.losses.registration_extras.BendingEnergyLoss``.
+Targets ``spectramr.models.losses.registration_extras.BendingEnergyLoss``.
 
 Regression: the mixed second-derivative term must be a true mixed partial
 ``d^2 f / dx dy`` (a central first difference in each axis), not the composition
@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.registration_extras import BendingEnergyLoss  # noqa: E402
+from spectramr.models.losses.registration_extras import BendingEnergyLoss  # noqa: E402
 
 
 def _grid_field(values: torch.Tensor) -> torch.Tensor:

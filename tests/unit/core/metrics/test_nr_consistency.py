@@ -18,10 +18,10 @@ import pytest
 import torch
 
 # Importing the module registers the five metrics.
-import mriforge.core.metrics.nr_consistency as nrc
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.registry import MetricsRegistry, get_metric
-from mriforge.infrastructure.physics.fft_ops import (
+import spectramr.core.metrics.nr_consistency as nrc
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.registry import MetricsRegistry, get_metric
+from spectramr.infrastructure.physics.fft_ops import (
     fft2c,
     ifft2c,
     sense_adjoint,
@@ -258,7 +258,7 @@ def test_prp_snr_fallback_adjoint_runs():
 @pytest.mark.unit
 def test_fmrs_anchor_projection_recon_near_zero():
     """A projection-like (adjoint) reconstructor ⇒ FMRS ≈ 0."""
-    from mriforge.infrastructure.physics.sampling import MaskGenerator
+    from spectramr.infrastructure.physics.sampling import MaskGenerator
 
     torch.manual_seed(0)
     img = _blob()
@@ -280,7 +280,7 @@ def test_fmrs_anchor_projection_recon_near_zero():
 @pytest.mark.unit
 def test_fmrs_monotonic_with_recon_instability():
     """FMRS rises as the reconstructor is made progressively less idempotent."""
-    from mriforge.infrastructure.physics.sampling import MaskGenerator
+    from spectramr.infrastructure.physics.sampling import MaskGenerator
 
     torch.manual_seed(0)
     img = _blob()
@@ -353,7 +353,7 @@ def test_csoe_monotonic_with_intercoil_inconsistency():
     for s in sevs:
         y = y0.clone()
         # Corrupt coil 1 with a graded per-pixel random phase (in image domain).
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         coil1_img = ifft2c(y[:, 1:2])
         coil1_img = coil1_img * torch.exp(1j * s * phase)

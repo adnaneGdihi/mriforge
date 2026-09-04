@@ -13,7 +13,7 @@ from typing import Any
 
 import torch
 
-from mriforge.infrastructure.training.middleware import (
+from spectramr.infrastructure.training.middleware import (
     GradientClippingMiddleware,
     MiddlewareChain,
     TrainingMiddleware,

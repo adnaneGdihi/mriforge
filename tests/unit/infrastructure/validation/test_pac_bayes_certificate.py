@@ -14,7 +14,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.validation.pac_bayes_certificate import (
+from spectramr.infrastructure.validation.pac_bayes_certificate import (
     PACBayesCertifier,
     gaussian_kl_diagonal,
     mcallester_bound,

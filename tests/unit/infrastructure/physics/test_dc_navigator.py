@@ -1,6 +1,6 @@
 r"""Tests for ``DCNavigatorExtractor``.
 
-Targets ``mriforge.infrastructure.physics.dc_navigator``. Pulls the DC
+Targets ``spectramr.infrastructure.physics.dc_navigator``. Pulls the DC
 component :math:`k_0(t) = k(0, 0, t)` of a k-space sequence and
 spectrally decomposes it into respiratory and cardiac bands.
 
@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.dc_navigator import DCNavigatorExtractor
+from spectramr.infrastructure.physics.dc_navigator import DCNavigatorExtractor
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +86,7 @@ def test_extract_dc_center_matches_fft2c_for_even_sizes() -> None:
     has all spectral energy at DC, so ``extract_dc`` returns the maximum-
     magnitude bin and reading the wrong bin would return (near) zero.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     nav = DCNavigatorExtractor(center_radius=0)
     for n in (8, 6):
@@ -112,7 +112,7 @@ def test_extract_dc_reads_the_true_dc_bin_for_odd_sizes() -> None:
     it. With the SSOT fixed, the navigator reads the real DC and the whole
     uniform-image energy comes back.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     nav = DCNavigatorExtractor(center_radius=0)
     for n in (5, 7):

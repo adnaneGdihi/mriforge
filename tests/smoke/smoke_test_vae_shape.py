@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.generators.vae_3d_generator import VAE3DGenerator
+from spectramr.models.generators.vae_3d_generator import VAE3DGenerator
 
 
 def test_vae_shape_compatibility():

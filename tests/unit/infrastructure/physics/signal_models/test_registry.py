@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.infrastructure.physics.signal_models.registry import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.infrastructure.physics.signal_models.registry import (
     SignalModelRegistry,
     SignalModelSpec,
     get_signal_model,
@@ -51,7 +51,7 @@ def test_the_decorator_returns_the_function_unchanged() -> None:
     importable and testable without touching the registry. A wrapper would make
     every physics test go through registration machinery.
     """
-    from mriforge.infrastructure.physics.signal_models.perfusion_kinetics import (
+    from spectramr.infrastructure.physics.signal_models.perfusion_kinetics import (
         extended_tofts_forward,
     )
 

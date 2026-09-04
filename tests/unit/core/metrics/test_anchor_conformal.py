@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.anchor_conformal import (  # noqa: E402
+from spectramr.core.metrics.anchor_conformal import (  # noqa: E402
     AnchorConformalCalibrator,
     conformal_quantile,
     local_detail_score,
@@ -127,7 +127,7 @@ def test_gate_fails_when_exchangeability_breaks() -> None:
 def test_guarantee_requires_every_stratum_not_the_average() -> None:
     """Marginal coverage can look fine while one difficulty regime collapses."""
     cal = AnchorConformalCalibrator(alpha=0.1, n_strata=2).fit(*_heteroscedastic())
-    from mriforge.core.metrics.anchor_conformal import CoverageReport
+    from spectramr.core.metrics.anchor_conformal import CoverageReport
 
     mixed = CoverageReport(
         nominal=0.9,

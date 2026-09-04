@@ -16,7 +16,7 @@ torch = pytest.importorskip("torch")
 tio = pytest.importorskip("torchio")
 pytest.importorskip("torchkbnufft")
 
-from mriforge.data.transforms.non_cartesian import (  # noqa: E402
+from spectramr.data.transforms.non_cartesian import (  # noqa: E402
     NonCartesianSimulationTransform,
 )
 

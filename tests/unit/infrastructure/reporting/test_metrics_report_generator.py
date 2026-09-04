@@ -23,7 +23,7 @@ matplotlib.use("Agg")
 
 import pytest
 
-from mriforge.infrastructure.reporting.advanced_reporting import TrainingReport
+from spectramr.infrastructure.reporting.advanced_reporting import TrainingReport
 
 # --------------------------------------------------------------------------- #
 # Fixtures
@@ -177,7 +177,7 @@ def test_progress_report_with_no_epochs_yields_minimal_text(tmp_path, config_ns)
 
 def test_optional_future_metrics_report_generator_module():
     mod = pytest.importorskip(
-        "mriforge.infrastructure.reporting.metrics_report_generator",
+        "spectramr.infrastructure.reporting.metrics_report_generator",
     )
     public = [a for a in dir(mod) if not a.startswith("_")]
     assert public, "metrics_report_generator module must expose a public API"

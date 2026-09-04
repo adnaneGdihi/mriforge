@@ -6,8 +6,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-import mriforge.models.blocks.triton_scan as _ts  # noqa: E402
-from mriforge.models.blocks.continuous_sfc_mamba import ContinuousSFCMamba  # noqa: E402
+import spectramr.models.blocks.triton_scan as _ts  # noqa: E402
+from spectramr.models.blocks.continuous_sfc_mamba import ContinuousSFCMamba  # noqa: E402
 
 
 def test_accepts_mamba_ssm_backend() -> None:

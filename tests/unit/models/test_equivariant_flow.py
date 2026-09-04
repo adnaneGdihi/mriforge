@@ -1,7 +1,7 @@
 """Unit tests for the C_n-equivariant normalizing flow.
 
 Covers the group blocks (GroupConv2d, GroupActNorm2d, GroupCoupling) and
-the :class:`mriforge.models.generative.equivariant_flow.EquivariantFlow`
+the :class:`spectramr.models.generative.equivariant_flow.EquivariantFlow`
 model: registry resolution, default constructibility, channel-divisibility
 guards, forward shape, log-prob finiteness, and the load-bearing
 equivariance probe ``f(rho_g x) ~= rho_g f(x)``.
@@ -19,11 +19,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.equivariant.group_actnorm import GroupActNorm2d
-from mriforge.models.blocks.equivariant.group_conv import GroupConv2d
-from mriforge.models.blocks.equivariant.group_coupling import GroupCoupling
-from mriforge.models.generative.equivariant_flow import EquivariantFlow
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.blocks.equivariant.group_actnorm import GroupActNorm2d
+from spectramr.models.blocks.equivariant.group_conv import GroupConv2d
+from spectramr.models.blocks.equivariant.group_coupling import GroupCoupling
+from spectramr.models.generative.equivariant_flow import EquivariantFlow
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 from tests.unit.models._flow_base import assert_log_prob_finite
 
 

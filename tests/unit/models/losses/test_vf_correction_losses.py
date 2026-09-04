@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from mriforge.models.losses import create_loss, list_available
+from spectramr.models.losses import create_loss, list_available
 
 CORRECTION_LOSSES = [
     "gnl_consistency",

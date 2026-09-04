@@ -14,7 +14,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.virtual_fiducial_strategy import (
+from spectramr.infrastructure.training.strategies.virtual_fiducial_strategy import (
     ConcreteVirtualFiducialStrategy,
 )
 
@@ -158,11 +158,12 @@ def test_intermediate_outputs_not_passed_to_plain_loss():
 # the domain-loss router tests above).
 # ---------------------------------------------------------------------------
 
-import pytest  # noqa: E402
 from types import SimpleNamespace  # noqa: E402
 
-from mriforge.config.schemas.conditioning import ConditioningConfig  # noqa: E402
-from mriforge.models.conditioning import (  # noqa: E402
+import pytest  # noqa: E402
+
+from spectramr.config.schemas.conditioning import ConditioningConfig  # noqa: E402
+from spectramr.models.conditioning import (  # noqa: E402
     AdaptiveConditioner,
     ConditioningContext,
 )
@@ -254,7 +255,7 @@ def test_conditioner_film_on_input_is_identity_at_init():
 # symmetric to the target IFFT already present in ``validation_step``.
 # ---------------------------------------------------------------------------
 
-from mriforge.infrastructure.physics.fft_ops import FFTTransformer  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import FFTTransformer  # noqa: E402
 
 
 def test_kspace_prediction_is_ifft_to_image_before_visual():
@@ -290,7 +291,7 @@ def test_forward_model_threads_undersampling_mask() -> None:
     """_forward_model must add the twin's sampling mask to physics_kwargs."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies.virtual_fiducial_strategy import (
+    from spectramr.infrastructure.training.strategies.virtual_fiducial_strategy import (
         ConcreteVirtualFiducialStrategy,
     )
 
@@ -314,7 +315,7 @@ class _MarkerSignalModel(nn.Module):
         super().__init__()
         self.seen_marker_signal = None
 
-    def forward(self, x, marker_signal, **kwargs):  # noqa: ANN001
+    def forward(self, x, marker_signal, **kwargs):
         self.seen_marker_signal = marker_signal
         return x  # echo real-stacked tensor
 
@@ -326,13 +327,13 @@ class _XAttnModel(nn.Module):
         super().__init__()
         self.seen_residual = None
 
-    def forward(self, x, marker_residual, **kwargs):  # noqa: ANN001
+    def forward(self, x, marker_residual, **kwargs):
         self.seen_residual = marker_residual
         return x
 
 
 class _PlainModel(nn.Module):
-    def forward(self, x, **kwargs):  # noqa: ANN001
+    def forward(self, x, **kwargs):
         return x
 
 
@@ -686,7 +687,7 @@ def test_the_carve_out_is_declared_not_inherited_from_base() -> None:
 # scores them so the headline qMRI claim is actually tested (not image-recon
 # only). These pin the seam end-to-end without the heavyweight training stack.
 
-from mriforge.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
     simulate_b0_geometric_distortion,
 )
 
@@ -787,7 +788,7 @@ def test_score_field_structure_noop_without_real_reference_or_estimate():
 
 
 def test_phase_models_expose_last_field_estimate():
-    from mriforge.models.generators.vf_field_generators import (
+    from spectramr.models.generators.vf_field_generators import (
         GraphCutUnwrapGenerator,
         PhaseTrackingLSTM,
     )
@@ -820,9 +821,7 @@ def test_the_twin_snapshot_is_emitted_unconditionally() -> None:
     import inspect
     import textwrap
 
-    src = textwrap.dedent(
-        inspect.getsource(ConcreteVirtualFiducialStrategy._compute_losses_impl)
-    )
+    src = textwrap.dedent(inspect.getsource(ConcreteVirtualFiducialStrategy._compute_losses_impl))
     fn = ast.parse(src).body[0]
     assert isinstance(fn, ast.FunctionDef)
 
@@ -840,3 +839,101 @@ def test_the_twin_snapshot_is_emitted_unconditionally() -> None:
         "call alone, so guarding it makes the wrapper raise mid-run. Either "
         "restore the unconditional call or switch VF to _declare_model_input."
     )
+
+
+# ── 2026-09-03 (VF review): out-of-distribution acceleration readout ─────────
+# ``physics.digital_twin.ood_acceleration_range`` used to be the unread
+# ``undersampling.out_of_distribution_range`` (58 arms, dropped-key baseline).
+# ``_score_at_current_twin`` is the one corrupt-reconstruct-score pass; the
+# readout holds the REAL twin at each rung and re-keys what the pass returns.
+
+
+def _ood_vfs(rng):
+    """A bare VFS on a real twin (4x in distribution) with an identity generator."""
+    from spectramr.infrastructure.physics.digital_twin_simulator import DigitalTwinSimulator
+
+    class _Probe(ConcreteVirtualFiducialStrategy):
+        validation_metrics_computer = None  # the base property needs a validation block
+
+    s = _Probe.__new__(_Probe)
+    s.env = SimpleNamespace(generator=_PlainModel())
+    s._conditioning_context = None
+    s._ensure_conditioner = lambda n: None
+    s.device = torch.device("cpu")
+    s.simulator = DigitalTwinSimulator(
+        im_size=(32, 32),
+        enable_motion=False,
+        snr_range=(100.0, 100.0),
+        enable_undersampling=True,
+        acceleration=4.0,
+    )
+    s.config = SimpleNamespace(
+        model=SimpleNamespace(conditioning=ConditioningConfig(), target_domain="image"),
+        physics=SimpleNamespace(
+            digital_twin=SimpleNamespace(ood_acceleration_range=rng, enable_undersampling=True)
+        ),
+    )
+    return s
+
+
+def test_ood_readout_scores_every_rung_on_the_real_twin_and_restores_it() -> None:
+    from spectramr.infrastructure.training.strategies.ood_acceleration_readout import (
+        ood_acceleration_readout,
+        ood_accelerations,
+    )
+
+    strat = _ood_vfs([16.0, 32.0])
+    target = torch.complex(torch.randn(2, 1, 32, 32), torch.randn(2, 1, 32, 32))
+    with torch.no_grad():
+        scored = strat._score_at_current_twin(target, None, cache_visuals=True)
+        out = ood_acceleration_readout(
+            strat.simulator,
+            ood_accelerations(strat.config),
+            lambda: strat._score_at_current_twin(target, None, cache_visuals=False),
+        )
+    assert set(scored) == {"val_psnr"} and torch.isfinite(torch.tensor(scored["val_psnr"]))
+    assert strat._last_visual_pred is not None  # the in-distribution pass caches visuals
+    assert set(out) == {"val_ood_16x_psnr", "val_ood_32x_psnr", "val_ood_accelerations"}
+    assert out["val_ood_accelerations"] == 2.0
+    assert all(torch.isfinite(torch.tensor(v)) for v in out.values())
+    assert strat.simulator.acceleration == 4.0 and strat.simulator.enable_undersampling is True
+
+
+def test_no_declared_range_gives_a_zero_count_and_no_extra_pass() -> None:
+    from spectramr.infrastructure.training.strategies.ood_acceleration_readout import (
+        ood_acceleration_readout,
+        ood_accelerations,
+    )
+
+    strat = _ood_vfs(None)
+    out = ood_acceleration_readout(
+        strat.simulator, ood_accelerations(strat.config), lambda: pytest.fail("no rung, no pass")
+    )
+    assert out == {"val_ood_accelerations": 0.0}
+
+
+def test_validation_step_scores_the_field_before_the_ood_rungs() -> None:
+    """The field self-consistency reads the twin's LAST fields: it must run before the rungs."""
+    import inspect
+
+    src = inspect.getsource(ConcreteVirtualFiducialStrategy.validation_step)
+    assert src.index("self._score_field(") < src.index("ood_acceleration_readout(")
+
+
+def test_vf_strategy_reads_the_range_and_does_not_claim_the_undersampling_block() -> None:
+    """The twin owns the acceleration; the top-level block reaches nothing here."""
+    assert ConcreteVirtualFiducialStrategy.reads_ood_acceleration_range is True
+    assert ConcreteVirtualFiducialStrategy.applies_undersampling is False
+    assert "applies_undersampling" not in ConcreteVirtualFiducialStrategy.__dict__
+
+
+def test_severity_vector_reports_the_rate_the_twin_is_held_at() -> None:
+    """The conditioning context is rebuilt per pass, so a severity-conditioned model is
+    told the OOD rate inside ``at_acceleration`` and the training rate outside it."""
+    strat = _ood_vfs([16.0])
+    device = torch.device("cpu")
+    outside = _VF._severity_vector(strat.simulator, 1, device)[0, -1].item()
+    with strat.simulator.at_acceleration(16.0):
+        inside = _VF._severity_vector(strat.simulator, 1, device)[0, -1].item()
+    assert abs(outside - (4.0 - 1.0) / 15.0) < 1e-6
+    assert abs(inside - 1.0) < 1e-6

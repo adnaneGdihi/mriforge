@@ -1,6 +1,6 @@
 # Add a training paradigm
 
-A "paradigm" in MRIForge is a complete training loop: how a batch becomes a
+A "paradigm" in spectraMR is a complete training loop: how a batch becomes a
 loss, how the loss back-propagates, what gets logged, when validation runs.
 Examples already in the framework: GAN, diffusion (cold / score / Lévy /
 resetting), VAE, VQ-VAE, MAE / SSL, reconstruction, domain adaptation,
@@ -16,7 +16,7 @@ test. This page is the canonical recipe.
 ### 1. Write the strategy
 
 Create a new file under
-`src/mriforge/infrastructure/training/strategies/<your_paradigm>.py`:
+`src/spectramr/infrastructure/training/strategies/<your_paradigm>.py`:
 
 ```python
 """<one-line description of what this paradigm does>."""
@@ -27,8 +27,8 @@ from typing import Any
 
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.base import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.base import (
     BaseTrainingStrategy,
 )
 
@@ -88,21 +88,21 @@ Key conventions enforced by the audit + reviewed in PR:
 ### 2. Register the dispatch key
 
 Open
-[`src/mriforge/infrastructure/training/strategy_factory.py`](https://github.com/adnaneGdihi/mriforge/blob/main/src/mriforge/infrastructure/training/strategy_factory.py)
+[`src/spectramr/infrastructure/training/strategy_factory.py`](https://github.com/adnaneGdihi/spectramr/blob/main/src/spectramr/infrastructure/training/strategy_factory.py)
 and add an entry to `STRATEGY_CLASS_PATHS`:
 
 ```python
 STRATEGY_CLASS_PATHS = {
     # ... existing entries ...
     "my_paradigm": (
-        "mriforge.infrastructure.training.strategies."
+        "spectramr.infrastructure.training.strategies."
         "my_paradigm.MyParadigmStrategy"
     ),
 }
 ```
 
 Then open
-[`src/mriforge/config/validation_constants.py`](https://github.com/adnaneGdihi/mriforge/blob/main/src/mriforge/config/validation_constants.py)
+[`src/spectramr/config/validation_constants.py`](https://github.com/adnaneGdihi/spectramr/blob/main/src/spectramr/config/validation_constants.py)
 and add matching entries to **both**:
 
 - `VALID_TRAINING_MODES` (set of allowed `training.training_mode` values)
@@ -128,7 +128,7 @@ TRAINING_MODE_CONSTRAINTS = {
   the audit ladder enforces.
 
 A regression test ensures these three lists never drift. See
-[`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/mriforge/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
+[`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/spectramr/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
 for the pattern.
 
 ### 3. Write a reference YAML
@@ -146,7 +146,7 @@ metadata:
 
 data:
   dataset_type: nifti_paired
-  data_root: ${MRIFORGE_DATA_ROOT}/processed/ulf_to_hf_ldm/train
+  data_root: ${SPECTRAMR_DATA_ROOT}/processed/ulf_to_hf_ldm/train
   patch_size: [256, 256, 1]
   batch_size: 4
 
@@ -164,7 +164,7 @@ losses:
 
 training:
   training_mode: my_paradigm
-  strategy_class: mriforge.infrastructure.training.strategies.my_paradigm.MyParadigmStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.my_paradigm.MyParadigmStrategy
   epochs: 100
   seed: 42
   device: cuda
@@ -187,13 +187,13 @@ metrics: {best_metric_name: val_psnr, best_metric_mode: max, domain: image}
 physics: {}
 ```
 
-Use `${MRIFORGE_DATA_ROOT}` for any path outside the package source tree
-(see [.env.example](https://github.com/adnaneGdihi/mriforge/blob/main/.env.example)).
+Use `${SPECTRAMR_DATA_ROOT}` for any path outside the package source tree
+(see [.env.example](https://github.com/adnaneGdihi/spectramr/blob/main/.env.example)).
 
 Validate the YAML:
 
 ```bash
-mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml
+spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml
 ```
 
 Tier 0+1 takes ~100 ms; add `--probe` for the Tier 2 synthetic forward pass.
@@ -201,7 +201,7 @@ See the [audit ladder](../explanation/audit_ladder.md) for what each tier checks
 
 ### 4. Land tests + docs
 
-Two files, both required by [CONTRIBUTING.md](https://github.com/adnaneGdihi/mriforge/blob/main/CONTRIBUTING.md):
+Two files, both required by [CONTRIBUTING.md](https://github.com/adnaneGdihi/spectramr/blob/main/CONTRIBUTING.md):
 
 ```
 tests/unit/infrastructure/training/test_my_paradigm_strategy.py
@@ -217,7 +217,7 @@ The unit test should at minimum:
   `TrainingSettings.from_yaml`.
 
 A worked-out example is
-[`tests/unit/infrastructure/training/test_breakthrough_strategy_aliases.py`](https://github.com/adnaneGdihi/mriforge/blob/main/tests/unit/infrastructure/training/test_breakthrough_strategy_aliases.py).
+[`tests/unit/infrastructure/training/test_breakthrough_strategy_aliases.py`](https://github.com/adnaneGdihi/spectramr/blob/main/tests/unit/infrastructure/training/test_breakthrough_strategy_aliases.py).
 
 ## Common mistakes
 
@@ -226,7 +226,7 @@ A worked-out example is
 | `KeyError: 'my_paradigm'` at runtime | Forgot `STRATEGY_CLASS_PATHS` entry | Step 2 |
 | `ValidationError: training_mode='my_paradigm' is not one of VALID_TRAINING_MODES` | Forgot `validation_constants` entry | Step 2 |
 | Audit fires `paradigm_required_fields` even when the field is set | Forgot `TRAINING_MODE_CONSTRAINTS` entry | Step 2 |
-| Strategy never runs even though audit passes | Decorator-only registry; the package `__init__.py` doesn't import the strategy file | Add an explicit import in `src/mriforge/infrastructure/training/strategies/__init__.py` |
+| Strategy never runs even though audit passes | Decorator-only registry; the package `__init__.py` doesn't import the strategy file | Add an explicit import in `src/spectramr/infrastructure/training/strategies/__init__.py` |
 | `loss_total` is `None` after `train_step` | Returned a plain dict without that key | Return `{"loss_total": loss, ...}` |
 | Throughput drops 10× after adding paradigm | `.item()` or `.cpu()` inside `train_step` | Move to `validate_step` or async logging |
 

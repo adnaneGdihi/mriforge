@@ -1,6 +1,6 @@
 """Tests for ``AttentionConfig``, ``AttentionBackend`` and helpers.
 
-Targets ``mriforge.models.blocks.attention_utils``. The wrapper integrates
+Targets ``spectramr.models.blocks.attention_utils``. The wrapper integrates
 FlashAttention / xFormers / memory-efficient SDP with graceful
 fallbacks. Heavy backend testing is in the integration tier; here we
 exercise the configuration surface that doesn't require external libs.
@@ -8,7 +8,7 @@ exercise the configuration surface that doesn't require external libs.
 
 from __future__ import annotations
 
-from mriforge.models.blocks.attention_utils import (
+from spectramr.models.blocks.attention_utils import (
     AttentionBackend,
     AttentionConfig,
     AttentionWrapper,

@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.model import ModelComponentSchema, ModelConfigSchema
+from spectramr.config.schemas.model import ModelComponentSchema, ModelConfigSchema
 
 
 class TestModelConfigSchema:
@@ -146,10 +146,10 @@ class TestModelTypeHasOneAuthority:
         regression the fallback caused, and the reason deleting it is a fix
         rather than only a simplification.
         """
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.config.validation_constants import VALID_MODEL_TYPES
-        from mriforge.models.init_registry import populate_model_registry
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.config.validation_constants import VALID_MODEL_TYPES
+        from spectramr.models.init_registry import populate_model_registry
+        from spectramr.models.registry import MODEL_REGISTRY
 
         populate_model_registry()
         only_registered = sorted(set(MODEL_REGISTRY) - set(VALID_MODEL_TYPES))
@@ -159,7 +159,7 @@ class TestModelTypeHasOneAuthority:
     def test_an_unregistered_name_still_raises(self):
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
 
         with pytest.raises(ValidationError, match="not found in MODEL_REGISTRY"):
             ModelConfigSchema(model_type="definitely_not_a_model")
@@ -168,7 +168,7 @@ class TestModelTypeHasOneAuthority:
         """A message naming two sources invites adding a name to the wrong one."""
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
 
         with pytest.raises(ValidationError) as exc:
             ModelConfigSchema(model_type="definitely_not_a_model")
@@ -176,6 +176,6 @@ class TestModelTypeHasOneAuthority:
 
     def test_validate_model_type_does_not_read_the_whitelist(self):
         """Source-level: the constant must not be reachable from this module."""
-        import mriforge.config.schemas.model as mod
+        import spectramr.config.schemas.model as mod
 
         assert not hasattr(mod, "VALID_MODEL_TYPES")

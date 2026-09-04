@@ -25,8 +25,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.core.cascading_validation import CASCADING_LEVELS, build_cascade_row
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.core.cascading_validation import CASCADING_LEVELS, build_cascade_row
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
 
 @pytest.fixture

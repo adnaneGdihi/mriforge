@@ -11,15 +11,15 @@ import math
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers import (
+from spectramr.core.metrics.meta_evaluation.rankers import (
     CDSCRRanker,
     ESDRanker,
     FSPDRanker,
     LGDRRanker,
     SFARanker,
 )
-from mriforge.core.metrics.meta_evaluation.rankers.base import BaseRanker
-from mriforge.core.metrics.meta_evaluation.rankers.sfa import _cosine
+from spectramr.core.metrics.meta_evaluation.rankers.base import BaseRanker
+from spectramr.core.metrics.meta_evaluation.rankers.sfa import _cosine
 
 
 def test_ranks_from_scores_orders_finite_descending() -> None:
@@ -62,7 +62,7 @@ def test_cdscr_partial_corr_adjusted_zero_on_independent_data() -> None:
     # H3: the unadjusted multiple R^2 over p predictors is upward-biased; for
     # independent y and X (n=20, p=8) it returns ~0.46, reordering metrics by
     # descriptor count. The adjusted R^2 correctly reports ~0 association.
-    from mriforge.core.metrics.meta_evaluation.rankers.cdscr import _partial_corr
+    from spectramr.core.metrics.meta_evaluation.rankers.cdscr import _partial_corr
 
     torch.manual_seed(0)
     n = 20

@@ -16,7 +16,7 @@ import types
 
 from tests.utils.config_block_stub import block_stub
 
-from mriforge.pipelines.ablation import _resolve_validation_metrics_csv
+from spectramr.pipelines.ablation import _resolve_validation_metrics_csv
 
 
 def test_resolves_from_training_output_dir(tmp_path):
@@ -61,8 +61,8 @@ def test_falls_back_to_logging_log_dir(tmp_path):
 
 from pathlib import Path  # noqa: E402
 
-from mriforge.config.settings import TrainingSettings  # noqa: E402
-from mriforge.pipelines.ablation import (  # noqa: E402
+from spectramr.config.settings import TrainingSettings  # noqa: E402
+from spectramr.pipelines.ablation import (  # noqa: E402
     create_ablation_variant,
     run_ablation_study,
 )

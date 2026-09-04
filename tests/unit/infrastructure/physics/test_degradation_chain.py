@@ -5,13 +5,13 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.degradation_chain import (
+from spectramr.infrastructure.physics.degradation_chain import (
     ChainLink,
     DegradationChain,
     UnapplicableAxisError,
     UnreplayableAxisError,
 )
-from mriforge.infrastructure.physics.digital_twin_extensions import (
+from spectramr.infrastructure.physics.digital_twin_extensions import (
     is_identity_at_theta_zero,
 )
 
@@ -209,8 +209,8 @@ def test_replay_at_theta_zero_reproduces_the_chain_not_more():
     A structured phantom, never torch.rand: with no dominant edge the cohort's
     sharpness attribute moves the wrong way under noise (see the cohort README).
     """
-    from mriforge.config.schemas.physics import DigitalTwinConfig
-    from mriforge.infrastructure.physics.digital_twin_simulator import (
+    from spectramr.config.schemas.physics import DigitalTwinConfig
+    from spectramr.infrastructure.physics.digital_twin_simulator import (
         DigitalTwinSimulator,
     )
 
@@ -251,8 +251,8 @@ def test_emitted_config_pins_theta_in_the_real_simulator(monkeypatch):
     Without this test the calibration artifact is an unverified claim: a degenerate
     range that silently tracked ``cf`` would still produce a plausible image.
     """
-    from mriforge.infrastructure.physics import digital_twin_extensions as dte
-    from mriforge.infrastructure.physics import digital_twin_simulator as dts
+    from spectramr.infrastructure.physics import digital_twin_extensions as dte
+    from spectramr.infrastructure.physics import digital_twin_simulator as dts
 
     real_apply = dte.apply_degradation  # capture BEFORE patching
     chain = _chain()

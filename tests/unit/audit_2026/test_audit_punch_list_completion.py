@@ -21,7 +21,7 @@ from tests.utils.optional_backends import requires_cuda_for_mamba
 
 
 def test_all_eight_2026_validators_registered() -> None:
-    from mriforge.config.schemas.validator_registry import get_validator_registry
+    from spectramr.config.schemas.validator_registry import get_validator_registry
 
     reg = get_validator_registry()
     names = set(reg._validators.keys())
@@ -39,7 +39,7 @@ def test_all_eight_2026_validators_registered() -> None:
 
 
 def test_validator_epi_phase_encode_raises_when_missing() -> None:
-    from mriforge.config.schemas.audit_plan_novel_2026_validators import (
+    from spectramr.config.schemas.audit_plan_novel_2026_validators import (
         _validate_epi_phase_encode_direction_required,
     )
 
@@ -51,7 +51,7 @@ def test_validator_epi_phase_encode_raises_when_missing() -> None:
 
 
 def test_validator_mrf_pulse_sar_required() -> None:
-    from mriforge.config.schemas.audit_plan_novel_2026_validators import (
+    from spectramr.config.schemas.audit_plan_novel_2026_validators import (
         _validate_mrf_pulse_sar_compliance,
     )
 
@@ -69,7 +69,7 @@ def test_validator_mrf_pulse_sar_required() -> None:
 
 
 def test_teichmuller_cold_diffusion_strategy_registered() -> None:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -90,7 +90,7 @@ def test_teichmuller_cold_diffusion_strategy_smoke() -> None:
     Every ``self.<lambda_*>`` the loss reads MUST be patched here. If you add one to
     ``__init__``, add it below or this test breaks in exactly the same way.
     """
-    from mriforge.infrastructure.training.strategies.teichmuller_cold_diffusion_strategy import (
+    from spectramr.infrastructure.training.strategies.teichmuller_cold_diffusion_strategy import (
         TeichmullerColdDiffusionStrategy,
     )
 
@@ -110,7 +110,7 @@ def test_teichmuller_cold_diffusion_strategy_smoke() -> None:
         lambda s: s.env.models["generator"]
     )
     # Patch in the schedule head and buffers (would normally be done by __init__).
-    from mriforge.models.diffusion.teichmuller_schedule import TeichmullerScheduleHead
+    from spectramr.models.diffusion.teichmuller_schedule import TeichmullerScheduleHead
 
     inst.n_steps = 4
     inst.schedule_head = TeichmullerScheduleHead(hidden=4, r_max=0.9)
@@ -130,7 +130,7 @@ def test_teichmuller_cold_diffusion_strategy_smoke() -> None:
 
 
 def test_four_2026_plotters_registered() -> None:
-    from mriforge.infrastructure.reporting.plotters import PLOTTERS
+    from spectramr.infrastructure.reporting.plotters import PLOTTERS
 
     for n in (
         "fig_c1_beltrami_field",
@@ -142,7 +142,7 @@ def test_four_2026_plotters_registered() -> None:
 
 
 def test_beltrami_field_plotter_renders(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.plotters.sfc_conformal_plots import (
+    from spectramr.infrastructure.reporting.plotters.sfc_conformal_plots import (
         make_beltrami_field,
     )
 
@@ -152,7 +152,7 @@ def test_beltrami_field_plotter_renders(tmp_path: Path) -> None:
 
 
 def test_teichmuller_schedule_plotter_renders(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.plotters.sfc_conformal_plots import (
+    from spectramr.infrastructure.reporting.plotters.sfc_conformal_plots import (
         make_teichmuller_schedule,
     )
 
@@ -163,7 +163,7 @@ def test_teichmuller_schedule_plotter_renders(tmp_path: Path) -> None:
 
 
 def test_fingerprint_embedding_plotter_renders(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.plotters.sfc_conformal_plots import (
+    from spectramr.infrastructure.reporting.plotters.sfc_conformal_plots import (
         make_fingerprint_embedding,
     )
 
@@ -176,7 +176,7 @@ def test_fingerprint_embedding_plotter_renders(tmp_path: Path) -> None:
 
 
 def test_spd_geodesic_plotter_renders(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.plotters.sfc_conformal_plots import (
+    from spectramr.infrastructure.reporting.plotters.sfc_conformal_plots import (
         make_spd_geodesic_trajectory,
     )
 
@@ -202,7 +202,7 @@ def test_attach_conformal_jacobian_refuses_to_fabricate() -> None:
     """
     import pytest
 
-    from mriforge.data.transforms.sfc_conformal_fmri_keys import (
+    from spectramr.data.transforms.sfc_conformal_fmri_keys import (
         attach_conformal_jacobian,
     )
 
@@ -213,7 +213,7 @@ def test_attach_conformal_jacobian_refuses_to_fabricate() -> None:
 
 
 def test_attach_cortex_flatten_grid_shape() -> None:
-    from mriforge.data.transforms.sfc_conformal_fmri_keys import (
+    from spectramr.data.transforms.sfc_conformal_fmri_keys import (
         attach_cortex_flatten_grid,
     )
 
@@ -223,7 +223,7 @@ def test_attach_cortex_flatten_grid_shape() -> None:
 
 
 def test_attach_glm_design_matrix_shape() -> None:
-    from mriforge.data.transforms.sfc_conformal_fmri_keys import attach_glm_design_matrix
+    from spectramr.data.transforms.sfc_conformal_fmri_keys import attach_glm_design_matrix
 
     batch = {"image": torch.randn(2, 1, 16, 16)}
     attach_glm_design_matrix(batch, n_timepoints=16)
@@ -231,7 +231,7 @@ def test_attach_glm_design_matrix_shape() -> None:
 
 
 def test_attach_scanner_id_default() -> None:
-    from mriforge.data.transforms.sfc_conformal_fmri_keys import attach_scanner_id
+    from spectramr.data.transforms.sfc_conformal_fmri_keys import attach_scanner_id
 
     batch = {"image": torch.randn(4, 1, 8, 8)}
     attach_scanner_id(batch, default_id=2)
@@ -239,7 +239,7 @@ def test_attach_scanner_id_default() -> None:
 
 
 def test_attach_scanner_id_from_vendor_list() -> None:
-    from mriforge.data.transforms.sfc_conformal_fmri_keys import attach_scanner_id
+    from spectramr.data.transforms.sfc_conformal_fmri_keys import attach_scanner_id
 
     batch = {"image": torch.randn(2, 1, 8, 8), "scanner": ["siemens", "ge"]}
     attach_scanner_id(batch)
@@ -251,14 +251,14 @@ def test_attach_scanner_id_from_vendor_list() -> None:
 
 
 def test_fmri_volume_dataset_empty_dir(tmp_path: Path) -> None:
-    from mriforge.data.datasets.fmri_dataset import FMRIVolumeDataset
+    from spectramr.data.datasets.fmri_dataset import FMRIVolumeDataset
 
     ds = FMRIVolumeDataset(tmp_path)
     assert len(ds) == 0
 
 
 def test_fmri_volume_dataset_reads_npy(tmp_path: Path) -> None:
-    from mriforge.data.datasets.fmri_dataset import FMRIVolumeDataset
+    from spectramr.data.datasets.fmri_dataset import FMRIVolumeDataset
 
     arr = np.random.randn(4, 8, 8, 1).astype("float32")
     np.save(tmp_path / "vol.npy", arr)
@@ -270,7 +270,7 @@ def test_fmri_volume_dataset_reads_npy(tmp_path: Path) -> None:
 
 
 def test_cortical_surface_dataset_loads_paired_grid(tmp_path: Path) -> None:
-    from mriforge.data.datasets.fmri_dataset import CorticalSurfaceDataset
+    from spectramr.data.datasets.fmri_dataset import CorticalSurfaceDataset
 
     arr = np.random.randn(4, 8, 8, 1).astype("float32")
     np.save(tmp_path / "vol.npy", arr)
@@ -286,7 +286,7 @@ def test_cortical_surface_dataset_loads_paired_grid(tmp_path: Path) -> None:
 
 @requires_cuda_for_mamba
 def test_bimamba_4d_block_residual_shape() -> None:
-    from mriforge.models.blocks.space_filling_curves import BiMamba4DBlock
+    from spectramr.models.blocks.space_filling_curves import BiMamba4DBlock
 
     blk = BiMamba4DBlock(channels=4, kernel_size=5)
     x = torch.randn(2, 4, 3, 8, 8)
@@ -296,7 +296,7 @@ def test_bimamba_4d_block_residual_shape() -> None:
 
 @requires_cuda_for_mamba
 def test_bimamba_4d_block_uses_sfc_indices_when_provided() -> None:
-    from mriforge.models.blocks.space_filling_curves import BiMamba4DBlock
+    from spectramr.models.blocks.space_filling_curves import BiMamba4DBlock
 
     blk = BiMamba4DBlock(channels=4)
     x = torch.randn(2, 4, 2, 4, 4)
@@ -307,7 +307,7 @@ def test_bimamba_4d_block_uses_sfc_indices_when_provided() -> None:
 
 @requires_cuda_for_mamba
 def test_mrf_mamba_block_applies_rotation_to_first_channels() -> None:
-    from mriforge.models.blocks.space_filling_curves import MRFMambaBlock4D
+    from spectramr.models.blocks.space_filling_curves import MRFMambaBlock4D
 
     blk = MRFMambaBlock4D(channels=4)
     x = torch.randn(1, 4, 3, 8, 8)
@@ -320,7 +320,7 @@ def test_mrf_mamba_block_applies_rotation_to_first_channels() -> None:
 
 
 def test_cortical_mesh_round_trip() -> None:
-    from mriforge.infrastructure.surfaces import CorticalMesh
+    from spectramr.infrastructure.surfaces import CorticalMesh
 
     v = np.random.randn(64, 3).astype("float32")
     f = np.random.randint(0, 64, size=(120, 3)).astype("int32")
@@ -331,7 +331,7 @@ def test_cortical_mesh_round_trip() -> None:
 
 
 def test_conformal_flattening_produces_disk_grid() -> None:
-    from mriforge.infrastructure.surfaces import ConformalFlattening, CorticalMesh
+    from spectramr.infrastructure.surfaces import ConformalFlattening, CorticalMesh
 
     v = np.random.randn(32, 3).astype("float32")
     f = np.random.randint(0, 32, size=(60, 3)).astype("int32")
@@ -342,7 +342,7 @@ def test_conformal_flattening_produces_disk_grid() -> None:
 
 
 def test_surface_mamba_block_forward() -> None:
-    from mriforge.infrastructure.surfaces import SurfaceMambaBlock
+    from spectramr.infrastructure.surfaces import SurfaceMambaBlock
 
     blk = SurfaceMambaBlock(channels=4, kernel_size=5)
     x = torch.randn(2, 4, 8, 8)
@@ -356,7 +356,7 @@ def test_surface_mamba_block_forward() -> None:
 def test_design_mrf_sequence_writes_yaml(tmp_path: Path) -> None:
     import argparse
     import yaml
-    from mriforge.cli.design_mrf_sequence_cli import design_mrf_sequence_cmd
+    from spectramr.cli.design_mrf_sequence_cli import design_mrf_sequence_cmd
 
     target_path = tmp_path / "prior.yaml"
     target_path.write_text(

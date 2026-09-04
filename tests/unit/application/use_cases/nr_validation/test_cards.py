@@ -1,6 +1,6 @@
 """Tests for the NR-validation shared contract + Tier-1 concordance scorer.
 
-Covers :mod:`mriforge.application.use_cases.nr_validation.cards`:
+Covers :mod:`spectramr.application.use_cases.nr_validation.cards`:
 ``TierResult`` / ``MetricCard`` / ``build_cards`` folding, the NaN-safe rank
 statistics (``spearman`` / ``kendall_tau``), the per-image ``eval_metric``
 evaluator, and ``score_concordance`` (spec §8.1) including the constant-trajectory
@@ -14,7 +14,7 @@ import math
 import pytest
 import torch
 
-from mriforge.application.use_cases.nr_validation.cards import (
+from spectramr.application.use_cases.nr_validation.cards import (
     MetricCard,
     TierResult,
     build_cards,
@@ -23,7 +23,7 @@ from mriforge.application.use_cases.nr_validation.cards import (
     score_concordance,
     spearman,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )

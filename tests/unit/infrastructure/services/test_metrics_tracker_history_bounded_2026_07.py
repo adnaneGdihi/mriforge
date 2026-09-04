@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from collections import deque
 
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
 
 def _log_training(tracker: MetricsTracker, *, step: int, **quality) -> None:

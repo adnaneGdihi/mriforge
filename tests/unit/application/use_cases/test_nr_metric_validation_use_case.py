@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.application.use_cases.nr_metric_validation_use_case import (
+from spectramr.application.use_cases.nr_metric_validation_use_case import (
     DEFAULT_NR_BATTERY,
     HARNESS_TIERS,
     NRMetricValidationConfig,

@@ -9,8 +9,8 @@ provides declares itself ``STATIC_ONLY`` (issue #954).
 
 from __future__ import annotations
 
-from mriforge.infrastructure.physics.sampling import STATIC_ONLY_MASK_TYPES, MaskType
-from mriforge.infrastructure.physics.sampling_registry import SamplingPatternRegistry
+from spectramr.infrastructure.physics.sampling import STATIC_ONLY_MASK_TYPES, MaskType
+from spectramr.infrastructure.physics.sampling_registry import SamplingPatternRegistry
 
 
 def test_shared_names_mean_the_same_thing() -> None:
@@ -49,7 +49,7 @@ def test_static_only_members_are_real_and_really_static() -> None:
 
 def test_the_static_path_no_longer_carries_its_own_alias_table() -> None:
     """kspace_masks translated pattern names through a private dict of its own."""
-    from mriforge.infrastructure.training.utils import kspace_masks
+    from spectramr.infrastructure.training.utils import kspace_masks
 
     assert not hasattr(kspace_masks, "_PATTERN_TO_MASKTYPE"), (
         "the static-path alias map is now owned by MaskType itself"
@@ -64,7 +64,7 @@ def test_the_translation_map_only_names_things_both_sides_know() -> None:
     resolving, or a value that stops being a member, is exactly how the two
     drifted apart the first time.
     """
-    from mriforge.infrastructure.physics.sampling import ACCELERATOR_TO_MASK_TYPE
+    from spectramr.infrastructure.physics.sampling import ACCELERATOR_TO_MASK_TYPE
 
     canonical = set(SamplingPatternRegistry.list_canonical())
     for name, member in ACCELERATOR_TO_MASK_TYPE.items():
@@ -80,7 +80,7 @@ def test_the_generators_own_default_pattern_is_renderable() -> None:
     """
     import inspect
 
-    from mriforge.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
+    from spectramr.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
 
     default = inspect.signature(KSpaceMaskGenerator).parameters["default_pattern"].default
     generator = KSpaceMaskGenerator(default_pattern=default)

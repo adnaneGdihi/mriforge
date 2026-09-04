@@ -13,7 +13,7 @@ import math
 import torch
 import torch.nn.functional as F  # noqa: N812 - universal PyTorch idiom
 
-from mriforge.core.metrics.task_based_detectability import TaskBasedDetectability
+from spectramr.core.metrics.task_based_detectability import TaskBasedDetectability
 
 
 def _smooth_anatomy(seed: int, h: int = 96, w: int = 96) -> torch.Tensor:
@@ -165,7 +165,7 @@ def test_degenerate_inputs_return_nan() -> None:
 
 
 def test_registered_with_direction() -> None:
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     reg = MetricsRegistry()
     assert "task_based_detectability" in reg.list_available()

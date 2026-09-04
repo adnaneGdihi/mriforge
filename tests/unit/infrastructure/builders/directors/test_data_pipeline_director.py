@@ -2,7 +2,7 @@
 
 ``DataPipelineDirector`` is one of the ``(config)``-only builders migrated to
 the canonical ``def __init__(self, ctx: BuilderContext)`` shape behind the
-:func:`mriforge.infrastructure.builders.context.accepts_builder_context` shim.
+:func:`spectramr.infrastructure.builders.context.accepts_builder_context` shim.
 These tests pin both construction paths:
 
 * legacy ``DataPipelineDirector(config)`` (what ~all call sites still pass), and
@@ -19,9 +19,9 @@ import warnings
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (
     DataPipelineDirector,
     resolve_sfc_expose_flags,
     strided_validation_subset,
@@ -198,7 +198,7 @@ def test_both_forms_produce_equivalent_state(settings: TrainingSettings) -> None
 def test_legacy_path_is_silent(settings: TrainingSettings) -> None:
     """Migration shim must not emit a DeprecationWarning on the legacy form.
 
-    The repo promotes ``mriforge.*`` ``DeprecationWarning`` to a test error;
+    The repo promotes ``spectramr.*`` ``DeprecationWarning`` to a test error;
     the default (``warn=False``) shim must stay silent so existing callers
     do not break.
     """
@@ -230,8 +230,8 @@ def test_build_dataloaders_forwards_num_workers_to_train_queue(
     import torch
     from torch.utils.data import DataLoader, TensorDataset
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     dummy = TensorDataset(torch.zeros(4, 1, 8, 8))
     captured: dict = {}
@@ -264,7 +264,7 @@ def test_build_dataloaders_forwards_num_workers_to_train_queue(
 
 def test_self_indexed_types_include_oracle_bssfp() -> None:
     """The skip-set names oracle_bssfp alongside the synthetic / generated types."""
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         _self_indexed_dataset_types,
     )
 
@@ -285,9 +285,9 @@ def test_skip_set_is_derived_not_restated() -> None:
     through to the fastMRI H5 pre-split. Subset in one direction is not enough:
     that is exactly the shape the stale list satisfied for two months.
     """
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-    from mriforge.data.datasets.registry import DATASET_REGISTRY
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.datasets.registry import DATASET_REGISTRY
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         _self_indexed_dataset_types,
     )
 
@@ -314,7 +314,7 @@ def test_skip_set_survives_importing_the_director_first() -> None:
         [
             sys.executable,
             "-c",
-            "from mriforge.infrastructure.builders.directors import "
+            "from spectramr.infrastructure.builders.directors import "
             "data_pipeline_director as d; "
             "print(len(d._self_indexed_dataset_types()))",
         ],
@@ -365,9 +365,9 @@ def test_oracle_bssfp_skips_fastmri_manifest_loading(tmp_path) -> None:
     import torch
     from torch.utils.data import DataLoader, TensorDataset
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-    from mriforge.data.builders.manifest_loader import ManifestLoader
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.manifest_loader import ManifestLoader
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     settings = _oracle_settings(tmp_path)
     dummy = TensorDataset(torch.zeros(4, 1, 8, 8))
@@ -415,8 +415,8 @@ def test_mrixfields_bypasses_tio_queue(tmp_path) -> None:
     import torch
     from torch.utils.data import DataLoader, TensorDataset
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     manifest = {
         "data_root": "",
@@ -494,7 +494,7 @@ def test_validation_loader_uses_no_worker_fanout(tmp_path) -> None:
     import torch
     from torch.utils.data import TensorDataset
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 
     manifest = {
         "data_root": "",
@@ -565,9 +565,9 @@ def test_full_sampler_bypasses_tio_queue_for_training(tmp_path) -> None:
     import torch
     from torch.utils.data import DataLoader, TensorDataset
 
-    from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-    from mriforge.data.builders.manifest_loader import ManifestLoader
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+    from spectramr.data.builders.manifest_loader import ManifestLoader
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     manifest = {
         "data_root": "",
@@ -818,8 +818,8 @@ class TestSliceSamplerSelection:
     """
 
     def test_builds_a_sampler_for_a_slice_expanded_dataset(self) -> None:
-        from mriforge.data.samplers import VolumeBlockedSliceSampler
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.data.samplers import VolumeBlockedSliceSampler
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _build_slice_sampler,
         )
 
@@ -840,7 +840,7 @@ class TestSliceSamplerSelection:
         If they disagree the blocking buys nothing — it would pack blocks the cache
         cannot hold, which is the zero-hit-rate regime all over again.
         """
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _build_slice_sampler,
         )
 
@@ -854,7 +854,7 @@ class TestSliceSamplerSelection:
         assert _build_slice_sampler(_DS())._max_resident == 11
 
     def test_returns_none_when_there_is_nothing_to_amortise(self) -> None:
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _build_slice_sampler,
         )
 
@@ -879,8 +879,8 @@ def test_self_indexed_types_are_all_canonical() -> None:
     constructed -- so the entry described skip-the-manifest-pre-split behaviour
     for a config that could never load.
     """
-    from mriforge.config.schemas.data import CANONICAL_DATASET_TYPES
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.config.schemas.data import CANONICAL_DATASET_TYPES
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         _self_indexed_dataset_types,
     )
 
@@ -901,9 +901,9 @@ def test_presplit_raises_for_a_self_indexed_type_that_is_not_skipped(tmp_path) -
     import nibabel as nib
     import numpy as np
 
-    from mriforge.data.builders.manifest_loader import ManifestLoader
-    from mriforge.data.datasets.cine_dataset import build_cine_index
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.data.builders.manifest_loader import ManifestLoader
+    from spectramr.data.datasets.cine_dataset import build_cine_index
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         _self_indexed_dataset_types,
     )
 
@@ -944,7 +944,7 @@ class TestSharesExpensiveVolumeDecode:
         return _DS()
 
     def test_true_for_slice_expanded_volume_containers(self) -> None:
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _shares_expensive_volume_decode,
         )
 
@@ -953,7 +953,7 @@ class TestSharesExpensiveVolumeDecode:
     def test_false_without_the_container_mapping(self) -> None:
         """``npy_slice`` — samples are already independent 2-D files, so worker
         fan-out costs nothing and the OOM mechanism does not apply."""
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _shares_expensive_volume_decode,
         )
 
@@ -963,7 +963,7 @@ class TestSharesExpensiveVolumeDecode:
         assert _shares_expensive_volume_decode(_NpySlice()) is False
 
     def test_false_when_there_are_no_containers(self) -> None:
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _shares_expensive_volume_decode,
         )
 
@@ -987,7 +987,7 @@ class TestSharesExpensiveVolumeDecode:
         """
         from torch.utils.data import Subset
 
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _shares_expensive_volume_decode,
         )
 
@@ -998,7 +998,7 @@ class TestSharesExpensiveVolumeDecode:
     def test_a_wrapper_without_getattr_hides_the_answer(self) -> None:
         """Same hazard via the optional wrappers. Neither ``LazyEncodeWrapper``
         nor ``SFCConformalFMRIKeysWrapper`` defines ``__getattr__``."""
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _shares_expensive_volume_decode,
         )
 
@@ -1010,7 +1010,7 @@ class TestSharesExpensiveVolumeDecode:
 
     def test_build_slice_sampler_agrees_with_the_predicate(self) -> None:
         """SSOT: the sampler returns None exactly when the predicate is False."""
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _build_slice_sampler,
             _shares_expensive_volume_decode,
         )
@@ -1031,7 +1031,7 @@ class TestValidationWorkerKnob:
     expensive decode, which ``npy_slice`` validation does not have."""
 
     def test_field_exists_and_defaults_to_zero(self) -> None:
-        from mriforge.config.schemas.validation import ValidationLoaderConfigSchema
+        from spectramr.config.schemas.validation import ValidationLoaderConfigSchema
 
         field = ValidationLoaderConfigSchema.model_fields["num_workers"]
         assert field.default == 0
@@ -1039,7 +1039,7 @@ class TestValidationWorkerKnob:
     def test_description_carries_the_oom_history(self) -> None:
         """A knob whose only safe value is the default must say WHY in the place
         a user reads before setting it, or the next person re-opens the bug."""
-        from mriforge.config.schemas.validation import ValidationLoaderConfigSchema
+        from spectramr.config.schemas.validation import ValidationLoaderConfigSchema
 
         desc = ValidationLoaderConfigSchema.model_fields["num_workers"].description
         assert desc is not None
@@ -1049,7 +1049,7 @@ class TestValidationWorkerKnob:
     def test_negative_is_rejected_by_the_schema(self) -> None:
         import pydantic
 
-        from mriforge.config.schemas.validation import ValidationLoaderConfigSchema
+        from spectramr.config.schemas.validation import ValidationLoaderConfigSchema
 
         with pytest.raises(pydantic.ValidationError):
             ValidationLoaderConfigSchema(num_workers=-1)
@@ -1119,7 +1119,7 @@ class TestValidationWorkerGuardActuallyFires:
         settings object, so the test exercises the real
         config -> schema -> director path the knob has to survive.
         """
-        from mriforge.data.builders import dataset_instantiator
+        from spectramr.data.builders import dataset_instantiator
 
         config_file = tmp_path / "guard.yaml"
         config_file.write_text(textwrap.dedent(f"""
@@ -1281,7 +1281,7 @@ class TestMultiDomainOverrides:
 
     @staticmethod
     def _domains():
-        from mriforge.config.schemas.data import DomainConfigSchema
+        from spectramr.config.schemas.data import DomainConfigSchema
 
         return (
             DomainConfigSchema(
@@ -1294,8 +1294,8 @@ class TestMultiDomainOverrides:
         )
 
     def test_overrides_land_on_the_consumed_path(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _apply_domain_overrides,
         )
 
@@ -1312,8 +1312,8 @@ class TestMultiDomainOverrides:
         assert cfg_a.dataset_type == "fastmri"
 
     def test_unset_fields_inherit_and_parent_is_untouched(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _apply_domain_overrides,
         )
 
@@ -1329,8 +1329,8 @@ class TestMultiDomainOverrides:
 
     def test_no_shadow_attribute_is_created(self) -> None:
         """The override must not leave a same-named attribute nothing reads."""
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _apply_domain_overrides,
         )
 
@@ -1343,8 +1343,8 @@ class TestMultiDomainOverrides:
         """A destination that MOVES must fail loud, not write a shadow attr."""
         import pytest
 
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.directors import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.directors import (
             data_pipeline_director as dpd,
         )
 
@@ -1357,8 +1357,8 @@ class TestMultiDomainOverrides:
 
     def test_every_destination_is_a_real_field_today(self) -> None:
         """The mapping itself must not rot: walk each destination for real."""
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.infrastructure.builders.directors.data_pipeline_director import (
             _DOMAIN_OVERRIDE_DESTINATIONS,
         )
 
@@ -1382,7 +1382,7 @@ class TestMultiDomainOverrides:
         """
         import pytest
 
-        from mriforge.config.schemas.data import (
+        from spectramr.config.schemas.data import (
             DomainConfigSchema,
             MultiDomainConfigSchema,
         )
@@ -1411,7 +1411,7 @@ class TestWorkerClampAtTheDirectorChokePoint:
 
     @staticmethod
     def _topology(*, world_size: int, local_world_size: int, cpus: float | None):
-        from mriforge.core.topology import RunTopology
+        from spectramr.core.topology import RunTopology
 
         return RunTopology(
             execution_mode="slurm",
@@ -1432,9 +1432,9 @@ class TestWorkerClampAtTheDirectorChokePoint:
         import torch
         from torch.utils.data import DataLoader, TensorDataset
 
-        from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
-        from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
-        from mriforge.infrastructure.builders.directors import (
+        from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
+        from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+        from spectramr.infrastructure.builders.directors import (
             data_pipeline_director as dpd,
         )
 

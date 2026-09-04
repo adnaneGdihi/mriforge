@@ -12,7 +12,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
 
 
 class MockLoggingService:

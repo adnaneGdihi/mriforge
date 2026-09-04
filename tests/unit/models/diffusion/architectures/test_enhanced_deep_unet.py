@@ -9,7 +9,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.diffusion.architectures.enhanced_deep_unet import (
+from spectramr.models.diffusion.architectures.enhanced_deep_unet import (
     ChiSquareDiffusionUNet,
     EnhancedDeepDiffusionUNet,
     GaussianDiffusionUNet,

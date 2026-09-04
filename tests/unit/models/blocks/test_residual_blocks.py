@@ -7,7 +7,7 @@ pre-activation variants, and unified configurable residual blocks.
 import pytest  # noqa: F401
 import torch
 
-from mriforge.models.blocks.residual import (
+from spectramr.models.blocks.residual import (
     PreActResidualBlock,
     ResidualBlock,
     UnifiedResidualBlock,

@@ -16,9 +16,9 @@ import pytest
 
 torch = pytest.importorskip("torch")  # noqa: E402
 
-from mriforge.models import generators  # noqa: F401, E402  triggers @register_model
-from mriforge.models.generators.cs_mno_operator import CSMNOOperator  # noqa: E402
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models import generators  # noqa: F401, E402  triggers @register_model
+from spectramr.models.generators.cs_mno_operator import CSMNOOperator  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 
 
 def test_model_is_registered_for_reconstruction_mode() -> None:

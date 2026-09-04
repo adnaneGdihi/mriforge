@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.bloch_manifold_dps import (
+from spectramr.config.schemas.training.bloch_manifold_dps import (
     BlochManifoldDPSConfig,
     TrainingConfigBlochManifoldDPS,
 )
@@ -92,7 +92,7 @@ def test_bad_pulse_sequence_rejected():
 
 
 def test_top_level_schema_extends_diffusion_and_mounts_block():
-    from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+    from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
     # The top-level config extends the diffusion schema (so it inherits
     # timesteps / noise_schedule / sampler / ...) and adds the required
@@ -109,7 +109,7 @@ def test_full_yaml_loads_through_settings():
     """End-to-end: the shipped arm loads via the real TrainingSettings path."""
     from pathlib import Path
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     yaml_path = Path("experiments/inprogress/vf/exp_p2_b2_bloch_manifold_dps.yaml")
     if not yaml_path.exists():

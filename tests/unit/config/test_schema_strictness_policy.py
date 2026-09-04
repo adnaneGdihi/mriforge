@@ -33,16 +33,16 @@ import pkgutil
 
 from pydantic import BaseModel
 
-import mriforge.config.schemas as schemas_pkg
+import spectramr.config.schemas as schemas_pkg
 
 
 def _discover_schema_classes() -> list[type[BaseModel]]:
     """Force-import every schema module, then collect all BaseModel subclasses
-    defined under ``mriforge.config`` (schemas package + the root settings)."""
+    defined under ``spectramr.config`` (schemas package + the root settings)."""
     for mod in pkgutil.walk_packages(schemas_pkg.__path__, schemas_pkg.__name__ + "."):
         importlib.import_module(mod.name)
     # the root TrainingSettings lives one level up and must also comply
-    importlib.import_module("mriforge.config.settings")
+    importlib.import_module("spectramr.config.settings")
 
     seen: set[type] = set()
     stack: list[type] = [BaseModel]
@@ -53,7 +53,7 @@ def _discover_schema_classes() -> list[type[BaseModel]]:
                 seen.add(sub)
                 stack.append(sub)
     return sorted(
-        (c for c in seen if c.__module__.startswith("mriforge.config")),
+        (c for c in seen if c.__module__.startswith("spectramr.config")),
         key=lambda c: f"{c.__module__}.{c.__qualname__}",
     )
 
@@ -64,10 +64,10 @@ def _discover_schema_classes() -> list[type[BaseModel]]:
 ALLOW_ALLOWLIST: frozenset[str] = frozenset(
     {
         # The canonical 'allow' base itself (defines the policy, never loaded directly).
-        "mriforge.config.schemas.strictness.StrategySchema",
-        "mriforge.config.schemas.adapters.AdapterStepSchema",
-        "mriforge.config.schemas.audit.ksd.KSDAuditConfigSchema",
-        "mriforge.config.schemas.training.base.DiffusionTrainingConfigSchema",
+        "spectramr.config.schemas.strictness.StrategySchema",
+        "spectramr.config.schemas.adapters.AdapterStepSchema",
+        "spectramr.config.schemas.audit.ksd.KSDAuditConfigSchema",
+        "spectramr.config.schemas.training.base.DiffusionTrainingConfigSchema",
         # The two paradigm variants that could NOT be tightened when
         # `training.diffusion` became a discriminated union (2026-08-12).
         #
@@ -82,26 +82,32 @@ ALLOW_ALLOWLIST: frozenset[str] = frozenset(
         # makes live `inprogress/` arms unloadable, and `ignore` silently drops
         # them, which is the defect the cleanup exists to remove. Tightening
         # these needs an owner decision on those three keys, not a policy edit.
-        "mriforge.config.schemas.training.base.ColdParams",
-        "mriforge.config.schemas.training.base.LatentDiffusionParams",
+        "spectramr.config.schemas.training.base.ColdParams",
+        "spectramr.config.schemas.training.base.LatentDiffusionParams",
         # Transitional by design: it exists so the 75 arms that declare no
         # paradigm tag keep loading unchanged. Tightening it would make landing
         # the union a breaking change instead of a behaviour-neutral one. It
         # drains as arms declare a tag, and is deleted when the count reaches
         # zero -- the same ratchet shape as `fold` -> `raise`.
-        "mriforge.config.schemas.training.base.UnspecifiedParams",
-        "mriforge.config.schemas.training.base.LatentTrainingConfigSchema",
-        "mriforge.config.schemas.training.base.TrainingStrategyConfigSchema",
-        "mriforge.config.schemas.training.bloch_manifold_dps.TrainingConfigBlochManifoldDPS",
-        "mriforge.config.schemas.training.equivariance_conformal.TrainingConfigEquivarianceConformal",
-        "mriforge.config.schemas.training.pmps.TrainingConfigCorruptionCalibration",
-        "mriforge.config.schemas.training.pmps.TrainingConfigDataEfficiencyHarness",
-        "mriforge.config.schemas.training.pmps.TrainingConfigPairedSynthesis",
-        "mriforge.config.schemas.training.pmps.TrainingConfigTissueDiffusionPretrain",
-        "mriforge.config.schemas.training.phys_residual_conformal.TrainingConfigPhysResidualConformal",
-        "mriforge.config.schemas.training.se3_navigator.TrainingConfigSE3Navigator",
-        "mriforge.config.schemas.training.vf_advanced.TrainingConfigIBVF",
-        "mriforge.config.schemas.training.vf_advanced.TrainingConfigTwinDPS",
+        "spectramr.config.schemas.training.base.UnspecifiedParams",
+        # Mounted on TrainingSettings.metadata on 2026-09-02. The corpus carries about
+        # thirty free-form bookkeeping keys (`note`, `negative_result_plan`,
+        # `dataset_baseline`, ...) that no code reads; `forbid` would fail the
+        # config-load gate on most arms and `ignore` would drop them from the
+        # provenance stamp. The closed field is `status`; `tags.status` is rejected.
+        "spectramr.config.schemas.base.ExperimentMetadataSchema",
+        "spectramr.config.schemas.training.base.LatentTrainingConfigSchema",
+        "spectramr.config.schemas.training.base.TrainingStrategyConfigSchema",
+        "spectramr.config.schemas.training.bloch_manifold_dps.TrainingConfigBlochManifoldDPS",
+        "spectramr.config.schemas.training.equivariance_conformal.TrainingConfigEquivarianceConformal",
+        "spectramr.config.schemas.training.pmps.TrainingConfigCorruptionCalibration",
+        "spectramr.config.schemas.training.pmps.TrainingConfigDataEfficiencyHarness",
+        "spectramr.config.schemas.training.pmps.TrainingConfigPairedSynthesis",
+        "spectramr.config.schemas.training.pmps.TrainingConfigTissueDiffusionPretrain",
+        "spectramr.config.schemas.training.phys_residual_conformal.TrainingConfigPhysResidualConformal",
+        "spectramr.config.schemas.training.se3_navigator.TrainingConfigSE3Navigator",
+        "spectramr.config.schemas.training.vf_advanced.TrainingConfigIBVF",
+        "spectramr.config.schemas.training.vf_advanced.TrainingConfigTwinDPS",
     }
 )
 

@@ -15,8 +15,8 @@ from unittest.mock import MagicMock
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.optimizers.amp_policy import AMPPolicy
-from mriforge.infrastructure.training.strategies.mixins.optimizer import OptimizerMixin
+from spectramr.infrastructure.training.optimizers.amp_policy import AMPPolicy
+from spectramr.infrastructure.training.strategies.mixins.optimizer import OptimizerMixin
 
 
 def test_optimizer_mixin_does_not_define_runtime_gradient_ops() -> None:

@@ -15,7 +15,7 @@ import logging
 
 import pytest
 
-from mriforge.infrastructure.evaluation.mrixfields_baselines.discovery import (
+from spectramr.infrastructure.evaluation.mrixfields_baselines.discovery import (
     FIELDS,
     MODALITIES,
     build_eval_tasks,
@@ -165,7 +165,7 @@ class TestDiscoverBaselines:
     def test_missing_checkpoint_logs_warning(self, baselines_root, caplog):
         with caplog.at_level(
             logging.WARNING,
-            logger="mriforge.infrastructure.evaluation.mrixfields_baselines.discovery",
+            logger="spectramr.infrastructure.evaluation.mrixfields_baselines.discovery",
         ):
             discover_baselines(baselines_root)
         # The missing cut checkpoint for task2 should produce a warning
@@ -199,7 +199,7 @@ class TestDiscoverBaselines:
 
         with caplog.at_level(
             logging.WARNING,
-            logger="mriforge.infrastructure.evaluation.mrixfields_baselines.discovery",
+            logger="spectramr.infrastructure.evaluation.mrixfields_baselines.discovery",
         ):
             specs = discover_baselines(tmp_path / "baselines")
 

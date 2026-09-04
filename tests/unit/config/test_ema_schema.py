@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.ema import EMAConfigSchema
+from spectramr.config.schemas.ema import EMAConfigSchema
 
 
 class TestEMAConfigSchema:

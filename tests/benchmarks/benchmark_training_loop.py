@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
 
 @pytest.fixture

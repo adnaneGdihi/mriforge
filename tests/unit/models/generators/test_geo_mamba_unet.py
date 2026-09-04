@@ -13,9 +13,9 @@ torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
-from mriforge.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
-from mriforge.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
+from spectramr.models.generators.geo_mamba_unet import GeoMambaUNet  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 from tests.utils.optional_backends import requires_cuda_for_mamba  # noqa: E402
 
 
@@ -40,7 +40,7 @@ def test_registered_in_global_registry() -> None:
 
 def test_package_init_imports_geo_mamba_unet_module() -> None:
     """Registration must fire on the PRODUCTION path — the bare
-    ``import mriforge.models.generators`` the model factory performs — not only
+    ``import spectramr.models.generators`` the model factory performs — not only
     when a unit test imports the submodule directly (which this very file does
     at module load, registering it as a side effect).
 
@@ -55,9 +55,9 @@ def test_package_init_imports_geo_mamba_unet_module() -> None:
     import pathlib
 
     init_src = pathlib.Path(
-        "src/mriforge/models/generators/__init__.py"
+        "src/spectramr/models/generators/__init__.py"
     ).read_text(encoding="utf-8")
-    assert "import mriforge.models.generators.geo_mamba_unet" in init_src
+    assert "import spectramr.models.generators.geo_mamba_unet" in init_src
 
 
 def test_metric_sfc_params_reach_lazy_linearizer() -> None:

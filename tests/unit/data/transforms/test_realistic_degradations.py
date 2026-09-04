@@ -1,6 +1,6 @@
 """Tests for realistic-degradation transforms.
 
-Targets ``mriforge.data.transforms.realistic_degradations``:
+Targets ``spectramr.data.transforms.realistic_degradations``:
 
 - ``RicianNoise``: Gaussian-real + Gaussian-imag → magnitude pipeline
 - ``MotionBlur3D``: depth-wise grouped 3D conv
@@ -21,7 +21,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.realistic_degradations import (
+from spectramr.data.transforms.realistic_degradations import (
     KSpaceUndersampling,
     MotionBlur3D,
     RandomB0Distortion,

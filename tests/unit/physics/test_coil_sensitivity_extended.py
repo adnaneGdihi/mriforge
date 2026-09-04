@@ -34,7 +34,7 @@ def _kspace_complex(b: int, c: int, h: int, w: int, seed: int = 0) -> torch.Tens
 @pytest.mark.physics
 def test_canary_coil_sensitivity_imports():
     """All public CSM symbols import cleanly."""
-    from mriforge.infrastructure.physics.coil_sensitivity import (
+    from spectramr.infrastructure.physics.coil_sensitivity import (
         estimate_csm_rss,
         estimate_csm_power_iter,
     )
@@ -58,7 +58,7 @@ def test_canary_coil_sensitivity_imports():
 )
 def test_csm_rss_shape(b, c, h, w):
     """estimate_csm_rss returns [B, C, H, W] complex."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(b, c, h, w)
     smaps = estimate_csm_rss(ks, num_coils=c)
     assert smaps.shape == (b, c, h, w)
@@ -77,7 +77,7 @@ def test_csm_rss_shape(b, c, h, w):
     ids=[shape_id(s) for s in SHAPE_MATRIX_KSPACE],
 )
 def test_csm_rss_shape_matrix(b, c, h, w):
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(b, c, h, w)
     smaps = estimate_csm_rss(ks, num_coils=c)
     assert smaps.shape == (b, c, h, w)
@@ -99,7 +99,7 @@ def test_csm_rss_shape_matrix(b, c, h, w):
 )
 def test_csm_power_iter_shape(b, c, h, w):
     """estimate_csm_power_iter returns [B, C, H, W] complex."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_power_iter
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_power_iter
     ks = _kspace_complex(b, c, h, w)
     smaps = estimate_csm_power_iter(ks, num_coils=c, num_iter=3)
     assert smaps.shape == (b, c, h, w)
@@ -114,7 +114,7 @@ def test_csm_power_iter_shape(b, c, h, w):
 @pytest.mark.physics
 def test_csm_rss_edge_single_coil():
     """Single-coil case returns a map of unit magnitude (RSS of one)."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(1, 1, 16, 16)
     smaps = estimate_csm_rss(ks, num_coils=1)
     assert smaps.shape == (1, 1, 16, 16)
@@ -125,7 +125,7 @@ def test_csm_rss_edge_single_coil():
 @pytest.mark.physics
 def test_csm_rss_edge_near_zero_kspace():
     """Near-zero k-space: the eps guard should prevent NaN."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = torch.zeros(1, 4, 16, 16, dtype=torch.complex64)
     ks += 1e-10  # tiny non-zero signal
     smaps = estimate_csm_rss(ks, num_coils=4)
@@ -135,7 +135,7 @@ def test_csm_rss_edge_near_zero_kspace():
 @pytest.mark.physics
 def test_csm_rss_edge_large_coil_array():
     """16-coil array runs without error (memory-bounded)."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(1, 16, 32, 32)
     smaps = estimate_csm_rss(ks, num_coils=16)
     assert smaps.shape == (1, 16, 32, 32)
@@ -148,7 +148,7 @@ def test_csm_rss_edge_large_coil_array():
 @pytest.mark.physics
 def test_csm_rss_raises_wrong_rank():
     """estimate_csm_rss must raise ValueError for 3-D input (missing B dim)."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(1, 4, 32, 32).squeeze(0)  # [C, H, W] — missing B
     with pytest.raises(ValueError):
         estimate_csm_rss(ks, num_coils=4)
@@ -157,7 +157,7 @@ def test_csm_rss_raises_wrong_rank():
 @pytest.mark.physics
 def test_csm_rss_raises_coil_mismatch():
     """estimate_csm_rss must raise ValueError when num_coils != kspace.shape[1]."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_rss
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_rss
     ks = _kspace_complex(1, 8, 32, 32)
     with pytest.raises(ValueError):
         estimate_csm_rss(ks, num_coils=4)   # mismatch: 8 != 4
@@ -166,7 +166,7 @@ def test_csm_rss_raises_coil_mismatch():
 @pytest.mark.physics
 def test_csm_power_iter_raises_wrong_rank():
     """estimate_csm_power_iter must raise ValueError for 3-D input."""
-    from mriforge.infrastructure.physics.coil_sensitivity import estimate_csm_power_iter
+    from spectramr.infrastructure.physics.coil_sensitivity import estimate_csm_power_iter
     ks = _kspace_complex(1, 4, 32, 32).squeeze(0)  # [C, H, W]
     with pytest.raises(ValueError):
         estimate_csm_power_iter(ks, num_coils=4)

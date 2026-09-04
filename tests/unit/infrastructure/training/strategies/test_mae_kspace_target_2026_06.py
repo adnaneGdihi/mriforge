@@ -16,10 +16,10 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.pretraining import (
+from spectramr.infrastructure.training.strategies.pretraining import (
     MAEPretrainingStrategy,
 )
-from mriforge.models.losses.computers.base import LossOutput
+from spectramr.models.losses.computers.base import LossOutput
 
 
 class _RecordingComputer:

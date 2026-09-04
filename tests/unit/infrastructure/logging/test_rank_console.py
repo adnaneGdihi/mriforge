@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.infrastructure.logging.rank_console`.
+"""Tests for :mod:`spectramr.infrastructure.logging.rank_console`.
 
 Regression (2026-08-15): a 4-GPU ``train-distributed`` launch opened with four
 interleaved copies of every startup line. ``setup_distributed`` did clamp
@@ -14,7 +14,7 @@ import logging
 
 import pytest
 
-from mriforge.infrastructure.logging.rank_console import (
+from spectramr.infrastructure.logging.rank_console import (
     quiet_secondary_ranks,
     rank_floor,
 )
@@ -93,14 +93,14 @@ def test_is_idempotent(monkeypatch):
 
 
 def test_setup_distributed_uses_the_shared_helper():
-    """``python -m mriforge.pipelines.distributed`` bypasses the CLI entry point.
+    """``python -m spectramr.pipelines.distributed`` bypasses the CLI entry point.
 
     Pinned as source inspection because exercising it would require a real
     process group. The point is that there is ONE policy, not two that drift.
     """
     import inspect
 
-    from mriforge.pipelines import distributed
+    from spectramr.pipelines import distributed
 
     src = inspect.getsource(distributed)
     assert "quiet_secondary_ranks()" in src
@@ -125,7 +125,7 @@ def test_the_bypass_path_is_clamped_before_anything_logs():
     """
     import inspect
 
-    from mriforge.pipelines import distributed
+    from spectramr.pipelines import distributed
 
     body = inspect.getsource(distributed.run_distributed_training)
 
@@ -192,7 +192,7 @@ class TestTheClampSurvivesLoggingConfiguration:
     def test_logging_service_floors_the_level_it_resolves(self):
         import inspect
 
-        from mriforge.infrastructure.services.logging_service import LoggingService
+        from spectramr.infrastructure.services.logging_service import LoggingService
 
         body = inspect.getsource(LoggingService.setup)
         assert "rank_floor(self._resolve_log_level(log_level))" in body, (
@@ -210,7 +210,7 @@ class TestTheClampSurvivesLoggingConfiguration:
         """
         import inspect
 
-        from mriforge.infrastructure.services import logging_service
+        from spectramr.infrastructure.services import logging_service
 
         body = inspect.getsource(logging_service.bootstrap_console_logging)
         floor = body.index("rank_floor(")

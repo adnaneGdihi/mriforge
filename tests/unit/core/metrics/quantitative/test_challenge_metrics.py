@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative import challenge_metrics as cm
+from spectramr.core.metrics.quantitative import challenge_metrics as cm
 
 
 def test_nrmse_l2_matches_official_formula():
@@ -147,7 +147,7 @@ def test_volume_similarity_flag_resolves_to_registered_metric():
     ``volume_consistency`` with alias ``volume_similarity``; this test asserts the
     alias resolves and the metric is callable.
     """
-    from mriforge.core.metrics.registry import MetricsRegistry, get_metric
+    from spectramr.core.metrics.registry import MetricsRegistry, get_metric
 
     # Alias must be present in the registry (Task-2 guarantee).
     assert MetricsRegistry.is_registered("volume_similarity"), (
@@ -226,7 +226,7 @@ def test_lpips_alex_net_moves_to_cuda():
 
 def test_lpips_alex_is_registered():
     """lpips_alex and LPIPS_alex aliases must be present in the registry."""
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     assert MetricsRegistry.is_registered("lpips_alex"), "lpips_alex is not registered."
     assert MetricsRegistry.is_registered(
@@ -253,7 +253,7 @@ def test_ssim_matches_skimage_slicewise():
     sk_ssim = skimage_metrics.structural_similarity
     import numpy as np
     import torch
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     rng = np.random.default_rng(0)
     t = rng.random((1, 1, 32, 32)).astype("float32")

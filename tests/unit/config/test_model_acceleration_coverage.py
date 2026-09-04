@@ -136,7 +136,7 @@ class TestModelSchemaFieldCoverage:
 
     def test_all_model_fields_classified(self):
         """Every ModelConfigSchema field must be in a known category."""
-        from mriforge.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
 
         all_fields = set(ModelConfigSchema.model_fields.keys())
         unclassified = all_fields - self.ALL_KNOWN_MODEL
@@ -154,7 +154,7 @@ class TestModelSchemaFieldCoverage:
         """
         import inspect
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
 
         src = inspect.getsource(ModelBuilder)
         weight_init_referenced = any(
@@ -169,15 +169,15 @@ class TestModelSchemaFieldCoverage:
                 "but ModelBuilder.build_generator() NEVER applies weight initialization.\n"
                 "Setting weight_init_type='xavier_uniform' in YAML has NO effect.\n"
                 "Fix: Add weight initialization logic to ModelBuilder.build_generator() "
-                "using mriforge.models.initialization.apply_weight_init(generator, config.model)"
+                "using spectramr.models.initialization.apply_weight_init(generator, config.model)"
             )
 
     def test_denoising_model_config_is_schema_only(self):
         """model.denoising_model config is in schema but no consumer wires it."""
         import inspect
 
-        from mriforge.infrastructure.training.builders.model_builder import ModelBuilder
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.infrastructure.training.builders.model_builder import ModelBuilder
+        from spectramr.models.factories.model_factory import ModelFactory
 
         src_builder = inspect.getsource(ModelBuilder)
         src_factory = inspect.getsource(ModelFactory)
@@ -211,7 +211,7 @@ class TestAccelerationSchemaFieldCoverage:
 
     def test_all_acceleration_fields_classified(self):
         """Every AccelerationConfigSchema field must be in a known category."""
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         all_fields = set(AccelerationConfigSchema.model_fields.keys())
         unclassified = all_fields - self.ALL_KNOWN_ACCEL
@@ -224,7 +224,7 @@ class TestAccelerationSchemaFieldCoverage:
 
     def test_schema_only_count_has_not_increased(self):
         """Pin the known schema-only acceleration field count."""
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         all_fields = set(AccelerationConfigSchema.model_fields.keys())
         unclassified = all_fields - self.ALL_KNOWN_ACCEL
@@ -242,7 +242,7 @@ class TestAccelerationSchemaFieldCoverage:
         """
         import inspect
 
-        from mriforge.infrastructure.physics.sampling import MaskGenerator
+        from spectramr.infrastructure.physics.sampling import MaskGenerator
 
         src = inspect.getsource(MaskGenerator)
         if "acceleration_schedule" not in src:
@@ -259,7 +259,7 @@ class TestAccelerationSchemaFieldCoverage:
         """Deprecated acceleration fields must be schema-only (no silent consumer)."""
         import inspect
 
-        from mriforge.infrastructure.training.builders.data_builder import DataBuilder
+        from spectramr.infrastructure.training.builders.data_builder import DataBuilder
 
         src = inspect.getsource(DataBuilder)
         for deprecated_field in KNOWN_ACCELERATION_DEPRECATED:
@@ -284,7 +284,7 @@ class TestValidationDualFrequencyGap:
     def test_eval_interval_and_frequency_steps_are_distinct(self):
         """Document that eval_interval and frequency_steps are separate fields
         and clarify which one ValidationService.should_run_validation() uses."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         # Both fields exist
         fields = set(ValidationConfigSchema.model_fields.keys())

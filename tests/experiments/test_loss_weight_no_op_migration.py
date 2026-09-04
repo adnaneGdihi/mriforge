@@ -1,7 +1,7 @@
 """The warrant for the loss-weight SSOT: switching resolvers changes no arm's objective.
 
 Every live arm is asserted to resolve, under the SSOT
-(:func:`mriforge.models.losses.weights.build_loss_weight_table`), to exactly the weight it
+(:func:`spectramr.models.losses.weights.build_loss_weight_table`), to exactly the weight it
 was training at before the migration -- as frozen in :data:`BASELINE_GOLDEN`.
 
 This is what licenses deleting the eight legacy resolvers and their three disagreeing
@@ -22,7 +22,7 @@ proves only that the migration agrees with itself.
 The second half of that bug: the test and the codemod each rolled their own family selector,
 and rolled the same mistake (keying off ``training_mode``, never selecting ``folding``), so
 the proof shared the defect it was meant to catch. There is now one selector
-(:func:`mriforge.models.losses._legacy_weights.legacy_family_for`, used by the codemod), this
+(:func:`spectramr.models.losses._legacy_weights.legacy_family_for`, used by the codemod), this
 test no longer re-derives the legacy side at all, and
 :func:`test_folding_strategy_set_matches_the_source` re-derives the folding set from the
 strategy registry so it cannot drift away from the code.
@@ -40,9 +40,9 @@ from pathlib import Path
 import pytest
 import yaml as pyyaml
 
-from mriforge.config.schemas.loss import LossConfigSchema
-from mriforge.models.losses._legacy_weights import FOLDING_STRATEGIES
-from mriforge.models.losses.weights import build_loss_weight_table, canonical_loss_name
+from spectramr.config.schemas.loss import LossConfigSchema
+from spectramr.models.losses._legacy_weights import FOLDING_STRATEGIES
+from spectramr.models.losses.weights import build_loss_weight_table, canonical_loss_name
 from tests.utils.corpus import tracked_yamls
 
 REPO = Path(__file__).resolve().parents[2]
@@ -250,7 +250,7 @@ def test_folding_strategy_set_matches_the_source() -> None:
     import inspect
     import textwrap
 
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     fold_names = {"_apply_builder_image_losses", "fold_builder_image_losses"}
 
@@ -377,7 +377,7 @@ def test_canonical_keys_are_pinned() -> None:
     """
     current = {n: canonical_loss_name(n) for n in _declared_names()}
 
-    if os.environ.get("MRIFORGE_UPDATE_LOSS_KEY_GOLDEN") == "1":
+    if os.environ.get("SPECTRAMR_UPDATE_LOSS_KEY_GOLDEN") == "1":
         header = "\n".join(
             line for line in KEY_GOLDEN.read_text().splitlines() if line.startswith("#")
         )
@@ -396,7 +396,7 @@ def test_canonical_keys_are_pinned() -> None:
         )
         + "\n\nEvery consumer resolving the old key now finds nothing declared. Co-edit them "
         "(config/schemas/loss.py, pipelines/training_loop.py, reporting/plotters/generative/"
-        "gan_diagnostics.py), then regenerate with MRIFORGE_UPDATE_LOSS_KEY_GOLDEN=1."
+        "gan_diagnostics.py), then regenerate with SPECTRAMR_UPDATE_LOSS_KEY_GOLDEN=1."
     )
 
 

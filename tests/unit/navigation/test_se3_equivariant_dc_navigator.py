@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.navigation.se3_equivariant_dc_navigator import (
+from spectramr.models.navigation.se3_equivariant_dc_navigator import (
     SE3EquivariantDCNavigator,
 )
 from tests.utils.optional_backends import requires_cuda_for_mamba
@@ -26,7 +26,7 @@ def model() -> SE3EquivariantDCNavigator:
 
 
 def test_registered_in_model_registry() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "se3_equivariant_dc_navigator" in MODEL_REGISTRY
     entry = MODEL_REGISTRY["se3_equivariant_dc_navigator"]

@@ -1,6 +1,6 @@
 # End-of-experiment Reporting Pipeline
 
-Implements the design in `TODO/report_step` — a
+Implements an internal design note ("report_step", not distributed) — a
 defensible, automation-oriented figure / table generator that runs as
 the last step of every training experiment.
 
@@ -29,7 +29,7 @@ reviewer can answer "how was this number computed?" in one lookup.
 ## Enabling reporting in an experiment
 
 Add a `reporting:` block to any v6.0 YAML — shape mirrors
-[`src/config/schemas/reporting.py`](../src/mriforge/config/schemas/reporting.py):
+[`src/spectramr/config/schemas/reporting.py`](../src/spectramr/config/schemas/reporting.py):
 
 ```yaml
 reporting:
@@ -55,8 +55,8 @@ reporting:
     - tab_2_4_dataset_descriptor
 
   # Metrics included in the main results table (tab_2_1).
-  # Names resolve to either the existing mriforge.core.metrics registry OR the
-  # Tier-1 IQMs in mriforge.infrastructure.reporting.metrics (vif, fsim, haarpsi, gmsd).
+  # Names resolve to either the existing spectramr.core.metrics registry OR the
+  # Tier-1 IQMs in spectramr.infrastructure.reporting.metrics (vif, fsim, haarpsi, gmsd).
   metrics:
     - psnr
     - ssim
@@ -112,13 +112,13 @@ reporting:
 | `fail_on_error` | bool | hook wrapper | `false` (default) makes plotter failures soft-fail |
 
 The `task` preset selects a defensible default figure / table set per
-[`src/infrastructure/reporting/pipeline.py:TASK_PRESETS`](../src/mriforge/infrastructure/reporting/pipeline.py).
+[`src/spectramr/infrastructure/reporting/pipeline.py:TASK_PRESETS`](../src/spectramr/infrastructure/reporting/pipeline.py).
 
 ## Manually generating a report
 
 ```bash
 source .venv/bin/activate
-python -m mriforge.cli report \
+python -m spectramr.cli report \
   --exp-dir experiments/outputs/my_baseline \
   --task reconstruction \
   --method my_baseline \
@@ -133,20 +133,20 @@ Output is identical to the in-pipeline version — same orchestrator.
 
 | Layer | Module | Role |
 |---|---|---|
-| Style | [`style.py`](../src/mriforge/infrastructure/reporting/style.py), [`styles/ieee.mplstyle`](../src/mriforge/infrastructure/reporting/styles/ieee.mplstyle) | Single source of truth for fonts, colours, sizes (Phase 0) |
-| Metadata | [`metadata.py`](../src/mriforge/infrastructure/reporting/metadata.py) | Git hash, seed, dataset stamping; sidecar JSON writer |
-| Aggregator | [`aggregator.py`](../src/mriforge/infrastructure/reporting/aggregator.py) | Tidy long-format DataFrame from `training_metrics.csv` + `validation_metrics.csv` + `final_eval.json` (Phase 3) |
+| Style | [`style.py`](../src/spectramr/infrastructure/reporting/style.py), [`styles/ieee.mplstyle`](../src/spectramr/infrastructure/reporting/styles/ieee.mplstyle) | Single source of truth for fonts, colours, sizes (Phase 0) |
+| Metadata | [`metadata.py`](../src/spectramr/infrastructure/reporting/metadata.py) | Git hash, seed, dataset stamping; sidecar JSON writer |
+| Aggregator | [`aggregator.py`](../src/spectramr/infrastructure/reporting/aggregator.py) | Tidy long-format DataFrame from `training_metrics.csv` + `validation_metrics.csv` + `final_eval.json` (Phase 3) |
 | Plotters | `plotters/` | One module per figure type; all share signature `make(df, out_path, **kw)` |
 | Tables | `tables/` | Builders that emit Markdown + LaTeX (IEEE) |
 | Metrics | `metrics/` | Tier-1 radiologist-correlate IQMs (VIF, FSIM, HaarPSI, GMSD) + radiomics CCC + hallucination index |
-| Pipeline | [`pipeline.py`](../src/mriforge/infrastructure/reporting/pipeline.py) | Top-level `generate_report()` orchestrator + task presets |
-| CLI | [`cli.py:report`](../src/mriforge/cli/app.py) | `python -m mriforge.cli report ...` |
-| Schema | [`schemas/reporting.py`](../src/mriforge/config/schemas/reporting.py) | `ReportingSettings` Pydantic model |
-| Hook | [`pipelines/train.py:_maybe_run_reporting`](../src/mriforge/pipelines/train.py) | Called by `run_training_pipeline` after the training loop returns |
+| Pipeline | [`pipeline.py`](../src/spectramr/infrastructure/reporting/pipeline.py) | Top-level `generate_report()` orchestrator + task presets |
+| CLI | [`cli.py:report`](../src/spectramr/cli/app.py) | `python -m spectramr.cli report ...` |
+| Schema | [`schemas/reporting.py`](../src/spectramr/config/schemas/reporting.py) | `ReportingSettings` Pydantic model |
+| Hook | [`pipelines/train.py:_maybe_run_reporting`](../src/spectramr/pipelines/train.py) | Called by `run_training_pipeline` after the training loop returns |
 
 ## Canonical figure inventory
 
-Implements `TODO/report_step` Phase 1 entries. Plotter IDs (used in
+Implements the design note's Phase 1 entries. Plotter IDs (used in
 `reporting.figures` YAML) and the questions they answer:
 
 | ID | Figure | Question |
@@ -180,7 +180,7 @@ MRI-task-specific (Part A):
 | `mri_a12_fiducial_check` | Virtual-fiducial paradigm | pred / target / residual ×N with the canonical fiducial ROI outlined in cyan; full-image PSNR vs ROI-PSNR per case |
 
 `mri_a12_fiducial_check` regenerates the canonical
-[`VirtualFiducial`](../src/mriforge/infrastructure/physics/virtual_fiducial.py)
+[`VirtualFiducial`](../src/spectramr/infrastructure/physics/virtual_fiducial.py)
 grid at `pred.shape[-2:]` and uses it as the ROI mask, so the pipeline
 does **not** need to plumb an extra fiducial-mask field through
 `cases` — the same `{pred, target, …}` contract used by
@@ -207,13 +207,14 @@ and register under a fresh ID.
 | `tab_2_3_hyperparameters` | name / distribution / range / final / criterion | `.md` + `.tex` |
 | `tab_2_4_dataset_descriptor` | n / age / sex / scanner / pathology / split rule | `.md` + `.tex` |
 
-## Defensible metrics (Part C of `TODO/report_step`)
+## Defensible metrics (Part C of the design note)
 
-The framework's existing `src/core/metrics/` registry
+The framework's existing `src/spectramr/core/metrics/` registry
 covers PSNR, SSIM, MS-SSIM, NRMSE, NMSE, HFEN, LPIPS, FID, KID, NIQE,
 BRISQUE, dice, HD95, IoU, g-factor, k-space error, GMSD, FSIM, VIF, and
-more. As of the May-2026 audit it counts **94 registered metrics** —
-covering 32+ of the 50 entries in TODO/report_step Part C directly.
+more. It counts **213 registered metrics** as of 2026-09-03 (the May-2026
+audit read 94) —
+covering 32+ of the 50 entries in the design note's Part C directly.
 
 ### Tier-1 radiologist-correlate IQMs (image-level)
 
@@ -222,14 +223,14 @@ prediction/target arrays at report time:
 
 | Metric | Reference | Source |
 |---|---|---|
-| **GMSD** | Xue *et al.*, IEEE TIP, 2014 | [`metrics/gmsd.py`](../src/mriforge/infrastructure/reporting/metrics/gmsd.py) |
-| **HaarPSI** | Reisenhofer *et al.*, SPIC, 2018 | [`metrics/haarpsi.py`](../src/mriforge/infrastructure/reporting/metrics/haarpsi.py) |
-| **VIF** | Sheikh & Bovik, IEEE TIP, 2006 | [`metrics/vif_fsim.py`](../src/mriforge/infrastructure/reporting/metrics/vif_fsim.py) |
-| **FSIM** | Zhang *et al.*, IEEE TIP, 2011 | [`metrics/vif_fsim.py`](../src/mriforge/infrastructure/reporting/metrics/vif_fsim.py) |
+| **GMSD** | Xue *et al.*, IEEE TIP, 2014 | [`metrics/gmsd.py`](../src/spectramr/infrastructure/reporting/metrics/gmsd.py) |
+| **HaarPSI** | Reisenhofer *et al.*, SPIC, 2018 | [`metrics/haarpsi.py`](../src/spectramr/infrastructure/reporting/metrics/haarpsi.py) |
+| **VIF** | Sheikh & Bovik, IEEE TIP, 2006 | [`metrics/vif_fsim.py`](../src/spectramr/infrastructure/reporting/metrics/vif_fsim.py) |
+| **FSIM** | Zhang *et al.*, IEEE TIP, 2011 | [`metrics/vif_fsim.py`](../src/spectramr/infrastructure/reporting/metrics/vif_fsim.py) |
 
 ### Part-C gap fillers (registered)
 
-[`src/core/metrics/report_step_metrics.py`](../src/mriforge/core/metrics/report_step_metrics.py)
+[`src/spectramr/core/metrics/report_step_metrics.py`](../src/spectramr/core/metrics/report_step_metrics.py)
 adds the 18 metrics from the Part-C table that were previously absent
 from the registry. All are decorated with `@register_metric` so they
 resolve from any YAML's `reporting.metrics` block:
@@ -273,25 +274,25 @@ Plus the radiomics-based hallucination audit (Part B):
 
 Both consume tidy radiomic feature DataFrames (rows = subjects,
 columns = IBSI feature names — generate them with the existing
-PyRadiomics-backed [`src/core/metrics/radiomic.py`](../src/mriforge/core/metrics/radiomic.py)).
+PyRadiomics-backed [`src/spectramr/core/metrics/radiomic.py`](../src/spectramr/core/metrics/radiomic.py)).
 
 ## Adding a new figure type
 
 1. Create `my_figure.py` in `plotters/`
    with signature `make(df, out_path, *, metadata=None, **kwargs) -> Path | None`.
 2. Add to the registration block in
-   [`plotters/__init__.py`](../src/mriforge/infrastructure/reporting/plotters/__init__.py).
+   [`plotters/__init__.py`](../src/spectramr/infrastructure/reporting/plotters/__init__.py).
 3. Add to the relevant task preset in
-   [`pipeline.py:TASK_PRESETS`](../src/mriforge/infrastructure/reporting/pipeline.py)
+   [`pipeline.py:TASK_PRESETS`](../src/spectramr/infrastructure/reporting/pipeline.py)
    (or invoke explicitly via `reporting.figures` in YAML).
 
-## Quality-assurance checklist (TODO/report_step Phase 6)
+## Quality-assurance checklist (Phase 6 of the design note)
 
 | Check | Where |
 |---|---|
-| Reproducibility — `python -m mriforge.cli report -e <dir>` regenerates bit-exact | sidecar `*.meta.json` records git SHA + seed |
+| Reproducibility — `python -m spectramr.cli report -e <dir>` regenerates bit-exact | sidecar `*.meta.json` records git SHA + seed |
 | Each figure renders at journal column width (3.6 in, 7.2 in) | enforced via per-plotter `figsize` |
-| Color-blind safe palette | Okabe-Ito (8 hues) — see [`style.py:OKABE_ITO`](../src/mriforge/infrastructure/reporting/style.py) |
+| Color-blind safe palette | Okabe-Ito (8 hues) — see [`style.py:OKABE_ITO`](../src/spectramr/infrastructure/reporting/style.py) |
 | Print preview in greyscale | line styles + markers selected per method, not just colour |
 | Numerical claims match underlying CSV | tables read directly from `final_eval.json` and aggregator output |
 | No figure depends on a deleted log file | aggregator soft-fails on missing artifacts; plotters return `None` |
@@ -373,8 +374,8 @@ A snapshot of the May 2026 bulk-add across the repo:
 
 ```bash
 source .venv/bin/activate
-python -c "from mriforge.infrastructure.reporting import generate_report; print('OK')"
-python -m mriforge.cli report --help
+python -c "from spectramr.infrastructure.reporting import generate_report; print('OK')"
+python -m spectramr.cli report --help
 ```
 
 See the smoke-test snippet in this conversation's history for a

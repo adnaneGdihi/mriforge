@@ -27,7 +27,7 @@ from unittest import mock
 
 import pytest
 
-from mriforge.infrastructure.services.memory_optimization_service import (
+from spectramr.infrastructure.services.memory_optimization_service import (
     MemoryOptimizationService,
 )
 
@@ -69,7 +69,7 @@ def test_setup_writes_no_cache_directory_variable() -> None:
         f"MemoryOptimizationService set cache directory variable(s) {written}. "
         "env_resolver.configure_cache_environment() is the single owner of "
         "these; a second writer makes the effective value depend on import "
-        "order. Steer the cache root via MRIFORGE_CACHE_ROOT in .env instead."
+        "order. Steer the cache root via SPECTRAMR_CACHE_ROOT in .env instead."
     )
 
 

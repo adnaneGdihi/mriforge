@@ -1,7 +1,7 @@
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.slab_transforms import SelectMiddleSlice, SlabToChannel
+from spectramr.data.transforms.slab_transforms import SelectMiddleSlice, SlabToChannel
 
 
 def test_slab_to_channel():

@@ -22,13 +22,13 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.domain.services.mrf_dictless_matching import (
+from spectramr.domain.services.mrf_dictless_matching import (
     MRFDictlessMatcher,
 )
-from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
     ConformalMRFDictlessReconStrategy,
 )
-from mriforge.models.generators.mrf_models import ConformalFPEmbedding
+from spectramr.models.generators.mrf_models import ConformalFPEmbedding
 
 
 def _alloc_strategy(generator: nn.Module) -> ConformalMRFDictlessReconStrategy:

@@ -8,13 +8,13 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.core.metrics import get_metric
-from mriforge.core.metrics.lipschitz_bound_metrics import (
+from spectramr.core.metrics import get_metric
+from spectramr.core.metrics.lipschitz_bound_metrics import (
     ComposedSpectralNormBound,
     MaxLayerSpectralNorm,
     layer_spectral_norms,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def _scaled_identity_linear(dim: int, c: float) -> nn.Linear:
@@ -124,7 +124,7 @@ def test_module_without_weight_layers_returns_nan() -> None:
 
 
 def test_reads_model_from_reconstructor_context() -> None:
-    from mriforge.core.metrics.context import MetricContext
+    from spectramr.core.metrics.context import MetricContext
 
     model = nn.Sequential(_scaled_identity_linear(4, 2.0))
     ctx = MetricContext(reconstructor=model)

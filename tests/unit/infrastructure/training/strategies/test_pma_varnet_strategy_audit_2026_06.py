@@ -25,7 +25,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.training.strategies.pma_varnet_strategy import (
+from spectramr.infrastructure.training.strategies.pma_varnet_strategy import (
     ConcretePMAVarNetStrategy,
 )
 

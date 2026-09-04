@@ -3,7 +3,7 @@
 Tests the centralized collation strategy selection logic in isolation.
 Verifies auto-selection, user overrides, parameter derivation, and validation.
 
-Author: MRIForge Team
+Author: spectraMR Team
 Date: 2026-02-15
 """
 
@@ -11,9 +11,9 @@ import pydantic
 import pytest
 import torch
 
-from mriforge.config.schemas.collation import CollationConfigSchema
-from mriforge.data.collation.strategies import ImageCollateStrategy
-from mriforge.data.collation.strategy_selector import CollationStrategySelector
+from spectramr.config.schemas.collation import CollationConfigSchema
+from spectramr.data.collation.strategies import ImageCollateStrategy
+from spectramr.data.collation.strategy_selector import CollationStrategySelector
 
 
 class TestCollationStrategyAutoSelection:
@@ -284,7 +284,7 @@ class TestCompatibilityValidation:
         """
         import typing
 
-        from mriforge.data.collation.strategies import CollateStrategyFactory
+        from spectramr.data.collation.strategies import CollateStrategyFactory
 
         literal = {
             a

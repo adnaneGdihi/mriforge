@@ -11,8 +11,8 @@ This module tests the complete data loading pipeline with focus on:
 import pytest
 import torch
 
-from mriforge.data.batch_types import BatchAdapter, TrainingBatch
-from mriforge.infrastructure.training.utils.data_adapters import TorchIOAdapter
+from spectramr.data.batch_types import BatchAdapter, TrainingBatch
+from spectramr.infrastructure.training.utils.data_adapters import TorchIOAdapter
 
 
 class TestDataLoaderBatchAdapterIntegration:

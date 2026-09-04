@@ -13,8 +13,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.data import TemporalConfigSchema
-from mriforge.data.datasets.cine_dataset import (
+from spectramr.config.schemas.data import TemporalConfigSchema
+from spectramr.data.datasets.cine_dataset import (
     _VOLUME_SUFFIXES,
     CineMRIDataset,
     _frame_axis_to_channel,

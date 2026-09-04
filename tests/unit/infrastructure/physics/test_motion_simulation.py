@@ -3,7 +3,7 @@ import unittest
 import torch
 import torch.fft
 
-from mriforge.infrastructure.physics.motion_simulation import (
+from spectramr.infrastructure.physics.motion_simulation import (
     apply_elastic_respiratory_motion,
 )
 

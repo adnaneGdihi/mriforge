@@ -1,6 +1,7 @@
-"""Fitness function: the pre-rename package name does not come back.
+"""Fitness function: no retired package name comes back.
 
-The rename to ``mriforge`` was a mechanical rewrite over 7,633 files, and
+The project has now been renamed twice, each time by a mechanical rewrite over
+thousands of files -- 7,633 the first time, 5,643 the second -- and
 non-negotiable #19 is explicit that a codemod is locally well-formed everywhere
 it is wrong -- ruff cannot see a half-applied rename, and neither can an
 import-time check while the *old* package is still installed on the machine (an
@@ -20,6 +21,13 @@ path that does the scanning -- puts a hole exactly where the scanner lives. The
 first draft of this file spelled the name in its docstring; it went undetected
 only because the file was still untracked, and ``git grep`` cannot see an
 untracked file. Committing it turned the guard red against itself.
+
+**Assume one retired name.** ``NEEDLES`` carries every name the package has
+ever shed, not just the most recent one. Dropping a name once its count reaches
+zero is what lets it come back: the first name went to zero, and the guard that
+proved it would have gone quiet the moment it was narrowed to the second. The
+two names are not symmetric, and the asymmetry is load-bearing -- see the
+manifest prefix below.
 
 **Assume one spelling.** The rewrite covered the plain and hyphenated forms and
 was declared clean on that evidence -- while 144 files still carried the name
@@ -60,6 +68,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 _G = "gan"
 _M = "mri"
+_F = "forge"
 
 #: Every shape the pre-rename name is known to take. Matched as fixed strings,
 #: case-insensitively. The separator is what varies: a plain underscore, an
@@ -76,7 +85,16 @@ _SEPARATORS = [
     "—",  # em dash
     "­",  # soft hyphen
 ]
-NEEDLES = [f"{_G}{sep}{_M}" for sep in _SEPARATORS]
+#: The second retired name carries no separator, so it takes exactly one shape
+#: and needs no escape variants: there is no underscore for Sphinx or LaTeX to
+#: escape, which is what hid 144 files behind the first name. Assembled from
+#: fragments for the same reason -- a literal would make this file match itself.
+_SECOND = _M + _F
+
+#: Every shape of every retired name. A name is never dropped from this list
+#: when its count reaches zero; that is precisely when the guard is all that
+#: keeps it at zero.
+NEEDLES = [f"{_G}{sep}{_M}" for sep in _SEPARATORS] + [_SECOND]
 
 #: Checkout roots that named this repository on a real disk *before* the rename.
 #: These directories did not move, so the old name is the correct spelling and
@@ -136,7 +154,23 @@ ALLOWED_URLS = ("github.com/adnaneGdihi/" + _OLD,)
 #: construction once nothing needs it. The relation is directional and checked
 #: below -- the predicate's set is always a subset of this one, so it can only
 #: ever be stricter than the codemod, never more permissive.
-ALLOWED_LITERALS = ALLOWED_ROOTS + ALLOWED_URLS
+#: A historical *data* prefix: a path already written into EXISTING manifests.
+#: ``universal_dataset`` repairs records carrying it, so it names an on-disk
+#: location rather than this package -- rewriting it would not raise, it would
+#: silently stop repairing them.
+#:
+#: This literal used to be waived by excluding its whole FILE, and that shape
+#: could not survive a second rename. The two retired names are not symmetric
+#: here: the first name's occurrence in that file must be preserved, while the
+#: second name's three occurrences in the same file are live ``import``
+#: statements that must be rewritten. A file-scoped skip cannot express the
+#: difference -- it told the codemod to leave the file alone entirely, which
+#: would have shipped three imports of a package that no longer exists. Scoped
+#: to the literal, the waiver protects exactly the one token it is for, and
+#: ``_active_roots()`` closes it by construction once nothing carries it.
+ALLOWED_MANIFEST_PREFIXES = ("/" + _G + "_" + _M + "/databases/m4raw/databases/",)
+
+ALLOWED_LITERALS = ALLOWED_ROOTS + ALLOWED_URLS + ALLOWED_MANIFEST_PREFIXES
 
 #: An allowed token is the prefix plus the characters a path or URL may continue
 #: with. It deliberately stops at whitespace, a quote and a colon, so stripping
@@ -202,12 +236,10 @@ def _strip_allowed_paths(text: str, pattern: re.Pattern[str] | None = None) -> s
 #: "gan MRI", and rewriting it would corrupt correct prose.
 _FALSE_POSITIVE = "multi-or" + _G + " MRI"
 
-#: The one place the old name is still correct. ``universal_dataset`` repairs
-#: paths recorded in EXISTING manifests, so this literal names a historical
-#: on-disk location rather than this package. Rewriting it would not raise --
-#: it would silently stop repairing those paths.
-EXCLUDED = "src/mriforge/data/datasets/universal_dataset.py"
-EXCLUDED_LITERAL = "/" + _G + "_" + _M + "/databases/m4raw/databases/"
+#: The file that carries the manifest prefix below. This is NOT a waiver -- the
+#: file is scanned like every other one. The constant exists only to anchor the
+#: non-vacuity test on a path known to contain a needle.
+LITERAL_BEARING_FILE = "src/spectramr/data/datasets/universal_dataset.py"
 
 
 def _git_grep_files(needles: list[str]) -> list[str]:
@@ -226,7 +258,7 @@ def _git_grep_files(needles: list[str]) -> list[str]:
 def _offending_files() -> list[str]:
     """git grep finds candidates; the predicate decides which are offences."""
     offenders = []
-    for rel in set(_git_grep_files(NEEDLES)) - {EXCLUDED}:
+    for rel in set(_git_grep_files(NEEDLES)):
         try:
             text = (REPO_ROOT / rel).read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
@@ -268,7 +300,10 @@ def test_every_needle_shape_is_actually_caught() -> None:
     fed a synthetic offender built independently of NEEDLES, so an entry that
     stopped spelling the name would fail here rather than go quiet.
     """
-    assert len(set(NEEDLES)) == len(_SEPARATORS), "duplicate separator in NEEDLES"
+    assert len(set(NEEDLES)) == len(_SEPARATORS) + 1, (
+        "NEEDLES is not one entry per separator plus the unseparated second "
+        "name -- a duplicate silently drops a shape from the loops below."
+    )
 
     for sep in _SEPARATORS:
         planted = f"from {_G}{sep}{_M}.models import Thing"
@@ -281,6 +316,22 @@ def test_every_needle_shape_is_actually_caught() -> None:
     for variant in (_G.upper(), _G.capitalize()):
         planted = f"{variant}_{_M.upper()}_HOME"
         assert _is_offending_text(planted), f"case variant missed: {planted!r}"
+
+    # The second retired name, in every shape it was ever written in: a dotted
+    # import, a package directory, a screaming-snake environment prefix and a
+    # CapWords class prefix. All four occurred in the tree this guard now holds
+    # at zero, so all four are watched rather than assumed.
+    for planted in (
+        f"from {_M}{_F}.models import Thing",
+        f"src/{_M}{_F}/cli/app.py",
+        f"{_M.upper()}{_F.upper()}_DATA_ROOT",
+        f"{_M.upper()}{_F.capitalize()}Error",
+        f"{_M.capitalize()}{_F.capitalize()} is research software",
+    ):
+        assert _is_offending_text(planted), (
+            f"{planted!r} passed, so the second retired name is uncovered in "
+            "that shape. It is not enough for one spelling to be caught."
+        )
 
 
 def test_the_guard_does_not_match_correct_prose() -> None:
@@ -295,6 +346,11 @@ def test_the_guard_does_not_match_correct_prose() -> None:
         f"multi-or{_G} {_M.upper()} reconstruction",
         "a GAN trained on MRI volumes",
         "organ segmentation, MRI-derived",
+        # The second name concatenates, so a space must not join its halves
+        # either -- these are ordinary English and two of them are real prose.
+        f"an {_M.upper()} {_F} for reconstruction",
+        f"{_F} the {_M.upper()} header",
+        f"{_M.upper()}-{_F}d acquisition",
     ):
         assert not _is_offending_text(benign), (
             f"a needle matches {benign!r}, which is correct English. Narrow the "
@@ -310,13 +366,24 @@ def test_the_prefilter_is_not_vacuous() -> None:
     make the corpus test pass with the predicate never consulted. Pin it on the
     one file known to carry the name.
     """
-    assert EXCLUDED in _git_grep_files(NEEDLES), (
+    assert LITERAL_BEARING_FILE in _git_grep_files(NEEDLES), (
         "the prefilter no longer finds the one file that legitimately carries "
-        "the old name, so it may be matching nothing at all and the corpus scan "
-        "would pass vacuously."
+        "a retired name, so it may be matching nothing at all and the corpus "
+        "scan would pass vacuously."
     )
-    text = (REPO_ROOT / EXCLUDED).read_text(encoding="utf-8")
-    assert _is_offending_text(text), "predicate no longer flags the excluded file"
+    text = (REPO_ROOT / LITERAL_BEARING_FILE).read_text(encoding="utf-8")
+
+    # Two halves, and the distinction is the point. Unmasked, the text offends:
+    # the needle really is in there, so the prefilter is not matching noise.
+    # Masked, it does not: the waiver is what exonerates it, not an empty scan.
+    assert _is_offending_text(text, _build_allowed_path(())), (
+        "the anchor file no longer carries a retired name at all, so it proves "
+        "nothing about the prefilter. Re-anchor on a file that does."
+    )
+    assert not _is_offending_text(text), (
+        "the anchor file now offends. Either its manifest prefix stopped being "
+        "masked, or a genuinely stale reference was added beside it."
+    )
 
 
 def test_a_historical_checkout_root_is_not_an_offence() -> None:
@@ -361,7 +428,7 @@ def test_the_active_set_follows_occurrence_in_both_directions() -> None:
     )
     assert _active_roots((absent,)) == (), "a root nothing carries was made active"
 
-    present = "mriforge"  # this package's own directory: tracked in every tree
+    present = "spectramr"  # this package's own directory: tracked in every tree
     assert _active_roots((present,)) == (present,), (
         "a root the tree plainly carries was dropped from the active set"
     )
@@ -518,36 +585,58 @@ def test_a_stale_package_directory_outside_a_root_is_an_offence() -> None:
     for planted in (
         f"src/{_OLD}/models/registry.py",
         f'packages = ["src/{_OLD}"]',
+        f"src/{_SECOND}/models/registry.py",
+        f'packages = ["src/{_SECOND}"]',
     ):
         assert _is_offending_text(planted), (
             f"{planted!r} passed, but the package directory did rename."
         )
 
 
-def test_the_documented_exclusion_is_exact() -> None:
-    """The allowance is one occurrence, not one file.
+def test_the_manifest_prefix_is_waived_by_literal_not_by_file() -> None:
+    """The allowance is one token, not one file -- and a second rename proved why.
 
-    Excluding the whole file would leave a hole in precisely the place a stale
-    reference is most likely to reappear: a planted second mention inside this
-    file passed the corpus guard until this test counted occurrences instead of
-    skipping the path. Assert the literal is still present *and* that it is the
-    only one, so the allowance can neither be deleted nor widened.
+    Excluding the whole file leaves a hole in precisely the place a stale
+    reference is most likely to reappear, and the previous shape of this test
+    only *counted* occurrences to compensate: the path stayed skipped, so the
+    codemod skipped it too. That was survivable while one name was retired and
+    became a defect the moment a second was: the same file held one occurrence
+    that had to be preserved and three that had to be rewritten, and a file-level
+    skip cannot tell them apart. It would have shipped three imports of a package
+    that no longer exists -- an ``ImportError`` at load, not a stale string.
+
+    So the waiver is scoped to the literal, the file is scanned like any other,
+    and the plants below are what makes that checkable in both directions.
     """
-    text = (REPO_ROOT / EXCLUDED).read_text(encoding="utf-8")
+    text = (REPO_ROOT / LITERAL_BEARING_FILE).read_text(encoding="utf-8")
+    prefix = ALLOWED_MANIFEST_PREFIXES[0]
 
-    assert EXCLUDED_LITERAL in text, (
-        f"{EXCLUDED} no longer contains the historical manifest prefix "
-        f"{EXCLUDED_LITERAL!r}. It is not a leftover: it matches paths already "
+    assert prefix in text, (
+        f"{LITERAL_BEARING_FILE} no longer contains the historical manifest "
+        f"prefix {prefix!r}. It is not a leftover: it matches paths already "
         "written into existing manifests, so removing it does not raise -- it "
-        "silently stops repairing them. If it went deliberately, drop the "
-        "EXCLUDED entry here too so the ratchet stays exact."
+        "silently stops repairing them. If it went deliberately, drop it from "
+        "ALLOWED_MANIFEST_PREFIXES too so the waiver cannot outlive its reason."
     )
 
     lowered = text.lower()
     count = sum(lowered.count(n.lower()) for n in NEEDLES)
     assert count == 1, (
-        f"{EXCLUDED} mentions the pre-rename package name {count} times across "
-        "all spellings; exactly one is allowed (the manifest prefix). The extra "
-        "mention(s) are stale and invisible to the corpus guard, which skips "
-        "this path."
+        f"{LITERAL_BEARING_FILE} mentions a retired package name {count} times "
+        "across all spellings; exactly one is allowed (the manifest prefix). "
+        "The corpus guard now scans this file, so an extra mention fails there "
+        "too -- this test names which file and how many."
     )
+
+    # The plants. A file-scoped skip passes all three of these silently; that is
+    # the blindness being closed, so it is watched rather than argued.
+    for planted in (
+        f"from {_SECOND}.data import Thing",
+        f"import {_OLD}.core",
+        f"src/{_SECOND}/data/datasets/universal_dataset.py",
+    ):
+        assert _is_offending_text(text + "\n" + planted), (
+            f"{planted!r} added to {LITERAL_BEARING_FILE} was not caught. The "
+            "waiver has widened from the manifest prefix back to the whole "
+            "file, which is the shape a second rename broke."
+        )

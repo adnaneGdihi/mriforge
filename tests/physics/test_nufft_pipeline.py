@@ -17,8 +17,8 @@ try:
 except ImportError:
     pytest.skip("torchkbnufft not installed", allow_module_level=True)
 
-from mriforge.data.transforms.non_cartesian import NonCartesianSimulationTransform
-from mriforge.infrastructure.physics.trajectories import TrajectoryFactory
+from spectramr.data.transforms.non_cartesian import NonCartesianSimulationTransform
+from spectramr.infrastructure.physics.trajectories import TrajectoryFactory
 
 
 class TestNUFFTPipeline:

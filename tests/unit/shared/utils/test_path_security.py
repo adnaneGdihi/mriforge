@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.shared.utils.path_security`.
+"""Unit tests for :mod:`spectramr.shared.utils.path_security`.
 
 Covers the directory-traversal-attack guards in
 :class:`PathSecurityValidator` and the global singleton wrapper
@@ -29,7 +29,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.shared.utils.path_security import (
+from spectramr.shared.utils.path_security import (
     DataPathSecurityManager,
     PathSecurityValidator,
 )

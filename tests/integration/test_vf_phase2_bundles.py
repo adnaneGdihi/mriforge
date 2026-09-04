@@ -38,7 +38,7 @@ _NEW_YAMLS = {
 @pytest.mark.parametrize("mode", _NEW_MODES)
 def test_strategy_resolves(mode):
     """Each new training_mode maps to an importable strategy class."""
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     path = TrainingStrategyFactory.STRATEGY_CLASS_PATHS[mode]
     module_name, cls_name = path.rsplit(".", 1)
@@ -48,7 +48,7 @@ def test_strategy_resolves(mode):
 
 def test_schema_dispatch_mounts():
     """B-1..B-3 have typed schema mounts; B-4 loads via the base (extra=allow)."""
-    from mriforge.config.schemas.training import _MODE_DISPATCH
+    from spectramr.config.schemas.training import _MODE_DISPATCH
 
     for mode in ("equivariance_conformal", "bloch_manifold_dps", "se3_equivariant_navigator"):
         assert mode in _MODE_DISPATCH
@@ -56,7 +56,7 @@ def test_schema_dispatch_mounts():
 
 @pytest.mark.parametrize("metric", ["equivariance_defect", "bloch_manifold_residual"])
 def test_metrics_registered(metric):
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     assert get_metric(metric).name == metric
 
@@ -66,8 +66,8 @@ def test_metrics_registered(metric):
     ["se3_equivariance_defect", "hamiltonian_energy_conservation", "gradient_hardware_compliance"],
 )
 def test_losses_registered(loss):
-    import mriforge.models.losses  # noqa: F401 — fires @register_loss
-    from mriforge.models.losses.registry import LossRegistry
+    import spectramr.models.losses  # noqa: F401 — fires @register_loss
+    from spectramr.models.losses.registry import LossRegistry
 
     assert loss in LossRegistry._custom_losses
 
@@ -75,7 +75,7 @@ def test_losses_registered(loss):
 @pytest.mark.parametrize("mode", _NEW_MODES)
 def test_yaml_loads(mode):
     """Each new arm's YAML loads through the frozen settings model."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.from_yaml(_NEW_YAMLS[mode])
     assert settings.training.training_mode == mode

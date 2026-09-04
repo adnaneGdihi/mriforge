@@ -1,6 +1,6 @@
 """Tests for ``GoldenAngleTrajectory``.
 
-Targets ``mriforge.infrastructure.physics.nufft_ops``. ``NUFFTForwardModel``
+Targets ``spectramr.infrastructure.physics.nufft_ops``. ``NUFFTForwardModel``
 requires the optional ``torchkbnufft`` runtime; we cover trajectory
 generation here (pure Torch) and defer NUFFT itself to the integration
 tier where the runtime is guaranteed.
@@ -13,7 +13,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.nufft_ops import GOLDEN_ANGLE, GoldenAngleTrajectory
+from spectramr.infrastructure.physics.nufft_ops import GOLDEN_ANGLE, GoldenAngleTrajectory
 
 
 # ---------------------------------------------------------------------------

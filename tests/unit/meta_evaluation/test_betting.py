@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.betting import (
+from spectramr.core.metrics.meta_evaluation.betting import (
     betting_confidence_sequence,
     betting_wealth,
     certify_betting_order,
@@ -202,7 +202,7 @@ def _max_wealth_scalar(
 def test_max_wealth_is_bit_identical_to_scalar_recursion(n: int, sign: float) -> None:
     import numpy as np
 
-    from mriforge.core.metrics.meta_evaluation.betting import _max_wealth
+    from spectramr.core.metrics.meta_evaluation.betting import _max_wealth
 
     rng = np.random.default_rng(4242 + n)
     x = list(rng.standard_normal(n))
@@ -213,7 +213,7 @@ def test_max_wealth_is_bit_identical_to_scalar_recursion(n: int, sign: float) ->
 
 def test_max_wealth_rejects_length_mismatch() -> None:
     """The ``zip(..., strict=True)`` contract survives the vectorisation."""
-    from mriforge.core.metrics.meta_evaluation.betting import _max_wealth
+    from spectramr.core.metrics.meta_evaluation.betting import _max_wealth
 
     with pytest.raises(ValueError, match="equal length"):
         _max_wealth([1.0, 2.0], 0.0, [0.1], 1.0)
@@ -221,7 +221,7 @@ def test_max_wealth_rejects_length_mismatch() -> None:
 
 def test_max_wealth_never_reports_below_one() -> None:
     """Ville's running maximum starts at the initial wealth of 1."""
-    from mriforge.core.metrics.meta_evaluation.betting import _max_wealth
+    from spectramr.core.metrics.meta_evaluation.betting import _max_wealth
 
     # Every factor < 1, so the raw cumulative product decays monotonically.
     assert _max_wealth([-1.0] * 8, 0.0, [0.4] * 8, 1.0) == 1.0

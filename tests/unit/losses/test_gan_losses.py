@@ -2,7 +2,7 @@
 
 import torch
 
-from mriforge.models.losses.gan_loss_library import (
+from spectramr.models.losses.gan_loss_library import (
     AdversarialLossStrategy,
     LSGANLoss,
     RALSGANLoss,

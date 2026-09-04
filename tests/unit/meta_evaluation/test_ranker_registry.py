@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     MetaEvaluationPipeline,
     available_rankers,
     check_data_dependencies,
@@ -20,9 +20,9 @@ from mriforge.core.metrics.meta_evaluation import (
     list_rankers,
     register_ranker,
 )
-from mriforge.core.metrics.meta_evaluation.rankers import registry as _registry_mod
-from mriforge.core.metrics.meta_evaluation.rankers.base import BaseRanker
-from mriforge.core.metrics.meta_evaluation.types import RankingResult
+from spectramr.core.metrics.meta_evaluation.rankers import registry as _registry_mod
+from spectramr.core.metrics.meta_evaluation.rankers.base import BaseRanker
+from spectramr.core.metrics.meta_evaluation.types import RankingResult
 
 GEN3 = {"cdscr", "esd", "fspd", "lgdr", "sfa", "sim2rank"}
 
@@ -88,7 +88,7 @@ def test_gen3_registration_site_does_not_guard_the_strict_raise() -> None:
     """
     import inspect
 
-    from mriforge.core.metrics.meta_evaluation import rankers as pkg
+    from spectramr.core.metrics.meta_evaluation import rankers as pkg
 
     src = inspect.getsource(pkg)
     assert "if not has_ranker(_name)" not in src
@@ -152,7 +152,7 @@ def test_check_injected_data_catches_declared_but_absent_ground_truth(
     clean_registry,
 ) -> None:
     """REGRESSION #258: requires_task_net=True never checked that data ARRIVED."""
-    from mriforge.core.metrics.meta_evaluation.rankers import check_injected_data
+    from spectramr.core.metrics.meta_evaluation.rankers import check_injected_data
 
     register_ranker(
         "needs_task2",
@@ -202,7 +202,7 @@ def test_from_registry_drops_the_redundant_fusion_ranker() -> None:
     14 "independent" voters were one axis counted twice, and the "N independent
     rankers concur" claim was inflated.
     """
-    from mriforge.core.metrics.meta_evaluation.rankers import redundant_rankers
+    from spectramr.core.metrics.meta_evaluation.rankers import redundant_rankers
 
     specs = available_rankers()
     names = {s.name for s in specs}
@@ -254,7 +254,7 @@ def test_from_registry_rejects_unknown_ranker_kwargs() -> None:
 
 
 def test_from_registry_runs_end_to_end(metric_set, clean_volumes) -> None:
-    from mriforge.core.metrics.meta_evaluation.simulator import SimulatorConfig
+    from spectramr.core.metrics.meta_evaluation.simulator import SimulatorConfig
 
     pipe = MetaEvaluationPipeline.from_registry()
     pipe.simulator_config = SimulatorConfig(

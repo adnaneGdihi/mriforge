@@ -35,7 +35,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MRIFORGE_SUPPRESS_CLINICAL_WARNING: "1"
+  SPECTRAMR_SUPPRESS_CLINICAL_WARNING: "1"
 
 jobs:
   lint-diff:
@@ -144,7 +144,7 @@ jobs:
         with:
           extras: dev
           # This tier is almost pure AST over source text, but not entirely:
-          # test_config_immutability.py imports mriforge.config.settings in two
+          # test_config_immutability.py imports spectramr.config.settings in two
           # function bodies, so the package must still be installed. The claim the
           # flag makes is only about torchvision.
           torchvision: "false"
@@ -172,7 +172,7 @@ jobs:
         # rather than cited: the upstream tracker is private, so an issue number
         # would send a reader of THIS repo looking for a page they cannot open.
         #
-        # The alternative -- MRIFORGE_UPDATE_ARCH_BASELINE=1 -- is worse and is
+        # The alternative -- SPECTRAMR_UPDATE_ARCH_BASELINE=1 -- is worse and is
         # deliberately NOT taken: the ratchet keys on file identity, so recording
         # these six would pre-exempt them permanently and make any further growth
         # invisible. A baseline regeneration must never raise a ceiling. A named
@@ -262,7 +262,7 @@ jobs:
           pip install pip-audit
           pip install --upgrade 'setuptools>=83.0.0'
       - name: Audit installed packages for CVEs
-        # --skip-editable: mriforge's own editable install is not on PyPI. No
+        # --skip-editable: spectramr's own editable install is not on PyPI. No
         # --strict: in strict mode pip-audit exits 1 merely because an editable
         # install cannot be audited. Real CVEs still exit 1.
         run: pip-audit --skip-editable --progress-spinner off

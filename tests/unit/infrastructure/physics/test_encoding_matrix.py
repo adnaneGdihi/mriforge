@@ -1,6 +1,6 @@
 """Tests for ``EncodingMatrixBuilder``.
 
-Targets ``mriforge.infrastructure.physics.encoding_matrix``. Builds the
+Targets ``spectramr.infrastructure.physics.encoding_matrix``. Builds the
 explicit MRI encoding matrix and provides matrix-free forward / adjoint
 operators that incorporate per-readout B₀ phase.
 
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
+from spectramr.infrastructure.physics.encoding_matrix import EncodingMatrixBuilder
 
 
 # ---------------------------------------------------------------------------

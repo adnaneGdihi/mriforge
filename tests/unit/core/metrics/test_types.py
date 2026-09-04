@@ -1,6 +1,6 @@
 """Tests for the metrics-config dataclasses.
 
-Targets ``mriforge.core.metrics.types``. Defines:
+Targets ``spectramr.core.metrics.types``. Defines:
 
 - ``MetricMode`` enum (MIN / MAX)
 - ``DEFAULT_METRIC_DIRECTIONS`` mapping (per-name MIN/MAX)
@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.types import (
+from spectramr.core.metrics.types import (
     DEFAULT_METRIC_DIRECTIONS,
     MetricMode,
     MetricSpec,
@@ -78,7 +78,7 @@ def test_from_name_unknown_raises_instead_of_defaulting_to_max() -> None:
     ``val_hfen``, …) became a MAX spec and best-checkpoint selection retained the
     WORST weights (#208). An unresolvable name is a config error, not a default.
     """
-    from mriforge.core.metrics.metric_directions import UnknownMetricDirectionError
+    from spectramr.core.metrics.metric_directions import UnknownMetricDirectionError
 
     with pytest.raises(UnknownMetricDirectionError):
         MetricSpec.from_name("custom_metric")

@@ -6,9 +6,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.infonce_critic import InfoNCECritic  # noqa: E402
-from mriforge.models.losses.phase_stego_score import PhaseStegoScoreLoss  # noqa: E402
-from mriforge.models.losses.registry import LossRegistry  # noqa: E402
+from spectramr.models.losses.infonce_critic import InfoNCECritic  # noqa: E402
+from spectramr.models.losses.phase_stego_score import PhaseStegoScoreLoss  # noqa: E402
+from spectramr.models.losses.registry import LossRegistry  # noqa: E402
 
 
 class TestInfoNCECritic:

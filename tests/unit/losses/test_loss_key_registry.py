@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.losses.loss_key_registry import LossKeyRegistry, LossKeyValidator
+from spectramr.models.losses.loss_key_registry import LossKeyRegistry, LossKeyValidator
 
 
 class TestLossKeyRegistry:

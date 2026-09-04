@@ -12,13 +12,13 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.training.strategies.conformal_calibration_strategy import (
+from spectramr.infrastructure.training.strategies.conformal_calibration_strategy import (
     ConformalCalibrationStrategy,
 )
-from mriforge.infrastructure.training.strategies.equivariance_conformal_strategy import (
+from spectramr.infrastructure.training.strategies.equivariance_conformal_strategy import (
     EquivarianceConformalCalibrationStrategy,
 )
-from mriforge.infrastructure.training.strategies.ssdu_strategy import split_acquired_mask
+from spectramr.infrastructure.training.strategies.ssdu_strategy import split_acquired_mask
 
 
 class TestCalibrationNoopTrainStep:

@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.pipeline import (
+from spectramr.config.schemas.training.pipeline import (
     ActionSchema,
     MultiEvalMetricSchema,
     MultiEvalSchema,
@@ -382,7 +382,7 @@ class TestMultiTrainingConfigSchema:
         assert config.evaluation is not None
 
     def test_backward_compat_aliases(self) -> None:
-        from mriforge.config.schemas.training.pipeline import (
+        from spectramr.config.schemas.training.pipeline import (
             FlowStepSchema,
             PipelineStageSchema,
             PipelineTrainingConfigSchema,

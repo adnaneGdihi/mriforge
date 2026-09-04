@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.cross_field import CrossFieldConfig
+from spectramr.config.schemas.training.cross_field import CrossFieldConfig
 
 
 def test_defaults() -> None:
@@ -26,14 +26,14 @@ def test_forbids_unknown_field() -> None:
 
 
 def test_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "cross_field" in TrainingStrategyConfigSchema.model_fields
     assert "field_flow" in TrainingStrategyConfigSchema.model_fields
 
 
 def test_field_flow_config_defaults() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldFlowConfig
+    from spectramr.config.schemas.training.cross_field import FieldFlowConfig
 
     c = FieldFlowConfig()
     assert c.n_steps >= 1
@@ -44,7 +44,7 @@ def test_field_flow_config_defaults() -> None:
 def test_field_flow_config_frozen_and_validates() -> None:
     import pytest
 
-    from mriforge.config.schemas.training.cross_field import FieldFlowConfig
+    from spectramr.config.schemas.training.cross_field import FieldFlowConfig
 
     c = FieldFlowConfig()
     with pytest.raises(Exception):
@@ -54,7 +54,7 @@ def test_field_flow_config_frozen_and_validates() -> None:
 
 
 def test_field_flow_contrast_conditioning_default_false() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldFlowConfig
+    from spectramr.config.schemas.training.cross_field import FieldFlowConfig
 
     assert FieldFlowConfig().contrast_conditioning is False
 
@@ -62,7 +62,7 @@ def test_field_flow_contrast_conditioning_default_false() -> None:
 def test_field_flow_rejects_unwired_contrast_conditioning() -> None:
     # Anti-#15: FieldFlowStrategy never reads contrast_conditioning, so True would be a silent
     # no-op. The schema must raise at config-load rather than degrade to a do-nothing knob.
-    from mriforge.config.schemas.training.cross_field import FieldFlowConfig
+    from spectramr.config.schemas.training.cross_field import FieldFlowConfig
 
     with pytest.raises(ValueError):
         FieldFlowConfig(contrast_conditioning=True)
@@ -72,7 +72,7 @@ def test_field_flow_rejects_unwired_contrast_conditioning() -> None:
 
 
 def test_field_cocycle_defaults() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldCocycleConfig
+    from spectramr.config.schemas.training.cross_field import FieldCocycleConfig
 
     c = FieldCocycleConfig()
     assert c.reference_field_tesla == 3.0
@@ -82,27 +82,27 @@ def test_field_cocycle_defaults() -> None:
 
 
 def test_field_cocycle_rejects_reference_out_of_range() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldCocycleConfig
+    from spectramr.config.schemas.training.cross_field import FieldCocycleConfig
 
     with pytest.raises(Exception):
         FieldCocycleConfig(reference_field_tesla=10.0)  # above field_max_tesla
 
 
 def test_field_cocycle_rejects_inverted_range() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldCocycleConfig
+    from spectramr.config.schemas.training.cross_field import FieldCocycleConfig
 
     with pytest.raises(Exception):
         FieldCocycleConfig(field_min_tesla=7.0, field_max_tesla=0.1)
 
 
 def test_field_cocycle_forbids_unknown_field() -> None:
-    from mriforge.config.schemas.training.cross_field import FieldCocycleConfig
+    from spectramr.config.schemas.training.cross_field import FieldCocycleConfig
 
     with pytest.raises(Exception):
         FieldCocycleConfig(not_a_field=1)
 
 
 def test_field_cocycle_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "field_cocycle" in TrainingStrategyConfigSchema.model_fields

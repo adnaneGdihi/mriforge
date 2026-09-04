@@ -1,4 +1,4 @@
-"""Determinism sentinel for :func:`mriforge.accelerator.initialize_accelerator`.
+"""Determinism sentinel for :func:`spectramr.accelerator.initialize_accelerator`.
 
 Several training paradigms in this repo (diffusion, cold diffusion,
 cycle-Bloch) assume that two runs with the same seed and rank produce
@@ -31,7 +31,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.accelerator import initialize_accelerator
+from spectramr.accelerator import initialize_accelerator
 
 # ── Fixtures ───────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ def isolated_env(monkeypatch: pytest.MonkeyPatch, tmp_path) -> Iterator[None]:
     leave the host environment untouched.
     """
     monkeypatch.setenv("TMPDIR", str(tmp_path))
-    monkeypatch.delenv("MRIFORGE_CACHE_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_CACHE_ROOT", raising=False)
     for key in ("TORCH_HOME", "CUDA_CACHE_CONFIG", "PYTORCH_CUDA_ALLOC_CONF"):
         monkeypatch.delenv(key, raising=False)
     yield
@@ -111,7 +111,7 @@ class TestDeterminismSentinel:
             "initialize_accelerator(seed=42, rank=0) is not bit-identical "
             "across two consecutive calls. This breaks reproducibility for "
             "diffusion / cold-diffusion / cycle-Bloch paradigms. Inspect "
-            "src/mriforge/accelerator.py for changes to the seed-application "
+            "src/spectramr/accelerator.py for changes to the seed-application "
             "order or for stray torch.manual_seed calls in downstream code."
         )
 

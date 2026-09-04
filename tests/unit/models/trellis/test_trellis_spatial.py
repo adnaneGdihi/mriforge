@@ -6,7 +6,7 @@ Tests patchify and unpatchify functions for various dimensionalities and edge ca
 import pytest
 import torch
 
-from mriforge.models.blocks.trellis_spatial import patchify, unpatchify
+from spectramr.models.blocks.trellis_spatial import patchify, unpatchify
 
 
 class TestPatchify:

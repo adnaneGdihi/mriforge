@@ -9,10 +9,10 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.meta_evaluation import pipeline as pipeline_mod
-from mriforge.core.metrics.meta_evaluation.pipeline import MetaEvaluationPipeline
-from mriforge.core.metrics.meta_evaluation.types import MetricSet
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.meta_evaluation import pipeline as pipeline_mod
+from spectramr.core.metrics.meta_evaluation.pipeline import MetaEvaluationPipeline
+from spectramr.core.metrics.meta_evaluation.types import MetricSet
 
 
 def test_run_forwards_assets_by_content_to_simulator(monkeypatch):

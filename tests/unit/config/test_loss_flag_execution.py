@@ -23,13 +23,13 @@ import torch.nn as nn
 
 def _make_minimal_settings(losses_kwargs: dict) -> TrainingSettings:
     """Build a minimal TrainingSettings sufficient for LossBuilder."""
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.config.schemas.logging import LoggingConfigSchema
-    from mriforge.config.schemas.loss import LossConfigSchema
-    from mriforge.config.schemas.metrics import MetricsConfigSchema
-    from mriforge.config.schemas.model import ModelConfigSchema
-    from mriforge.config.schemas.optimization import OptimizationConfigSchema
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.logging import LoggingConfigSchema
+    from spectramr.config.schemas.loss import LossConfigSchema
+    from spectramr.config.schemas.metrics import MetricsConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.optimization import OptimizationConfigSchema
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(
         model=ModelConfigSchema(),
@@ -43,7 +43,7 @@ def _make_minimal_settings(losses_kwargs: dict) -> TrainingSettings:
 
 def _build_losses(settings) -> dict[str, nn.Module]:
     """Run LossBuilder and return the resulting losses dict."""
-    from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+    from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
     builder = LossBuilder(config=settings, device=torch.device("cpu"))
     builder._build_all_dynamic()
@@ -134,7 +134,7 @@ class TestReconstructionLossExecution:
     )
     def test_loss_module_is_created(self, expected_key: str, recon_kwargs: dict):
         """enable_{key}=True must produce a nn.Module in LossBuilder._losses[{key}]."""
-        from mriforge.config.schemas.loss import ReconstructionLossesConfig
+        from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
         # These keys have a mismatch between the schema enable flag name and the
         # LossBuilder registry_map — the loss is silently not created even when enabled.
@@ -217,8 +217,8 @@ class TestPhysicsLossExecution:
     def test_physics_loss_module_is_created(
         self, expected_key: str, physics_kwargs: dict
     ):
-        from mriforge.config.schemas.loss import PhysicsLossesConfig
-        from mriforge.infrastructure.training.builders.loss_builder import (
+        from spectramr.config.schemas.loss import PhysicsLossesConfig
+        from spectramr.infrastructure.training.builders.loss_builder import (
             STRATEGY_MANAGED_LOSSES,
         )
 
@@ -264,8 +264,8 @@ class TestGANAuxiliaryLossExecution:
     """GAN auxiliary losses (R1 regularization, etc.) must be created."""
 
     def test_r1_regularization_is_created(self):
-        from mriforge.config.schemas.loss import GANLossesConfig
-        from mriforge.infrastructure.training.builders.loss_builder import (
+        from spectramr.config.schemas.loss import GANLossesConfig
+        from spectramr.infrastructure.training.builders.loss_builder import (
             STRATEGY_MANAGED_LOSSES,
         )
 
@@ -318,7 +318,7 @@ class TestSSLLossExecution:
         "expected_key,ssl_kwargs", CASES, ids=[c[0] for c in CASES]
     )
     def test_ssl_loss_module_is_created(self, expected_key: str, ssl_kwargs: dict):
-        from mriforge.config.schemas.loss import SSLLossesConfig
+        from spectramr.config.schemas.loss import SSLLossesConfig
 
         settings = _make_minimal_settings({"ssl": SSLLossesConfig(**ssl_kwargs)})
 
@@ -347,7 +347,7 @@ class TestCurriculumSchedulingNoCrash:
     """Curriculum scheduling is config-only (no module). It must not crash the builder."""
 
     def test_curriculum_scheduling_enabled_no_crash(self):
-        from mriforge.config.schemas.loss import ReconstructionLossesConfig
+        from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
         recon = ReconstructionLossesConfig(
             use_curriculum_scheduling=True,
@@ -375,7 +375,7 @@ class TestNoZeroWeightEnabledLoss:
 
     def test_zero_weight_l1_excluded_from_enabled(self):
         """lambda_l1=0.0 with enable_l1=True → key must NOT appear with 0-weight."""
-        from mriforge.config.schemas.loss import (
+        from spectramr.config.schemas.loss import (
             LossConfigSchema,
             ReconstructionLossesConfig,
         )

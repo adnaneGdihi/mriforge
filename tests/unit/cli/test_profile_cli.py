@@ -1,4 +1,4 @@
-"""Tests for the ``mriforge profile`` verb: registration, dry-run, and outcome.
+"""Tests for the ``spectramr profile`` verb: registration, dry-run, and outcome.
 
 The config loader is stubbed throughout — these cover the verb's control flow,
 not config parsing. The one test that must not be stubbed is the registration
@@ -13,13 +13,13 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.cli import profile_cli
+from spectramr.cli import profile_cli
 
 # ------------------------------------------------------------- registration
 
 
 def test_profile_is_registered_on_the_real_parser():
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     sub = next(a for a in build_parser()._actions if a.dest == "command")
     assert "profile" in sub.choices
@@ -28,7 +28,7 @@ def test_profile_is_registered_on_the_real_parser():
 def test_profile_dispatches_to_the_handler():
     """``main`` dispatches through ``args.func``; a subparser that forgets
     ``set_defaults`` parses fine and then crashes on AttributeError."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     args = build_parser().parse_args(["profile", "--config", "a.yaml"])
     assert args.func is profile_cli.profile
@@ -37,7 +37,7 @@ def test_profile_dispatches_to_the_handler():
 def test_profile_is_flagged_as_a_heavy_startup_command():
     """The parent loads the arm's config before it can resolve the run dir, so
     it pays the torch import too — without this the CLI looks frozen."""
-    from mriforge.cli.app import _HEAVY_STARTUP_COMMANDS
+    from spectramr.cli.app import _HEAVY_STARTUP_COMMANDS
 
     assert "profile" in _HEAVY_STARTUP_COMMANDS
 
@@ -47,7 +47,7 @@ def test_profile_is_flagged_as_a_heavy_startup_command():
     [("--target", "train"), ("--mode", "full"), ("--focus", "all")],
 )
 def test_defaults(flag, expected):
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     args = build_parser().parse_args(["profile", "--config", "a.yaml"])
     assert getattr(args, flag.lstrip("-").replace("-", "_")) == expected
@@ -58,7 +58,7 @@ def test_defaults(flag, expected):
 )
 def test_unknown_option_values_are_rejected_not_defaulted(bad):
     """A closed choice set must raise, never degrade to a default (NN3)."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     with pytest.raises(SystemExit):
         build_parser().parse_args(["profile", "--config", "a.yaml", *bad])
@@ -138,7 +138,7 @@ def test_real_run_raises_without_scalene(stub_config, monkeypatch):
 @pytest.fixture
 def fake_run(monkeypatch, tmp_path, stub_config):
     """Redirect the results root into tmp and stub the child process."""
-    import mriforge.cli.profile_paths as pp
+    import spectramr.cli.profile_paths as pp
 
     monkeypatch.setattr(pp, "RESULTS_ROOT", tmp_path / "experiments" / "results")
     monkeypatch.setattr(profile_cli, "require_scalene", lambda: "2.3.0")
@@ -251,7 +251,7 @@ def test_an_unrecognized_crash_still_propagates_and_records(fake_run, monkeypatc
 # --------------------------------------------------- phase split + val cap
 
 
-_SRC = "/repo/src/mriforge"
+_SRC = "/repo/src/spectramr"
 _TRAIN_FRAME = f"{_SRC}/pipelines/training_loop.py _execute_training_loop:812;"
 _VAL_FRAME = f"{_SRC}/pipelines/train.py _run_validation:1955;"
 

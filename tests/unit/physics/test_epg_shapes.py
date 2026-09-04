@@ -9,7 +9,7 @@ import pytest
 import torch
 
 from tests.utils.shape_matrices import SHAPE_MATRIX_2D, shape_id
-from mriforge.infrastructure.physics.epg import simulate_differentiable_epg_fse
+from spectramr.infrastructure.physics.epg import simulate_differentiable_epg_fse
 
 
 @pytest.mark.sanity_shape

@@ -44,7 +44,7 @@ drives `check_workflow_required_axes`, and an *optional* axis states no rule,
 since by construction its absence cannot make an arm inadmissible.
 
 Both `regime` and `task` are closed enums
-(`mriforge.config.schemas.enums.Regime` / `Task`), so a typo fails at Tier-0
+(`spectramr.config.schemas.enums.Regime` / `Task`), so a typo fails at Tier-0
 (Pydantic `ValidationError`) rather than silently mislabelling the arm.
 
 ## Regime vs task vs domain
@@ -56,7 +56,7 @@ Three orthogonal axes, easy to conflate:
   full because bare "diffusion" already means DDPM/score models here.
 - **Task** (`Task`) — what the arm does: `reconstruction`, `super_resolution`,
   `field_translation`, `parameter_mapping`, …
-- **Signal domain** (`mriforge.models.capabilities.Domain`) — where a tensor
+- **Signal domain** (`spectramr.models.capabilities.Domain`) — where a tensor
   lives: `image` / `kspace` / `complex_image` / `latent`. This is unchanged and
   unrelated to regime.
 
@@ -226,7 +226,7 @@ class ReconstructionTrainingStrategy(...):
     )
 ```
 
-The invariant from `mriforge.models.capabilities` holds: **`None` (the default)
+The invariant from `spectramr.models.capabilities` holds: **`None` (the default)
 means "unannotated / agnostic" and is skipped**. Only genuinely
 regime/task-specific components are tagged — agnostic losses/metrics (`l1`,
 `ssim`, `psnr`) stay `None`. Tagging everything is how allow-lists rot.
@@ -246,7 +246,7 @@ each, are recorded in the internal workflow backlog, which is not published
 with this release.
 
 The registry-walk that reads these tags lives in
-`mriforge.infrastructure.validation.workflow_ledger` (in `infrastructure`, not
+`spectramr.infrastructure.validation.workflow_ledger` (in `infrastructure`, not
 `domain`, because reading strategy capabilities means importing strategy
 classes — a dependency `domain` may not take).
 
@@ -262,18 +262,18 @@ Two layers enforce the contract.
 An **absent** `workflow:` block is **advisory** (`info`), not an error — the
 "optional now, required later" seam. None of the 1,465 experiment YAMLs on `dev`
 predates this feature with a `workflow:` block, so erroring would redden every
-arm on the first `mriforge audit` (which is `--strict` by default) rather than
+arm on the first `spectramr audit` (which is `--strict` by default) rather than
 enforce anything. The two checks above still fire on any arm that *did* declare,
 so a **wrong** declaration never passes silently. Ratchet the absent case to
-`error` once the cohorts are annotated — see issue #283.
+`error` once the cohorts are annotated — see internal issue 283.
 
 `check_workflow_required_axes` (Tier-1) is the machine-readable form of
-**pitfall #19** ("hypothesis untestable on this data"): it errors when a
+**pitfall 19** ("hypothesis untestable on this data"): it errors when a
 regime's `required_axes` are absent from what the arm exposes — e.g.
 `mri_functional` (needs `TEMPORAL`) on `dataset_type: image` (exposes none).
 
 Axes resolve by **two routes, declared first** (both in
-`mriforge.data.datasets.axis_exposure`):
+`spectramr.data.datasets.axis_exposure`):
 
 1. **declared** — `declared_axes_for(data_cfg)` reads a per-*arm* statement the
    config layer already validated: today `data.bart.bart_dim_map`, which
@@ -311,7 +311,7 @@ which may be 2-D slices or 3-D volumes) are unannotated and skipped.
 block enabled outside the regime it is meaningful for — an `mrf:` trajectory
 block under `mri_structural`, or `data.quantitative` maps when the arm is not
 mapping parameters. Scope per block is declared in
-`mriforge.domain.workflows.knobs` (`KNOB_APPLICABILITY`). Only regime gating is
+`spectramr.domain.workflows.knobs` (`KNOB_APPLICABILITY`). Only regime gating is
 modelled today; modality gating ("coil arrays are meaningless for ultrasound")
 lands with the first non-MR regime, so the table never carries a rule that
 cannot fire.
@@ -357,7 +357,7 @@ real query. The classification is completeness-enforced: the registry rebuild
 indexes the origin table by name, so a new degradation added without an origin
 fails at import.
 
-**Runtime** — `mriforge.domain.workflows.enforce_pipeline_maturity_for_config`
+**Runtime** — `spectramr.domain.workflows.enforce_pipeline_maturity_for_config`
 is called at every pipeline entry (`pipelines/train.py`, `pipelines/infer.py`)
 and raises `WorkflowNotImplementedError`:
 
@@ -370,7 +370,7 @@ declaration is the audit's job, not the runtime's.
 ## Migration posture
 
 `workflow:` is optional on `TrainingSettings` today, and a missing block is an
-**advisory** audit finding rather than an error (issue #283) — decoupled from
+**advisory** audit finding rather than an error (internal issue 283) — decoupled from
 Pydantic construction, so the field can be flipped to required once every config
 declares it. The ratchet is deliberate: annotate the cohorts *first*, then raise
 the severity; doing it in the other order just reddens 1,465 arms at once. The dead

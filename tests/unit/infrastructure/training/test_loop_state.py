@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import fields
 from types import SimpleNamespace
 
-from mriforge.infrastructure.training.loop_state import (
+from spectramr.infrastructure.training.loop_state import (
     LoopState,
     resolve_loop_iteration,
 )

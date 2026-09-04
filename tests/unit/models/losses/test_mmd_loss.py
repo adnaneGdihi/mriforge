@@ -1,6 +1,6 @@
 """Tests for ``MMDLoss``.
 
-Targets ``mriforge.models.losses.mmd_loss``. Multi-bandwidth Gaussian-kernel
+Targets ``spectramr.models.losses.mmd_loss``. Multi-bandwidth Gaussian-kernel
 Maximum Mean Discrepancy: a closed-form, gradient-friendly two-sample
 distance for unpaired domain alignment.
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.mmd_loss import MMDLoss, _multi_kernel_mmd
+from spectramr.models.losses.mmd_loss import MMDLoss, _multi_kernel_mmd
 
 
 # ---------------------------------------------------------------------------
@@ -151,6 +151,6 @@ def test_gradient_flows_to_input() -> None:
 
 def test_mmd_registered() -> None:
     """``mmd`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "mmd" in list_available()

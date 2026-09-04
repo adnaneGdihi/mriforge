@@ -9,7 +9,7 @@ gates the step to the same boundary the optimizer uses.
 
 from __future__ import annotations
 
-from mriforge.pipelines.train import _should_step_schedulers
+from spectramr.pipelines.train import _should_step_schedulers
 
 
 def test_no_accumulation_steps_each_iteration_after_warmup():

@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/infrastructure/physics/b1_plus_mapping.py.
+"""Unit tests for src/spectramr/infrastructure/physics/b1_plus_mapping.py.
 
 Covers:
   - DoubleAngleB1Plus:  two-flip-angle B1+ estimator
@@ -69,7 +69,7 @@ def _uniform_ratio_inputs(
 @pytest.mark.physics
 def test_canary_b1_plus_imports() -> None:
     """Module imports succeed without error."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import (
+    from spectramr.infrastructure.physics.b1_plus_mapping import (
         DoubleAngleB1Plus,
         BlochSiegertB1Plus,
         apply_b1_correction,
@@ -82,7 +82,7 @@ def test_canary_b1_plus_imports() -> None:
 @pytest.mark.physics
 def test_canary_double_angle_tiny() -> None:
     """DoubleAngleB1Plus forward pass on 1x1x8x8 input returns correct shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     model = DoubleAngleB1Plus(nominal_flip_deg=60.0)
     s_alpha = _mag_image(1, 8, 8)
@@ -98,7 +98,7 @@ def test_canary_double_angle_tiny() -> None:
 @pytest.mark.physics
 def test_canary_bloch_siegert_tiny() -> None:
     """BlochSiegertB1Plus forward pass on 1x1x8x8 input returns correct shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     model = BlochSiegertB1Plus(kbs=74.0)
     phase_diff = torch.full((1, 1, 8, 8), math.pi / 4)
@@ -112,7 +112,7 @@ def test_canary_bloch_siegert_tiny() -> None:
 @pytest.mark.physics
 def test_canary_apply_b1_correction_tiny() -> None:
     """apply_b1_correction runs on minimal inputs and produces correct shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import apply_b1_correction
+    from spectramr.infrastructure.physics.b1_plus_mapping import apply_b1_correction
 
     image = _mag_image(1, 8, 8, value=1.0)
     b1_map = torch.ones(1, 1, 8, 8)
@@ -141,7 +141,7 @@ _B1_SHAPES: list[tuple[int, int, int, int]] = [
 )
 def test_double_angle_output_shape(shape: tuple[int, int, int, int]) -> None:
     """DoubleAngleB1Plus output matches input shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     B, C, H, W = shape
     model = DoubleAngleB1Plus(nominal_flip_deg=45.0)
@@ -159,7 +159,7 @@ def test_double_angle_output_shape(shape: tuple[int, int, int, int]) -> None:
 )
 def test_bloch_siegert_output_shape(shape: tuple[int, int, int, int]) -> None:
     """BlochSiegertB1Plus output matches input shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     B, C, H, W = shape
     model = BlochSiegertB1Plus(kbs=74.0)
@@ -176,7 +176,7 @@ def test_bloch_siegert_output_shape(shape: tuple[int, int, int, int]) -> None:
 )
 def test_apply_b1_correction_shape(shape: tuple[int, int, int, int]) -> None:
     """apply_b1_correction output matches image shape."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import apply_b1_correction
+    from spectramr.infrastructure.physics.b1_plus_mapping import apply_b1_correction
 
     B, C, H, W = shape
     image = torch.rand(B, C, H, W).clamp_min(0.01)
@@ -198,7 +198,7 @@ def test_apply_b1_correction_shape(shape: tuple[int, int, int, int]) -> None:
 )
 def test_sanity_shape_double_angle(shape: tuple[int, int, int, int]) -> None:
     """DoubleAngleB1Plus output shape matches SHAPE_MATRIX_2D contract."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     B, C, H, W = shape
     model = DoubleAngleB1Plus(nominal_flip_deg=60.0)
@@ -215,7 +215,7 @@ def test_sanity_shape_double_angle(shape: tuple[int, int, int, int]) -> None:
 @pytest.mark.physics
 def test_double_angle_edge_b1_equals_1() -> None:
     """DoubleAngleB1Plus returns ~1.0 for the correct flip angle (s_2alpha = sin(2α))."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     nominal_deg = 60.0
     model = DoubleAngleB1Plus(nominal_flip_deg=nominal_deg)
@@ -234,7 +234,7 @@ def test_double_angle_edge_b1_equals_1() -> None:
 @pytest.mark.physics
 def test_double_angle_edge_zero_signal() -> None:
     """DoubleAngleB1Plus does not crash when s_alpha is near zero (eps guards div-by-zero)."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     model = DoubleAngleB1Plus(nominal_flip_deg=60.0)
     s_alpha = torch.full((1, 1, 16, 16), 0.0)
@@ -246,7 +246,7 @@ def test_double_angle_edge_zero_signal() -> None:
 @pytest.mark.physics
 def test_bloch_siegert_edge_zero_phase() -> None:
     """BlochSiegertB1Plus with zero phase returns a small positive value (eps floor)."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     model = BlochSiegertB1Plus(kbs=74.0, eps=1e-9)
     phase_diff = torch.zeros(1, 1, 16, 16)
@@ -259,7 +259,7 @@ def test_bloch_siegert_edge_zero_phase() -> None:
 @pytest.mark.physics
 def test_bloch_siegert_edge_uniform_phase() -> None:
     """BlochSiegertB1Plus: uniform phase_diff → flat B1+ map."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     model = BlochSiegertB1Plus(kbs=74.0)
     phase_val = math.pi / 3
@@ -275,7 +275,7 @@ def test_bloch_siegert_edge_uniform_phase() -> None:
 @pytest.mark.physics
 def test_apply_b1_correction_edge_unit_map() -> None:
     """apply_b1_correction with b1_map=1.0 is approximately the identity."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import apply_b1_correction
+    from spectramr.infrastructure.physics.b1_plus_mapping import apply_b1_correction
 
     image = torch.rand(2, 1, 32, 32).clamp_min(0.01)
     b1_map = torch.ones(2, 1, 32, 32)
@@ -290,7 +290,7 @@ def test_apply_b1_correction_edge_unit_map() -> None:
 @pytest.mark.physics
 def test_apply_b1_correction_complex_image() -> None:
     """apply_b1_correction accepts complex images by taking .abs() internally."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import apply_b1_correction
+    from spectramr.infrastructure.physics.b1_plus_mapping import apply_b1_correction
 
     image_c = torch.complex(
         torch.rand(1, 1, 16, 16),
@@ -309,7 +309,7 @@ def test_apply_b1_correction_complex_image() -> None:
 @pytest.mark.physics
 def test_double_angle_raises_shape_mismatch() -> None:
     """DoubleAngleB1Plus raises ValueError when s_alpha and s_2alpha shapes differ."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     model = DoubleAngleB1Plus(nominal_flip_deg=60.0)
     s_alpha = torch.rand(1, 1, 16, 16)
@@ -321,7 +321,7 @@ def test_double_angle_raises_shape_mismatch() -> None:
 @pytest.mark.physics
 def test_bloch_siegert_raises_non_positive_kbs() -> None:
     """BlochSiegertB1Plus raises ValueError when kbs <= 0."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     with pytest.raises(ValueError, match="kbs must be > 0"):
         BlochSiegertB1Plus(kbs=0.0)
@@ -333,7 +333,7 @@ def test_bloch_siegert_raises_non_positive_kbs() -> None:
 @pytest.mark.physics
 def test_apply_b1_correction_raises_spatial_mismatch() -> None:
     """apply_b1_correction raises ValueError when b1_map spatial dims differ."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import apply_b1_correction
+    from spectramr.infrastructure.physics.b1_plus_mapping import apply_b1_correction
 
     image = torch.rand(1, 1, 32, 32)
     b1_map = torch.rand(1, 1, 16, 16)  # wrong spatial size
@@ -348,7 +348,7 @@ def test_apply_b1_correction_raises_spatial_mismatch() -> None:
 @pytest.mark.physics
 def test_double_angle_flat_b1_plus_map() -> None:
     """Spatially-uniform double-angle inputs produce a spatially uniform B1+ map."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     nominal_deg = 60.0
     actual_deg = 45.0
@@ -373,7 +373,7 @@ def test_double_angle_flat_b1_plus_map() -> None:
 @pytest.mark.physics
 def test_bloch_siegert_flat_b1_plus_map() -> None:
     """Spatially-uniform phase_diff produces a spatially uniform B1+ map."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     kbs = 74.0
     phase_val = 0.5  # 0.5 rad uniform phase shift
@@ -398,7 +398,7 @@ def test_bloch_siegert_flat_b1_plus_map() -> None:
 @pytest.mark.slow
 def test_gradcheck_double_angle() -> None:
     """DoubleAngleB1Plus is differentiable: fp64 gradcheck passes."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import DoubleAngleB1Plus
 
     model = DoubleAngleB1Plus(nominal_flip_deg=60.0)
     # Use small spatial size to keep gradcheck fast
@@ -425,7 +425,7 @@ def test_gradcheck_double_angle() -> None:
 @pytest.mark.slow
 def test_gradcheck_bloch_siegert() -> None:
     """BlochSiegertB1Plus is differentiable: fp64 gradcheck passes."""
-    from mriforge.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
+    from spectramr.infrastructure.physics.b1_plus_mapping import BlochSiegertB1Plus
 
     model = BlochSiegertB1Plus(kbs=74.0)
     model_64 = model.double()

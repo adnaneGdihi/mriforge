@@ -37,7 +37,7 @@ class TestStrategyClassPathsAreImportable:
 
     @pytest.fixture(scope="class")
     def strategy_paths(self):
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
@@ -48,7 +48,7 @@ class TestStrategyClassPathsAreImportable:
         # We parametrize lazily inside the test body to avoid import at collection
         list(
             __import__(
-                "mriforge.infrastructure.training.strategy_factory",
+                "spectramr.infrastructure.training.strategy_factory",
                 fromlist=["TrainingStrategyFactory"],
             ).TrainingStrategyFactory.STRATEGY_CLASS_PATHS.keys()
         ),
@@ -88,13 +88,13 @@ class TestStrategyClassesAreBaseSubclasses:
         "short_name,full_path",
         list(
             __import__(
-                "mriforge.infrastructure.training.strategy_factory",
+                "spectramr.infrastructure.training.strategy_factory",
                 fromlist=["TrainingStrategyFactory"],
             ).TrainingStrategyFactory.STRATEGY_CLASS_PATHS.items()
         ),
     )
     def test_strategy_class_inherits_base(self, short_name: str, full_path: str):
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         try:
             cls = _load_class(full_path)
@@ -118,7 +118,7 @@ class TestStrategyFactoryFailFast:
     """The factory must fail-fast on unknown class paths, not silently return None."""
 
     def test_unknown_short_name_raises_value_error(self):
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
@@ -127,25 +127,25 @@ class TestStrategyFactoryFailFast:
             factory._load_strategy_class("nonexistent_strategy_xyz_123")
 
     def test_bad_module_path_raises_value_error(self):
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
         factory = TrainingStrategyFactory()
         with pytest.raises(ValueError):
             factory._load_strategy_class(
-                "mriforge.infrastructure.training.strategies.does_not_exist.SomeClass"
+                "spectramr.infrastructure.training.strategies.does_not_exist.SomeClass"
             )
 
     def test_bad_class_name_raises_value_error(self):
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 
         factory = TrainingStrategyFactory()
         with pytest.raises(ValueError):
             factory._load_strategy_class(
-                "mriforge.infrastructure.training.strategies.gan.NonExistentClassName"
+                "spectramr.infrastructure.training.strategies.gan.NonExistentClassName"
             )
 
 
@@ -181,8 +181,8 @@ class TestStrategyPathsMeetEnumCoverage:
 
     def test_training_mode_enum_values_have_strategy_path(self):
         """Every TrainingMode value must have an entry in STRATEGY_CLASS_PATHS."""
-        from mriforge.config.schemas.enums import TrainingMode
-        from mriforge.infrastructure.training.strategy_factory import (
+        from spectramr.config.schemas.enums import TrainingMode
+        from spectramr.infrastructure.training.strategy_factory import (
             TrainingStrategyFactory,
         )
 

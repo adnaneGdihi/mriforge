@@ -1,4 +1,4 @@
-"""Unit tests for ``mriforge.infrastructure.calibration.chd``.
+"""Unit tests for ``spectramr.infrastructure.calibration.chd``.
 
 CHD in this module stands for **Calibrated Hallucination Detector** —
 it is *not* a distance function. The detector is a threshold-based
@@ -23,7 +23,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.chd import (
+from spectramr.infrastructure.calibration.chd import (
     CalibratedHallucinationDetector,
     dkw_slack,
 )

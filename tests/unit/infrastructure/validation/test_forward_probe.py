@@ -14,13 +14,13 @@ from typing import Any, ClassVar
 
 import pytest
 
-from mriforge.models.registry import register_model as _register_model
+from spectramr.models.registry import register_model as _register_model
 from tests.utils.config_block_stub import block_stub
 from tests.utils.data_config_stub import DataConfigStub
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.forward_probe import (  # noqa: E402
+from spectramr.infrastructure.validation.forward_probe import (  # noqa: E402
     ProbeResult,
     _loss_gradient_verdict,
     synthetic_forward_probe,
@@ -226,10 +226,10 @@ def _patch_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     """Register the test models against the lazy registry import.
 
     The probe imports ``get_model_class`` lazily inside its body
-    (``from mriforge.models.registry import get_model_class``), so we patch
+    (``from spectramr.models.registry import get_model_class``), so we patch
     the function directly on the registry module.
     """
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "good": _GoodModel,
@@ -373,7 +373,7 @@ class _ExplodingModel(torch.nn.Module):
 
 @pytest.fixture
 def _patch_registry_extra(monkeypatch: pytest.MonkeyPatch) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "identity":  _IdentityModel,
@@ -434,7 +434,7 @@ class _CaptureInputModel(torch.nn.Module):
 
 @pytest.fixture
 def _patch_registry_capture(monkeypatch: pytest.MonkeyPatch) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
     def _fake_get_model_class(name: str) -> Any:
         assert name == "capture"
         return _CaptureInputModel
@@ -509,7 +509,7 @@ class _DiffusionLikeModel(torch.nn.Module):
 
 @pytest.fixture
 def _patch_registry_signatures(monkeypatch: pytest.MonkeyPatch) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "spatial3d": _SpatialDims3DModel,
@@ -582,7 +582,7 @@ def test_probe_save_images_writes_pngs(
 # G1 of the 2026-06 scientific-validation prevention layer: a model whose
 # output ignores its input is a facade (DC-blob class) that smoke never catches.
 
-from mriforge.infrastructure.validation.forward_probe import (  # noqa: E402
+from spectramr.infrastructure.validation.forward_probe import (  # noqa: E402
     _input_invariance_stats,
     _is_input_invariant,
 )
@@ -625,7 +625,7 @@ class _ConstantModel(torch.nn.Module):
 
 
 def _patch_one(monkeypatch: pytest.MonkeyPatch, name: str, cls: Any) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     monkeypatch.setattr(
         registry_mod,
@@ -744,7 +744,7 @@ class _KwargsContractModelNoHook(_KwargsContractModel):
 
 @pytest.fixture
 def _patch_registry_audit(monkeypatch: pytest.MonkeyPatch) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "bool_skip_identity": _BoolSkipIdentityModel,
@@ -976,7 +976,7 @@ def _cfg_with_image_l1(model_type: str) -> Any:
 def test_dead_loss_gate_fires_for_identity_model(monkeypatch: pytest.MonkeyPatch) -> None:
     """Control: an identity model (output == phantom target) drives the configured
     l1 to 0, so the dead_loss gate fires when the model does NOT opt out."""
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     monkeypatch.setattr(
         registry_mod, "get_model_class", lambda _name: _DeadLossIdentityModelNoSkip
@@ -990,7 +990,7 @@ def test_dead_loss_gate_fires_for_identity_model(monkeypatch: pytest.MonkeyPatch
 def test_dead_loss_gate_honors_probe_skip(monkeypatch: pytest.MonkeyPatch) -> None:
     """The SAME identity model, but declaring ``{"dead_loss"}``, must NOT be
     flagged dead_loss — matching the cluster reality for the geodesic arms."""
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     monkeypatch.setattr(
         registry_mod, "get_model_class", lambda _name: _DeadLossIdentityModel
@@ -1058,7 +1058,7 @@ def _run_ssot_probe(config) -> dict[str, Any]:
 
 
 def _ssot_witness_config(log_scaling: bool = True):
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(
         model={
@@ -1272,7 +1272,7 @@ def test_probe_resolves_generator_kwargs_on_its_own_device() -> None:
     import ast
     import inspect
 
-    from mriforge.infrastructure.validation import forward_probe
+    from spectramr.infrastructure.validation import forward_probe
 
     tree = ast.parse(inspect.getsource(forward_probe))
     calls = [
@@ -1308,9 +1308,9 @@ def test_the_probe_builds_its_losses_on_the_probes_device(
     saw it. ``meta`` gives that without a GPU: it is a real non-CPU device, and a
     module left on CPU compares unequal to it exactly as ``cuda:0`` did.
     """
-    import mriforge.models.losses.computers.unified_diffusion_reconstruction as _computers
-    import mriforge.models.losses.registry as _loss_registry
-    from mriforge.infrastructure.validation.forward_probe import _configured_loss_total
+    import spectramr.models.losses.computers.unified_diffusion_reconstruction as _computers
+    import spectramr.models.losses.registry as _loss_registry
+    from spectramr.infrastructure.validation.forward_probe import _configured_loss_total
 
     class _BufferLoss(torch.nn.Module):
         """Stands in for any loss with state -- the buffer is the thing that moves."""

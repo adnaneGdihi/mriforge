@@ -1,6 +1,6 @@
 """Tests for the forward-operator registry.
 
-Targets ``mriforge.infrastructure.physics.registry``. Dispatches forward-
+Targets ``spectramr.infrastructure.physics.registry``. Dispatches forward-
 operator implementations (FFT, NUFFT, …) by name with optional default
 configs.
 
@@ -20,8 +20,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.interfaces import IPhysicsOperatorABC
-from mriforge.infrastructure.physics.registry import (
+from spectramr.infrastructure.physics.interfaces import IPhysicsOperatorABC
+from spectramr.infrastructure.physics.registry import (
     OperatorRegistry,
     create_operator,
     get_operator_class,

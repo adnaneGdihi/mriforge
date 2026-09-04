@@ -24,7 +24,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 from tests.utils.corpus import tracked_yamls
 
 VF_DIR = Path(__file__).resolve().parents[3] / "experiments" / "inprogress" / "vf"
@@ -69,7 +69,7 @@ class TestV2ValidationFields:
 
     def test_the_canonical_paths_are_the_ones_renames_declares(self) -> None:
         """Anti-transcription: if a record moves again, this fails first."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         assert RENAMES["validation.sampler_steps"].canonical == (
             "validation.sampling.steps"

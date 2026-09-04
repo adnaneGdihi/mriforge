@@ -16,7 +16,7 @@ The schema and registry pages above are the entry points; these carry the full
 detail:
 
 - {doc}`../config_schema_reference` — the complete annotated schema with defaults.
-- {doc}`../cli_reference` — every `mriforge` subcommand and flag.
+- {doc}`../cli_reference` — every `spectramr` subcommand and flag.
 - {doc}`../model_registry_reference` — every registered model.
 - {doc}`../metrics_reference` — every registered metric and its direction.
 - {doc}`../losses_reference` — every registered objective.

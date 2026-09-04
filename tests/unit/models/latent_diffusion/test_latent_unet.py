@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.latent_diffusion.latent_unet import LatentUNet
+from spectramr.models.latent_diffusion.latent_unet import LatentUNet
 
 
 def _net():

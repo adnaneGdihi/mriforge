@@ -48,7 +48,7 @@ with the actual measurements.
 
    training:
      training_mode: reconstruction
-     strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
      epochs: 50
      seed: 42
 
@@ -189,7 +189,7 @@ Configuration for Cycle-Bloch:
 
    training:
      training_mode: cycle_bloch
-     strategy_class: mriforge.infrastructure.training.strategies.cycle_bloch_strategy.CycleBlochStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.cycle_bloch_strategy.CycleBlochStrategy
      epochs: 100
      seed: 42
 

@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.instrument_keyed_attention import (  # noqa: E402
+from spectramr.models.blocks.instrument_keyed_attention import (  # noqa: E402
     InstrumentKeyedCrossAttention,
 )
 
@@ -194,7 +194,7 @@ def test_block_is_registered_and_reachable_through_the_registry() -> None:
     """The repo resolves blocks through BLOCK_REGISTRY (CLAUDE.md #6), and 47
     others already do. A block that is merely importable is reachable from
     Python and NOT from the dispatch path every other block uses."""
-    from mriforge.models.blocks import create_block, list_registered_blocks
+    from spectramr.models.blocks import create_block, list_registered_blocks
 
     assert "instrument_keyed_attention" in list_registered_blocks()
     blk = create_block(
@@ -206,9 +206,9 @@ def test_block_is_registered_and_reachable_through_the_registry() -> None:
 
 
 def test_block_is_exported_from_the_package() -> None:
-    """`from mriforge.models.blocks import InstrumentKeyedCrossAttention` must
+    """`from spectramr.models.blocks import InstrumentKeyedCrossAttention` must
     work, as it does for every other canonical block."""
-    import mriforge.models.blocks as blocks
+    import spectramr.models.blocks as blocks
 
     assert hasattr(blocks, "InstrumentKeyedCrossAttention")
     assert "InstrumentKeyedCrossAttention" in blocks.__all__

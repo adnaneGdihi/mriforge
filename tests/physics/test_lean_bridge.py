@@ -21,7 +21,7 @@ pytestmark = pytest.mark.physics
 
 def test_bridge_harness_imports():
     """Sanity: the physics surface exercised by the bridges is importable."""
-    from mriforge.infrastructure.physics import (  # noqa: F401
+    from spectramr.infrastructure.physics import (  # noqa: F401
         dipole,
         fft_ops,
         hermitian,
@@ -35,7 +35,7 @@ def test_concomitant_eighth_bridge():
     On the z=0 slice with a pure read gradient (Gx=Gy=0), the concomitant Hz map
     equals gamma_bar/(2*pi) * (Gz_SI)^2/(8*B0) * (x^2+y^2) -- the 1/8 fingerprint.
     """
-    from mriforge.infrastructure.physics.maxwell_concomitant import (
+    from spectramr.infrastructure.physics.maxwell_concomitant import (
         GAMMA_BAR_PROTON_RAD_S_T,
         maxwell_concomitant_field_hz,
     )
@@ -61,7 +61,7 @@ def test_dipole_sign_bridge():
     Pins the Salomir sign ``D(k)=1/3 - kz^2/|k|^2``: along the kz (B0) axis the
     kernel is -2/3, along kx/ky it is +1/3. The opposite (Schenck) sign flips both.
     """
-    from mriforge.infrastructure.physics.dipole import get_dipole_kernel_3d
+    from spectramr.infrastructure.physics.dipole import get_dipole_kernel_3d
 
     k = get_dipole_kernel_3d((16, 16, 16), (1.0, 1.0, 1.0))
     kz_axis = k[1:, 0, 0]  # kx=ky=0, kz!=0 -> 1/3 - 1 = -2/3
@@ -78,7 +78,7 @@ def test_dc_idempotent_bridge():
     Hard DC ``P(k)=(1-M)k + M*y`` with the measurement fixed and noise disabled is
     idempotent: applying it twice equals once.
     """
-    from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
     torch.manual_seed(0)
     B, C, H, W = 1, 2, 16, 16
@@ -97,7 +97,7 @@ def test_hermitian_bridge():
     The projection lands in (and is a fixed point of) the Hermitian subspace:
     ``is_hermitian(enforce_hermitian(Z))`` and ``enforce_hermitian`` is idempotent.
     """
-    from mriforge.infrastructure.physics.hermitian import enforce_hermitian, is_hermitian
+    from spectramr.infrastructure.physics.hermitian import enforce_hermitian, is_hermitian
 
     torch.manual_seed(0)
     z = torch.randn(1, 1, 16, 16, dtype=torch.complex64)
@@ -113,7 +113,7 @@ def test_relaxation_bounds_bridge():
     ``E1,E2 in (0,1)`` => the SE signal ``PD*(1-E1)*E2`` lies in ``(0, PD)`` and
     rises monotonically with TR (longer TR -> smaller E1 -> more recovery).
     """
-    from mriforge.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
+    from spectramr.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
 
     sim = DifferentiableBlochSimulator(sequence_type="SE")
     tissue = torch.tensor([1.0, 900.0, 80.0]).view(1, 3, 1, 1)
@@ -144,7 +144,7 @@ def test_ernst_angle_bridge():
     signal is the Ernst angle ``acos(E1)``. Scanning the actual simulator, the
     argmax flip angle matches ``acos(E1)`` within the 1-degree scan resolution.
     """
-    from mriforge.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
+    from spectramr.infrastructure.physics.bloch_simulation import DifferentiableBlochSimulator
 
     sim = DifferentiableBlochSimulator(sequence_type="GRE")
     TR, TE, T1, T2 = 100.0, 1.0, 900.0, 80.0
@@ -165,7 +165,7 @@ def test_ernst_angle_bridge():
 def test_roundtrip_bridge():
     """``ifft2c . fft2c = id`` — the centered ortho FFT is invertible (unitary),
     the companion of the Parseval energy invariant (``perm_preserves_sq_sum``)."""
-    from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
     torch.manual_seed(0)
     x = torch.randn(1, 2, 32, 32, dtype=torch.complex64)
@@ -181,7 +181,7 @@ def test_b0_phase_roundtrip():
     field reproduces the +sign correction and recovers the image exactly --
     confirming the opposite-sign conventions are consistent (no bug).
     """
-    from mriforge.infrastructure.physics.complex_forward_operator import apply_b0_phase
+    from spectramr.infrastructure.physics.complex_forward_operator import apply_b0_phase
 
     torch.manual_seed(0)
     x = torch.randn(1, 1, 16, 16, dtype=torch.complex64)
@@ -200,7 +200,7 @@ def test_logsumexp_bridge():
     max affine value for any ``beta>0`` and converges down to the max as
     ``beta -> inf`` (max-plus / tropical limit).
     """
-    from mriforge.infrastructure.physics.tropical_geometry import log_sum_exp_tropical
+    from spectramr.infrastructure.physics.tropical_geometry import log_sum_exp_tropical
 
     torch.manual_seed(0)
     pts = torch.randn(5, 3)
@@ -219,7 +219,7 @@ def test_nullspace_idempotent_bridge():
     ``P^perp = I - M^H(MM^H+epsI)^{-1}M`` is (as eps->0) idempotent: erasing the
     marker twice equals erasing it once.
     """
-    from mriforge.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
+    from spectramr.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
 
     torch.manual_seed(0)
     marker = torch.randn(2, 1, 8, 8)  # K=2 basis vectors
@@ -236,7 +236,7 @@ def test_hodge_orthogonal_bridge():
     The Helmholtz-Hodge irrotational and solenoidal parts are L2-orthogonal up to
     discretisation error: ``|<v_irrot, v_sol>| << ||v_irrot|| ||v_sol||``.
     """
-    from mriforge.infrastructure.physics.helmholtz_hodge import (
+    from spectramr.infrastructure.physics.helmholtz_hodge import (
         helmholtz_hodge_decompose,
         hodge_orthogonality_residual,
     )

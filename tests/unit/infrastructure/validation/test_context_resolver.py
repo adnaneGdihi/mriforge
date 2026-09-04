@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.domain.entities import ResolvedExperimentContext
-from mriforge.infrastructure.validation.context_resolver import resolve
-from mriforge.models.capabilities import ModelCapabilities, StrategyCapabilities
+from spectramr.domain.entities import ResolvedExperimentContext
+from spectramr.infrastructure.validation.context_resolver import resolve
+from spectramr.models.capabilities import ModelCapabilities, StrategyCapabilities
 
 
 def _fake_config(**over: object) -> SimpleNamespace:
@@ -51,8 +51,8 @@ def test_the_version_stamp_is_real_on_a_real_settings_object() -> None:
     like the fail-soft contract working. Reading a real ``TrainingSettings`` is
     the only assertion that can tell those two apart.
     """
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.settings_from_dict(
         {
@@ -115,9 +115,21 @@ def test_resolve_never_raises_on_sparse_config() -> None:
     assert ctx.config_version == "?"
 
 
-def test_data_domain_picked_up_from_model_target_domain() -> None:
-    ctx = resolve(_fake_config())
-    assert ctx.data_profile.domain == "image"
+def test_data_domain_is_what_the_loader_emits() -> None:
+    """Dataset family first, coil-processing mode second; never the model's
+    declared target domain (a proxy for the model OUTPUT, retired 2026-09-03)."""
+    assert resolve(_fake_config()).data_profile.domain == "image"
+    kspace = _fake_config(
+        data=SimpleNamespace(dataset_type="m4raw", coils=SimpleNamespace(processing_mode="rss"))
+    )
+    assert resolve(kspace).data_profile.domain == "kspace"
+    magnitude = _fake_config(
+        data=SimpleNamespace(
+            dataset_type="m4raw", coils=SimpleNamespace(processing_mode="rss_image")
+        ),
+        model=SimpleNamespace(model_type="__fake_model__", target_domain="kspace"),
+    )
+    assert resolve(magnitude).data_profile.domain == "image"
 
 
 def test_resolve_spatial_dims_2d_from_patch_size() -> None:
@@ -143,9 +155,7 @@ def test_resolve_spatial_dims_1d_from_patch_size() -> None:
 
 def test_resolve_spatial_dims_from_the_canonical_sampling_block() -> None:
     """Phase 9e moved `patch_size` under `data.sampling`."""
-    cfg = _fake_config(
-        data=SimpleNamespace(sampling=SimpleNamespace(patch_size=(256, 256, 1)))
-    )
+    cfg = _fake_config(data=SimpleNamespace(sampling=SimpleNamespace(patch_size=(256, 256, 1))))
     assert resolve(cfg).data_profile.spatial_dims == (2,)
 
 
@@ -160,8 +170,8 @@ def test_the_spatial_rank_is_real_on_a_real_settings_object() -> None:
     A stand-in cannot tell "the guard is clean" from "the guard is blind";
     only a resolved settings object can.
     """
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings.settings_from_dict(
         {

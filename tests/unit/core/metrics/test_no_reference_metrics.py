@@ -7,14 +7,14 @@ import torch
 
 pytestmark = pytest.mark.unit
 
-from mriforge.core.metrics.no_reference_metrics import (
+from spectramr.core.metrics.no_reference_metrics import (
     BRISQUE,
     NIQE,
     LaplacianVariance,
     TenengradVariance,
 )
-from mriforge.core.metrics.physics_nr_metrics import NEMASNR, GFactor
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.physics_nr_metrics import NEMASNR, GFactor
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 class TestTenengradVariance:

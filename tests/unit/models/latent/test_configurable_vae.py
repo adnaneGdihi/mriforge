@@ -9,8 +9,8 @@ Two contracts are locked here:
    naming the offending distribution (design-smell -> explicit guard).
 
 2. The pre-refactor ``src.domain.entities.models.*`` import paths in
-   ``USAGE.md`` no longer resolve after the 2026-05 ``src -> mriforge`` refactor.
-   The doc must use ``mriforge.<sub>`` paths, and the documented symbols must
+   ``USAGE.md`` no longer resolve after the 2026-05 ``src -> spectramr`` refactor.
+   The doc must use ``spectramr.<sub>`` paths, and the documented symbols must
    import cleanly so the doc cannot drift from the package layout.
 
 CPU-only, tiny tensors, fixed seed.
@@ -23,17 +23,17 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.models.latent.configurable_vae import (
+from spectramr.models.latent.configurable_vae import (
     ConfigurableVAE,
     create_configurable_vae,
 )
 
-USAGE = Path(__file__).resolve().parents[4] / "src/mriforge/models/latent/USAGE.md"
+USAGE = Path(__file__).resolve().parents[4] / "src/spectramr/models/latent/USAGE.md"
 
 
 @pytest.mark.parametrize("distribution", ["vq", "categorical", "flow"])
 def test_non_gaussian_distribution_raises_at_construction(distribution: str) -> None:
-    from mriforge.models.latent.configurable_architecture import LatentConfig
+    from spectramr.models.latent.configurable_architecture import LatentConfig
 
     with pytest.raises(NotImplementedError) as excinfo:
         ConfigurableVAE(latent_config=LatentConfig(distribution=distribution))
@@ -64,19 +64,19 @@ def test_usage_md_has_no_pre_refactor_imports() -> None:
     text = USAGE.read_text()
     assert "from src." not in text
     assert "src.domain.entities" not in text
-    assert "from mriforge.models.latent" in text
+    assert "from spectramr.models.latent" in text
 
 
 def test_usage_md_documented_symbols_import_cleanly() -> None:
     # Guards against future drift between the doc and the package layout.
-    from mriforge.models.latent import (  # noqa: F401
+    from spectramr.models.latent import (  # noqa: F401
         DecoderConfig,
         EncoderConfig,
         LatentConfig,
     )
-    from mriforge.models.latent.configurable_vae import (  # noqa: F401
+    from spectramr.models.latent.configurable_vae import (  # noqa: F401
         ConfigurableVAE as _CV,
     )
-    from mriforge.models.latent.configurable_vae import (  # noqa: F401
+    from spectramr.models.latent.configurable_vae import (  # noqa: F401
         create_configurable_vae as _ccv,
     )

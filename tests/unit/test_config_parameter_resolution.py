@@ -7,7 +7,7 @@ across different config sections and that deprecated paths trigger warnings.
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 class TestTrainingDiffusionPathResolution:
@@ -68,7 +68,7 @@ class TestConfigSchemaDefaults:
         the documented baseline (``lambda_l1=10.0``) so that turning
         the flag on doesn't require also specifying a weight.
         """
-        from mriforge.config.schemas.loss import ReconstructionLossesConfig
+        from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
         config = ReconstructionLossesConfig()
         assert (

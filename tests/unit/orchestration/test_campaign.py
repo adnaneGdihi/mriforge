@@ -9,20 +9,20 @@ import numpy as np
 import pytest
 import yaml
 
-from mriforge.config.schemas.campaign import (
+from spectramr.config.schemas.campaign import (
     AblationAxisSchema,
     CampaignConfigSchema,
     CampaignExperimentSchema,
     EvaluationConfigSchema,
     SlurmDefaultsSchema,
 )
-from mriforge.infrastructure.orchestration.ablation_config_generator import (
+from spectramr.infrastructure.orchestration.ablation_config_generator import (
     AblationConfigGenerator,
 )
-from mriforge.infrastructure.orchestration.campaign_evaluator import (
+from spectramr.infrastructure.orchestration.campaign_evaluator import (
     CampaignEvaluator,
 )
-from mriforge.infrastructure.orchestration.campaign_state import (
+from spectramr.infrastructure.orchestration.campaign_state import (
     CampaignState,
     ExperimentStatus,
 )

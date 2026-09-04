@@ -10,8 +10,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.conditioning import ConditioningContext  # noqa: E402
-from mriforge.models.conditioning.encoders import (  # noqa: E402
+from spectramr.models.conditioning import ConditioningContext  # noqa: E402
+from spectramr.models.conditioning.encoders import (  # noqa: E402
     AcquisitionTimeEncoder,
     ConditioningEncoderBank,
     SeverityTokenEncoder,

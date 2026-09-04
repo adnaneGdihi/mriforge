@@ -4,12 +4,34 @@
 Model Architectures — Reference
 ====================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
-The MRIForge framework provides **273 generator classes** across **115 files**
-and **8 discriminators**, organized by reconstruction paradigm. All models
-follow the ``IGenerator`` interface: ``__init__(in_channels, out_channels, **kwargs)``
-and ``forward(x)``.
+spectraMR's generators are organized by reconstruction paradigm. All follow the
+``IGenerator`` interface: ``__init__(in_channels, out_channels, **kwargs)`` and
+``forward(x)``.
+
+.. note::
+
+   **This page does not state a count, deliberately.** It used to claim "273
+   generator classes across 115 files"; the registry holds **586** models and
+   ``models/generators/`` holds **224** files, so both halves were wrong and
+   nothing recomputed them. A frozen count in a hand-written page drifts silently
+   and is worse than no count -- a reader who trusts it under-estimates the
+   framework by a factor of two.
+
+   The registry is the only answer that cannot go stale. Ask it:
+
+   .. code-block:: python
+
+      from spectramr.models.init_registry import populate_model_registry
+      from spectramr.models.registry import MODEL_REGISTRY
+
+      populate_model_registry()   # REQUIRED -- the registry is empty without it
+      len(MODEL_REGISTRY)
+
+   This page is also **not exhaustive**: it documents a subset of what is
+   registered, so a name's absence here is not evidence it does not exist. Check
+   ``MODEL_REGISTRY`` before concluding a model is unavailable.
 
 .. contents:: Table of Contents
    :depth: 2
@@ -21,7 +43,7 @@ Registration & Usage
 
 .. code-block:: python
 
-   from mriforge.models.factories.model_factory import ModelFactory
+   from spectramr.models.factories.model_factory import ModelFactory
 
    factory = ModelFactory()
    model = factory.create_generator(
@@ -1002,7 +1024,7 @@ Audit-2026-05-14 round-2 fixes (model-side)
 WavKAN norm-kwarg leak (F8 / E13)
 ---------------------------------
 
-:py:class:`mriforge.models.layers.kan.kan_convs.wav_kan.WavKANConvNDLayer`
+:py:class:`spectramr.models.layers.kan.kan_convs.wav_kan.WavKANConvNDLayer`
 accepts ``**norm_kwargs`` and historically forwarded the entire blob
 unfiltered to ``norm_class(output_dim, **norm_kwargs)``. The caller
 chain ``RefinedKANUNet → DoubleConvWithKAN → WavKANConv2DLayer``
@@ -1017,7 +1039,7 @@ for every KAN-based experiment in the 2026-05-14 smoke run.
 The fix introspects ``norm_class`` with ``inspect.signature`` and
 keeps only kwargs that the norm constructor's signature accepts.
 Mirrors the filter pattern already present in
-:py:mod:`mriforge.models.layers.kan.kan_convs.fast_kan_conv`. Pinned by
+:py:mod:`spectramr.models.layers.kan.kan_convs.fast_kan_conv`. Pinned by
 :py:mod:`tests.unit.models.blocks.test_wav_kan_norm_kwarg_filter` (14
 tests: filter behaviour with both ``BatchNorm2d`` and
 ``InstanceNorm2d``, forward pass after filter, sanity check that

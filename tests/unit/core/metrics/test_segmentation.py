@@ -1,6 +1,6 @@
 """Tests for ``SegmentationEvaluator`` + ``dice_score``.
 
-Targets ``mriforge.core.metrics.segmentation``. Wraps sklearn metrics
+Targets ``spectramr.core.metrics.segmentation``. Wraps sklearn metrics
 (``f1_score``, ``jaccard_score``, ``accuracy_score``) for binary and
 multi-class segmentation evaluation.
 
@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.core.metrics.segmentation import SegmentationEvaluator, dice_score
+from spectramr.core.metrics.segmentation import SegmentationEvaluator, dice_score
 
 
 # ---------------------------------------------------------------------------
@@ -121,14 +121,14 @@ def test_ignore_index_filters_pixels() -> None:
 
 def test_module_imports_and_exposes_sklearn_flag() -> None:
     """The module imports even in a torch-only env and exposes the flag."""
-    import mriforge.core.metrics.segmentation as seg
+    import spectramr.core.metrics.segmentation as seg
 
     assert isinstance(seg.SKLEARN_AVAILABLE, bool)
 
 
 def test_dice_score_raises_clear_error_when_sklearn_absent(monkeypatch) -> None:
     """``dice_score`` raises a clear ImportError when sklearn is unavailable."""
-    import mriforge.core.metrics.segmentation as seg
+    import spectramr.core.metrics.segmentation as seg
 
     monkeypatch.setattr(seg, "SKLEARN_AVAILABLE", False)
     with pytest.raises(ImportError, match="scikit-learn"):
@@ -137,7 +137,7 @@ def test_dice_score_raises_clear_error_when_sklearn_absent(monkeypatch) -> None:
 
 def test_evaluator_raises_clear_error_when_sklearn_absent(monkeypatch) -> None:
     """The evaluator raises a clear ImportError when sklearn is unavailable."""
-    import mriforge.core.metrics.segmentation as seg
+    import spectramr.core.metrics.segmentation as seg
 
     monkeypatch.setattr(seg, "SKLEARN_AVAILABLE", False)
     with pytest.raises(ImportError, match="scikit-learn"):

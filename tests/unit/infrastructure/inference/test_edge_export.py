@@ -1,6 +1,6 @@
 """Tests for ``EdgeExporter`` and ``EdgeExportArtifact``.
 
-Targets ``mriforge.infrastructure.inference.edge_export``. Multi-backend
+Targets ``spectramr.infrastructure.inference.edge_export``. Multi-backend
 exporter for edge deployment. We exercise:
 
 - TorchScript export (always available)
@@ -20,7 +20,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.inference.edge_export import EdgeExportArtifact, EdgeExporter
+from spectramr.infrastructure.inference.edge_export import EdgeExportArtifact, EdgeExporter
 
 
 # ---------------------------------------------------------------------------

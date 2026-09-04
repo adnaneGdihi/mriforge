@@ -19,7 +19,7 @@ torch = pytest.importorskip("torch")
 gudhi = pytest.importorskip("gudhi")
 ot = pytest.importorskip("ot")
 
-from mriforge.models.losses.cubical_ph_w2_loss import (  # noqa: E402
+from spectramr.models.losses.cubical_ph_w2_loss import (  # noqa: E402
     CubicalPHWassersteinLoss,
 )
 
@@ -43,7 +43,7 @@ def test_matching_uses_linfinity_ground_metric() -> None:
     """
     import numpy as np
 
-    from mriforge.models.losses.cubical_ph_w2_loss import _wasserstein_matching
+    from spectramr.models.losses.cubical_ph_w2_loss import _wasserstein_matching
 
     class _DiagonalOT:
         """Stub whose ``emd`` returns the diagonal (identity) transport plan."""
@@ -73,7 +73,7 @@ def test_diagonal_block_zeroed_routes_genuine_match() -> None:
     from *pull-toward-target* to *shrink-persistence* (F2)."""
     import numpy as np
 
-    from mriforge.models.losses.cubical_ph_w2_loss import _wasserstein_matching
+    from spectramr.models.losses.cubical_ph_w2_loss import _wasserstein_matching
 
     a = np.array([[0.423, 0.461]])  # pred point
     b = np.array([[0.124, 0.798]])  # a genuine (if imperfect) target match

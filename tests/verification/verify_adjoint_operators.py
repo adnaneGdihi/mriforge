@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.infrastructure.physics.fft_ops import (
     fft2c,
     ifft2c,
     sense_adjoint,

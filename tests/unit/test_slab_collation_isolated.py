@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.data.collation.strategies import SlabCollateStrategy
+from spectramr.data.collation.strategies import SlabCollateStrategy
 
 
 def test_slab_collation_logic():

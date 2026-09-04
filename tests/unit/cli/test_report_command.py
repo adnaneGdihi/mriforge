@@ -1,4 +1,4 @@
-"""Tests for the ``mriforge report`` handler (``mriforge.cli.app.report``).
+"""Tests for the ``spectramr report`` handler (``spectramr.cli.app.report``).
 
 Covers the --config reporting-block parity path and CLI-override precedence
 without loading a full TrainingSettings YAML (stubbed) or rendering figures
@@ -10,7 +10,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from mriforge.cli import app
+from spectramr.cli import app
 
 
 class _Rep:
@@ -67,8 +67,8 @@ def _patch(monkeypatch):
         return {"figures": {}, "tables": {}, "out_dir": Path(exp_dir),
                 "summary": Path(exp_dir) / "s.md", "html": None}
 
-    monkeypatch.setattr("mriforge.infrastructure.reporting.generate_report", _fake_gen)
-    monkeypatch.setattr("mriforge.config.settings.TrainingSettings.from_yaml",
+    monkeypatch.setattr("spectramr.infrastructure.reporting.generate_report", _fake_gen)
+    monkeypatch.setattr("spectramr.config.settings.TrainingSettings.from_yaml",
                         lambda p: _Settings())
     return captured
 
@@ -122,7 +122,7 @@ def test_recursive_dispatches_to_batch(tmp_path, monkeypatch):
         seen["kw"] = kw
         return {"runs": [], "index": None, "n_runs": 2, "n_ok": 2}
 
-    monkeypatch.setattr("mriforge.infrastructure.reporting.generate_reports", _fake_batch)
+    monkeypatch.setattr("spectramr.infrastructure.reporting.generate_reports", _fake_batch)
     rc = app.report(_ns(exp, recursive=True))
     assert rc == 0
     assert seen["root"] == exp
@@ -132,7 +132,7 @@ def test_recursive_dispatches_to_batch(tmp_path, monkeypatch):
 
 def test_recursive_no_runs_found(tmp_path, monkeypatch):
     exp = tmp_path / "empty"; exp.mkdir()
-    monkeypatch.setattr("mriforge.infrastructure.reporting.generate_reports",
+    monkeypatch.setattr("spectramr.infrastructure.reporting.generate_reports",
                         lambda root, **kw: {"runs": [], "index": None,
                                             "n_runs": 0, "n_ok": 0})
     assert app.report(_ns(exp, recursive=True)) == 0

@@ -1,18 +1,18 @@
 """Registry iterators for parametric tests.
 
-Provides thin wrappers around the real MRIForge component registries so
+Provides thin wrappers around the real spectraMR component registries so
 test modules can iterate over *all* registered names without duplicating
 import logic.
 
 Registries accessed:
 
-* **Models** — ``mriforge.models.registry.MODEL_REGISTRY`` (dict keyed
+* **Models** — ``spectramr.models.registry.MODEL_REGISTRY`` (dict keyed
   by model name, values are dicts with ``"class"``, ``"mode"``, …).
-* **Losses** — ``mriforge.models.losses.registry.LossRegistry._custom_losses``
+* **Losses** — ``spectramr.models.losses.registry.LossRegistry._custom_losses``
   (class-level dict keyed by canonical loss name).
-* **Metrics** — ``mriforge.core.metrics.registry.MetricsRegistry._metrics``
+* **Metrics** — ``spectramr.core.metrics.registry.MetricsRegistry._metrics``
   (class-level dict keyed by canonical metric name).
-* **Strategies** — ``mriforge.infrastructure.training.strategy_factory
+* **Strategies** — ``spectramr.infrastructure.training.strategy_factory
   .TrainingStrategyFactory.STRATEGY_CLASS_PATHS`` (plain dict keyed by
   strategy alias).
 
@@ -47,10 +47,10 @@ def all_models(filter_fn: Callable[[str], bool] | None = None) -> list[str]:
 
     Returns:
         Sorted list of model names currently in
-        ``mriforge.models.registry.MODEL_REGISTRY``.
+        ``spectramr.models.registry.MODEL_REGISTRY``.
     """
     try:
-        from mriforge.models.registry import MODEL_REGISTRY  # noqa: PLC0415
+        from spectramr.models.registry import MODEL_REGISTRY  # noqa: PLC0415
         keys = list(MODEL_REGISTRY.keys())
     except Exception as exc:
         logger.warning("Could not import MODEL_REGISTRY: %s", exc)
@@ -81,7 +81,7 @@ def all_losses(domain: str | None = None) -> list[str]:
         ``LossRegistry._custom_losses``.
     """
     try:
-        from mriforge.models.losses.registry import LossRegistry  # noqa: PLC0415
+        from spectramr.models.losses.registry import LossRegistry  # noqa: PLC0415
         keys = list(LossRegistry._custom_losses.keys())
         if domain is not None:
             domain_meta = LossRegistry._loss_domains
@@ -118,7 +118,7 @@ def all_metrics(kind: str | None = None) -> list[str]:
         ``MetricsRegistry._metrics``.
     """
     try:
-        from mriforge.core.metrics.registry import MetricsRegistry  # noqa: PLC0415
+        from spectramr.core.metrics.registry import MetricsRegistry  # noqa: PLC0415
         keys = list(MetricsRegistry._metrics.keys())
     except Exception as exc:
         logger.warning("Could not import MetricsRegistry: %s", exc)
@@ -148,7 +148,7 @@ def all_strategy_keys() -> list[str]:
         ``TrainingStrategyFactory.STRATEGY_CLASS_PATHS``.
     """
     try:
-        from mriforge.infrastructure.training.strategy_factory import (  # noqa: PLC0415
+        from spectramr.infrastructure.training.strategy_factory import (  # noqa: PLC0415
             TrainingStrategyFactory,
         )
         keys = list(TrainingStrategyFactory.STRATEGY_CLASS_PATHS.keys())

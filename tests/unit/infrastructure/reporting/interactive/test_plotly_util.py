@@ -1,6 +1,6 @@
 """Tests for the interactive-layer plotly helpers.
 
-Targets ``mriforge.infrastructure.reporting.interactive.plotly_util``: the plotly
+Targets ``spectramr.infrastructure.reporting.interactive.plotly_util``: the plotly
 probe, the inline-once library script (offline self-containment), the div
 serialiser, and the explainability caption.
 """
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 
-from mriforge.infrastructure.reporting.interactive import plotly_util as pu
+from spectramr.infrastructure.reporting.interactive import plotly_util as pu
 
 _HAS_PLOTLY = importlib.util.find_spec("plotly") is not None
 

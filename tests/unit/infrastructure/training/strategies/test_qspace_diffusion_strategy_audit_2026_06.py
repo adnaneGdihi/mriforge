@@ -31,11 +31,11 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.qspace_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.qspace_diffusion_strategy import (
     QSpaceDiffusionStrategy,
     build_sh_basis_unit_sphere,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 

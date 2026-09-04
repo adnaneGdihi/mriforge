@@ -9,18 +9,18 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.rankers import (
+from spectramr.core.metrics.meta_evaluation.rankers import (
     ADRRanker,
     CDRSRanker,
     SCVRRanker,
     Sim2RankRanker,
 )
-from mriforge.core.metrics.meta_evaluation.simulator import (
+from spectramr.core.metrics.meta_evaluation.simulator import (
     SimulatorConfig,
     precompute_metric_values,
     run_simulator,
 )
-from mriforge.core.metrics.meta_evaluation.types import MetricEvaluationDataset
+from spectramr.core.metrics.meta_evaluation.types import MetricEvaluationDataset
 
 
 def _dataset(metric_set, clean_volumes) -> MetricEvaluationDataset:

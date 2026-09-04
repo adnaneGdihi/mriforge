@@ -14,8 +14,8 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.nifti_export import VoxelGeometry
-from mriforge.data.regions import synthseg_cli
+from spectramr.data.nifti_export import VoxelGeometry
+from spectramr.data.regions import synthseg_cli
 
 
 def _geometry(n_slices: int, rows: int, cols: int) -> VoxelGeometry:

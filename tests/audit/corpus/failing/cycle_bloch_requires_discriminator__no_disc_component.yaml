@@ -18,7 +18,7 @@ metadata:
   name: Failing — cycle_bloch_requires_discriminator (cycle_bloch, no disc_component)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.cycle_bloch.CycleBlochStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.cycle_bloch.CycleBlochStrategy
   training_mode: cycle_bloch    # <<< requires model.discriminator_component
   max_iterations: 10
   device: cuda

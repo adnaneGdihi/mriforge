@@ -22,11 +22,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.cli.app import _gate_probe_acceleration
-from mriforge.infrastructure.validation.config_health_checker import HealthCheckReport
+from spectramr.cli.app import _gate_probe_acceleration
+from spectramr.infrastructure.validation.config_health_checker import HealthCheckReport
 
 APP_SRC = (
-    Path(__file__).resolve().parents[3] / "src" / "mriforge" / "cli" / "app.py"
+    Path(__file__).resolve().parents[3] / "src" / "spectramr" / "cli" / "app.py"
 ).read_text()
 
 
@@ -187,7 +187,7 @@ class TestBenchmarkIsGated:
 
     def test_benchmark_exposes_a_device_flag(self) -> None:
         """The CPU escape hatch must be reachable from the CLI (pitfall #15)."""
-        from mriforge.cli.app import build_parser
+        from spectramr.cli.app import build_parser
 
         parser = build_parser()
         args = parser.parse_args(["benchmark", "--device", "cpu"])

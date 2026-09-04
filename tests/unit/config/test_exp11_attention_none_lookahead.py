@@ -48,13 +48,13 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.config.schemas.optimization import OptimizationConfigSchema  # noqa: E402
-from mriforge.config.settings import TrainingSettings  # noqa: E402
-from mriforge.infrastructure.training.optimizer_resolution import (  # noqa: E402
+from spectramr.config.schemas.optimization import OptimizationConfigSchema  # noqa: E402
+from spectramr.config.settings import TrainingSettings  # noqa: E402
+from spectramr.infrastructure.training.optimizer_resolution import (  # noqa: E402
     build_optimizer_from_spec,
     resolve_optimizer_spec,
 )
-from mriforge.infrastructure.training.optimizers.lookahead import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers.lookahead import (  # noqa: E402
     Lookahead,
 )
 from tests.utils.corpus import tracked_yamls  # noqa: E402

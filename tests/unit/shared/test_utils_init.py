@@ -1,4 +1,4 @@
-"""Regression tests for ``mriforge.shared.utils.__init__``.
+"""Regression tests for ``spectramr.shared.utils.__init__``.
 
 The package's ``__all__`` previously advertised three EMA names
 (``ExponentialMovingAverage``, ``apply_ema_to_model``,
@@ -10,7 +10,7 @@ on those names would fail. These tests pin the invariant that every name in
 
 import pytest
 
-import mriforge.shared.utils as u
+import spectramr.shared.utils as u
 
 pytestmark = pytest.mark.unit
 
@@ -44,7 +44,7 @@ def test_star_import_does_not_raise() -> None:
     missing name.
     """
     namespace: dict[str, object] = {}
-    exec("from mriforge.shared.utils import *", namespace)
+    exec("from spectramr.shared.utils import *", namespace)
     for name in u.__all__:
         assert name in namespace, f"star-import failed to bind {name!r}"
 

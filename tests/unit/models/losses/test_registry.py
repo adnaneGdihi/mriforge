@@ -12,9 +12,9 @@ from typing import ClassVar
 
 import pytest
 
-import mriforge.models.losses  # noqa: F401  -- import-time registration
-from mriforge.config.schemas.enums import SignalDomain
-from mriforge.models.losses.registry import (
+import spectramr.models.losses  # noqa: F401  -- import-time registration
+from spectramr.config.schemas.enums import SignalDomain
+from spectramr.models.losses.registry import (
     AGNOSTIC_DOMAIN,
     LossRegistry,
     compatible_domains,
@@ -240,7 +240,7 @@ class TestDomainStringsThatMapToNothing:
 
     @staticmethod
     def _unmapped() -> set[str]:
-        from mriforge.models.losses.registry import (
+        from spectramr.models.losses.registry import (
             LossRegistry,
             get_loss_capabilities,
         )
@@ -275,7 +275,7 @@ class TestDomainStringsThatMapToNothing:
         unmappable domain raises there now — so the hole is injected directly
         into the metadata the adapter reads.
         """
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         LossRegistry._loss_domains["_probe_unmapped"] = {"domain": "nowhere"}
         try:
@@ -299,7 +299,7 @@ class TestAnUnregistrableDomainRaises:
     """
 
     def test_a_typo_is_refused_at_registration(self) -> None:
-        from mriforge.models.losses.registry import register_loss
+        from spectramr.models.losses.registry import register_loss
 
         with pytest.raises(ValueError, match="not a registrable domain"):
             register_loss("_probe_typo", domain="imagee")
@@ -308,7 +308,7 @@ class TestAnUnregistrableDomainRaises:
         """The control. Refusing a legal value would be worse than the bug."""
         import torch.nn as nn
 
-        from mriforge.models.losses.registry import (
+        from spectramr.models.losses.registry import (
             REGISTRABLE_DOMAINS,
             LossRegistry,
             register_loss,
@@ -326,7 +326,7 @@ class TestAnUnregistrableDomainRaises:
         """``domain=None`` means unannotated, which remains a valid state."""
         import torch.nn as nn
 
-        from mriforge.models.losses.registry import LossRegistry, register_loss
+        from spectramr.models.losses.registry import LossRegistry, register_loss
 
         try:
             register_loss("_probe_none")(type("PN", (nn.Module,), {}))
@@ -336,7 +336,7 @@ class TestAnUnregistrableDomainRaises:
 
     def test_the_non_signal_domains_are_exempt_not_unannotated(self) -> None:
         """The four losses now carry a STATED exemption."""
-        from mriforge.models.losses.registry import get_loss_capabilities
+        from spectramr.models.losses.registry import get_loss_capabilities
 
         for name in (
             "hamiltonian_energy_conservation",
@@ -349,7 +349,7 @@ class TestAnUnregistrableDomainRaises:
 
     def test_signal_domain_losses_are_untouched(self) -> None:
         """Control: the exemption must not leak onto real signal domains."""
-        from mriforge.models.losses.registry import get_loss_capabilities
+        from spectramr.models.losses.registry import get_loss_capabilities
 
         for name, expected in (
             ("ssim", "image"),
@@ -370,14 +370,14 @@ class TestGetLossClass:
     """
 
     def test_resolves_a_canonical_name(self):
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         cls = LossRegistry.get_loss_class("sobolev_kspace")
         assert cls is not None
         assert cls.__name__ == "SobolevKSpaceLoss"
 
     def test_resolves_through_the_alias_table(self):
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         for name in LossRegistry.list_available():
             aliases = LossRegistry.get_loss_aliases(name)
@@ -389,13 +389,13 @@ class TestGetLossClass:
         pytest.skip("no aliased loss in the registry")
 
     def test_returns_none_for_an_unregistered_name(self):
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         assert LossRegistry.get_loss_class("definitely_not_a_loss") is None
 
     def test_agrees_with_is_registered_across_the_whole_registry(self):
         """One resolver, not two that agree until they don't."""
-        from mriforge.models.losses.registry import LossRegistry
+        from spectramr.models.losses.registry import LossRegistry
 
         for name in LossRegistry.list_available():
             assert LossRegistry.is_registered(name)

@@ -14,7 +14,7 @@ while the output stayed log-compressed, and the loss compared like with like.
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 _context = BaseTrainingStrategy._model_output_scale_context
 

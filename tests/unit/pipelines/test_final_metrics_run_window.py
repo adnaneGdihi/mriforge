@@ -9,7 +9,7 @@ its ``final_metrics.json`` reported a five-run-blended CSV's minimum as its own.
 
 import pytest
 
-from mriforge.pipelines.train import (
+from spectramr.pipelines.train import (
     _select_current_run_rows,
     _summarise_best_metrics_from_csv,
 )

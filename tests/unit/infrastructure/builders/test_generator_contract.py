@@ -8,8 +8,8 @@ never raises, and ``accepts`` honours ``**kwargs``.
 
 from __future__ import annotations
 
-from mriforge.core.component_signature import SignatureContract
-from mriforge.infrastructure.builders.generator_contract import (
+from spectramr.core.component_signature import SignatureContract
+from spectramr.infrastructure.builders.generator_contract import (
     SKIP_MODEL_FIELDS,
     accepts,
     resolve_contract,
@@ -19,7 +19,7 @@ from mriforge.infrastructure.builders.generator_contract import (
 class TestReExportIdentity:
     def test_generator_kwargs_reexports_the_same_objects(self) -> None:
         """One owner per symbol (NN17): the old spellings must not be copies."""
-        from mriforge.infrastructure.builders import generator_kwargs as gk
+        from spectramr.infrastructure.builders import generator_kwargs as gk
 
         assert gk._SKIP_MODEL_FIELDS is SKIP_MODEL_FIELDS
         assert gk._accepts is accepts
@@ -27,7 +27,7 @@ class TestReExportIdentity:
 
     def test_forward_probe_still_resolves_the_same_function(self) -> None:
         """The one production importer outside builders/ (#1400 split safety)."""
-        from mriforge.infrastructure.validation import forward_probe
+        from spectramr.infrastructure.validation import forward_probe
 
         assert forward_probe.resolve_contract is resolve_contract
 

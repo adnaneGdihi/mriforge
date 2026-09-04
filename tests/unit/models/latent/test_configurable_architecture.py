@@ -16,7 +16,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.latent.configurable_architecture import (
+from spectramr.models.latent.configurable_architecture import (
     DecoderConfig,
     EncoderConfig,
     FlexibleDecoder,

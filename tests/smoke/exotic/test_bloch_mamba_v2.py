@@ -13,7 +13,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 # Import model
-from mriforge.models.mamba.bloch_mamba_v2 import BlochMambaV2, BlochSSM
+from spectramr.models.mamba.bloch_mamba_v2 import BlochMambaV2, BlochSSM
 
 # Use device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

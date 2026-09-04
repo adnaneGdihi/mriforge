@@ -18,7 +18,7 @@ metadata:
   name: Failing — discriminator_gan_losses (disc_component declared, losses.gan absent)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy
   training_mode: gan
   max_iterations: 10
   device: cuda

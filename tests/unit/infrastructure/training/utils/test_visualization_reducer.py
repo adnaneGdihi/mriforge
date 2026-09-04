@@ -13,7 +13,7 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.utils.visualization_reducer import (
+from spectramr.infrastructure.training.utils.visualization_reducer import (
     VisualizationReducer,
     is_distribution_head,
     to_magnitude,
@@ -52,7 +52,7 @@ class TestDistributionHeadDetection:
         does not, the two owners are back."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies.base import (
+        from spectramr.infrastructure.training.strategies.base import (
             BaseTrainingStrategy,
         )
 
@@ -150,13 +150,13 @@ class TestToDisplayOrdering:
         """`log1p` is a per-bin nonlinearity, so the IFFT of a compressed
         spectrum is not a scaled image (#682)."""
         calls = []
-        import mriforge.infrastructure.training.utils.visualization_reducer as vr
+        import spectramr.infrastructure.training.utils.visualization_reducer as vr
 
         monkeypatch.setattr(
             vr, "decompress_for_view", lambda t, **kw: (calls.append("expm1"), t)[1]
         )
         monkeypatch.setattr(
-            "mriforge.infrastructure.physics.fft_ops.ifft2c",
+            "spectramr.infrastructure.physics.fft_ops.ifft2c",
             lambda t: (calls.append("ifft"), t)[1],
         )
 
@@ -169,7 +169,7 @@ class TestToDisplayOrdering:
     def test_image_domain_skips_both(self, monkeypatch):
         """A guessed domain produces a plausible-but-wrong picture, so the
         caller declares it and an image-domain tensor is never transformed."""
-        import mriforge.infrastructure.training.utils.visualization_reducer as vr
+        import spectramr.infrastructure.training.utils.visualization_reducer as vr
 
         monkeypatch.setattr(
             vr,
@@ -197,7 +197,7 @@ class TestTheMixinDefaultUsesIt:
     def test_the_hook_delegates(self):
         import inspect
 
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
@@ -207,7 +207,7 @@ class TestTheMixinDefaultUsesIt:
 
     def test_an_evidential_config_now_reduces(self):
         """The #390 case, end to end through the public hook."""
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
@@ -219,7 +219,7 @@ class TestTheMixinDefaultUsesIt:
 
     def test_an_ordinary_config_is_still_identity(self):
         """Regression guard for every non-distribution arm in the tree."""
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 

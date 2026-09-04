@@ -14,15 +14,15 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.evaluation.mrixfields_baselines.generator_loader import (
+from spectramr.infrastructure.evaluation.mrixfields_baselines.generator_loader import (
     LoadedBaseline,
     load_baseline_generator,
 )
-from mriforge.infrastructure.evaluation.mrixfields_baselines.original_arch import (
+from spectramr.infrastructure.evaluation.mrixfields_baselines.original_arch import (
     ClovaaiMappingNetwork,
     ClovaaiStarGANv2Generator,
 )
-from mriforge.models.registry import get_model_class
+from spectramr.models.registry import get_model_class
 
 # ---------------------------------------------------------------------------
 # Helpers

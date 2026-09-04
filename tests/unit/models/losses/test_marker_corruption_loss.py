@@ -1,6 +1,6 @@
 """Tests for ``MarkerCorruptionLoss``.
 
-Targets ``mriforge.models.losses.marker_corruption_loss``. Measures L1
+Targets ``spectramr.models.losses.marker_corruption_loss``. Measures L1
 fidelity inside a known marker mask + smoothness across the marker /
 anatomy boundary.
 
@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.marker_corruption_loss import MarkerCorruptionLoss
+from spectramr.models.losses.marker_corruption_loss import MarkerCorruptionLoss
 
 
 # ---------------------------------------------------------------------------
@@ -157,6 +157,6 @@ def test_gradient_flows_to_prediction() -> None:
 
 def test_registered() -> None:
     """``marker_corruption`` resolvable."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "marker_corruption" in list_available()

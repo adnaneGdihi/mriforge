@@ -12,7 +12,7 @@ metadata:
   name: Failing — output_dir_convention (deprecated active/ prefix)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   epochs: 1
   device: cuda
   task: reconstruction

@@ -9,7 +9,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.diffusion.pula_sampler import DPSMRISampler
+from spectramr.models.diffusion.pula_sampler import DPSMRISampler
 
 
 class _TinyScoreModel(nn.Module):
@@ -34,7 +34,7 @@ def test_advertised_sampler_types_construct(sampler_type):
 
 def test_dps_mri_registered():
     """The @register_sampler('dps_mri') decorator must be reachable on import."""
-    from mriforge.models.diffusion.samplers import SAMPLER_REGISTRY  # noqa: F401
+    from spectramr.models.diffusion.samplers import SAMPLER_REGISTRY  # noqa: F401
 
     # Symbol importable + class is the registered one (covers the decorator path).
     assert DPSMRISampler is not None

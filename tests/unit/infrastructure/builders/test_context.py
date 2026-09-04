@@ -7,7 +7,7 @@ import warnings
 
 import pytest
 
-from mriforge.infrastructure.builders.context import (
+from spectramr.infrastructure.builders.context import (
     BuilderContext,
     accepts_builder_context,
 )

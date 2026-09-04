@@ -19,7 +19,7 @@ from typing import ClassVar
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     RandomCartesianKSpaceAccelerator,
     _accelerator_kwarg_vocabulary,
     create_kspace_accelerator,
@@ -305,7 +305,7 @@ SHRINK_FAMILIES = ["variable_density_1d", "variable_density_2d_gaussian"]
 
 def _cascade(pattern: str, *, min_center_fraction=None, size: int = 256, budget=True):
     """The 28 masks of one exp_11 cascade, as float tensors ``[H, W]``."""
-    from mriforge.infrastructure.physics.sampling import create_kspace_accelerator
+    from spectramr.infrastructure.physics.sampling import create_kspace_accelerator
 
     kwargs = {
         "num_timesteps": 28,
@@ -387,7 +387,7 @@ def test_the_shrinking_band_keeps_dc(pattern):
 @pytest.mark.unit
 def test_the_helper_is_a_no_op_without_a_floor():
     """``_current_center_fraction`` is the single owner of the shrink."""
-    from mriforge.infrastructure.physics.sampling import VDCartesian1DAccelerator
+    from spectramr.infrastructure.physics.sampling import VDCartesian1DAccelerator
 
     accel = VDCartesian1DAccelerator(num_timesteps=28, center_fraction=0.08)
     assert accel.min_center_fraction is None
@@ -417,7 +417,7 @@ def test_the_helper_is_a_no_op_without_a_floor():
 
 
 def _density_nested(**overrides):
-    from mriforge.infrastructure.physics.sampling import DensityNestedKSpaceAccelerator
+    from spectramr.infrastructure.physics.sampling import DensityNestedKSpaceAccelerator
 
     kwargs = {
         "num_timesteps": 28,
@@ -569,11 +569,11 @@ def test_invalid_arguments_raise(kwargs, match):
 
 
 def test_registered_and_reachable_from_yaml():
-    from mriforge.infrastructure.physics.sampling import (
+    from spectramr.infrastructure.physics.sampling import (
         SUPPORTED_ACCELERATION_TYPES,
         create_kspace_accelerator,
     )
-    from mriforge.infrastructure.physics.sampling_registry import SamplingPatternRegistry
+    from spectramr.infrastructure.physics.sampling_registry import SamplingPatternRegistry
 
     assert "density_nested" in SUPPORTED_ACCELERATION_TYPES
     assert SamplingPatternRegistry.resolve("density_nested") == "density_nested"
@@ -771,7 +771,7 @@ class TestAccelerationScheduleDispatch:
         compares through ``str()``, so an un-normalised enum silently failed that
         check. Normalising once at construction closes it.
         """
-        from mriforge.config.schemas.enums import AccelerationSchedule
+        from spectramr.config.schemas.enums import AccelerationSchedule
 
         accel = create_kspace_accelerator(
             "random_cartesian", acceleration_schedule=AccelerationSchedule.STEP, **self.BLOCK
@@ -904,8 +904,8 @@ class TestPartialFourierReportsDeclaredAcceleration:
         which is where the step branch reads the rungs directly and the clamp
         does not flatten them. It returned ``[]`` before this fix.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             resolve_undersampling_kwargs,
         )
@@ -1031,7 +1031,7 @@ def test_same_seed_gives_the_same_ranking_on_two_instances():
 
 def test_ranking_cache_is_bounded_under_per_sample_seed_mutation():
     """The leak itself: distinct seeds must not accrue entries without limit."""
-    from mriforge.infrastructure.physics.bounded_cache import DEFAULT_CACHE_CAPACITY
+    from spectramr.infrastructure.physics.bounded_cache import DEFAULT_CACHE_CAPACITY
 
     accel = _density_nested()
     device = torch.device("cpu")
@@ -1047,7 +1047,7 @@ def test_ranking_cache_rejects_a_plain_dict_substitution():
     So the bound is asserted structurally too: the attribute must be a type that
     *cannot* grow without limit, not merely one that happens not to have yet.
     """
-    from mriforge.infrastructure.physics.bounded_cache import BoundedLRUCache
+    from spectramr.infrastructure.physics.bounded_cache import BoundedLRUCache
 
     accel = _density_nested()
     assert isinstance(accel._ranking_cache, BoundedLRUCache)
@@ -1090,11 +1090,11 @@ def test_cold_diffusion_nested_cache_is_bounded():
     one does not grow in production -- it is bounded so that re-enabling
     enforcement cannot reintroduce the leak without anything going red.
     """
-    from mriforge.infrastructure.physics.bounded_cache import (
+    from spectramr.infrastructure.physics.bounded_cache import (
         DEFAULT_CACHE_CAPACITY,
         BoundedLRUCache,
     )
-    from mriforge.infrastructure.physics.sampling import ColdDiffusionAccelerator
+    from spectramr.infrastructure.physics.sampling import ColdDiffusionAccelerator
 
     accel = ColdDiffusionAccelerator(
         num_timesteps=4, max_acceleration=8.0, acceleration_type="density_nested"

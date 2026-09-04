@@ -1,4 +1,4 @@
-"""Tests for ``mriforge profile``'s artifact layout and manifest.
+"""Tests for ``spectramr profile``'s artifact layout and manifest.
 
 The invariant under test is that every artifact lands under
 ``experiments/results/<experiment>/`` — the same location
@@ -15,7 +15,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.cli.profile_paths import (
+from spectramr.cli.profile_paths import (
     CONVENTION_PARTS,
     RESULTS_ROOT,
     build_profile_manifest,
@@ -80,7 +80,7 @@ def test_redirecting_the_write_root_does_not_change_name_resolution(monkeypatch)
     stop matching, and every redirected run silently took the config-stem
     fallback instead.
     """
-    import mriforge.cli.profile_paths as pp
+    import spectramr.cli.profile_paths as pp
 
     monkeypatch.setattr(pp, "RESULTS_ROOT", Path("/tmp/elsewhere/experiments/results"))
     assert (
@@ -92,7 +92,7 @@ def test_redirecting_the_write_root_does_not_change_name_resolution(monkeypatch)
 def test_results_root_matches_the_convention_the_health_checker_enforces():
     """If the enforced location ever moves, this constant must move with it."""
     assert RESULTS_ROOT.parts == CONVENTION_PARTS == ("experiments", "results")
-    checker = Path("src/mriforge/infrastructure/validation/config_health_checker.py")
+    checker = Path("src/spectramr/infrastructure/validation/config_health_checker.py")
     if checker.is_file():
         assert "experiments/results/" in checker.read_text(encoding="utf-8")
 
@@ -185,7 +185,7 @@ def test_manifest_is_json_serialisable(tmp_path):
 def test_manifest_provenance_is_fail_open(tmp_path, monkeypatch):
     """A missing git binary degrades one field, never the manifest."""
     monkeypatch.setattr(
-        "mriforge.infrastructure.logging.provenance._git",
+        "spectramr.infrastructure.logging.provenance._git",
         lambda *a, **k: None,
     )
     m = _manifest(tmp_path)
@@ -229,8 +229,8 @@ def test_the_injected_path_still_satisfies_the_health_checker():
     would fail its own config-health gate — so the claim is pinned here rather
     than in a comment.
     """
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 

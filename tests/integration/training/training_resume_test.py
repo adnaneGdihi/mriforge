@@ -10,11 +10,11 @@ from typing import Any
 import torch
 from torch import nn
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-from mriforge.infrastructure.services.checkpoint_service import CheckpointService
-from mriforge.infrastructure.training.strategies import GANTrainingStrategy
-from mriforge.models.factories.model_factory import get_model_factory
-from mriforge.shared.utils.deterministic_seed import create_deterministic_harness
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.infrastructure.services.checkpoint_service import CheckpointService
+from spectramr.infrastructure.training.strategies import GANTrainingStrategy
+from spectramr.models.factories.model_factory import get_model_factory
+from spectramr.shared.utils.deterministic_seed import create_deterministic_harness
 
 
 class TrainingResumeTester:

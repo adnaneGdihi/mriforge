@@ -10,9 +10,9 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
-from mriforge.models.capabilities import ModelCapabilities
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.models.capabilities import ModelCapabilities
+from spectramr.models.registry import MODEL_REGISTRY
 from tests.utils.config_block_stub import block_stub
 from tests.utils.data_config_stub import DataConfigStub
 

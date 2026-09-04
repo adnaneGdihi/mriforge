@@ -76,7 +76,7 @@ def _declared():
     for extra, specs in project["optional-dependencies"].items():
         for spec in specs:
             name = _normalise(spec)
-            if name.startswith("mriforge"):  # self-referential extra
+            if name.startswith("spectramr"):  # self-referential extra
                 continue
             extras.setdefault(name, set()).add(extra)
     return core, extras
@@ -85,7 +85,7 @@ def _declared():
 def _top_level_imports():
     """Module-scope imports only — a deferred import inside a function is fine."""
     found: dict[str, set[str]] = {}
-    for path in (_REPO / "src" / "mriforge").rglob("*.py"):
+    for path in (_REPO / "src" / "spectramr").rglob("*.py"):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
         except SyntaxError:
@@ -99,7 +99,7 @@ def _top_level_imports():
             if not module:
                 continue
             root = module.split(".")[0]
-            if root in sys.stdlib_module_names or root == "mriforge":
+            if root in sys.stdlib_module_names or root == "spectramr":
                 continue
             dist = _DISTRIBUTION.get(root, root.lower().replace("_", "-"))
             found.setdefault(dist, set()).add(
@@ -178,14 +178,14 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
     and that is why torchvision has to be core. #963 (merged four minutes
     after #968 wrote that claim) deferred all three imports into their call
     sites -- confirmed here: zero module-scope torchvision imports remain
-    anywhere in ``src/mriforge`` (see ``test_no_new_extras_only_top_level_imports``
+    anywhere in ``src/spectramr`` (see ``test_no_new_extras_only_top_level_imports``
     and this test's own site list below). That half of the original
     justification is simply gone.
 
     What is verified, current, and load-bearing instead:
-    ``src/mriforge/core/metrics/evaluation_metrics.py`` -- the metrics SSOT,
+    ``src/spectramr/core/metrics/evaluation_metrics.py`` -- the metrics SSOT,
     unconditionally reached by ``populate_model_registry()`` via
-    ``mriforge.core`` (imported by nearly everything, very early) --
+    ``spectramr.core`` (imported by nearly everything, very early) --
     does ``import torchvision`` at module scope, guarded only by
     ``except ImportError``. Two verified, DIFFERENT outcomes follow:
 
@@ -212,8 +212,8 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
       vs. extra, and pip honours neither -- so core does not itself
       guarantee ABI compatibility. But an extra reopens an installation
       order where torchvision is added in a SEPARATE transaction against an
-      already-installed torch (e.g. ``pip install mriforge`` now, ``pip
-      install mriforge[viz]`` later) -- exactly the two-step path that
+      already-installed torch (e.g. ``pip install spectramr`` now, ``pip
+      install spectramr[viz]`` later) -- exactly the two-step path that
       produced the mismatch pyproject.toml documents. Core reduces the
       chance of landing there; it does not eliminate it.
 
@@ -232,9 +232,9 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
     # literal claim can never be un-broken by editing it back.
     sites = _top_level_imports().get("torchvision", set())
     original_three = {
-        "src/mriforge/models/losses/perceptual_loss.py",
-        "src/mriforge/models/losses/gan_loss_library.py",
-        "src/mriforge/infrastructure/training/strategies/diffusion.py",
+        "src/spectramr/models/losses/perceptual_loss.py",
+        "src/spectramr/models/losses/gan_loss_library.py",
+        "src/spectramr/infrastructure/training/strategies/diffusion.py",
     }
     files = {s.rsplit(":", 1)[0] for s in sites}
     assert not (original_three & files), (
@@ -249,7 +249,7 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
     # the dynamic half below will also start passing "clean" -- both must
     # keep agreeing.
     src = (
-        _REPO / "src/mriforge/core/metrics/evaluation_metrics.py"
+        _REPO / "src/spectramr/core/metrics/evaluation_metrics.py"
     ).read_text(encoding="utf-8")
     tree = ast.parse(src)
     torchvision_try = next(
@@ -293,7 +293,7 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
             sys.executable,
             "-c",
             "import sys; sys.modules['torchvision'] = None\n"
-            "import mriforge.core.metrics.evaluation_metrics as m\n"
+            "import spectramr.core.metrics.evaluation_metrics as m\n"
             "assert m.torchvision is None\n",
         ],
         capture_output=True,
@@ -317,7 +317,7 @@ def test_registry_populate_path_still_needs_a_working_torchvision():
             "        raise RuntimeError('operator torchvision::nms does not exist')\n"
             "    return real_import(name, *a, **k)\n"
             "builtins.__import__ = _blocked\n"
-            "import mriforge.core.metrics.evaluation_metrics\n",
+            "import spectramr.core.metrics.evaluation_metrics\n",
         ],
         capture_output=True,
         text=True,

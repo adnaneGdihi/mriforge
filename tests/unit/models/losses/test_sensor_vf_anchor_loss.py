@@ -1,6 +1,6 @@
 r"""Tests for ``SensorVFAnchorLoss`` (idea 9 §9.3).
 
-Targets ``mriforge.models.losses.sensor_vf_anchor_loss``.
+Targets ``spectramr.models.losses.sensor_vf_anchor_loss``.
 
 Categories:
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.sensor_vf_anchor_loss import SensorVFAnchorLoss
+from spectramr.models.losses.sensor_vf_anchor_loss import SensorVFAnchorLoss
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +169,6 @@ def test_no_gradient_flows_to_vf_pose() -> None:
 
 def test_registered() -> None:
     """``sensor_vf_anchor`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "sensor_vf_anchor" in list_available()

@@ -1,4 +1,4 @@
-"""Unit tests for the compute-device SSOT (:mod:`mriforge.core.compute_device`).
+"""Unit tests for the compute-device SSOT (:mod:`spectramr.core.compute_device`).
 
 Pins the accelerated-run contract: a *heavy* pipeline (train / infer /
 validate / hpo / ablation / probe / ...) must never silently degrade to CPU.
@@ -15,7 +15,7 @@ import dataclasses
 
 import pytest
 
-from mriforge.core.compute_device import (
+from spectramr.core.compute_device import (
     HEAVY_PIPELINES,
     AcceleratorRequiredError,
     DeviceDecision,
@@ -28,9 +28,7 @@ from mriforge.core.compute_device import (
 
 class TestAutoResolution:
     def test_auto_picks_cuda_when_available(self) -> None:
-        d = resolve_compute_device(
-            "auto", pipeline="train", cuda_available=True, environ={}
-        )
+        d = resolve_compute_device("auto", pipeline="train", cuda_available=True, environ={})
         assert d.device == "cuda"
         assert d.accelerated is True
         assert d.cpu_opt_in is False
@@ -42,24 +40,18 @@ class TestAutoResolution:
         allocation at ~100x slowdown while reporting success.
         """
         with pytest.raises(AcceleratorRequiredError, match="no accelerator"):
-            resolve_compute_device(
-                "auto", pipeline="train", cuda_available=False, environ={}
-            )
+            resolve_compute_device("auto", pipeline="train", cuda_available=False, environ={})
 
     def test_auto_without_gpu_allows_light_pipeline(self) -> None:
         """A non-heavy caller (e.g. a config lint) may run on CPU."""
-        d = resolve_compute_device(
-            "auto", pipeline="lint", cuda_available=False, environ={}
-        )
+        d = resolve_compute_device("auto", pipeline="lint", cuda_available=False, environ={})
         assert d.device == "cpu"
         assert d.accelerated is False
 
     def test_none_and_empty_are_treated_as_auto(self) -> None:
         for spec in (None, "", "  "):
             with pytest.raises(AcceleratorRequiredError):
-                resolve_compute_device(
-                    spec, pipeline="train", cuda_available=False, environ={}
-                )
+                resolve_compute_device(spec, pipeline="train", cuda_available=False, environ={})
 
     def test_auto_prefers_cuda_over_mps(self) -> None:
         d = resolve_compute_device(
@@ -91,9 +83,7 @@ class TestExplicitCuda:
         """An explicit ``cuda`` request on a CPU-only host is a broken
         environment, never a preference — it raises even with FORCE_CPU."""
         with pytest.raises(AcceleratorRequiredError, match="CUDA is not available"):
-            resolve_compute_device(
-                "cuda", pipeline="train", cuda_available=False, environ={}
-            )
+            resolve_compute_device("cuda", pipeline="train", cuda_available=False, environ={})
 
     def test_cuda_request_not_relaxed_by_force_cpu_env(self) -> None:
         with pytest.raises(AcceleratorRequiredError):
@@ -115,26 +105,20 @@ class TestExplicitCuda:
         a reader would have tried is the one thing that cannot help.
         """
         with pytest.raises(AcceleratorRequiredError) as exc:
-            resolve_compute_device(
-                "cuda", pipeline="train", cuda_available=False, environ={}
-            )
+            resolve_compute_device("cuda", pipeline="train", cuda_available=False, environ={})
         msg = str(exc.value)
         assert "--device cpu" in msg, "the remedy that DOES work must be named"
         assert "run.device: cpu" in msg
         assert "FORCE_CPU does NOT apply" in msg
 
     def test_indexed_cuda_is_preserved(self) -> None:
-        d = resolve_compute_device(
-            "cuda:3", pipeline="train", cuda_available=True, environ={}
-        )
+        d = resolve_compute_device("cuda:3", pipeline="train", cuda_available=True, environ={})
         assert d.device == "cuda:3"
         assert d.accelerated is True
 
     def test_malformed_cuda_index_raises(self) -> None:
         with pytest.raises(ValueError, match="Malformed"):
-            resolve_compute_device(
-                "cuda:x", pipeline="train", cuda_available=True, environ={}
-            )
+            resolve_compute_device("cuda:x", pipeline="train", cuda_available=True, environ={})
 
 
 # ── explicit cpu: the user-dictated escape hatch ──────────────────────
@@ -142,9 +126,7 @@ class TestExplicitCuda:
 
 class TestExplicitCpuOptIn:
     def test_explicit_cpu_is_allowed_on_heavy_pipeline(self) -> None:
-        d = resolve_compute_device(
-            "cpu", pipeline="train", cuda_available=True, environ={}
-        )
+        d = resolve_compute_device("cpu", pipeline="train", cuda_available=True, environ={})
         assert d.device == "cpu"
         assert d.accelerated is False
         assert d.cpu_opt_in is True, "explicit cpu == the user dictated it"
@@ -181,15 +163,11 @@ class TestExplicitCpuOptIn:
 class TestUnknownSpec:
     def test_unknown_device_raises(self) -> None:
         with pytest.raises(ValueError, match="unrecognized"):
-            resolve_compute_device(
-                "tpu", pipeline="train", cuda_available=True, environ={}
-            )
+            resolve_compute_device("tpu", pipeline="train", cuda_available=True, environ={})
 
     def test_mps_without_mps_raises(self) -> None:
         with pytest.raises(AcceleratorRequiredError, match="MPS"):
-            resolve_compute_device(
-                "mps", pipeline="train", cuda_available=False, environ={}
-            )
+            resolve_compute_device("mps", pipeline="train", cuda_available=False, environ={})
 
 
 # ── the heavy-pipeline registry ───────────────────────────────────────
@@ -198,16 +176,14 @@ class TestUnknownSpec:
 class TestHeavyPipelineRegistry:
     @pytest.mark.parametrize(
         "pipeline",
-        ["train", "infer", "validate", "hpo", "ablation", "probe", "predict"],
+        ["train", "infer", "validate", "hpo", "ablation", "probe", "predict", "pggs"],
     )
     def test_user_named_pipelines_are_heavy(self, pipeline: str) -> None:
         """The pipelines the user called out must all be gated."""
         assert pipeline in HEAVY_PIPELINES
 
     def test_decision_is_frozen(self) -> None:
-        d = resolve_compute_device(
-            "cpu", pipeline="train", cuda_available=False, environ={}
-        )
+        d = resolve_compute_device("cpu", pipeline="train", cuda_available=False, environ={})
         assert isinstance(d, DeviceDecision)
         with pytest.raises(dataclasses.FrozenInstanceError):
             d.device = "cuda"  # type: ignore[misc]
@@ -226,9 +202,7 @@ class TestProvenance:
     def test_to_dict_is_json_serialisable(self) -> None:
         import json
 
-        d = resolve_compute_device(
-            "cuda", pipeline="train", cuda_available=True, environ={}
-        )
+        d = resolve_compute_device("cuda", pipeline="train", cuda_available=True, environ={})
         payload = json.loads(json.dumps(d.to_dict()))
         assert payload["device"] == "cuda"
         assert payload["accelerated"] is True

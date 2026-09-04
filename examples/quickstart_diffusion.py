@@ -1,7 +1,7 @@
 """Quickstart: forward-noise one synthetic step with a Lévy diffusion process.
 
 This script exercises the diffusion-primitives layer
-(``mriforge.models.diffusion``) without training. It runs a single
+(``spectramr.models.diffusion``) without training. It runs a single
 forward-noising step from an α-stable Lévy sampler, demonstrating that the
 heavy-tailed perturbation kicks the image distribution off the Gaussian
 manifold.
@@ -17,16 +17,16 @@ from __future__ import annotations
 
 import torch
 
-import mriforge  # noqa: F401
+import spectramr  # noqa: F401
 
 
 def main() -> None:
     try:
-        from mriforge.models.diffusion.alpha_stable_levy import sample_alpha_stable
+        from spectramr.models.diffusion.alpha_stable_levy import sample_alpha_stable
     except ImportError as exc:  # pragma: no cover — gate
         raise SystemExit(
             "alpha_stable_levy diffusion primitive not available; "
-            f"is mriforge[diffusion] installed? ({exc})"
+            f"is spectramr[diffusion] installed? ({exc})"
         )
 
     torch.manual_seed(0)

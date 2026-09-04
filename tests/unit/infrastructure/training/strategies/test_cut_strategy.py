@@ -21,8 +21,8 @@ import types
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.cut_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.cut_strategy import (
     CUTTrainingStrategy,
 )
 
@@ -67,10 +67,10 @@ def _make_strategy(
     strat.config = config
     gen = disc = opt_g = opt_d = None
     if wire_optimizers:
-        from mriforge.models.discriminators.patchgan_discriminator import (
+        from spectramr.models.discriminators.patchgan_discriminator import (
             PatchGANDiscriminator,
         )
-        from mriforge.models.generators.cycle_gan import ResNetGenerator
+        from spectramr.models.generators.cycle_gan import ResNetGenerator
 
         gen = ResNetGenerator(1, 1)
         disc = PatchGANDiscriminator(in_channels=1)
@@ -241,10 +241,10 @@ def test_register_owned_params_raises_when_sampler_not_materialized(
     PatchNCE projection can never silently go untrained."""
     from unittest.mock import patch
 
-    from mriforge.models.discriminators.patchgan_discriminator import (
+    from spectramr.models.discriminators.patchgan_discriminator import (
         PatchGANDiscriminator,
     )
-    from mriforge.models.generators.cycle_gan import ResNetGenerator
+    from spectramr.models.generators.cycle_gan import ResNetGenerator
 
     strat = CUTTrainingStrategy.__new__(CUTTrainingStrategy)
     strat.config = minimal_cut_config
@@ -269,7 +269,7 @@ def test_register_owned_params_raises_when_sampler_not_materialized(
 
 def test_strategy_registered_in_factory() -> None:
     """The ``cut`` short-name resolves via the strategy factory."""
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

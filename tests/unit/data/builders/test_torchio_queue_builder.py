@@ -10,7 +10,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.builders.torchio_queue_builder import (
+from spectramr.data.builders.torchio_queue_builder import (
     TorchIOQueueBuilder,
     TorchIOQueueConfig,
 )
@@ -203,7 +203,7 @@ class TestTorchIOQueueBuilder:
         could duplicate draws across its workers. It must now seed workers via
         the canonical ``seed_worker`` hook (post-WS5: re-exported from
         ``core.worker_seeding`` by this builder module)."""
-        from mriforge.data.builders.torchio_queue_builder import seed_worker
+        from spectramr.data.builders.torchio_queue_builder import seed_worker
 
         dataset = self.create_dummy_dataset()
         config = TorchIOQueueConfig(
@@ -514,7 +514,7 @@ class TestFromTrainingConfigQueueLengthRejection:
     def test_from_training_config_no_silent_autocorrect_warning(self):
         """No warning-path remains: the failure is loud, not logged-and-continued."""
         with mock_patch(
-            "mriforge.data.builders.torchio_queue_builder.logger.warning"
+            "spectramr.data.builders.torchio_queue_builder.logger.warning"
         ) as mock_warning:
             with pytest.raises(ValueError):
                 TorchIOQueueConfig.from_training_config(self._zero_queue_config())
@@ -598,7 +598,7 @@ def test_require_dry_iter_fails_loud_for_dataset_without_it() -> None:
     """
     import pytest
 
-    from mriforge.data.builders.torchio_queue_builder import _require_dry_iter
+    from spectramr.data.builders.torchio_queue_builder import _require_dry_iter
 
     class _NoDryIter:
         def __len__(self) -> int:
@@ -623,7 +623,7 @@ class TestPrefetchFromConfig:
     ``prefetch_factor`` at schema-load)."""
 
     def test_reads_prefetch_factor(self):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         qc = TorchIOQueueConfig.from_training_config(
             DataConfigSchema(prefetch_factor=7)
@@ -631,7 +631,7 @@ class TestPrefetchFromConfig:
         assert qc.prefetch_factor == 7
 
     def test_legacy_max_prefetch_is_honored_via_fold(self):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         # max_prefetch alone → folded into prefetch_factor by the schema.
         qc = TorchIOQueueConfig.from_training_config(

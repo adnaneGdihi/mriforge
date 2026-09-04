@@ -7,7 +7,7 @@ Enforces CLAUDE.md "Training-loop performance rules":
     ``torch.cuda.empty_cache()`` inside the bodies of methods named
     ``training_step``, ``train_step``, ``optimizer_step``, or
     ``compute_loss`` in files under
-    ``mriforge/infrastructure/training/strategies/``.
+    ``spectramr/infrastructure/training/strategies/``.
 
 These calls synchronise the GPU and kill throughput.
 
@@ -35,7 +35,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-STRATEGIES_ROOT = REPO_ROOT / "src" / "mriforge" / "infrastructure" / "training" / "strategies"
+STRATEGIES_ROOT = REPO_ROOT / "src" / "spectramr" / "infrastructure" / "training" / "strategies"
 VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 
 # The entry point of the per-step path. Everything the base strategy calls from

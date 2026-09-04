@@ -22,7 +22,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.pipelines.train import _maybe_run_calibration
+from spectramr.pipelines.train import _maybe_run_calibration
 
 
 class _RecordingLog:

@@ -10,7 +10,7 @@ Covers two flows:
 
 2. **Phase-4 path** — when either flag is True, the dispatcher emits
    the corresponding ``tio.Resample`` / ``tio.CropOrPad`` instance
-   from :mod:`mriforge.data.builders.resample_dispatch`.
+   from :mod:`spectramr.data.builders.resample_dispatch`.
 
 Schema validation guards (target_spacing required for isotropic,
 target_shape required for crop_or_pad) are tested at the Pydantic level.
@@ -19,12 +19,12 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     CropOrPadConfigSchema,
     DataConfigSchema,
     ResampleConfigSchema,
 )
-from mriforge.data.builders.resample_dispatch import (
+from spectramr.data.builders.resample_dispatch import (
     _TORCHIO_PAD_MODE,
     build_crop_or_pad_transform,
     build_resample_transform,
@@ -260,7 +260,7 @@ def test_dispatch_anti_aliasing_off_uses_nearest_interpolation() -> None:
 def test_legacy_chain_uses_underscore_transforms() -> None:
     """No resample/crop_or_pad in config → legacy chain unchanged
     (preserves behavior for ~200 existing YAMLs)."""
-    from mriforge.data.builders.torchio_transform_builder import (
+    from spectramr.data.builders.torchio_transform_builder import (
         TorchIOTransformBuilder,
         TorchIOTransformConfig,
     )
@@ -277,7 +277,7 @@ def test_phase4_chain_uses_tio_transforms() -> None:
     """``resample.enabled=True`` + ``crop_or_pad.enabled=True`` → chain
     uses ``tio.Resample`` and ``tio.CropOrPad`` instead of the legacy
     underscore-prefixed transforms."""
-    from mriforge.data.builders.torchio_transform_builder import (
+    from spectramr.data.builders.torchio_transform_builder import (
         TorchIOTransformBuilder,
         TorchIOTransformConfig,
     )
@@ -305,7 +305,7 @@ def test_phase4_chain_uses_tio_transforms() -> None:
 def test_partial_phase4_only_resample() -> None:
     """User can enable resample without crop_or_pad (and vice-versa);
     the other path falls back to legacy."""
-    from mriforge.data.builders.torchio_transform_builder import (
+    from spectramr.data.builders.torchio_transform_builder import (
         TorchIOTransformBuilder,
         TorchIOTransformConfig,
     )

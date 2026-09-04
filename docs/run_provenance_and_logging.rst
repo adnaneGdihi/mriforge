@@ -1,8 +1,8 @@
 Run Provenance & Traceability
 =============================
 
-Every training run started through :func:`mriforge.pipelines.train.run_training_pipeline`
-(i.e. ``mriforge train`` / ``sanity_check`` / ``experiment`` / ``ablation``)
+Every training run started through :func:`spectramr.pipelines.train.run_training_pipeline`
+(i.e. ``spectramr train`` / ``sanity_check`` / ``experiment`` / ``ablation``)
 now captures a **provenance record** — *what code, what machine, when, how
 long, how big* — so a result on the cluster can always be tied back to the
 exact commit and environment that produced it.
@@ -16,8 +16,8 @@ What gets captured
 ------------------
 
 The canonical capture lives in
-:mod:`mriforge.infrastructure.logging.provenance` (the single source of truth,
-also consumed by ``mriforge doctor``). Every helper is **fail-open** — a missing
+:mod:`spectramr.infrastructure.logging.provenance` (the single source of truth,
+also consumed by ``spectramr doctor``). Every helper is **fail-open** — a missing
 ``git`` binary, a broken torch, or an un-dumpable config degrades a single
 field, never the run.
 
@@ -105,12 +105,12 @@ Two distinctions carry the weight:
 
    The cgroup fields exist because ``psutil`` reports the *host's* CPUs and RAM
    from inside a container — a run that OOM'd under an 8 GB Docker limit (the
-   ``mriforge launch`` docker backend) otherwise looks like it had 1 TB.
+   ``spectramr launch`` docker backend) otherwise looks like it had 1 TB.
    ``cgroup_limit_gb`` / ``cgroup_quota_cores`` are ``null`` when unlimited or
    when no cgroup applies.
 
 Device enumeration has exactly one site:
-:func:`~mriforge.infrastructure.logging.provenance.torch_runtime`. The GPU census
+:func:`~spectramr.infrastructure.logging.provenance.torch_runtime`. The GPU census
 consumes its result rather than re-probing, so the ``doctor`` view and the
 provenance view cannot drift.
 
@@ -129,18 +129,24 @@ the ``_ledger`` block below:
 ``resolved_config.json``
     ``config.model_dump(mode="json")`` — the frozen ``TrainingSettings`` as it
     actually drove the run (after defaults + migrations), so post-hoc tooling
-    needn't re-parse the source YAML. Carries a ``_ledger`` block (below).
+    needn't re-parse the source YAML. Carries a ``_ledger`` block (below) and,
+    since 2026-09-03, a ``_declared`` block: the unset-excluded dump, the one
+    shape that ``TrainingSettings.model_validate`` turns back into the resolved
+    settings (the full dump does not re-validate, because cross-field
+    validators read a materialised default as a declaration). ``predict`` and
+    ``infer`` rebuild their settings from that block when the artifact sits
+    beside the checkpoint (#1379).
 
 ``provenance_run_<run_id>.json`` / ``resolved_config_run_<run_id>.json``
     Run-id-qualified **copies** of the two above, written only when a ``run_id``
-    is known — the ``mriforge audit`` path has none and so writes neither.
+    is known — the ``spectramr audit`` path has none and so writes neither.
     They exist because the unqualified names are overwrite-on-launch:
     ``output_dir`` derives from the config, not from the run, so relaunching an
     arm into the same directory replaces the previous run's record while its
     checkpoints, images and debug snapshots all survive beside it. The result
     was a directory whose config described a *different* run than its images —
     self-consistent, parseable, and wrong (#1299, #1379). Build the name with
-    :func:`~mriforge.infrastructure.validation.resolved_config_artifact.resolved_config_run_name`
+    :func:`~spectramr.infrastructure.validation.resolved_config_artifact.resolved_config_run_name`
     rather than re-deriving the spelling at the reading site.
 
 The ``_ledger`` block
@@ -148,8 +154,8 @@ The ``_ledger`` block
 
 ``resolved_config.json`` shows what the run used; ``_ledger`` shows how that
 differs from what the YAML *said*. It is written by
-``mriforge.core.execution_ledger`` and produced by the same code path for
-``train`` and for ``mriforge audit``, so the pre-flight and the run cannot
+``spectramr.core.execution_ledger`` and produced by the same code path for
+``train`` and for ``spectramr audit``, so the pre-flight and the run cannot
 describe one config differently.
 
 ``substitutions``
@@ -227,16 +233,16 @@ On a *build* failure (before the loop), the banner is still emitted with the
 git/env it managed to capture, so even a crash-at-startup is traceable to a
 commit + host.
 
-Cluster pre-flight: ``mriforge doctor``
+Cluster pre-flight: ``spectramr doctor``
 --------------------------------------
 
 The same environment probe powers the pre-flight gate (see
 :doc:`cli_reference`)::
 
-    mriforge doctor --require-cuda -c arm.yaml && mriforge train -c arm.yaml
+    spectramr doctor --require-cuda -c arm.yaml && spectramr train -c arm.yaml
 
 ``doctor`` and run-provenance share
-:func:`mriforge.infrastructure.logging.provenance.torch_runtime`, so the
+:func:`spectramr.infrastructure.logging.provenance.torch_runtime`, so the
 "is this node set up?" check and the "what ran here?" record never drift.
 
 Programmatic access
@@ -244,7 +250,7 @@ Programmatic access
 
 .. code-block:: python
 
-    from mriforge.infrastructure.logging.provenance import (
+    from spectramr.infrastructure.logging.provenance import (
         collect_run_provenance, format_provenance_lines, git_provenance,
         cpu_resources, memory_resources, gpu_resources, node_resources,
     )
@@ -264,7 +270,7 @@ Programmatic access
 API
 ---
 
-.. automodule:: mriforge.infrastructure.logging.provenance
+.. automodule:: spectramr.infrastructure.logging.provenance
    :members:
    :undoc-members:
    :show-inheritance:
@@ -298,7 +304,7 @@ identical from the run directory.
 
 **2. An unwritable directory relocates the whole log, silently.**
 ``setup`` catches ``PermissionError``/``OSError`` around the file handler and
-falls back to ``tempfile.mkdtemp(prefix="mriforge_logs_")``. Falling back is
+falls back to ``tempfile.mkdtemp(prefix="spectramr_logs_")``. Falling back is
 defensible — a run should not die because its log sink is read-only — but the
 ``except`` branch touched neither ``self._logger`` nor ``warnings``, so it was
 **mute by construction**. On a compute node that temp directory is wiped at job
@@ -320,7 +326,7 @@ the declared-vs-applied rule of non-negotiable 14:
 .. code-block:: json
 
    "logging": {
-     "resolved_path": "/tmp/mriforge_logs_ab3f/kspace_cold_diffusion.log",
+     "resolved_path": "/tmp/spectramr_logs_ab3f/kspace_cold_diffusion.log",
      "declared_sinks_dir": "experiments/results/experiment_11_attention_none/logs",
      "relocated_from": "experiments/results/experiment_11_attention_none/logs",
      "incomplete": ["the declared log directory was not writable; the log was
@@ -332,7 +338,7 @@ because a path into a wiped temp directory reads as a log that exists. The
 startup banner carries the same fact where it is still actionable — while the job
 is running and the file can still be copied out::
 
-   log        : /tmp/mriforge_logs_ab3f/kspace_cold_diffusion.log  [!] RELOCATED from experiments/results/.../logs (temp dir; wiped at teardown)
+   log        : /tmp/spectramr_logs_ab3f/kspace_cold_diffusion.log  [!] RELOCATED from experiments/results/.../logs (temp dir; wiped at teardown)
 
 Relocation also raises a ``RuntimeWarning`` in addition to the log warning. That
 is deliberate redundancy: a *log* warning about the log sink failing is precisely
@@ -348,16 +354,16 @@ Console-logging configuration & the 2026-06-19 de-duplication
 
 Run *provenance* (above) is the on-disk record of a run. Separately, the
 **console logging** — the colored, badge-prefixed lines you see in a terminal —
-is owned by :mod:`mriforge.infrastructure.services.logging_service`. Two entry
+is owned by :mod:`spectramr.infrastructure.services.logging_service`. Two entry
 points configure it:
 
-* :func:`~mriforge.infrastructure.services.logging_service.bootstrap_console_logging`
-  is called once at the very top of ``mriforge.cli.app.main`` (before any
+* :func:`~spectramr.infrastructure.services.logging_service.bootstrap_console_logging`
+  is called once at the very top of ``spectramr.cli.app.main`` (before any
   subcommand), so ``logger.info(...)`` in *every* CLI flow renders through the
-  :class:`~mriforge.infrastructure.services.logging_service.ColoredConsoleFormatter`
+  :class:`~spectramr.infrastructure.services.logging_service.ColoredConsoleFormatter`
   rather than Python's plain ``lastResort`` handler.
 * :meth:`LoggingService.setup` runs later, inside ``build_container``, applying
-  the resolved :class:`~mriforge.config.schemas.logging.LoggingConfigSchema`
+  the resolved :class:`~spectramr.config.schemas.logging.LoggingConfigSchema`
   (level, ``log_to_file`` / ``log_to_console`` / ``silent``, file handler).
 
 The single source of truth
@@ -427,7 +433,7 @@ them. ``tests/unit/config/test_schema_key_consumption.py`` did not catch it
 because it indexes consumers with ripgrep: a textual read in dead code counts as
 consumption (issue #928).
 
-:class:`~mriforge.infrastructure.services.tensorboard_writer.TensorBoardWriter`
+:class:`~spectramr.infrastructure.services.tensorboard_writer.TensorBoardWriter`
 is now the single writer, owned by ``pipelines/train.py``. Per-run isolation is
 kept as the default, but the knob is live: **the directory resolves relative to
 the run directory**, so every relative declaration in the corpus lands inside
@@ -444,7 +450,7 @@ the run and an absolute one still overrides.
      intervals:
        histogram: 1000           # weight/grad histogram cadence
 
-``service`` is a closed :class:`~mriforge.config.schemas.enums.TrackingService`.
+``service`` is a closed :class:`~spectramr.config.schemas.enums.TrackingService`.
 It was a bare ``str`` compared against the literal ``"tensorboard"``, so any
 other value — including the ``wandb`` its own description advertised — fell off
 the branch and the run trained to completion with **no tracking, no warning and
@@ -510,9 +516,9 @@ its ``final_metrics.json`` reproduced, byte-identical, the minimum of a
 five-run-blended CSV spanning the previous week.
 
 Two filters now bound the window, in
-:func:`mriforge.pipelines.train._summarise_best_metrics_from_csv`:
+:func:`spectramr.pipelines.train._summarise_best_metrics_from_csv`:
 
-#. :func:`~mriforge.pipelines.train._select_current_run_rows` keeps the final
+#. :func:`~spectramr.pipelines.train._select_current_run_rows` keeps the final
    non-decreasing ``iteration`` segment, since the column resets per run.
 #. ``final_iteration`` — the last iteration this run actually reached — drops
    rows beyond it. This is what catches the zero-rows case, which segment
@@ -528,7 +534,7 @@ The two sections above bound the *consequences* of an empty metrics CSV. The
 cause is now fixed at the writer.
 
 **Every run yields at least two rows.** The row gate in
-:func:`mriforge.pipelines.training_loop._execute_training_loop` was
+:func:`spectramr.pipelines.training_loop._execute_training_loop` was
 ``iteration % log_interval == 0`` alone. ``logging.intervals.log`` defaults to
 ``100`` and arms set it as high as ``5000``, so any run shorter than the cadence
 satisfied it *zero* times: a header with no data rows, and — through the same
@@ -564,11 +570,11 @@ distinguish *"validation did not run"* from *"this file never carries this
 column"*. Three downstream workarounds for that ambiguity already existed and
 each becomes a no-op:
 
-* :func:`~mriforge.pipelines.train._summarise_best_metrics_from_csv` folds the
+* :func:`~spectramr.pipelines.train._summarise_best_metrics_from_csv` folds the
   validation CSV as well (#481, below);
-* :func:`~mriforge.pipelines.train._select_current_run_rows` plus
+* :func:`~spectramr.pipelines.train._select_current_run_rows` plus
   ``final_iteration`` empty the window instead of inheriting (#586, above);
-* ``_melt_metrics_csv`` in :mod:`mriforge.infrastructure.reporting.aggregator`
+* ``_melt_metrics_csv`` in :mod:`spectramr.infrastructure.reporting.aggregator`
   drops all-empty columns so they cannot surface as phantom all-NaN series in the
   learning-curve figure.
 
@@ -588,12 +594,12 @@ on runs where validation had produced ``val_psnr`` ≈ 6 dB against ``train_psnr
 ≈ 30 dB. Anyone triaging from the normal surfaces saw no validation rather than
 *validation is catastrophically worse than training*.
 
-:func:`~mriforge.pipelines.train._summarise_best_metrics_from_csv` now folds both
+:func:`~spectramr.pipelines.train._summarise_best_metrics_from_csv` now folds both
 files, each windowed to the current run independently — they are written on
 different cadences (``logging.log_interval`` vs
 ``validation.schedule.interval_steps``), so a run can produce rows in one and none
 in the other. The pairing goes through
-:func:`~mriforge.pipelines.train.validation_csv_for`, one derivation shared by the
+:func:`~spectramr.pipelines.train.validation_csv_for`, one derivation shared by the
 writer and the reader; two copies of a path rule is how they end up pointing at
 different files while both look correct.
 
@@ -619,7 +625,7 @@ iteration 3000 wrote::
 Any consumer sorting by step then reads the later cascade levels as the
 **oldest** files on disk — the same failure class as the "latest image" bug.
 Worse, the counter never returns to zero, so after the first event all three
-levels were mislabelled. :meth:`~mriforge.infrastructure.training.strategies.
+levels were mislabelled. :meth:`~spectramr.infrastructure.training.strategies.
 diffusion.DiffusionTrainingStrategy._validation_image_step` now returns the
 training iteration unconditionally.
 
@@ -664,7 +670,7 @@ answer are always present::
 
 ``batches`` is ``len(loader)``; ``samples`` is ``len(loader.dataset)`` -- for a
 ``tio.Queue`` that is the patch count, not the subject count. Anything richer is
-dataset vocabulary, so :func:`~mriforge.infrastructure.logging.provenance.describe_dataloader`
+dataset vocabulary, so :func:`~spectramr.infrastructure.logging.provenance.describe_dataloader`
 *asks* for it rather than guessing: a dataset, or anything it wraps (a ``Queue``'s
 ``subjects_dataset``, a wrapper's ``dataset``), may expose
 ``provenance_counts() -> dict`` and its keys are merged in. A dataset that cannot
@@ -714,6 +720,23 @@ both T2 and FLAIR is counted once, under T1. A record naming neither contrast
 key contributes nothing, so ``sum(files_per_contrast) < files`` is the signal
 that something was unattributable rather than a bucket holding a guess.
 
+The slice-level M4Raw route (``data.slice_level_records: true``, #1757) changes
+the record unit, and the record states it. By default one record is one
+(patient, contrast) group, and one ``[256, 256, 1]`` patch served from it costs
+a full read of every repetition of the group: 18 slices per served slice, times
+the repetition count, every epoch. With the option set, the index has one record
+per (group, slice), each item reads ``f["kspace"][slice]`` of every repetition,
+the subject is a depth-1 volume, and the NEX average is unchanged because it was
+per slice already. ``groups`` still counts groups; the record count is published
+as ``slice_records``. The queue is not bypassed: with
+``data.modes.train.sampler.samples_per_volume: 1`` and a depth-1 patch, one
+patch is sampled per record and an epoch is one pass over the slices. With any
+other ``samples_per_volume``, that many patches of the same slice are sampled
+per epoch, so the audit check ``slice_level_records_queue_shape`` reports it as
+an error, as it does a patch depth other than 1. Under
+``coils.processing_mode: rss`` the phase-reference coil is selected per record,
+which on this route is per slice.
+
 An empty loader now records ``batches: 0``. The old truthiness test
 (``len(loaders[split]) if loaders.get(split) else None``) wrote ``null`` for it,
 because a ``DataLoader`` defines ``__len__`` and an empty one is falsy --
@@ -745,14 +768,14 @@ mechanisms conspired:
 #. **The declaration never reached provenance.** ``parallel.num_devices`` and
    ``num_nodes`` were written to ``resolved_config.json`` and stopped there, so
    comparing "asked for" against "got" meant opening a second file — and
-   :mod:`mriforge.pipelines.distributed` *overwrites* ``num_devices`` from
+   :mod:`spectramr.pipelines.distributed` *overwrites* ``num_devices`` from
    ``LOCAL_WORLD_SIZE``, so the resolved config does not reliably hold the
    authored value either.
 #. **The runtime record was overwritten, not merged.** ``train.py`` replaced
    ``provenance["parallel"]`` with the parallel plugin's own thin record — often
    just ``{"strategy": ...}`` — discarding the ``rank``, ``local_rank``,
    ``launcher``, ``initialized`` and ``backend`` that
-   :func:`~mriforge.infrastructure.logging.provenance.parallel_provenance` had
+   :func:`~spectramr.infrastructure.logging.provenance.parallel_provenance` had
    already resolved. Those are exactly the fields the question turns on.
 #. **There were no node or rank facts at all.** ``_SLURM_FIELDS`` carried the
    per-node allocation (CPUs, memory, GPUs) but no node *count*, so a 2-node run
@@ -795,7 +818,7 @@ Two new sibling blocks sit beside ``slurm``:
   ``LOCAL_RANK``. Deliberately **not** folded into ``slurm``, whose documented
   contract is *what the scheduler granted*: these say how the group was wired,
   and a run can have either without the other (torchrun outside Slurm, or a
-  Slurm job launched with plain ``mriforge train``).
+  Slurm job launched with plain ``spectramr train``).
 * ``rank_devices`` — one record per rank: ``hostname``, ``rank``,
   ``local_rank``, ``device_index``, ``device_name``, ``device_uuid``.
 
@@ -806,10 +829,10 @@ feeding it to ``_env_int`` would silently drop it.
 Why the per-rank inventory is a gather, and where it has to live
 ----------------------------------------------------------------
 
-:func:`~mriforge.infrastructure.logging.provenance.gpu_resources` shells out to
+:func:`~spectramr.infrastructure.logging.provenance.gpu_resources` shells out to
 ``nvidia-smi`` on the **local** host. On a multi-node run that meant rank 0's
 record described one node and silently implied it was the whole job.
-:func:`~mriforge.infrastructure.logging.provenance.rank_device_inventory` gathers
+:func:`~spectramr.infrastructure.logging.provenance.rank_device_inventory` gathers
 one small record per rank instead, which is the only way the artifact can show
 that two ranks landed on the *same* physical device — a failure that presents as
 a mysterious halving of throughput rather than as an error, and which is now
@@ -820,7 +843,7 @@ hangs forever. That inverts this module's usual fail-open posture and makes the
 call's *placement* load-bearing rather than stylistic:
 
 * It sits **before** the pipeline build in
-  :func:`~mriforge.pipelines.train.run_training_pipeline`. Every other provenance
+  :func:`~spectramr.pipelines.train.run_training_pipeline`. Every other provenance
   site is inside ``if provenance:`` *and* inside the build's ``try:``, and both
   guards are rank-divergent — ``collect_run_provenance`` fail-opens per rank, so
   ``provenance`` can be ``{}`` on one rank and populated on another, and a build
@@ -845,7 +868,7 @@ device — a false alarm exactly where the record is least informative.
 
 NCCL note: ``all_gather_object`` moves its pickled buffer to
 ``torch.cuda.current_device()``, so every rank must have called ``set_device``.
-:func:`mriforge.pipelines.distributed.setup_distributed` does so *before*
+:func:`spectramr.pipelines.distributed.setup_distributed` does so *before*
 ``init_process_group``; ``infrastructure/distributed/launcher.py`` does so right
 after. This is the same invariant ``RankUtility.broadcast_object`` already
 relies on at three training-loop sites.
@@ -870,7 +893,7 @@ data would be worse than no per-rank file at all.
 ``world_size`` prefers the live group
 -------------------------------------
 
-:func:`~mriforge.infrastructure.logging.provenance.effective_batch_size` used to
+:func:`~spectramr.infrastructure.logging.provenance.effective_batch_size` used to
 read the world size from the environment only. Just ``torchrun`` exports
 ``WORLD_SIZE``: a ``torch.multiprocessing.spawn`` worker — which
 ``launcher.launch_distributed`` uses for *every* single-node multi-GPU run —
@@ -913,7 +936,7 @@ from ``LOCAL_WORLD_SIZE`` — per-node on both origins. Comparing it against
 ``declared num_devices=4 but world=8: the extra devices are NOT being used``
 while it was using all eight. The comparison is now against the ranks on **this
 node**, which also keeps the detector's one genuinely useful case alive: a plain
-``mriforge train`` that declares 4 devices and runs one process, where nothing
+``spectramr train`` that declares 4 devices and runs one process, where nothing
 overwrote the authored value.
 
 A shape that cannot be resolved — multi-node with no per-node count — is left
@@ -952,7 +975,7 @@ cannot fire at all.
 The launch line named the wrong subcommand
 ------------------------------------------
 
-``infrastructure/distributed/launcher.py`` emitted ``-m mriforge.cli train`` for
+``infrastructure/distributed/launcher.py`` emitted ``-m spectramr.cli train`` for
 its multi-node torchrun command. That is the one spelling that cannot work:
 ``train`` never calls ``setup_distributed``, so no process group exists, and
 every group-requiring strategy then raises out of ``_require_process_group``

@@ -41,7 +41,7 @@ def _is_finite_scalar(t: torch.Tensor) -> bool:
 class TestPSNR:
     @pytest.fixture
     def psnr(self):
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
         return PSNR()
 
     # canary
@@ -61,7 +61,7 @@ class TestPSNR:
 
     @pytest.mark.parametrize("offset", [0.0, 0.5, -0.5])
     def test_value_ranges(self, offset):
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
         m = PSNR()
         x = _img(1, 1) + offset
         y = _img(1, 1, seed=3) + offset
@@ -98,7 +98,7 @@ class TestPSNR:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=99)
@@ -114,7 +114,7 @@ class TestPSNR:
 class TestMSE:
     @pytest.fixture
     def mse(self):
-        from mriforge.core.metrics.evaluation_metrics import MSE
+        from spectramr.core.metrics.evaluation_metrics import MSE
         return MSE()
 
     def test_canary_finite(self, mse):
@@ -146,7 +146,7 @@ class TestMSE:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.evaluation_metrics import MSE
+        from spectramr.core.metrics.evaluation_metrics import MSE
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=7)
@@ -161,7 +161,7 @@ class TestMSE:
 class TestMAE:
     @pytest.fixture
     def mae(self):
-        from mriforge.core.metrics.evaluation_metrics import MAE
+        from spectramr.core.metrics.evaluation_metrics import MAE
         return MAE()
 
     def test_canary_finite(self, mae):
@@ -184,7 +184,7 @@ class TestMAE:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.evaluation_metrics import MAE
+        from spectramr.core.metrics.evaluation_metrics import MAE
         b, c, h, w = shape
         assert _is_finite_scalar(MAE().compute_metric(_img(b, c, h, w), _img(b, c, h, w, seed=11)))
 
@@ -197,7 +197,7 @@ class TestMAE:
 class TestRMSE:
     @pytest.fixture
     def rmse(self):
-        from mriforge.core.metrics.evaluation_metrics import RMSE
+        from spectramr.core.metrics.evaluation_metrics import RMSE
         return RMSE()
 
     def test_canary_finite(self, rmse):
@@ -226,7 +226,7 @@ class TestRMSE:
 class TestSSIM:
     @pytest.fixture
     def ssim(self):
-        from mriforge.core.metrics.evaluation_metrics import SSIMMetric
+        from spectramr.core.metrics.evaluation_metrics import SSIMMetric
         return SSIMMetric()
 
     def test_canary_finite(self, ssim):
@@ -261,7 +261,7 @@ class TestSSIM:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.evaluation_metrics import SSIMMetric
+        from spectramr.core.metrics.evaluation_metrics import SSIMMetric
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=13)
@@ -277,7 +277,7 @@ class TestSSIM:
 class TestNMSE:
     @pytest.fixture
     def nmse(self):
-        from mriforge.core.metrics.evaluation_metrics import NMSE
+        from spectramr.core.metrics.evaluation_metrics import NMSE
         return NMSE()
 
     def test_canary_finite(self, nmse):
@@ -307,7 +307,7 @@ class TestNMSE:
 class TestGradientError:
     @pytest.fixture
     def ge(self):
-        from mriforge.core.metrics.evaluation_metrics import GradientError
+        from spectramr.core.metrics.evaluation_metrics import GradientError
         return GradientError()
 
     def test_canary_finite(self, ge):
@@ -338,7 +338,7 @@ class TestGradientError:
 class TestSNR:
     @pytest.fixture
     def snr(self):
-        from mriforge.core.metrics.evaluation_metrics import SNR
+        from spectramr.core.metrics.evaluation_metrics import SNR
         return SNR()
 
     def test_canary_finite(self, snr):
@@ -370,7 +370,7 @@ class TestSNR:
 class TestGMSD:
     @pytest.fixture
     def gmsd(self):
-        from mriforge.core.metrics.evaluation_metrics import GMSD
+        from spectramr.core.metrics.evaluation_metrics import GMSD
         return GMSD()
 
     def test_canary_finite(self, gmsd):
@@ -397,7 +397,7 @@ class TestGMSD:
 class TestFSIM:
     @pytest.fixture
     def fsim(self):
-        from mriforge.core.metrics.evaluation_metrics import FSIM
+        from spectramr.core.metrics.evaluation_metrics import FSIM
         return FSIM()
 
     def test_canary_in_unit_range(self, fsim):
@@ -432,7 +432,7 @@ class TestFSIM:
 class TestPearsonCorrelation:
     @pytest.fixture
     def pearson(self):
-        from mriforge.core.metrics.evaluation_metrics import PearsonCorrelation
+        from spectramr.core.metrics.evaluation_metrics import PearsonCorrelation
         return PearsonCorrelation()
 
     def test_canary_finite(self, pearson):
@@ -466,7 +466,7 @@ class TestPearsonCorrelation:
 class TestKSpaceError:
     @pytest.fixture
     def kse(self):
-        from mriforge.core.metrics.evaluation_metrics import KSpaceError
+        from spectramr.core.metrics.evaluation_metrics import KSpaceError
         return KSpaceError()
 
     def test_canary_finite(self, kse):
@@ -496,7 +496,7 @@ class TestKSpaceError:
 class TestEFC:
     @pytest.fixture
     def efc(self):
-        from mriforge.core.metrics.evaluation_metrics import EFC
+        from spectramr.core.metrics.evaluation_metrics import EFC
         return EFC()
 
     def test_canary_in_unit_range(self, efc):
@@ -525,7 +525,7 @@ class TestEFC:
 class TestDice:
     @pytest.fixture
     def dice(self):
-        from mriforge.core.metrics.evaluation_metrics import Dice
+        from spectramr.core.metrics.evaluation_metrics import Dice
         return Dice()
 
     def test_canary_in_unit_range(self, dice):
@@ -560,7 +560,7 @@ class TestDice:
 class TestIoU:
     @pytest.fixture
     def iou(self):
-        from mriforge.core.metrics.evaluation_metrics import IoU
+        from spectramr.core.metrics.evaluation_metrics import IoU
         return IoU()
 
     def test_canary_in_unit_range(self, iou):
@@ -595,7 +595,7 @@ class TestIoU:
 class TestRobustMRI_PSNR:
     @pytest.fixture
     def rpsnr(self):
-        from mriforge.core.metrics.evaluation_metrics import RobustMRI_PSNR
+        from spectramr.core.metrics.evaluation_metrics import RobustMRI_PSNR
         return RobustMRI_PSNR()
 
     def test_canary_finite(self, rpsnr):
@@ -627,7 +627,7 @@ class TestRobustMRI_PSNR:
 class TestVIF:
     @pytest.fixture
     def vif(self):
-        from mriforge.core.metrics.evaluation_metrics import VIF
+        from spectramr.core.metrics.evaluation_metrics import VIF
         return VIF()
 
     def test_canary_in_unit_range(self, vif):

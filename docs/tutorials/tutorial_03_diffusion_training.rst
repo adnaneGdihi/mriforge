@@ -134,7 +134,7 @@ annotated.
 
    training:
      training_mode: diffusion
-     strategy_class: mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
      input_domain: kspace
      output_domain: kspace
      epochs: 200                        # 500 for full training (exp_11)
@@ -295,7 +295,7 @@ coil has 2 channels (real + imaginary), so:
    in_channels = 2 × num_virtual_coils = 2 × 4 = 8
 
 This is verified at startup by the
-:class:`~mriforge.infrastructure.validation.config_health_checker.ConfigHealthChecker`.
+:class:`~spectramr.infrastructure.validation.config_health_checker.ConfigHealthChecker`.
 
 ==================
 Step 3: Run Training

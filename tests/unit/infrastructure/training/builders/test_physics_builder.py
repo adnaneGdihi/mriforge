@@ -1,6 +1,6 @@
 """`PhysicsBuilder` reads the schedule length from the canonical path.
 
-Paired with ``src/mriforge/infrastructure/training/builders/physics_builder.py``.
+Paired with ``src/spectramr/infrastructure/training/builders/physics_builder.py``.
 
 ``build_mask_generator`` used to have a second branch reading
 ``training.num_timesteps`` — a path no schema has ever carried, so it could not
@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.base import UnspecifiedParams
-from mriforge.infrastructure.training.builders.physics_builder import PhysicsBuilder
+from spectramr.config.schemas.training.base import UnspecifiedParams
+from spectramr.infrastructure.training.builders.physics_builder import PhysicsBuilder
 from tests.utils.minimal_settings import minimal_settings_for
 
 
@@ -30,9 +30,7 @@ def _settings_with_timesteps(n: int | None):
     settings = minimal_settings_for("gan")
     if n is None:
         return settings
-    training = settings.training.model_copy(
-        update={"diffusion": UnspecifiedParams(timesteps=n)}
-    )
+    training = settings.training.model_copy(update={"diffusion": UnspecifiedParams(timesteps=n)})
     return settings.model_copy(update={"training": training})
 
 
@@ -63,7 +61,7 @@ def test_the_value_is_carried_through_rather_than_defaulted(declared: int) -> No
 
 def _settings_with_undersampling():
     """A real ``TrainingSettings`` carrying the exp_11 acceleration block."""
-    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+    from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
     settings = _settings_with_timesteps(28)
     return settings.model_copy(
@@ -106,3 +104,41 @@ def test_unread_schema_defaults_are_not_forwarded() -> None:
         assert junk not in kwargs, f"{junk} would reach the accelerator"
     assert kwargs["max_acceleration"] == 32.0
     assert kwargs["min_center_fraction"] == 0.02
+
+
+def test_build_coil_sensitivity_is_an_honest_no_op():
+    """The step never worked, and could not have been noticed from outside.
+
+    It imported ``ESPIRiTSensitivity`` from ``physics/coil_sensitivity.py``, which
+    exports FUNCTIONS and has never defined that class. The import never actually
+    raised, though: the two guards above it read
+    ``config.physics.parallel_imaging.enabled``, and ``parallel_imaging`` is not a
+    field on ANY config schema while ``settings.physics`` defaults to ``None`` — so
+    both returned early on every call and the body was unreachable. A dead knob
+    kept a dead import invisible.
+
+    Restoring the import would fix nothing: ``_components["coil_sens"]`` was the
+    only reference to that key tree-wide. ``estimate_smaps`` (called live from
+    ``data_pipeline_director``) is the elected owner (non-negotiable 17).
+    """
+    import inspect
+
+    from spectramr.infrastructure.training.builders.physics_builder import PhysicsBuilder
+
+    source = inspect.getsource(PhysicsBuilder.build_coil_sensitivity)
+    body = source.split('"""')[2]
+    assert "ESPIRiTSensitivity" not in body, (
+        "the non-existent class is referenced outside the explanatory docstring"
+    )
+    assert "coil_sens" not in body, "a component nothing reads is being populated again"
+
+
+def test_build_coil_sensitivity_still_chains():
+    """It stays in the fluent chain (``director.py`` calls it) — a step that
+    silently vanishes is harder to notice than one that says why it does nothing."""
+    import inspect
+
+    from spectramr.infrastructure.training.builders.physics_builder import PhysicsBuilder
+
+    sig = inspect.signature(PhysicsBuilder.build_coil_sensitivity)
+    assert "PhysicsBuilder" in str(sig.return_annotation)

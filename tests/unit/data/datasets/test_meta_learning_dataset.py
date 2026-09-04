@@ -17,7 +17,7 @@ from __future__ import annotations
 import torch
 from torch.utils.data import Dataset
 
-from mriforge.data.datasets.meta_learning_dataset import MetaLearningDataset
+from spectramr.data.datasets.meta_learning_dataset import MetaLearningDataset
 
 
 # ── Minimal in-memory base dataset ────────────────────────────────────────────

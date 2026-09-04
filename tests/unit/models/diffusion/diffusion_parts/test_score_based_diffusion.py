@@ -4,7 +4,7 @@ Two regressions guarded here:
 
 1. ``p_losses`` silently defaulted any unknown ``loss_type`` to MSE
    (pitfall #9); the dispatch is now registry-routed and raises.
-2. The module-scope ``from mriforge.core.metrics import get_metric`` created
+2. The module-scope ``from spectramr.core.metrics import get_metric`` created
    an import cycle (core.metrics walk-discovery → models.losses →
    models.diffusion → this module → partially-initialized core.metrics)
    that aborted the losses-package init, silently leaving the loss registry
@@ -22,7 +22,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.diffusion.diffusion_parts.score_based_diffusion import (  # noqa: E402
+from spectramr.models.diffusion.diffusion_parts.score_based_diffusion import (  # noqa: E402
     ScoreBasedDiffusion,
 )
 
@@ -56,18 +56,18 @@ def test_import_after_core_metrics_keeps_loss_registry_complete() -> None:
     eager import this order left ``l1`` unresolvable.
 
     (An assertion that importing this module pulls no core.metrics at all is
-    NOT possible: ``mriforge.models.diffusion.__init__`` loads core.metrics
+    NOT possible: ``spectramr.models.diffusion.__init__`` loads core.metrics
     through other modules; only this module's import had the cycle-forming
     package-attribute form.)
     """
     code = (
-        "import mriforge.core.metrics\n"
-        "import mriforge.models.diffusion.diffusion_parts.score_based_diffusion\n"
-        "from mriforge.models.losses.elementary import resolve_elementary_loss\n"
+        "import spectramr.core.metrics\n"
+        "import spectramr.models.diffusion.diffusion_parts.score_based_diffusion\n"
+        "from spectramr.models.losses.elementary import resolve_elementary_loss\n"
         "for name in ('l1', 'l2', 'huber'):\n"
         "    resolve_elementary_loss(name)\n"
     )
-    env = {**os.environ, "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1"}
+    env = {**os.environ, "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1"}
     proc = subprocess.run(
         [sys.executable, "-c", code], capture_output=True, text=True, env=env, timeout=300
     )

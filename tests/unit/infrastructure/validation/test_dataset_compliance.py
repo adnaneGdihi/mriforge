@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.dataset_compliance import (
+from spectramr.infrastructure.validation.dataset_compliance import (
     ComplianceIssue,
     ComplianceSeverity,
     DatasetComplianceChecker,

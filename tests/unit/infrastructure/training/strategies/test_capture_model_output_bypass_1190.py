@@ -29,9 +29,9 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-import mriforge.infrastructure.training.debug_snapshot as ds_mod
-import mriforge.infrastructure.training.utils.domain_inference as di_mod
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+import spectramr.infrastructure.training.debug_snapshot as ds_mod
+import spectramr.infrastructure.training.utils.domain_inference as di_mod
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):
@@ -156,7 +156,7 @@ class TestTheTrainingDimensionContractStaysOnTheTrainingPath:
     """The shared manager serves 6 train sites AND 7 validation ones.
 
     ``_ensure_input_contract_guard`` is the TRAINING dimension contract and can
-    raise under ``MRIFORGE_DIMENSION_CONTRACT=enforce``. Installing it from the
+    raise under ``SPECTRAMR_DIMENSION_CONTRACT=enforce``. Installing it from the
     manager would extend it to every validation path a snapshot fix happens to
     touch -- a runtime behaviour change nobody asked for, and the thing that
     reddened three val-path tests when this change first tried it.
@@ -280,7 +280,7 @@ def _direct_impl_calls() -> list[tuple[str, str, bool]]:
     (a subclass extending its parent's losses), which run INSIDE the wrapper and
     were never bypasses.
     """
-    import mriforge.infrastructure.training.strategies as pkg
+    import spectramr.infrastructure.training.strategies as pkg
 
     found: list[tuple[str, str, bool]] = []
     for path in sorted(Path(pkg.__file__).parent.glob("*.py")):

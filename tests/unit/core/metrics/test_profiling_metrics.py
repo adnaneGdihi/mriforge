@@ -5,8 +5,8 @@ import pytest
 torch = pytest.importorskip("torch")
 import torch.nn as nn  # noqa: E402
 
-from mriforge.core.metrics.profiling_metrics import InferenceLatency, ParameterCount
-from mriforge.core.metrics.registry import get_metric
+from spectramr.core.metrics.profiling_metrics import InferenceLatency, ParameterCount
+from spectramr.core.metrics.registry import get_metric
 
 
 def _tiny_model() -> nn.Module:

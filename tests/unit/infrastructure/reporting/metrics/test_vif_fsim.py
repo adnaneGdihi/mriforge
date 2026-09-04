@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.infrastructure.reporting.metrics.vif_fsim import (
+from spectramr.infrastructure.reporting.metrics.vif_fsim import (
     feature_similarity_index,
     visual_information_fidelity,
 )

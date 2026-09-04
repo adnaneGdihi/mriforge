@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.utils.diffusion_mixin import DiffusionStrategyMixin
+from spectramr.infrastructure.training.utils.diffusion_mixin import DiffusionStrategyMixin
 
 
 class _Host(DiffusionStrategyMixin):

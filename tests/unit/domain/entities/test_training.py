@@ -12,7 +12,7 @@ from datetime import datetime
 
 import pytest
 
-from mriforge.domain.entities.training import (
+from spectramr.domain.entities.training import (
     ModelValidatedEvent,
     TrainingCompletedEvent,
     TrainingStartedEvent,

@@ -15,7 +15,7 @@ import pytest
 import torch
 from PIL import Image
 
-from mriforge.data.datasets.utils.image_volume_utils import (
+from spectramr.data.datasets.utils.image_volume_utils import (
     find_common_png_stems,
     group_slices_by_prefix,
     list_png_files,

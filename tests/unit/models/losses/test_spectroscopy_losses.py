@@ -11,9 +11,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.infrastructure.physics.signal_models.spectroscopy import lorentzian_fid
-from mriforge.models.losses.spectroscopy_losses import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.infrastructure.physics.signal_models.spectroscopy import lorentzian_fid
+from spectramr.models.losses.spectroscopy_losses import (
     MRSFIDResidualLoss,
     MRSPriorKnowledgeLoss,
 )
@@ -238,7 +238,7 @@ class TestMRSPriorKnowledge:
 
 def test_registered_and_tagged_for_spectroscopy() -> None:
     """They back mri_spectroscopy's LIVE claim; a lost tag must fail here."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     for name in ("mrs_fid_residual", "mrs_prior_knowledge"):
         assert LossRegistry._loss_domains[name]["workflows"] == frozenset(
@@ -248,7 +248,7 @@ def test_registered_and_tagged_for_spectroscopy() -> None:
 
 def test_selectable_from_yaml_via_the_loss_weight_ssot() -> None:
     """Registered is not enough — it must be reachable from a config."""
-    from mriforge.models.losses.weights import _schema_defaults
+    from spectramr.models.losses.weights import _schema_defaults
 
     defaults = _schema_defaults()
     for name in ("mrs_fid_residual", "mrs_prior_knowledge"):

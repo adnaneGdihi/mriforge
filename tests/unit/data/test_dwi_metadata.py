@@ -9,8 +9,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms import dwi_metadata
-from mriforge.data.transforms.dwi_metadata import (
+from spectramr.data.transforms import dwi_metadata
+from spectramr.data.transforms.dwi_metadata import (
     LoadDWIMetadata,
     parse_bval_file,
     parse_bvec_file,

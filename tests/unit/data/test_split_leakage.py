@@ -22,15 +22,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from types import SimpleNamespace
-
-from tests.utils.data_config_stub import DataConfigStub
 from typing import Any
 
-from mriforge.data.split_leakage import (
+from spectramr.data.split_leakage import (
     SplitLeakageReport,
     analyze_split_leakage,
     read_manifest_records,
 )
+from tests.utils.data_config_stub import DataConfigStub
 
 
 def _write_manifest(path: Path, records: list[dict[str, Any]]) -> None:
@@ -106,9 +105,7 @@ def test_explicit_manifest_subject_overlap_is_leak(tmp_path: Path) -> None:
     val = tmp_path / "val.json"
     _write_manifest(train, [_rec("subjA"), _rec("subjB"), _rec("subjC")])
     _write_manifest(val, [_rec("subjC"), _rec("subjD")])  # subjC leaks
-    rep = analyze_split_leakage(
-        _cfg(index_path=str(train), validation_index_path=str(val))
-    )
+    rep = analyze_split_leakage(_cfg(index_path=str(train), validation_index_path=str(val)))
     assert isinstance(rep, SplitLeakageReport)
     assert rep.status == "leak"
     assert rep.mode == "explicit_manifest"
@@ -122,9 +119,7 @@ def test_explicit_manifest_disjoint_is_clean(tmp_path: Path) -> None:
     _write_manifest(train, [_rec("Training_vol0"), _rec("Training_vol1")])
     # mrixfields-correct: val subjects are split-namespaced, never colliding.
     _write_manifest(val, [_rec("Validating_vol0"), _rec("Validating_vol1")])
-    rep = analyze_split_leakage(
-        _cfg(index_path=str(train), validation_index_path=str(val))
-    )
+    rep = analyze_split_leakage(_cfg(index_path=str(train), validation_index_path=str(val)))
     assert rep.status == "clean"
     assert rep.overlap == ()
 
@@ -141,9 +136,7 @@ def test_explicit_manifest_file_overlap_is_leak_even_if_subject_differs(
     dup["subject_id"] = "Validating_vol0"  # relabelled, same relative_path
     _write_manifest(train, [shared, _rec("Training_vol1")])
     _write_manifest(val, [dup])
-    rep = analyze_split_leakage(
-        _cfg(index_path=str(train), validation_index_path=str(val))
-    )
+    rep = analyze_split_leakage(_cfg(index_path=str(train), validation_index_path=str(val)))
     assert rep.status == "leak"
     assert rep.key_kind == "file"
     assert shared["relative_path"] in rep.overlap
@@ -235,9 +228,142 @@ def test_loso_disjoint_sites_clean(tmp_path: Path) -> None:
 
 
 # --------------------------------------------------------------------------- #
-# directory / auto — folder-disjoint by construction
+# directory crawl — replayed when the data is here, skipped honestly when not
+# (cohort review 2026-09-02, T0.2: the old "folder-disjoint by construction"
+# skip returned green on the one route that split a flat FILE list)
 # --------------------------------------------------------------------------- #
-def test_directory_split_skipped(tmp_path: Path) -> None:
+def test_directory_split_without_a_data_root_is_skipped(tmp_path: Path) -> None:
     rep = analyze_split_leakage(_cfg(split_strategy="directory"))
     assert rep.status == "skipped"
     assert rep.mode in {"directory", "unknown"}
+
+
+def _dir_cfg(root: Path, *, dataset_type: str = "nifti", validation_split: float = 0.5) -> Any:
+    return SimpleNamespace(
+        data=DataConfigStub(
+            data_root=str(root),
+            data_layout="flat",
+            dataset_type=dataset_type,
+            index_path=None,
+            validation_index_path=None,
+            holdout_site=None,
+            validation_split=validation_split,
+            datasets=None,
+            contrasts=None,
+            target_contrasts=None,
+        )
+    )
+
+
+def _bids_named_files(root: Path) -> None:
+    for s in (1, 2, 3):
+        for c in ("T1w", "T2w"):
+            (root / f"sub-{s:02d}_{c}.nii.gz").write_bytes(b"")
+
+
+def test_directory_crawl_is_replayed_and_clean_when_grouped_by_subject(tmp_path: Path) -> None:
+    _bids_named_files(tmp_path)
+    rep = analyze_split_leakage(_dir_cfg(tmp_path))
+    assert rep.status == "clean", rep.detail
+    assert rep.mode == "directory"
+    assert rep.n_train + rep.n_val == 6
+
+
+def test_directory_crawl_that_straddles_a_subject_is_a_leak(tmp_path: Path, monkeypatch) -> None:
+    """The planted violation: the pre-review file-level split, replayed."""
+    from spectramr.data.metadata.index_builder import IndexBuilder
+
+    _bids_named_files(tmp_path)
+
+    def _file_level(config, split):  # sub-02 straddles
+        recs = [
+            {
+                "primary_path": f"sub-{s:02d}_{c}.nii.gz",
+                "file_id": f"sub-{s:02d}_{c}",
+                "subject_id": f"sub-{s:02d}",
+            }
+            for s in (1, 2, 3)
+            for c in ("T1w", "T2w")
+        ]
+        return recs[:3] if split == "train" else recs[3:]
+
+    monkeypatch.setattr(IndexBuilder, "build_nifti_index", staticmethod(_file_level))
+    rep = analyze_split_leakage(_dir_cfg(tmp_path))
+    assert rep.status == "leak"
+    assert rep.key_kind == "subject"
+    assert rep.overlap == ("sub-02",)
+
+
+def test_directory_crawl_with_absent_root_is_skipped_with_the_reason(tmp_path: Path) -> None:
+    rep = analyze_split_leakage(_dir_cfg(tmp_path / "not_here"))
+    assert rep.status == "skipped"
+    assert "not present on this host" in rep.detail
+
+
+def test_directory_crawl_for_a_non_nifti_route_is_reported_unverified(tmp_path: Path) -> None:
+    """A route this analyzer cannot replay is never called disjoint by construction."""
+    _bids_named_files(tmp_path)
+    rep = analyze_split_leakage(_dir_cfg(tmp_path, dataset_type="kspace"))
+    assert rep.status == "skipped"
+    assert "UNVERIFIED" in rep.detail
+
+
+# --------------------------------------------------------------------------- #
+# held-out test manifest vs the training pool (cohort review 2026-09-02, T0.3)
+# --------------------------------------------------------------------------- #
+from spectramr.data.split_leakage import analyze_test_split_leakage  # noqa: E402
+
+
+def _held_out_cfg(train: str | None, val: str | None, test: str | None) -> Any:
+    return SimpleNamespace(
+        data=SimpleNamespace(
+            source=SimpleNamespace(
+                index_path=train, validation_index_path=val, test_index_path=test
+            )
+        )
+    )
+
+
+def test_held_out_subject_in_training_pool_is_a_leak(tmp_path: Path) -> None:
+    """The planted violation: sub-02 trains AND is reported on."""
+    train, val, test = tmp_path / "train.json", tmp_path / "val.json", tmp_path / "test.json"
+    _write_manifest(train, [_rec("sub-01"), _rec("sub-02")])
+    _write_manifest(val, [_rec("sub-03")])
+    _write_manifest(test, [_rec("sub-02"), _rec("sub-04")])
+    rep = analyze_test_split_leakage(_held_out_cfg(str(train), str(val), str(test)))
+    assert rep.status == "leak" and rep.mode == "held_out_test"
+    assert rep.key_kind == "subject" and rep.overlap == ("sub-02",)
+    assert "held-out test" in rep.detail
+
+
+def test_held_out_subject_in_validation_is_also_a_leak(tmp_path: Path) -> None:
+    """Validation selects the checkpoint, so it is part of the pool."""
+    train, val, test = tmp_path / "train.json", tmp_path / "val.json", tmp_path / "test.json"
+    _write_manifest(train, [_rec("sub-01")])
+    _write_manifest(val, [_rec("sub-03")])
+    _write_manifest(test, [_rec("sub-03")])
+    rep = analyze_test_split_leakage(_held_out_cfg(str(train), str(val), str(test)))
+    assert rep.status == "leak" and rep.overlap == ("sub-03",)
+
+
+def test_held_out_disjoint_is_clean(tmp_path: Path) -> None:
+    train, val, test = tmp_path / "train.json", tmp_path / "val.json", tmp_path / "test.json"
+    _write_manifest(train, [_rec("sub-01"), _rec("sub-02")])
+    _write_manifest(val, [_rec("sub-03")])
+    _write_manifest(test, [_rec("sub-04")])
+    rep = analyze_test_split_leakage(_held_out_cfg(str(train), str(val), str(test)))
+    assert rep.status == "clean" and rep.n_train == 3 and rep.n_val == 1
+
+
+def test_held_out_undeclared_is_skipped_with_the_reason() -> None:
+    rep = analyze_test_split_leakage(_held_out_cfg("train.json", None, None))
+    assert rep.status == "skipped" and "validation (checkpoint-selection) set" in rep.detail
+
+
+def test_held_out_absent_manifest_is_skipped(tmp_path: Path) -> None:
+    train = tmp_path / "train.json"
+    _write_manifest(train, [_rec("sub-01")])
+    rep = analyze_test_split_leakage(
+        _held_out_cfg(str(train), None, str(tmp_path / "missing.json"))
+    )
+    assert rep.status == "skipped" and "not present locally" in rep.detail

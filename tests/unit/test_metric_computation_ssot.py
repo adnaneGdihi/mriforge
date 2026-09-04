@@ -15,8 +15,8 @@ INVARIANTS TO TEST:
 import pytest
 import torch
 
-from mriforge.core.metrics.computer import ValidationMetricsComputer
-from mriforge.core.metrics.types import ValidationMetricsConfig
+from spectramr.core.metrics.computer import ValidationMetricsComputer
+from spectramr.core.metrics.types import ValidationMetricsConfig
 
 
 class TestMetricComputationSSOT:
@@ -122,7 +122,7 @@ class TestStrategyMetricConsistency:
 
         This ensures all strategies can access SSOT metrics.
         """
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         assert hasattr(
             BaseTrainingStrategy, "_get_validation_metrics_computer"
@@ -139,7 +139,7 @@ class TestStrategyMetricConsistency:
         """
         from pathlib import Path
 
-        strategies_dir = Path("src/mriforge/infrastructure/training/strategies")
+        strategies_dir = Path("src/spectramr/infrastructure/training/strategies")
 
         # Patterns that indicate manual metric computation
         forbidden_patterns = [
@@ -185,7 +185,7 @@ class TestMetricComputerIntegration:
         Should not rebuild computer on every validation_step call.
         Tests MetricsMixin caching directly without requiring full strategy init.
         """
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
@@ -224,7 +224,7 @@ class TestMetricComputerIntegration:
         ), "Metrics computer not cached (creates new instance on every call)"
 
         # Verify it's actually a ValidationMetricsComputer
-        from mriforge.core.metrics.computer import ValidationMetricsComputer
+        from spectramr.core.metrics.computer import ValidationMetricsComputer
 
         assert isinstance(computer1, ValidationMetricsComputer)
 
@@ -234,7 +234,7 @@ class TestMetricComputerIntegration:
 
         Strategies should call this function from both train_step and validation_step.
         """
-        from mriforge.core.metrics.computer import ValidationMetricsComputer
+        from spectramr.core.metrics.computer import ValidationMetricsComputer
 
         # Create computer
         config = ValidationMetricsConfig.from_dict({"metrics": ["psnr", "ssim"]})

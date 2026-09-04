@@ -9,8 +9,8 @@ from unittest.mock import Mock, patch
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
 
 
 class TestPhysicsCompliantNormalization:

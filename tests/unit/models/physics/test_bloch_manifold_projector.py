@@ -16,8 +16,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.physics.bloch_manifold_projector import BlochManifoldProjector
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.physics.bloch_manifold_projector import BlochManifoldProjector
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 def _on_manifold_image(

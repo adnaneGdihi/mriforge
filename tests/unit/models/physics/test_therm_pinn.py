@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/models/physics/therm_pinn.py (moved 2026-07-02
+"""Unit tests for src/spectramr/models/physics/therm_pinn.py (moved 2026-07-02
 from infrastructure/physics/ — it is a registered model, not a physics
 primitive).
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.physics.therm_pinn import (
+from spectramr.models.physics.therm_pinn import (
     TemperatureNetwork,
     ThermPINN,
     create_therm_pinn,

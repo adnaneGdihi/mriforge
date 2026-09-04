@@ -6,12 +6,12 @@ import math
 
 import torch
 
-from mriforge.application.use_cases.nr_validation.tier2_fr_proxy import (
+from spectramr.application.use_cases.nr_validation.tier2_fr_proxy import (
     DEFAULT_FR_PROXIES,
     score_fr_proxy,
     variance_inflation_factors,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )

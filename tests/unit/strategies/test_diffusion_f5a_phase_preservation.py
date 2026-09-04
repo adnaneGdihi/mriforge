@@ -33,7 +33,7 @@ import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
-DIFFUSION = REPO / "src" / "mriforge" / "infrastructure" / "training" / "strategies" / "diffusion.py"
+DIFFUSION = REPO / "src" / "spectramr" / "infrastructure" / "training" / "strategies" / "diffusion.py"
 
 
 def _read() -> str:

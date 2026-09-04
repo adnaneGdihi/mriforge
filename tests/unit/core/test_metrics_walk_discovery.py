@@ -22,13 +22,13 @@ def test_init_uses_pkgutil_walk_packages() -> None:
     src = (
         Path(__file__).resolve().parents[3]
         / "src"
-        / "mriforge"
+        / "spectramr"
         / "core"
         / "metrics"
         / "__init__.py"
     ).read_text()
     assert "pkgutil.walk_packages" in src, (
-        "src/mriforge/core/metrics/__init__.py reverted to a hand-maintained "
+        "src/spectramr/core/metrics/__init__.py reverted to a hand-maintained "
         "import list. Use pkgutil.walk_packages — audit 13 F11 (D7) — "
         "so adding a new metric module doesn't require editing __init__."
     )
@@ -38,7 +38,7 @@ def test_init_has_no_silent_passthrough_on_import_error() -> None:
     src = (
         Path(__file__).resolve().parents[3]
         / "src"
-        / "mriforge"
+        / "spectramr"
         / "core"
         / "metrics"
         / "__init__.py"
@@ -68,7 +68,7 @@ def test_init_has_no_silent_passthrough_on_import_error() -> None:
 def test_decorators_fired_under_walk_discovery(metric_name: str) -> None:
     """The walk must reach hallucination_metrics + hfen (both were
     historically flaky)."""
-    from mriforge.core.metrics import list_available
+    from spectramr.core.metrics import list_available
 
     assert metric_name in list_available(), (
         f"@register_metric on '{metric_name}' did not fire. Check the "
@@ -81,7 +81,7 @@ def test_no_dead_metrics_initialized_guard() -> None:
     variable initialised to False on every import, so the ``or not``
     branch never short-circuited). Keep it gone — the module cache
     handles idempotency."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     assert not hasattr(metrics_pkg, "_METRICS_INITIALIZED"), (
         "The dead _METRICS_INITIALIZED guard is back. Python's module "
@@ -99,7 +99,7 @@ def test_no_dead_metrics_initialized_guard() -> None:
 def test_missing_optional_deps_is_a_public_dict() -> None:
     """The introspection surface exists and is a mapping so audits/tests can
     read the skipped-module set instead of parsing warning logs."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     assert isinstance(metrics_pkg.MISSING_OPTIONAL_DEPS, dict)
     assert "MISSING_OPTIONAL_DEPS" in metrics_pkg.__all__
@@ -107,13 +107,13 @@ def test_missing_optional_deps_is_a_public_dict() -> None:
 
 @pytest.mark.parametrize(
     "root_name",
-    ["mriforge", "mriforge.core.metrics.some_broken_module", ""],
+    ["spectramr", "spectramr.core.metrics.some_broken_module", ""],
 )
 def test_walk_import_error_reraises_in_repo_and_falsy(root_name: str) -> None:
-    """An in-repo (``mriforge*``) or falsy-``name`` ImportError is the
+    """An in-repo (``spectramr*``) or falsy-``name`` ImportError is the
     poisoning class — it must re-raise so a broken metric module can never
     silently vanish from the registry."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     exc = ImportError("boom", name=root_name or None)
     before = dict(metrics_pkg.MISSING_OPTIONAL_DEPS)
@@ -128,13 +128,13 @@ def test_walk_import_error_records_third_party_dep(caplog) -> None:
     MISSING_OPTIONAL_DEPS (walked-module → missing-dep), no raise."""
     import logging
 
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
-    module_name = "mriforge.core.metrics._fake_optional"
+    module_name = "spectramr.core.metrics._fake_optional"
     exc = ModuleNotFoundError("No module named 'torchmetrics'", name="torchmetrics")
     metrics_pkg.MISSING_OPTIONAL_DEPS.pop(module_name, None)
     try:
-        with caplog.at_level(logging.WARNING, logger="mriforge.core.metrics"):
+        with caplog.at_level(logging.WARNING, logger="spectramr.core.metrics"):
             # Must not raise.
             metrics_pkg._record_or_raise_walk_import_error(module_name, exc)
         assert metrics_pkg.MISSING_OPTIONAL_DEPS[module_name] == "torchmetrics"
@@ -147,7 +147,7 @@ def test_discover_reraises_when_a_fake_in_repo_module_is_broken(monkeypatch) -> 
     """End-to-end: the discovery loop re-raises when a walked in-repo module
     fails to import (monkeypatched fake submodule), proving the package would
     refuse to import silently-incomplete rather than drop the module."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     fake = f"{metrics_pkg._PACKAGE_NAME}.fake_broken"
 
@@ -167,7 +167,7 @@ def test_discover_reraises_when_a_fake_in_repo_module_is_broken(monkeypatch) -> 
 def test_discover_records_when_a_fake_module_misses_third_party(monkeypatch) -> None:
     """End-to-end: a walked module whose only failure is a missing third-party
     dep is skipped (recorded, no raise) so the rest of the walk proceeds."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     fake = f"{metrics_pkg._PACKAGE_NAME}.fake_needs_piq"
 
@@ -202,7 +202,7 @@ def test_discovery_walk_is_given_an_onerror_callback() -> None:
     """The wiring itself: a walk without ``onerror`` cannot report a broken
     sub-package at all, so the callback existing is not enough -- the walk has
     to be handed it."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     captured: dict[str, object] = {}
 
@@ -229,7 +229,7 @@ def test_onerror_reraises_an_in_repo_subpackage_failure() -> None:
     per-module path. pkgutil passes the name only, so the callback reads the
     live exception from the active ``except`` block -- it must therefore be
     exercised from inside one."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     name = f"{metrics_pkg._PACKAGE_NAME}.connectivity"
     before = dict(metrics_pkg.MISSING_OPTIONAL_DEPS)
@@ -246,7 +246,7 @@ def test_onerror_records_a_third_party_subpackage_failure() -> None:
     degrades exactly as a module does -- skipped, but *recorded*. The
     recording is the point: pre-fix, this case was indistinguishable from
     nothing having gone wrong."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     name = f"{metrics_pkg._PACKAGE_NAME}.fake_optional_subpackage"
     metrics_pkg.MISSING_OPTIONAL_DEPS.pop(name, None)
@@ -265,13 +265,13 @@ def test_onerror_does_not_widen_what_is_tolerated() -> None:
     including ones ``onerror=None`` would have propagated. Non-ImportError
     must still propagate, or this fix would silence errors that are loud
     today."""
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     try:
         raise RuntimeError("not an import problem")
     except RuntimeError:
         with pytest.raises(RuntimeError):
-            metrics_pkg._on_walk_package_error("mriforge.core.metrics.whatever")
+            metrics_pkg._on_walk_package_error("spectramr.core.metrics.whatever")
 
 
 def test_a_broken_subpackage_is_silent_without_onerror_and_loud_with_it(
@@ -284,13 +284,13 @@ def test_a_broken_subpackage_is_silent_without_onerror_and_loud_with_it(
     """
     import pkgutil
 
-    import mriforge.core.metrics as metrics_pkg
+    import spectramr.core.metrics as metrics_pkg
 
     root = tmp_path / "walkprobe"
     (root / "sub").mkdir(parents=True)
     (root / "__init__.py").write_text("")
     (root / "sub" / "__init__.py").write_text(
-        "raise ImportError('broken', name='mriforge.core.metrics.sub')\n"
+        "raise ImportError('broken', name='spectramr.core.metrics.sub')\n"
     )
     (root / "sub" / "leaf.py").write_text("VALUE = 1\n")
     monkeypatch.syspath_prepend(str(tmp_path))

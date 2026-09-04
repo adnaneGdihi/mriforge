@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.models.generators.probabilistic_graphical`.
+"""Unit tests for :mod:`spectramr.models.generators.probabilistic_graphical`.
 
 This module had no sibling test at all, which is part of why its registration
 went five capability fields short for so long: nothing asserted the contract, so
@@ -22,11 +22,11 @@ import inspect
 import pytest
 import torch
 
-from mriforge.models.generators.probabilistic_graphical import (
+from spectramr.models.generators.probabilistic_graphical import (
     ProbabilisticGraphicalGenerator,
 )
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY, get_model_capabilities
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY, get_model_capabilities
 
 populate_model_registry()
 

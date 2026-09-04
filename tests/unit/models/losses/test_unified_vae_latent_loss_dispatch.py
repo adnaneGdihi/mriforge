@@ -11,8 +11,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.models.losses.computers.unified_vae import UnifiedVAELossComputer
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.models.losses.computers.unified_vae import UnifiedVAELossComputer
 
 
 def _stub(latent_loss_type):
@@ -78,7 +78,7 @@ def test_unknown_latent_loss_raises() -> None:
 
 
 def test_schema_accepts_supported_latent_loss_types() -> None:
-    from mriforge.config.schemas.loss import LatentLossesConfig
+    from spectramr.config.schemas.loss import LatentLossesConfig
 
     for v in ("kl_divergence", "latent_regularization", "mmd", "vq_kl"):
         assert LatentLossesConfig(latent_loss_type=v).latent_loss_type == v
@@ -87,7 +87,7 @@ def test_schema_accepts_supported_latent_loss_types() -> None:
 def test_schema_rejects_unsupported_latent_loss_type() -> None:
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.loss import LatentLossesConfig
+    from spectramr.config.schemas.loss import LatentLossesConfig
 
     with pytest.raises(ValidationError):
         LatentLossesConfig(latent_loss_type="not_a_loss")

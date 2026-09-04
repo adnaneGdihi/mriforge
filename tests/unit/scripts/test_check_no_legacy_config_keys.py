@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.renames import RenameRecord
+from spectramr.config.schemas.renames import RenameRecord
 
 _CI = Path(__file__).resolve().parents[3] / "scripts" / "ci"
 
@@ -208,7 +208,7 @@ class TestLegacyVersionCountdown:
         own copy of "is this version legacy?", it would still be counting these
         toward a countdown that can never reach zero.
         """
-        from mriforge.config.schemas.base import LEGACY_CONFIG_VERSIONS
+        from spectramr.config.schemas.base import LEGACY_CONFIG_VERSIONS
 
         assert frozenset() == LEGACY_CONFIG_VERSIONS
         assert gate._version_status("config_version: '6.0'\n") == (
@@ -217,7 +217,7 @@ class TestLegacyVersionCountdown:
         )
 
     def test_canonical_is_not_counted_as_legacy(self, gate) -> None:
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
         status, _ = gate._version_status(
             f"config_version: '{CANONICAL_CONFIG_VERSION}'\n"

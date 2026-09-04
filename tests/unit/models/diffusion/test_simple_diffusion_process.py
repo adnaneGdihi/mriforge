@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.diffusion.simple_diffusion_process import SimpleDiffusionProcess
+from spectramr.models.diffusion.simple_diffusion_process import SimpleDiffusionProcess
 
 
 class TestSimpleDiffusionProcess:

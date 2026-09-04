@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.brenier_synthesis_strategy import (
+from spectramr.infrastructure.training.strategies.brenier_synthesis_strategy import (
     BrenierSynthesisStrategy,
     compute_brenier_loss,
 )
-from mriforge.models.generators.brenier_icnn import BrenierICNN
+from spectramr.models.generators.brenier_icnn import BrenierICNN
 
 
 def _net() -> BrenierICNN:
@@ -51,7 +51,7 @@ def test_loss_reduces() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(BrenierSynthesisStrategy)
@@ -98,8 +98,8 @@ def test_validation_forward_raises_without_field() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "brenier_synthesis" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "brenier_synthesis" in TrainingStrategyConfigSchema.model_fields
@@ -109,7 +109,7 @@ def test_strategy_registered_and_config_mounted() -> None:
 
 
 def test_contrast_id_threaded_to_model() -> None:
-    from mriforge.infrastructure.training.strategies.brenier_synthesis_strategy import (
+    from spectramr.infrastructure.training.strategies.brenier_synthesis_strategy import (
         compute_brenier_loss,
     )
 

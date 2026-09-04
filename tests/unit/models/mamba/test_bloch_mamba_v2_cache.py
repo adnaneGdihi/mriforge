@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.mamba.bloch_mamba_v2 import BlochMambaV2, BlochSSM
+from spectramr.models.mamba.bloch_mamba_v2 import BlochMambaV2, BlochSSM
 
 
 @pytest.mark.unit

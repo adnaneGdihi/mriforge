@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 from torch.optim import Optimizer
 
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
 
 def create_mock_training_env(

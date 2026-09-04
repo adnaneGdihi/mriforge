@@ -7,7 +7,7 @@ Verifies:
 import pytest
 import torch
 
-from mriforge.models.diffusion.cold_diffusion import MetalDegradation
+from spectramr.models.diffusion.cold_diffusion import MetalDegradation
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

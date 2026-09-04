@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.complex_losses import (
+from spectramr.models.losses.complex_losses import (
     ComplexL1Loss,
     ComplexMSELoss,
     FrequencyDomainLoss,
@@ -18,7 +18,7 @@ from mriforge.models.losses.complex_losses import (
     SENSEAdjointL1Loss,
     WeightedKSpaceL1Loss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 2, 32, 32  # Even C so 2-channel real layout works
 

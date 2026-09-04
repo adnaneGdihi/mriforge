@@ -1,6 +1,6 @@
 """Tests for the QC carpet + spike diagnostics plotter.
 
-Targets ``mriforge.infrastructure.reporting.plotters.qc.carpet_spike``.
+Targets ``spectramr.infrastructure.reporting.plotters.qc.carpet_spike``.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting import plotters
 
 
 def _cases(n=5):

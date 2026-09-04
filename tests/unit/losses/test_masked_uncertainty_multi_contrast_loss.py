@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.masked_uncertainty_multi_contrast_loss import (
+from spectramr.models.losses.masked_uncertainty_multi_contrast_loss import (
     MaskedUncertaintyMultiContrastLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 4, 1, 16, 16
 N_C = 3  # number of contrasts

@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.core.metrics.quantitative.dice_risk import (
+from spectramr.core.metrics.quantitative.dice_risk import (
     SynthSegDiceMetric,
     SynthSegDiceRiskMetric,
 )
@@ -33,7 +33,7 @@ def test_higher_is_better_flags() -> None:
 
 
 def test_registered_in_metric_registry() -> None:
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     assert get_metric("synthseg_dice") is not None
     assert get_metric("synthseg_dice_risk") is not None
@@ -45,7 +45,7 @@ def test_constructs_via_computer_path_with_device_kwarg() -> None:
     # validation). Regression for the review's NaN finding.
     import torch as _t
 
-    from mriforge.core.metrics.registry import get_metric
+    from spectramr.core.metrics.registry import get_metric
 
     m = get_metric("synthseg_dice", device=_t.device("cpu"))
     x = _t.rand(1, 1, 16, 16)
@@ -69,7 +69,7 @@ def test_synthseg_backend_defaults_to_14_classes() -> None:
     fake_seg.segment.return_value = torch.zeros(1, 16, 16, dtype=torch.long)
 
     with patch(
-        "mriforge.core.metrics.quantitative.dice_risk.get_segmenter",
+        "spectramr.core.metrics.quantitative.dice_risk.get_segmenter",
         return_value=fake_seg,
     ) as mock_gs:
         x = torch.rand(1, 1, 16, 16)
@@ -84,7 +84,7 @@ def test_label_dice_backend_keeps_default_5_classes() -> None:
     fake_seg.segment.return_value = torch.zeros(1, 16, 16, dtype=torch.long)
 
     with patch(
-        "mriforge.core.metrics.quantitative.dice_risk.get_segmenter",
+        "spectramr.core.metrics.quantitative.dice_risk.get_segmenter",
         return_value=fake_seg,
     ) as mock_gs:
         x = torch.rand(1, 1, 16, 16)
@@ -99,7 +99,7 @@ def test_explicit_n_classes_overrides_backend_default() -> None:
     fake_seg.segment.return_value = torch.zeros(1, 16, 16, dtype=torch.long)
 
     with patch(
-        "mriforge.core.metrics.quantitative.dice_risk.get_segmenter",
+        "spectramr.core.metrics.quantitative.dice_risk.get_segmenter",
         return_value=fake_seg,
     ) as mock_gs:
         x = torch.rand(1, 1, 16, 16)
@@ -109,8 +109,8 @@ def test_explicit_n_classes_overrides_backend_default() -> None:
 
 def test_synthseg_dice_imports_dgm_labels_14() -> None:
     """dice_risk must expose the DGM_LABELS_14 constant imported from challenge_metrics."""
-    from mriforge.core.metrics.quantitative import dice_risk
-    from mriforge.core.metrics.quantitative.challenge_metrics import DGM_LABELS_14
+    from spectramr.core.metrics.quantitative import dice_risk
+    from spectramr.core.metrics.quantitative.challenge_metrics import DGM_LABELS_14
 
     assert hasattr(dice_risk, "DGM_LABELS_14"), (
         "dice_risk must re-export DGM_LABELS_14 so callers can inspect the label set"
@@ -129,7 +129,7 @@ def test_dice_score_explicit_labels_scores_correct_ids() -> None:
     the FreeSurfer DGM IDs entirely.  Build tensors that contain 10 and 49 but
     NOT 1 or 2, and verify dice_score detects perfect agreement.
     """
-    from mriforge.core.metrics.quantitative.segmentation import dice_score
+    from spectramr.core.metrics.quantitative.segmentation import dice_score
 
     seg = torch.zeros(1, 8, 8, dtype=torch.long)
     seg[0, :4, :4] = 10   # top-left quadrant = label 10
@@ -146,7 +146,7 @@ def test_dice_score_explicit_labels_ignores_contiguous_ids() -> None:
     but absent from seg_b and lower Dice.  With explicit labels=(10, 49), only
     those two non-contiguous IDs are evaluated — 1 and 2 are invisible.
     """
-    from mriforge.core.metrics.quantitative.segmentation import dice_score
+    from spectramr.core.metrics.quantitative.segmentation import dice_score
 
     seg_a = torch.zeros(1, 8, 8, dtype=torch.long)
     seg_a[0, :4, :4] = 1    # label 1 present only in seg_a
@@ -172,7 +172,7 @@ def test_dice_score_labels_none_matches_contiguous_behavior() -> None:
     Regression guard: the label_dice proxy depends on contiguous range(1, n_classes)
     semantics.  Verifies the default path is untouched.
     """
-    from mriforge.core.metrics.quantitative.segmentation import dice_score
+    from spectramr.core.metrics.quantitative.segmentation import dice_score
 
     torch.manual_seed(42)
     b = 3
@@ -196,8 +196,8 @@ def test_mean_dice_synthseg_passes_dgm_labels_to_dice_score() -> None:
     """
     from unittest.mock import patch
 
-    from mriforge.core.metrics.quantitative.challenge_metrics import DGM_LABELS_14
-    from mriforge.core.metrics.quantitative.dice_risk import _mean_dice
+    from spectramr.core.metrics.quantitative.challenge_metrics import DGM_LABELS_14
+    from spectramr.core.metrics.quantitative.dice_risk import _mean_dice
 
     fake_seg = MagicMock()
     fake_seg.n_classes = 14
@@ -209,8 +209,8 @@ def test_mean_dice_synthseg_passes_dgm_labels_to_dice_score() -> None:
         captured["labels"] = labels
         return torch.zeros(1)
 
-    with patch("mriforge.core.metrics.quantitative.dice_risk.get_segmenter", return_value=fake_seg):
-        with patch("mriforge.core.metrics.quantitative.dice_risk.dice_score", side_effect=_fake_dice_score):
+    with patch("spectramr.core.metrics.quantitative.dice_risk.get_segmenter", return_value=fake_seg):
+        with patch("spectramr.core.metrics.quantitative.dice_risk.dice_score", side_effect=_fake_dice_score):
             x = torch.rand(1, 1, 8, 8)
             _mean_dice(x, x, {"segmenter_backend": "synthseg"})
 
@@ -223,7 +223,7 @@ def test_mean_dice_label_dice_passes_labels_none() -> None:
     """_mean_dice with segmenter_backend='label_dice' must pass labels=None."""
     from unittest.mock import patch
 
-    from mriforge.core.metrics.quantitative.dice_risk import _mean_dice
+    from spectramr.core.metrics.quantitative.dice_risk import _mean_dice
 
     fake_seg = MagicMock()
     fake_seg.n_classes = 5
@@ -235,8 +235,8 @@ def test_mean_dice_label_dice_passes_labels_none() -> None:
         captured["labels"] = labels
         return torch.zeros(1)
 
-    with patch("mriforge.core.metrics.quantitative.dice_risk.get_segmenter", return_value=fake_seg):
-        with patch("mriforge.core.metrics.quantitative.dice_risk.dice_score", side_effect=_fake_dice_score):
+    with patch("spectramr.core.metrics.quantitative.dice_risk.get_segmenter", return_value=fake_seg):
+        with patch("spectramr.core.metrics.quantitative.dice_risk.dice_score", side_effect=_fake_dice_score):
             x = torch.rand(1, 1, 8, 8)
             _mean_dice(x, x, {"segmenter_backend": "label_dice"})
 
@@ -257,7 +257,7 @@ def test_unknown_backend_raises_not_defaults() -> None:
     """
     import pytest
 
-    from mriforge.core.metrics.quantitative.dice_risk import _mean_dice
+    from spectramr.core.metrics.quantitative.dice_risk import _mean_dice
 
     x = torch.rand(1, 1, 8, 8)
     with pytest.raises(ValueError, match="Unknown segmenter_backend"):

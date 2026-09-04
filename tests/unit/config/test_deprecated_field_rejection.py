@@ -6,7 +6,7 @@ validation and rejects deprecated fields with clear error messages.
 
 import pytest
 
-from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
 
 class TestDeprecatedFieldRejection:
@@ -143,9 +143,9 @@ class TestDeprecatedFieldRejection:
         whole payload was silently swallowed: there was nothing on that object to
         assert against, and the check could only raise or pass vacuously.
         """
-        from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+        from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
-        strategy = "mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy"
+        strategy = "spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy"
         block = TrainingStrategyConfigSchema.model_validate(
             {"strategy_class": strategy}
         )

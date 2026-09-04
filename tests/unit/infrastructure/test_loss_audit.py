@@ -1,6 +1,6 @@
 """The loss-audit probe must not report an unverified loss as HEALTHY.
 
-Partner test for ``src/mriforge/infrastructure/loss_audit.py``.
+Partner test for ``src/spectramr/infrastructure/loss_audit.py``.
 
 The probe used to decide "is this loss OK?" from the *text* of the exception it raised::
 
@@ -24,12 +24,12 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.loss_audit import (
+from spectramr.infrastructure.loss_audit import (
     UNPROBED,
     _test_loss_forward,
     _unsatisfiable_params,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 
 class _PairLoss(nn.Module):

@@ -1,4 +1,4 @@
-from mriforge.config.schemas.enums import (
+from spectramr.config.schemas.enums import (
     GANLossType,
     LogLevel,
     LRScheduler,

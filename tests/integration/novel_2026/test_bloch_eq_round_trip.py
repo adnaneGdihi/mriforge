@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
-from mriforge.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
+from spectramr.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
+from spectramr.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
     _TissueAtlas,
 )
 
@@ -81,7 +81,7 @@ def test_bloch_checkpoint_flag_preserves_output_equality() -> None:
 
     import torch.nn as nn
 
-    from mriforge.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
+    from spectramr.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
         BlochEquivariantTranslationStrategy,
     )
 

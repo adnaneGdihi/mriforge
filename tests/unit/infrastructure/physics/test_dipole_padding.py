@@ -6,7 +6,7 @@ convolution when applying the 3D dipole kernel on truncated 2.5D slabs.
 
 import torch
 
-from mriforge.infrastructure.physics.dipole import apply_3d_dipole_kernel
+from spectramr.infrastructure.physics.dipole import apply_3d_dipole_kernel
 
 
 class TestDipoleKernelPadding:

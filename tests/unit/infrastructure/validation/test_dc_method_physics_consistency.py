@@ -5,7 +5,7 @@ Anchor: experiment_11_kspace_cold_diffusion mosaic triage 2026-05-28.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 

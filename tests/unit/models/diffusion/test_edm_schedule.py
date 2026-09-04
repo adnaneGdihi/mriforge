@@ -1,6 +1,6 @@
 r"""Tests for the EDM noise schedule + preconditioning (PR-10 / M2).
 
-Targets ``mriforge.models.diffusion.edm_schedule``.
+Targets ``spectramr.models.diffusion.edm_schedule``.
 
 Plan acceptance criteria from §"Tests":
 
@@ -28,7 +28,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.diffusion.edm_schedule import (
+from spectramr.models.diffusion.edm_schedule import (
     EDMNoiseSchedule,
     edm_loss_weight,
     edm_preconditioning_coefficients,

@@ -51,7 +51,7 @@ IN_CH, OUT_CH, H, W, TDIM = 8, 16, 32, 32, 256
 
 @pytest.fixture
 def downsample_cls():
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceDownsampleBlock,
     )
     return KSpaceDownsampleBlock
@@ -59,7 +59,7 @@ def downsample_cls():
 
 @pytest.fixture
 def upsample_cls():
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceUpsampleBlock,
     )
     return KSpaceUpsampleBlock

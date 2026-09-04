@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.core.metrics.report_step_metrics``.
+"""Tests for ``spectramr.core.metrics.report_step_metrics``.
 
 Regression coverage for :class:`RadialKSpaceError` (registered as
 ``radial_k_error``). The metric bins ``|F·x̂ - F·x|`` by integer radial
@@ -37,7 +37,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.core.metrics.report_step_metrics import (
+from spectramr.core.metrics.report_step_metrics import (
     FocalFrequencyMetric,
     MMDMetric,
     RadialKSpaceError,
@@ -162,9 +162,9 @@ def test_radial_k_error_square_sanity_is_finite() -> None:
 
 def test_focal_frequency_registered_and_lower_is_better() -> None:
     """Registered under name + aliases, and centrally declared lower-is-better."""
-    from mriforge.core.metrics.metric_directions import METRIC_HIGHER_IS_BETTER
-    from mriforge.core.metrics.registry import MetricsRegistry
-    from mriforge.core.metrics.types import DEFAULT_METRIC_DIRECTIONS, MetricMode
+    from spectramr.core.metrics.metric_directions import METRIC_HIGHER_IS_BETTER
+    from spectramr.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.types import DEFAULT_METRIC_DIRECTIONS, MetricMode
 
     # Resolvable by canonical name and by alias.
     inst = MetricsRegistry.get("focal_frequency")
@@ -237,7 +237,7 @@ class TestDistributionMetricShapeGuard:
         "cls_name", ["Wasserstein1D", "SlicedWassersteinMetric", "MMDMetric"]
     )
     def test_uses_narrow_optout_not_the_blanket_one(self, cls_name):
-        import mriforge.core.metrics.report_step_metrics as mod
+        import spectramr.core.metrics.report_step_metrics as mod
 
         cls = getattr(mod, cls_name)
         assert cls.ALLOWS_UNEQUAL_SAMPLE_COUNT is True
@@ -247,19 +247,19 @@ class TestDistributionMetricShapeGuard:
         )
 
     def test_unequal_sample_count_is_allowed(self):
-        from mriforge.core.metrics.report_step_metrics import Wasserstein1D
+        from spectramr.core.metrics.report_step_metrics import Wasserstein1D
 
         value = Wasserstein1D()(torch.rand(8, 1, 16, 16), torch.rand(5, 1, 16, 16))
         assert torch.isfinite(torch.as_tensor(value))
 
     def test_channel_mismatch_still_raises(self):
-        from mriforge.core.metrics.report_step_metrics import Wasserstein1D
+        from spectramr.core.metrics.report_step_metrics import Wasserstein1D
 
         with pytest.raises(ValueError, match="trailing"):
             Wasserstein1D()(torch.rand(2, 2, 16, 16), torch.rand(2, 1, 16, 16))
 
     def test_spatial_mismatch_still_raises(self):
-        from mriforge.core.metrics.report_step_metrics import Wasserstein1D
+        from spectramr.core.metrics.report_step_metrics import Wasserstein1D
 
         with pytest.raises(ValueError, match="trailing"):
             Wasserstein1D()(torch.rand(1, 1, 128, 128), torch.rand(1, 1, 64, 64))

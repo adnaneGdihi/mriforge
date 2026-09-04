@@ -1,6 +1,6 @@
 """Tests for registration losses.
 
-Targets ``mriforge.models.losses.registration.LocalCrossCorrelationLoss``.
+Targets ``spectramr.models.losses.registration.LocalCrossCorrelationLoss``.
 
 Regression: the local variances ``Var = E[X^2] - E[X]^2`` can dip a few ULP
 below zero from float round-off. The denominator ``I_var * J_var + eps`` must
@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.registration import LocalCrossCorrelationLoss  # noqa: E402
+from spectramr.models.losses.registration import LocalCrossCorrelationLoss  # noqa: E402
 
 
 def test_lncc_finite_on_constant_input() -> None:

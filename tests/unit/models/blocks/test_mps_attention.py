@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.mps_attention import MatrixProductStateAttention
+from spectramr.models.blocks.mps_attention import MatrixProductStateAttention
 
 
 def test_forward_shape_preserved() -> None:

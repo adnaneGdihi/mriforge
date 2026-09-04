@@ -12,8 +12,8 @@ import math
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.core.metrics.temporal_metrics import TemporalFidelity, TemporalSNR
+from spectramr.config.schemas.enums import Regime
+from spectramr.core.metrics.temporal_metrics import TemporalFidelity, TemporalSNR
 
 
 def _series(batch: int = 2, frames: int = 20, size: int = 6) -> torch.Tensor:
@@ -175,7 +175,7 @@ class TestTemporalFidelity:
         assert math.isnan(TemporalFidelity()(_series(frames=10), _series(frames=8)))
 
     def test_tagged_for_both_time_series_regimes(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         tags = MetricsRegistry._workflow_tags["temporal_fidelity"]["workflows"]
         assert tags == frozenset({Regime.FUNCTIONAL, Regime.DYNAMIC})
@@ -348,7 +348,7 @@ class TestTemporalSNR:
         bin, so the metric says "not computed" instead of grading a threshold it
         made up.
         """
-        from mriforge.core.metrics.temporal_metrics import _otsu_threshold
+        from spectramr.core.metrics.temporal_metrics import _otsu_threshold
 
         assert _otsu_threshold(torch.full((64,), 3.0)) is None
         assert math.isnan(TemporalSNR()(torch.full((1, 20, 8, 8), 3.0)))
@@ -365,7 +365,7 @@ class TestTemporalSNR:
         It treats all temporal variance beyond drift as noise — true of a BOLD
         run, false of a cine or DCE series where that variance IS the signal.
         """
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         tags = MetricsRegistry._workflow_tags["tsnr"]["workflows"]
         assert tags == frozenset({Regime.FUNCTIONAL})

@@ -1,5 +1,5 @@
-from mriforge.config.schemas.base import DiffusionObjectiveConfig
-from mriforge.config.schemas.objectives import ObjectiveConfigSchema
+from spectramr.config.schemas.base import DiffusionObjectiveConfig
+from spectramr.config.schemas.objectives import ObjectiveConfigSchema
 
 
 class TestObjectiveConfigSchema:

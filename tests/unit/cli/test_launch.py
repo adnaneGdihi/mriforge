@@ -1,7 +1,7 @@
-"""Tests for the unified ``mriforge launch`` dispatcher (WS-D).
+"""Tests for the unified ``spectramr launch`` dispatcher (WS-D).
 
 ``launch`` resolves a backend from ``--where``, builds a pipeline-agnostic
-``MRIForgeInvocation`` from ``--pipeline``/``--config``, and runs it. The
+``SpectraMRInvocation`` from ``--pipeline``/``--config``, and runs it. The
 in-process ``LocalBackend`` lives here (it calls the CLI dispatch); the other
 backends are the pure infra ones.
 """
@@ -12,12 +12,12 @@ import argparse
 
 import pytest
 
-import mriforge.cli.launch as launch_mod
-from mriforge.cli.launch import LocalBackend, resolve_backend
-from mriforge.infrastructure.execution import (
+import spectramr.cli.launch as launch_mod
+from spectramr.cli.launch import LocalBackend, resolve_backend
+from spectramr.infrastructure.execution import (
     ApptainerBackend,
     DockerBackend,
-    MRIForgeInvocation,
+    SpectraMRInvocation,
     ResourceSpec,
     SlurmBackend,
 )
@@ -44,14 +44,14 @@ def _args(**over):
 
 @pytest.fixture(autouse=True)
 def _clean_launch_env():
-    """Isolate MRIFORGE_LAUNCH_* (launch() writes them into os.environ)."""
+    """Isolate SPECTRAMR_LAUNCH_* (launch() writes them into os.environ)."""
     import os
 
-    saved = {k: v for k, v in os.environ.items() if k.startswith("MRIFORGE_LAUNCH_")}
+    saved = {k: v for k, v in os.environ.items() if k.startswith("SPECTRAMR_LAUNCH_")}
     for k in saved:
         del os.environ[k]
     yield
-    for k in [k for k in os.environ if k.startswith("MRIFORGE_LAUNCH_")]:
+    for k in [k for k in os.environ if k.startswith("SPECTRAMR_LAUNCH_")]:
         del os.environ[k]
     os.environ.update(saved)
 
@@ -66,30 +66,30 @@ def test_resolve_backend():
 
 
 def test_launch_exports_launch_env_for_provenance(capsys):
-    """launch() stamps MRIFORGE_LAUNCH_* (backend + resolved resources) so the
+    """launch() stamps SPECTRAMR_LAUNCH_* (backend + resolved resources) so the
     child run can record them in run_summary.json (pitfall #15c)."""
     import os
 
     rc = launch_mod.launch(_args(where="local", gpus=2, account="acct"))
     assert rc == 0
-    assert os.environ["MRIFORGE_LAUNCH_BACKEND"] == "local"
-    assert os.environ["MRIFORGE_LAUNCH_GPUS"] == "2"
-    assert os.environ["MRIFORGE_LAUNCH_ACCOUNT"] == "acct"
+    assert os.environ["SPECTRAMR_LAUNCH_BACKEND"] == "local"
+    assert os.environ["SPECTRAMR_LAUNCH_GPUS"] == "2"
+    assert os.environ["SPECTRAMR_LAUNCH_ACCOUNT"] == "acct"
     capsys.readouterr()  # swallow the dry-run print
 
 
 def test_local_backend_dry_run():
-    handle = LocalBackend().run(MRIForgeInvocation("train", "x.yaml"), ResourceSpec(), dry_run=True)
-    assert handle.command == ["mriforge", "train", "--config", "x.yaml"]
+    handle = LocalBackend().run(SpectraMRInvocation("train", "x.yaml"), ResourceSpec(), dry_run=True)
+    assert handle.command == ["spectramr", "train", "--config", "x.yaml"]
     assert handle.returncode is None
 
 
 def test_local_backend_runs_in_process(monkeypatch):
     captured: dict = {}
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     monkeypatch.setattr(app, "main", lambda argv: captured.__setitem__("argv", argv) or 0)
-    handle = LocalBackend().run(MRIForgeInvocation("train", "x.yaml"), ResourceSpec())
+    handle = LocalBackend().run(SpectraMRInvocation("train", "x.yaml"), ResourceSpec())
     assert captured["argv"] == ["train", "--config", "x.yaml"]
     assert handle.returncode == 0
 
@@ -97,7 +97,7 @@ def test_local_backend_runs_in_process(monkeypatch):
 def test_launch_single_local_dry_run_prints_command(capsys):
     rc = launch_mod.launch(_args(where="local"))
     assert rc == 0
-    assert "mriforge train --config x.yaml" in capsys.readouterr().out
+    assert "spectramr train --config x.yaml" in capsys.readouterr().out
 
 
 def test_launch_single_slurm_dry_run_emits_script(capsys):
@@ -115,7 +115,7 @@ def test_launch_campaign_local_raises():
 
 
 def test_launch_campaign_docker_delegates_with_where(monkeypatch):
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     captured: dict = {}
     monkeypatch.setattr(app, "main", lambda argv: captured.__setitem__("argv", argv) or 0)
@@ -152,10 +152,10 @@ def test_every_advertised_verb_accepts_injected_config(verb):
     """Each ``PIPELINE_VERBS`` entry's launcher-constructed argv parses against
     the real parser — i.e. the verb actually accepts the ``--config`` flag the
     launcher injects (the regression that exposed audit/report/predict)."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     extras = _VERB_REQUIRED_EXTRAS[verb]  # KeyError => a new verb lacks coverage
-    argv = MRIForgeInvocation(verb, "cfg.yaml", extra_args=extras).to_cli_args()
+    argv = SpectraMRInvocation(verb, "cfg.yaml", extra_args=extras).to_cli_args()
     parsed = build_parser().parse_args(argv)  # must NOT SystemExit
     assert parsed.command == verb
 
@@ -170,7 +170,7 @@ def test_config_incompatible_or_deprecated_verbs_not_advertised(verb):
 def test_audit_with_injected_config_is_an_argparse_error():
     """Documents WHY audit is excluded: it takes the config positionally, so the
     launcher's ``--config`` injection is rejected by the real parser."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     with pytest.raises(SystemExit):
         build_parser().parse_args(["audit", "--config", "x.yaml"])

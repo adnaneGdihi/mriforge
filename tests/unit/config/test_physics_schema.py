@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.physics import (
+from spectramr.config.schemas.physics import (
     B0CorrectionConfig,
     B0SimulationConfig,
     BlochSimulationConfig,
@@ -165,7 +165,7 @@ class TestDigitalTwinConfigMotion:
 
 
 def test_multi_acquisition_config_defaults_and_validation() -> None:
-    from mriforge.config.schemas.physics import (
+    from spectramr.config.schemas.physics import (
         MultiAcquisitionConfig,
         PhysicsConfigSchema,
     )
@@ -221,7 +221,7 @@ def test_multi_acquisition_lambda_smooth_is_a_declared_knob() -> None:
     ``phase_smoothness_complex`` weight of 1.0. The declared weight was never
     read, so the YAML advertised a knob nothing consumed (CLAUDE.md #15).
     """
-    from mriforge.config.schemas.physics import MultiAcquisitionConfig
+    from spectramr.config.schemas.physics import MultiAcquisitionConfig
 
     # default preserves the historical hardcoded value → existing arms unchanged
     assert (
@@ -253,7 +253,7 @@ def test_multi_acquisition_normalize_magnitude_is_a_declared_knob() -> None:
     2026-07 exp_vf_01 run hit a first-step gradient norm of 6477 against a clip
     of 1.0. Default-on fixes it; false reproduces a pre-2026-07 run.
     """
-    from mriforge.config.schemas.physics import MultiAcquisitionConfig
+    from spectramr.config.schemas.physics import MultiAcquisitionConfig
 
     assert (
         MultiAcquisitionConfig(enabled=True, method="subvoxel_sr").normalize_magnitude
@@ -270,7 +270,7 @@ def test_multi_acquisition_normalize_magnitude_is_a_declared_knob() -> None:
 # ---------------------------------------------------------------------------
 # Sub-voxel registration ladder (2026-07-26)
 # ---------------------------------------------------------------------------
-from mriforge.config.schemas.physics import (  # noqa: E402
+from spectramr.config.schemas.physics import (  # noqa: E402
     MultiAcquisitionConfig,
 )
 
@@ -573,7 +573,7 @@ def test_marker_channels_accepted_on_the_recovered_rung() -> None:
 # Relaxometric fiducial calibration (PR-3)
 # ---------------------------------------------------------------------------
 def _relax(**kw):
-    from mriforge.config.schemas.physics import RelaxometricCalibrationConfig
+    from spectramr.config.schemas.physics import RelaxometricCalibrationConfig
 
     return RelaxometricCalibrationConfig(**kw)
 
@@ -654,7 +654,7 @@ def test_anchor_conformal_requires_a_fiducial() -> None:
 
 
 def test_anchor_conformal_rejects_impossible_levels() -> None:
-    from mriforge.config.schemas.physics import AnchorConformalConfig
+    from spectramr.config.schemas.physics import AnchorConformalConfig
 
     for bad in ({"alpha": 0.0}, {"alpha": 1.0}, {"n_strata": 0}, {"tolerance": -0.1}):
         with pytest.raises(ValidationError):
@@ -696,7 +696,7 @@ def test_measured_psf_without_a_model_error_is_rejected() -> None:
 
 
 def test_forward_psf_rejects_an_even_kernel_and_zero_regularisation() -> None:
-    from mriforge.config.schemas.physics import ForwardPsfConfig
+    from spectramr.config.schemas.physics import ForwardPsfConfig
 
     with pytest.raises(ValidationError, match="odd"):
         ForwardPsfConfig(kernel_size=8)
@@ -707,8 +707,8 @@ class TestDegradationSchedules:
     """physics.digital_twin severity ramp -- undersampling's schedule, on severity."""
 
     def test_defaults_reproduce_the_pre_existing_linear_remap(self):
-        from mriforge.config.schemas.enums import AccelerationSchedule
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.enums import AccelerationSchedule
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         d = DigitalTwinConfig()
         assert d.degradation_schedule is AccelerationSchedule.LINEAR
@@ -716,7 +716,7 @@ class TestDegradationSchedules:
         assert d.degradation_schedule_power == 2.0
 
     def test_per_axis_override_accepts_a_known_axis(self):
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         d = DigitalTwinConfig(
             progressive_degradations=["motion", "rigid_motion"],
@@ -728,7 +728,7 @@ class TestDegradationSchedules:
         """Validated against known_degradation_axes() -- the 14 native plus the 31
         registry operators -- rather than a hand-written set, so a newly registered
         degradation is legal the day it lands."""
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         with pytest.raises(ValueError, match="unknown axes"):
             DigitalTwinConfig(degradation_schedules={"b_0": "linear"})
@@ -737,7 +737,7 @@ class TestDegradationSchedules:
         """An axis absent from a non-empty progressive_degradations is held at
         effective cf 1.0, so its ramp shape is never consulted -- the schedule
         would be an unread knob by construction (pitfall #15)."""
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         with pytest.raises(ValueError, match="can never fire"):
             DigitalTwinConfig(
@@ -748,6 +748,6 @@ class TestDegradationSchedules:
     def test_an_empty_progressive_list_means_every_axis_ramps(self):
         """Empty is the documented 'everything is progressive' case, so a schedule
         on any known axis is reachable and must not be rejected."""
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         assert DigitalTwinConfig(degradation_schedules={"motion": "step"})

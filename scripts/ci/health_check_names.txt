@@ -3,6 +3,7 @@
 # One line per check method: the method, then every check_name string it emits.
 # train.py's FATAL_HEALTH_CHECKS filter matches the EMITTED name, not the method
 # name; the two diverge for some checks, and that is what this file shows (#1355).
+<outside> scientific_metadata_expected_outcome
 check_acceleration_adaptive_target_rate_consistent adaptive_target_rate_consistent
 check_acceleration_bounds acceleration_bounds
 check_acceleration_consistency acceleration_consistency
@@ -116,6 +117,7 @@ check_required_sections required_section
 check_robust_ssdu_key_matches_correction robust_ssdu_key_matches_correction
 check_scientific_metadata scientific_metadata_primary_metric
 check_sfc_scan_mode_matches_spatial_dims sfc_scan_mode
+check_slice_level_records_queue_shape slice_level_records_queue_shape
 check_spectra_backend_schema spectra_backend_schema
 check_spectra_gridding_sized spectra_gridding_sized
 check_spectra_precision_envelope spectra_precision_envelope

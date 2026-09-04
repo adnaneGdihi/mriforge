@@ -22,7 +22,7 @@ def test_nested_sampling():
     """Verify that masks satisfy M_{t+1} ⊂ M_t (nested property)."""
     print("\n=== Testing Nested Sampling Property ===")
 
-    from mriforge.infrastructure.physics.sampling import VariableDensityKSpaceAccelerator
+    from spectramr.infrastructure.physics.sampling import VariableDensityKSpaceAccelerator
 
     accelerator = VariableDensityKSpaceAccelerator(
         num_timesteps=100,
@@ -64,7 +64,7 @@ def test_data_consistency():
     print("\n=== Testing Data Consistency ===")
 
     try:
-        from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
+        from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
     except ImportError as e:
         print(f"  ⚠️  Could not import ColdDiffusion: {e}")
         return None
@@ -106,7 +106,7 @@ def test_kspace_accelerator():
     """Verify k-space accelerator produces valid masks."""
     print("\n=== Testing K-Space Accelerator ===")
 
-    from mriforge.infrastructure.physics.sampling import VariableDensityKSpaceAccelerator
+    from spectramr.infrastructure.physics.sampling import VariableDensityKSpaceAccelerator
 
     accelerator = VariableDensityKSpaceAccelerator(
         num_timesteps=1000,

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_conditioned_fno import FieldConditionedFNO
+from spectramr.models.generators.field_conditioned_fno import FieldConditionedFNO
 
 
 def _net(enable: bool = True) -> FieldConditionedFNO:
@@ -88,12 +88,12 @@ def test_ablation_knob_plumbs_through_factory() -> None:
     # signature filter (a silently-dropped/misspelled knob would break the ablation).
     import warnings
 
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
     with warnings.catch_warnings():  # ModelFactory is the canonical (deprecated) build path
         warnings.simplefilter("ignore", DeprecationWarning)
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         f = ModelFactory()
     on = f.create_generator(model_type="field_conditioned_fno", in_channels=1,
@@ -105,6 +105,6 @@ def test_ablation_knob_plumbs_through_factory() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "field_conditioned_fno" in MODEL_REGISTRY

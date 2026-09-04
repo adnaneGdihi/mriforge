@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.campaign import CampaignExperimentSchema
-from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+from spectramr.config.schemas.campaign import CampaignExperimentSchema
+from spectramr.infrastructure.orchestration.campaign_orchestrator import (
     CampaignOrchestrator,
 )
 

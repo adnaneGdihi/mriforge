@@ -18,7 +18,7 @@ import torch
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.maxwell_concomitant import (  # noqa: E402
+from spectramr.infrastructure.physics.maxwell_concomitant import (  # noqa: E402
     maxwell_concomitant_field_hz,
 )
 

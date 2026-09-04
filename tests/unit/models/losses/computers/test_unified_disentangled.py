@@ -19,11 +19,11 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.loss import ReconstructionLossesConfig
+from spectramr.config.schemas.loss import ReconstructionLossesConfig
 
 MODULE = (
     Path(__file__).resolve().parents[5]
-    / "src/mriforge/models/losses/computers/unified_disentangled.py"
+    / "src/spectramr/models/losses/computers/unified_disentangled.py"
 )
 
 
@@ -63,7 +63,7 @@ def _searched_fields() -> set[str]:
     checked only `reconstruction` would report `lambda_kl` (a `latent` field) as
     broken -- the mapping and the lookup have to be read together.
     """
-    from mriforge.config.schemas.loss import LatentLossesConfig
+    from spectramr.config.schemas.loss import LatentLossesConfig
 
     return set(ReconstructionLossesConfig.model_fields) | set(LatentLossesConfig.model_fields)
 
@@ -108,7 +108,7 @@ class TestMappingTargetsAreRealSchemaFields:
         assert mapping["content_consistency"] != mapping["perceptual"]
 
     def test_both_components_are_declared_distinct(self):
-        from mriforge.models.losses.computers.unified_disentangled import (
+        from spectramr.models.losses.computers.unified_disentangled import (
             KNOWN_LOSS_COMPONENTS,
         )
 

@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.slat_vae_slab_to_volume import (
+from spectramr.models.generators.slat_vae_slab_to_volume import (
     SLATVAESlabToVolumeGenerator,
 )
 
@@ -112,7 +112,7 @@ class TestSLATVAESlabToVolume:
         assert torch.isfinite(loss)
 
     def test_registry_metadata(self) -> None:
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         entry = MODEL_REGISTRY.get("slat_vae_slab_to_volume")
         assert entry is not None

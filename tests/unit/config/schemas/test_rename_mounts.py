@@ -16,18 +16,18 @@ from __future__ import annotations
 import pytest
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from mriforge.config.schemas.rename_mounts import (
+from spectramr.config.schemas.rename_mounts import (
     FORWARD_PROVISIONED,
     MountFinding,
     audit_mounts,
     discover_mounts,
 )
-from mriforge.config.schemas.renames import (
+from spectramr.config.schemas.renames import (
     RenameRecord,
     fold_renamed_keys,
     reject_renamed_keys,
 )
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 def _record(legacy: str, canonical: str, posture: str = "raise") -> RenameRecord:
@@ -247,7 +247,7 @@ class TestTheRealTree:
         or the block gains its first record (the entry is then hiding a mount
         that has started doing work, and the exemption should go).
         """
-        from mriforge.config.schemas.renames import RENAMES, renames_for_block
+        from spectramr.config.schemas.renames import RENAMES, renames_for_block
 
         block, posture = entry
         assert entry in discover_mounts(TrainingSettings), (

@@ -8,8 +8,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.vae.ladder_block import LadderBlock
-from mriforge.models.vae.hierarchical_vae_ladder import LadderVAE
+from spectramr.models.blocks.vae.ladder_block import LadderBlock
+from spectramr.models.vae.hierarchical_vae_ladder import LadderVAE
 
 from ._vae_base import (
     assert_gradient_flows,

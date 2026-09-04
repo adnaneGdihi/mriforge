@@ -9,7 +9,7 @@ Validates physics-informed cold diffusion degradation operator.
 import pytest
 import torch
 
-from mriforge.models.diffusion.kspace_process import (
+from spectramr.models.diffusion.kspace_process import (
     KSpaceUndersamplingProcess,
     PhysicsInformedColdDiffusion,
 )
@@ -349,7 +349,7 @@ class TestPhysicsInformedColdDiffusion:
         ``AdaptiveDataConsistency`` but the sampler only knew hard/soft and
         raised ``Unknown dc_method 'adaptive'`` on the first validation sample.
         """
-        from mriforge.infrastructure.physics.data_consistency import (
+        from spectramr.infrastructure.physics.data_consistency import (
             AdaptiveDataConsistency,
         )
 
@@ -900,7 +900,7 @@ class TestReverseModeReplaceFreeze:
 
     def test_replace_freeze_dc_noise_adaptive_denoises(self) -> None:
         """``noise_adaptive`` routes to the model's dc_layer and denoises observed."""
-        from mriforge.infrastructure.physics.data_consistency import (
+        from spectramr.infrastructure.physics.data_consistency import (
             NoiseAdaptiveDataConsistency,
         )
 
@@ -935,7 +935,7 @@ if __name__ == "__main__":
 
 def _exp11_process(min_center_fraction):
     """The exp_11 cohort's acceleration block, parameterised on the ACS floor."""
-    from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+    from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
     return KSpaceUndersamplingProcess(
         num_timesteps=28,
@@ -1001,7 +1001,7 @@ class TestDeclaredLadderDefects:
         T timesteps cannot map to more than (num_bins) distinct masks, so
         duplicates there are not a defect and must not be reported.
         """
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         process = KSpaceUndersamplingProcess(
             num_timesteps=100,
@@ -1040,7 +1040,7 @@ class _CountingStub(torch.nn.Module):
 
 
 def _sampler(min_center_fraction, reverse_mode="replace_freeze_dc"):
-    from mriforge.models.diffusion.kspace_process import (
+    from spectramr.models.diffusion.kspace_process import (
         KSpaceUndersamplingProcess,
         PhysicsInformedColdDiffusion,
     )
@@ -1129,7 +1129,7 @@ class TestTimestepFloor:
         assert process.min_meaningful_timestep() == 0
 
     def test_floor_is_one_when_t0_is_the_identity(self):
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         process = KSpaceUndersamplingProcess(
             num_timesteps=28,
@@ -1149,7 +1149,7 @@ class TestTimestepFloor:
         above, differing ONLY in the knob -- so a green result here that came
         from something other than the knob would redden that test too.
         """
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         process = KSpaceUndersamplingProcess(
             num_timesteps=28,
@@ -1170,7 +1170,7 @@ class TestTimestepFloor:
         default explicitly so a future default flip cannot be read as an
         unrelated failure.
         """
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         process = KSpaceUndersamplingProcess(
             num_timesteps=28,
@@ -1204,7 +1204,7 @@ class TestTimestepFloor:
         loop skips inert steps, which on a static-ACS ladder collapses the very
         low rungs under test and would make this pass for the wrong reason.
         """
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             PhysicsInformedColdDiffusion,
         )
@@ -1243,7 +1243,7 @@ class TestTimestepFloor:
 
     def test_reverse_schedule_never_goes_below_the_floor(self):
         """Every timestep the loop evaluates must be one training can draw."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             PhysicsInformedColdDiffusion,
         )
@@ -1301,7 +1301,7 @@ def _r2_mask(h=64, w=64):
 class TestBandLocalMagnitudeCeiling:
     def test_periphery_is_far_tighter_than_the_global_bound(self):
         """The point of the change: a global ratio bounds nothing in the periphery."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             band_local_magnitude_ceiling,
             paired_magnitude,
         )
@@ -1318,7 +1318,7 @@ class TestBandLocalMagnitudeCeiling:
         assert band[0, 0, 1, 1] < global_ceiling / 20
 
     def test_ceiling_is_monotone_non_increasing_with_radius(self):
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             band_local_magnitude_ceiling,
         )
 
@@ -1328,7 +1328,7 @@ class TestBandLocalMagnitudeCeiling:
 
     def test_never_zero_so_prediction_is_never_forbidden(self):
         """A zero ceiling would hard low-pass the output instead of bounding it."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             band_local_magnitude_ceiling,
         )
 
@@ -1340,7 +1340,7 @@ class TestBandLocalMagnitudeCeiling:
         assert bool((band > 0).all())
 
     def test_rejects_a_too_small_tensor(self):
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             band_local_magnitude_ceiling,
         )
 
@@ -1354,7 +1354,7 @@ class TestClipReferenceWiring:
         assert sampler.clip_reference == "global_max"
 
     def test_unknown_reference_raises_at_build(self):
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             PhysicsInformedColdDiffusion,
         )
@@ -1371,7 +1371,7 @@ class TestClipReferenceWiring:
 
     def test_band_local_bounds_the_output_more_tightly(self):
         """An over-energetic model must be clamped harder under band_local."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             PhysicsInformedColdDiffusion,
         )
@@ -1460,8 +1460,8 @@ class TestResolveUndersamplingKwargs:
         through the schema without unwrapping would have made every arm look
         like a non-step schedule and skip the check entirely.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1476,8 +1476,8 @@ class TestResolveUndersamplingKwargs:
         has no ``.get``, so the object path was an AttributeError waiting on any
         caller that skipped the factory.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1488,7 +1488,7 @@ class TestResolveUndersamplingKwargs:
         assert from_object == from_dump == from_raw
 
     def test_none_config_falls_back_to_overrides(self):
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1496,7 +1496,7 @@ class TestResolveUndersamplingKwargs:
         assert resolved["max_acceleration"] == 12.0
 
     def test_acceleration_config_wins_over_overrides(self):
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1507,7 +1507,7 @@ class TestResolveUndersamplingKwargs:
 
     def test_acceleration_range_reaches_schedule_kwargs(self):
         """Without it the step schedule spans [1, max], so t=0 is the identity."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1518,7 +1518,7 @@ class TestResolveUndersamplingKwargs:
 
     def test_caller_schedule_kwargs_is_not_mutated(self):
         """The old inline code mutated the caller's dict in place."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             resolve_undersampling_kwargs,
         )
 
@@ -1533,8 +1533,8 @@ class TestResolveUndersamplingKwargs:
         collapsed ladder, because they constructed the process directly and
         never went through the schema. This one starts where the YAML does.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             resolve_undersampling_kwargs,
         )
@@ -1548,7 +1548,7 @@ class TestResolveUndersamplingKwargs:
 
     def test_dropping_the_key_collapses_the_ladder(self):
         """Pin the cost, so a future ``extra="ignore"`` drop fails loudly here."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             resolve_undersampling_kwargs,
         )
@@ -1579,7 +1579,7 @@ class TestDynamicMaskBypassesNestingEnforcement:
 
     @staticmethod
     def _process(enforce: bool):
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         return KSpaceUndersamplingProcess(
             num_timesteps=28,
@@ -1649,7 +1649,7 @@ class TestDynamicMaskBypassesNestingEnforcement:
 
 def _exp11_cascade(*, enforce_nested):
     """The exp_11 arm parameterised on nesting enforcement (equispaced/step)."""
-    from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+    from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
     return KSpaceUndersamplingProcess(
         num_timesteps=28,
@@ -1931,8 +1931,8 @@ class TestAcceleratorKwargsTranslation:
 
     def test_config_kwargs_construct_an_accelerator(self) -> None:
         """The kwargs must survive the gate that rejects unread names."""
-        from mriforge.infrastructure.physics.sampling import create_kspace_accelerator
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.infrastructure.physics.sampling import create_kspace_accelerator
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -1950,7 +1950,7 @@ class TestAcceleratorKwargsTranslation:
         global RNG, so each call draws a fresh permutation instead of truncating
         one fixed ranking, and the cascade stops being nested (issue #1059).
         """
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -1960,7 +1960,7 @@ class TestAcceleratorKwargsTranslation:
 
     def test_schema_defaults_do_not_ride_along(self) -> None:
         """A dump-and-filter forwards every field; an allowlist forwards ten."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -1980,7 +1980,7 @@ class TestAcceleratorKwargsTranslation:
             assert junk not in kwargs, f"{junk} would reach the accelerator"
 
     def test_schedule_type_becomes_acceleration_schedule(self) -> None:
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -1990,7 +1990,7 @@ class TestAcceleratorKwargsTranslation:
 
     def test_schedule_kwargs_are_flattened(self) -> None:
         """``density_power`` is a top-level accelerator kwarg, not a nested dict."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -2001,7 +2001,7 @@ class TestAcceleratorKwargsTranslation:
 
     def test_absent_mask_direction_is_omitted_not_none(self) -> None:
         """``line_axis=None`` is rejected downstream; absent means "keep default"."""
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
         )
 
@@ -2011,7 +2011,7 @@ class TestAcceleratorKwargsTranslation:
 
     def test_min_center_fraction_defaults_to_center_fraction(self) -> None:
         """Unforwarded, it collapsed every rung above R≈12 onto one mask (#534)."""
-        from mriforge.models.diffusion.kspace_process import build_accelerator_kwargs
+        from spectramr.models.diffusion.kspace_process import build_accelerator_kwargs
 
         kwargs = build_accelerator_kwargs(
             max_acceleration=32.0,
@@ -2029,7 +2029,7 @@ class TestAcceleratorKwargsTranslation:
         the same accelerator from the same YAML block — otherwise training and
         validation undersample differently and the metric is meaningless.
         """
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.models.diffusion.kspace_process import (
             accelerator_kwargs_from_config,
             resolve_undersampling_kwargs,
         )
@@ -2057,7 +2057,7 @@ class TestRungsRealisedAtNoTimestepAreReported:
     """
 
     def _process(self, ladder, timesteps):
-        from mriforge.models.diffusion.kspace_process import KSpaceUndersamplingProcess
+        from spectramr.models.diffusion.kspace_process import KSpaceUndersamplingProcess
 
         return KSpaceUndersamplingProcess(
             num_timesteps=timesteps,
@@ -2385,15 +2385,15 @@ class TestIdentityRungResolution:
     """
 
     def test_resolver_forwards_the_declared_knob(self) -> None:
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import resolve_undersampling_kwargs
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import resolve_undersampling_kwargs
 
         cfg = AccelerationConfigSchema(base_acceleration=1.0, train_identity_rung=True)
         assert resolve_undersampling_kwargs(cfg)["train_identity_rung"] is True
 
     def test_resolver_defaults_the_knob_off(self) -> None:
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import resolve_undersampling_kwargs
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import resolve_undersampling_kwargs
 
         cfg = AccelerationConfigSchema(base_acceleration=1.0)
         assert resolve_undersampling_kwargs(cfg)["train_identity_rung"] is False
@@ -2404,8 +2404,8 @@ class TestIdentityRungResolution:
         ``**resolve_undersampling_kwargs(...)`` is exactly how the generator
         builds the process, so this is the path a run takes.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import (
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import (
             KSpaceUndersamplingProcess,
             resolve_undersampling_kwargs,
         )
@@ -2437,8 +2437,8 @@ class TestIdentityRungResolution:
         timestep floor; the forwarded set is enumerated explicitly, so this
         pins that enumeration rather than an absence of a typo.
         """
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-        from mriforge.models.diffusion.kspace_process import accelerator_kwargs_from_config
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.models.diffusion.kspace_process import accelerator_kwargs_from_config
 
         _pattern, kwargs = accelerator_kwargs_from_config(
             AccelerationConfigSchema(base_acceleration=1.0, train_identity_rung=True)
@@ -2459,7 +2459,7 @@ class TestIdentityRungResolution:
         that ignored ``overrides`` altogether would satisfy "declared False
         wins" for the wrong reason.
         """
-        from mriforge.models.diffusion.kspace_process import resolve_undersampling_kwargs
+        from spectramr.models.diffusion.kspace_process import resolve_undersampling_kwargs
 
         declared_off = resolve_undersampling_kwargs(
             {"train_identity_rung": False}, {"train_identity_rung": True}
@@ -2469,3 +2469,85 @@ class TestIdentityRungResolution:
         # Absent on the arm -> the override is the live source of the value.
         from_override = resolve_undersampling_kwargs({}, {"train_identity_rung": True})
         assert from_override["train_identity_rung"] is True
+
+
+def _stochastic_sampler(sigma: float, seed: int | None = 7):
+    """``_sampler`` with the C6 knobs on, so two calls can be compared stream for stream."""
+    from spectramr.models.diffusion.kspace_process import (
+        KSpaceUndersamplingProcess,
+        PhysicsInformedColdDiffusion,
+    )
+
+    process = KSpaceUndersamplingProcess(
+        num_timesteps=28,
+        max_acceleration=32.0,
+        base_acceleration=2.0,
+        center_fraction=0.08,
+        min_center_fraction=0.02,
+        mask_type="equispaced",
+        seed=42,
+        schedule_type="step",
+        schedule_kwargs={"acceleration_range": [2.0, 4.0, 8.0, 10.0, 12.0, 16.0, 32.0]},
+    )
+    process.eval()
+    model = _CountingStub(process)
+    model.eval()
+    sampler = PhysicsInformedColdDiffusion(
+        model,
+        num_timesteps=28,
+        dc_method="hard",
+        dc_weight=0.5,
+        sampling_steps=20,
+        reverse_mode="replace_freeze",
+        reverse_clip_ratio=1.3,
+        sampler_sigma=sigma,
+        sampler_seed=seed,
+        kspace_log_scaled=False,
+    )
+    return sampler, process
+
+
+class TestEnsembleSeedOffset:
+    """``sample(seed_offset=i)`` -- one noise stream per ensemble member (2026-09).
+
+    The C6 contract reseeds at every ``sample()`` entry, so N calls at the same
+    seed were N identical reconstructions; a validation ensemble needs member
+    ``i`` to be a deterministic function of (measurement, mask, seed, i).
+    """
+
+    def test_offset_zero_is_the_legacy_stream(self) -> None:
+        sampler, process = _stochastic_sampler(0.1)
+        measurement, mask = _r2_measurement(process)
+        legacy = sampler.sample(measurement, mask)
+        member_zero = sampler.sample(measurement, mask, seed_offset=0)
+        assert torch.equal(legacy, member_zero)
+
+    def test_distinct_offsets_draw_distinct_reproducible_noise(self) -> None:
+        sampler, process = _stochastic_sampler(0.1)
+        measurement, mask = _r2_measurement(process)
+        member_zero = sampler.sample(measurement, mask, seed_offset=0)
+        member_one = sampler.sample(measurement, mask, seed_offset=1)
+        assert not torch.equal(member_zero, member_one)
+        assert torch.equal(member_one, sampler.sample(measurement, mask, seed_offset=1))
+
+    def test_the_offset_has_nothing_to_shift_at_sigma_zero(self) -> None:
+        """The deterministic path stays bit-for-bit what it was."""
+        sampler, process = _stochastic_sampler(0.0)
+        measurement, mask = _r2_measurement(process)
+        assert torch.equal(
+            sampler.sample(measurement, mask, seed_offset=0),
+            sampler.sample(measurement, mask, seed_offset=3),
+        )
+
+    def test_the_stream_is_seed_plus_offset(self) -> None:
+        diffusion = TestSamplerDeterminismValidation._build(sampler_sigma=0.1, sampler_seed=7)
+        diffusion._reseed_sampler_generator(2)
+        drawn = torch.randn(4, generator=diffusion._active_sampler_generator())
+        expected = torch.randn(4, generator=torch.Generator().manual_seed(9))
+        assert torch.equal(drawn, expected)
+
+    @pytest.mark.parametrize("bad", [-1, True, 1.5])
+    def test_an_illegal_offset_is_refused(self, bad) -> None:
+        diffusion = TestSamplerDeterminismValidation._build(sampler_sigma=0.1, sampler_seed=7)
+        with pytest.raises(ValueError, match="seed_offset"):
+            diffusion._reseed_sampler_generator(bad)

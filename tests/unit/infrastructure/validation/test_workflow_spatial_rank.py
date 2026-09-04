@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -76,7 +76,7 @@ def test_no_canonical_dataset_type_declares_rank_3() -> None:
     Pinned so the absence reads as a known limit rather than an oversight, and
     so that adding a rank-3 annotation forces a decision here.
     """
-    from mriforge.data.datasets.axis_exposure import DATASET_TYPE_RANKS
+    from spectramr.data.datasets.axis_exposure import DATASET_TYPE_RANKS
 
     assert 3 not in DATASET_TYPE_RANKS.values()
 

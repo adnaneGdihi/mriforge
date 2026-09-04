@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.validation_constants import VALID_MODEL_TYPES
+from spectramr.config.validation_constants import VALID_MODEL_TYPES
 
 # Tokens that must NEVER appear under model.model_type again.
 _FOREIGN_AXIS_TOKENS = [
@@ -43,7 +43,7 @@ def test_foreign_token_not_a_model_type(token: str) -> None:
 
 @pytest.mark.registry_contract
 def test_strategy_tokens_resolve_on_strategy_axis() -> None:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

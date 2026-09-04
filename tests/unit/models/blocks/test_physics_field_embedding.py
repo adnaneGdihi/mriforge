@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.relaxation_priors import TissueClass, bottomley_t1
-from mriforge.models.blocks.physics_field_embedding import PhysicsFieldEmbedding
+from spectramr.infrastructure.physics.relaxation_priors import TissueClass, bottomley_t1
+from spectramr.models.blocks.physics_field_embedding import PhysicsFieldEmbedding
 
 
 def test_embed_dim_and_shape() -> None:

@@ -2,15 +2,15 @@
 
 import torch
 
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.ssdu_strategy import (
+from spectramr.infrastructure.training.strategies.ssdu_strategy import (
     SSDUReconstructionStrategy,
     inject_noisier_kspace,
     split_acquired_mask,
 )
-from mriforge.models.losses.ssdu_loss import SSDULoss
+from spectramr.models.losses.ssdu_loss import SSDULoss
 
 
 def test_split_is_disjoint_and_covers_acquired():

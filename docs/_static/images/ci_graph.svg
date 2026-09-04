@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 830" width="100%" role="img"
      aria-labelledby="ci-graph-title ci-graph-desc">
-  <title id="ci-graph-title">The three MRIForge CI lanes</title>
+  <title id="ci-graph-title">The three spectraMR CI lanes</title>
   <desc id="ci-graph-desc">A pull request triggers two lanes. The pr-required lane runs six
     diff-scoped jobs (lint-diff, guards, physics, impacted-tests, yaml-audit, security) which
     all feed a single aggregator job called "required"; that aggregator is the only check
@@ -61,7 +61,7 @@
     </marker>
   </defs>
 
-  <text class="title" x="30" y="32">MRIForge continuous integration: three lanes</text>
+  <text class="title" x="30" y="32">spectraMR continuous integration: three lanes</text>
   <text class="sub"   x="30" y="54">Exactly one check can block a merge. Everything else is information.</text>
 
   <!-- ══ triggers ══ -->

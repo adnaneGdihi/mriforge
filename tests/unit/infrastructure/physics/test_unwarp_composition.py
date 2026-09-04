@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.unwarp import PhysicalUnwarp  # noqa: E402
+from spectramr.infrastructure.physics.unwarp import PhysicalUnwarp  # noqa: E402
 
 
 def _vol(B: int = 1, C: int = 1, D: int = 4, H: int = 16, W: int = 16) -> torch.Tensor:

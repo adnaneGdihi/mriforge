@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster before promoting to active/
+# UNVERIFIED: validate via spectramr audit on cluster before promoting to active/
 # Minimal settings fixture for the reconstruction family.
 # Covers strategy keys: reconstruction, swarm, hybrid, mesh, multi_task,
 #   swarm_learning, dual_task, federated, sle_compressed_sensing,
@@ -19,12 +19,12 @@ metadata:
     - reconstruction
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: reconstruction
-  output_dir: /tmp/mriforge_test/reconstruction
+  output_dir: /tmp/spectramr_test/reconstruction
 
 data:
   dataset_type: synthetic

@@ -8,7 +8,7 @@ from tests.utils.config_block_stub import block_stub
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.padnet_strategy import (
+from spectramr.infrastructure.training.strategies.padnet_strategy import (
     PaDNetTrainingStrategy,
 )
 
@@ -137,7 +137,7 @@ def strategy(mock_env):
     """Instantiate PaDNetTrainingStrategy (NEW API - env only)."""
     # Patch PhysicsInformedLoss to avoid complex init
     with patch(
-        "mriforge.infrastructure.training.strategies.padnet_strategy.PhysicsInformedLoss"
+        "spectramr.infrastructure.training.strategies.padnet_strategy.PhysicsInformedLoss"
     ) as MockLoss:
         MockLoss.return_value.return_value = {
             "total": torch.tensor(1.0),

@@ -1,6 +1,6 @@
 """Tests for the 2-D spherical-harmonic (polynomial) basis utilities.
 
-Targets :mod:`mriforge.infrastructure.physics.spherical_harmonics`. The
+Targets :mod:`spectramr.infrastructure.physics.spherical_harmonics`. The
 module fits a B₀ field map to a real polynomial basis up to a given
 order — the basis underlies the Koolstra-2021 shim-extrapolation step
 used in our ULF pipeline.
@@ -23,7 +23,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.spherical_harmonics import (
+from spectramr.infrastructure.physics.spherical_harmonics import (
     _build_2d_polynomial_basis,
     evaluate_sh_field,
     fit_spherical_harmonics,
@@ -184,7 +184,7 @@ class TestInputValidation:
 
 
 def test_module_has_documented_exports() -> None:
-    import mriforge.infrastructure.physics.spherical_harmonics as mod
+    import spectramr.infrastructure.physics.spherical_harmonics as mod
 
     assert "fit_spherical_harmonics" in mod.__all__
     assert "evaluate_sh_field" in mod.__all__

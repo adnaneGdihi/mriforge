@@ -1,6 +1,6 @@
 """Unit tests for the NUFFT forward/adjoint operator (B0 time-segmentation).
 
-Targets :mod:`mriforge.infrastructure.physics.implementations.nufft_operator`.
+Targets :mod:`spectramr.infrastructure.physics.implementations.nufft_operator`.
 
 Regression focus: ``_adjoint_b0_corrected`` computes ``seg_len = n_points //
 n_segments``. When ``n_segments > n_points`` (short readout / tiny test),
@@ -20,7 +20,7 @@ import torch
 
 pytest.importorskip("torchkbnufft")
 
-from mriforge.infrastructure.physics.implementations.nufft_operator import (  # noqa: E402
+from spectramr.infrastructure.physics.implementations.nufft_operator import (  # noqa: E402
     NUFFTOperator,
 )
 

@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.causal_frontdoor import (
+from spectramr.infrastructure.physics.causal_frontdoor import (
     approximate_frontdoor_bound,
     donsker_varadhan_mi,
     frontdoor_adjusted_prediction,

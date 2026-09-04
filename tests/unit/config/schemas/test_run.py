@@ -4,7 +4,7 @@ Four scalars sat bare on :class:`TrainingSettings`. Two of them describe the run
 (``seed``, ``device``) and moved here; the other two were a write-only alias and
 a stray loss weight, and moved to where they are read. ``config_version`` is
 declared here but stays a root-level key in the file — the reasoning is in
-:mod:`mriforge.config.schemas.run`, and the tests below pin it.
+:mod:`spectramr.config.schemas.run`, and the tests below pin it.
 """
 
 from __future__ import annotations
@@ -12,9 +12,9 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-from mriforge.config.schemas.run import RunConfigSchema
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+from spectramr.config.schemas.run import RunConfigSchema
+from spectramr.config.settings import TrainingSettings
 
 #: The four blocks `TrainingSettings` requires. Kept minimal so a failure here
 #: is about the `run:` move, not about an unrelated required field.
@@ -60,7 +60,7 @@ class TestConfigVersionIsPopulatedNotAuthored:
         remains to pin is that the version lands on ``run`` at all, and that a
         retired spelling is refused rather than bound.
         """
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
         with pytest.raises(ValueError, match="not supported"):
             TrainingSettings.settings_from_dict(
@@ -162,7 +162,7 @@ class TestThereIsOnlyOneSeed:
         survived, ``run.seed`` would be inert on day one."""
         import inspect
 
-        from mriforge.pipelines import train
+        from spectramr.pipelines import train
 
         src = inspect.getsource(train.run_training_pipeline)
         assert "config.run.seed" in src
@@ -181,8 +181,8 @@ def test_the_not_authored_here_message_names_the_canonical_version() -> None:
     for as long as 6.1 was current; left alone it would keep manufacturing new
     legacy configs while the corpus is being drained of them.
     """
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.schemas.run import CONFIG_VERSION_NOT_AUTHORED_HERE
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.run import CONFIG_VERSION_NOT_AUTHORED_HERE
 
     assert f"config_version: '{CANONICAL_CONFIG_VERSION}'" in (
         CONFIG_VERSION_NOT_AUTHORED_HERE

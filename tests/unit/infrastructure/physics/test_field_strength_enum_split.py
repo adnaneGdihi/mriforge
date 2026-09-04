@@ -5,11 +5,11 @@ operator-dispatch-enum exemption in CLAUDE.md pitfall #12.
 
 Two enums coexist because they encode different things:
 
-- :class:`~mriforge.infrastructure.physics.tissue_properties.TissueFieldStrength`
+- :class:`~spectramr.infrastructure.physics.tissue_properties.TissueFieldStrength`
   — string keys (``"64mT"``, ``"1.5T"``, ``"3.0T"``) into the tissue-property
   lookup table.
 
-- :class:`~mriforge.infrastructure.physics.field_simulation.FieldStrength`
+- :class:`~spectramr.infrastructure.physics.field_simulation.FieldStrength`
   — numeric T-values (``0.064``, ``1.5``, ``3.0``, …) used in off-resonance
   / B0 physics computations.
 
@@ -23,10 +23,10 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.field_simulation import (
+from spectramr.infrastructure.physics.field_simulation import (
     FieldStrength as NumericFieldStrength,
 )
-from mriforge.infrastructure.physics.tissue_properties import TissueFieldStrength
+from spectramr.infrastructure.physics.tissue_properties import TissueFieldStrength
 
 
 def test_tissue_field_strength_uses_string_tags() -> None:
@@ -55,7 +55,7 @@ def test_tissue_field_strength_is_not_re_exported_as_field_strength() -> None:
     name in adjacent modules. Catching a reintroduction of that ambiguity
     is the point of this test.
     """
-    from mriforge.infrastructure.physics import tissue_properties
+    from spectramr.infrastructure.physics import tissue_properties
 
     assert not hasattr(tissue_properties, "FieldStrength"), (
         "tissue_properties.FieldStrength was re-introduced — "
@@ -66,7 +66,7 @@ def test_tissue_field_strength_is_not_re_exported_as_field_strength() -> None:
 
 def test_tissue_property_registry_still_resolves_64mT() -> None:
     """The renamed enum still keys the registry correctly (no broken refactor)."""
-    from mriforge.infrastructure.physics.tissue_properties import (
+    from spectramr.infrastructure.physics.tissue_properties import (
         TissuePropertyRegistry,
     )
 
@@ -74,6 +74,6 @@ def test_tissue_property_registry_still_resolves_64mT() -> None:
     # The registry returns a dict[TissueType, RelaxationProperties].
     assert props, "Empty registry — refactor broke the lookup."
     # Spot-check a known key from the original registry.
-    from mriforge.infrastructure.physics.tissue_properties import TissueType
+    from spectramr.infrastructure.physics.tissue_properties import TissueType
 
     assert TissueType.GM in props

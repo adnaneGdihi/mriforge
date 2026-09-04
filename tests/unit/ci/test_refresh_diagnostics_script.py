@@ -83,11 +83,11 @@ def test_report_cases_png_render_is_wired_and_unconditional() -> None:
 
 
 def test_forensics_script_path_is_overridable() -> None:
-    """run_forensics.py lives in the mriforge-image-forensics *skill*, not this
+    """run_forensics.py lives in the spectramr-image-forensics *skill*, not this
     repo, so its path is host-local and must be overridable via env var
     rather than hardcoded with no escape hatch."""
     text = SCRIPT.read_text()
-    assert "MRIFORGE_FORENSICS_SCRIPT" in text
+    assert "SPECTRAMR_FORENSICS_SCRIPT" in text
 
 
 def test_makefile_wires_diagnostics_targets() -> None:

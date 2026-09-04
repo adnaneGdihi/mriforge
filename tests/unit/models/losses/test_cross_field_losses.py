@@ -5,13 +5,13 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.cross_field_losses import (
+from spectramr.models.losses.cross_field_losses import (
     CocycleConsistencyLoss,
     FieldFlowVelocityLoss,
     FieldIdentityLoss,
     LatentCycleLoss,
 )
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 
 
 def test_zero_when_consistent() -> None:
@@ -64,7 +64,7 @@ def test_losses_reachable_via_framework_create_loss() -> None:
     # (create_loss, used by LossBuilder at build_container) resolves all three —
     # not just direct-import membership. Importing the package triggers the
     # curated-list import that must include cross_field_losses.
-    from mriforge.models.losses import create_loss
+    from spectramr.models.losses import create_loss
 
     assert isinstance(create_loss("latent_cycle"), LatentCycleLoss)
     assert isinstance(create_loss("field_flow_velocity"), FieldFlowVelocityLoss)
@@ -102,7 +102,7 @@ def test_field_identity_positive_when_not() -> None:
 
 
 def test_cocycle_identity_reachable_via_create_loss() -> None:
-    from mriforge.models.losses import create_loss
+    from spectramr.models.losses import create_loss
 
     assert isinstance(create_loss("cocycle_consistency"), CocycleConsistencyLoss)
     assert isinstance(create_loss("field_identity"), FieldIdentityLoss)

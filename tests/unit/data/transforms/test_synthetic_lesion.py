@@ -1,6 +1,6 @@
 """Tests for ``SyntheticLesionTransform`` validation paths.
 
-Targets ``mriforge.data.transforms.synthetic_lesion``. The full transform
+Targets ``spectramr.data.transforms.synthetic_lesion``. The full transform
 exercises ``MultiPhysicsBlochLayer`` over volumetric tissue parameters
 — that's covered in the integration tier. Here we restrict scope to
 the validation surface (preset names, custom-dict completeness, range
@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.synthetic_lesion import (
+from spectramr.data.transforms.synthetic_lesion import (
     _LESION_PRESETS,
     _TISSUE_TABLE_3T,
     SyntheticLesionTransform,

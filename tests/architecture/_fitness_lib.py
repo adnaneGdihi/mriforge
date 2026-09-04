@@ -8,7 +8,7 @@ legacy tree without a flag-day refactor.
 
 Regenerate baselines after an intentional change::
 
-    MRIFORGE_UPDATE_ARCH_BASELINE=1 pytest tests/architecture/ -q
+    SPECTRAMR_UPDATE_ARCH_BASELINE=1 pytest tests/architecture/ -q
 
 Not a test module (underscore-prefixed) -- pytest does not collect it.
 """
@@ -22,7 +22,7 @@ from pathlib import Path
 
 # tests/architecture/_fitness_lib.py -> parents[2] == repo root
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 BASELINE_DIR = Path(__file__).resolve().parent / "baselines"
 
 # Canonical step signatures (regular param names, excluding self/**kwargs).
@@ -40,20 +40,20 @@ _DISPATCH_HOME_MARKERS = (
 
 
 def should_update_baseline() -> bool:
-    return os.environ.get("MRIFORGE_UPDATE_ARCH_BASELINE") == "1"
+    return os.environ.get("SPECTRAMR_UPDATE_ARCH_BASELINE") == "1"
 
 
 def should_raise_ceiling() -> bool:
     """Whether a regeneration may record a HIGHER measurement than the last one.
 
-    Deliberately a second, separate flag. ``MRIFORGE_UPDATE_ARCH_BASELINE=1``
+    Deliberately a second, separate flag. ``SPECTRAMR_UPDATE_ARCH_BASELINE=1``
     accepts everything currently present, so a routine re-baseline — run to
     record one new offender — silently raises the ceiling on every other entry
     that grew since. 107 entries would move up today. Non-negotiable 20 says a
     baseline regeneration must not raise a ceiling; this is the mechanism that
     makes that true by default rather than by reviewer vigilance.
     """
-    return os.environ.get("MRIFORGE_RAISE_ARCH_CEILING") == "1"
+    return os.environ.get("SPECTRAMR_RAISE_ARCH_CEILING") == "1"
 
 
 def iter_src_files() -> list[Path]:

@@ -13,13 +13,13 @@ import importlib
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling_registry import SamplingPatternRegistry
+from spectramr.infrastructure.physics.sampling_registry import SamplingPatternRegistry
 
 
 def test_clinical_sampling_module_is_gone() -> None:
     """A second accelerator hierarchy that nothing imports is a trap, not a spare."""
     with pytest.raises(ModuleNotFoundError):
-        importlib.import_module("mriforge.infrastructure.physics.clinical_sampling")
+        importlib.import_module("spectramr.infrastructure.physics.clinical_sampling")
 
 
 def test_cartesian_vd_still_resolves_after_the_deletion() -> None:
@@ -48,7 +48,7 @@ def test_the_trajectory_capability_survives_elsewhere() -> None:
     ``TrajectoryFactory`` provides trajectory + density compensation, and it has
     live consumers.
     """
-    from mriforge.infrastructure.physics.trajectories import TrajectoryFactory
+    from spectramr.infrastructure.physics.trajectories import TrajectoryFactory
 
     trajectory, dcf = TrajectoryFactory.get_radial_trajectory((64, 64), num_spokes=16)
     assert trajectory.shape[0] == 2

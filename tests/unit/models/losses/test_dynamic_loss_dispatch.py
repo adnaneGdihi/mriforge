@@ -34,17 +34,17 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.losses.complex_losses import SENSEAdjointL1Loss
-from mriforge.models.losses.computers.base import LossOutput
-from mriforge.models.losses.computers.unified_gan import (
+from spectramr.models.losses.complex_losses import SENSEAdjointL1Loss
+from spectramr.models.losses.computers.base import LossOutput
+from spectramr.models.losses.computers.unified_gan import (
     UnifiedGANLossComputer,
     _NON_PRED_TARGET_LOSS_NAMES as GAN_BLOCKED,
 )
-from mriforge.models.losses.computers.unified_vae import (
+from spectramr.models.losses.computers.unified_vae import (
     UnifiedVAELossComputer,
     _NON_PRED_TARGET_LOSS_NAMES as VAE_BLOCKED,
 )
-from mriforge.models.losses.kl_divergence import KLDivergenceLoss
+from spectramr.models.losses.kl_divergence import KLDivergenceLoss
 
 # ---------------------------------------------------------------------------
 # Minimal config fixtures (mirrors `tests/unit/test_loss_computers.py`)
@@ -107,7 +107,7 @@ def test_unified_gan_skips_kl_with_warning(caplog: pytest.LogCaptureFixture) -> 
     losses_dict = {"kl": KLDivergenceLoss(beta=1.0)}
 
     with caplog.at_level(
-        logging.WARNING, logger="mriforge.models.losses.computers.unified_gan"
+        logging.WARNING, logger="spectramr.models.losses.computers.unified_gan"
     ):
         out = computer.compute(pred, target, losses_dict=losses_dict)
 
@@ -289,7 +289,7 @@ def test_unified_vae_skips_kl_without_posterior_with_warning(
     target = torch.randn(2, 4, 16, 16)
 
     with caplog.at_level(
-        logging.WARNING, logger="mriforge.models.losses.computers.unified_vae"
+        logging.WARNING, logger="spectramr.models.losses.computers.unified_vae"
     ):
         out = computer.compute(
             pred,

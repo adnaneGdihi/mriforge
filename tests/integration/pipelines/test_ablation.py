@@ -3,12 +3,12 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from mriforge.pipelines.ablation import run_ablation_pipeline
+from spectramr.pipelines.ablation import run_ablation_pipeline
 
 
-@patch("mriforge.pipelines.ablation.Path.exists", return_value=True)
-@patch("mriforge.pipelines.ablation.TrainingSettings.from_yaml")
-@patch("mriforge.pipelines.ablation.DataBuilder")
+@patch("spectramr.pipelines.ablation.Path.exists", return_value=True)
+@patch("spectramr.pipelines.ablation.TrainingSettings.from_yaml")
+@patch("spectramr.pipelines.ablation.DataBuilder")
 def test_run_ablation_pipeline_success(
     mock_builder_cls, mock_settings_cls, mock_exists
 ):
@@ -39,9 +39,9 @@ def test_run_ablation_pipeline_success(
     assert results["fractions"]["ablation_10pct"]["status"] == "completed"
 
 
-@patch("mriforge.pipelines.ablation.Path.exists", return_value=True)
-@patch("mriforge.pipelines.ablation.TrainingSettings.from_yaml")
-@patch("mriforge.pipelines.ablation.DataBuilder")
+@patch("spectramr.pipelines.ablation.Path.exists", return_value=True)
+@patch("spectramr.pipelines.ablation.TrainingSettings.from_yaml")
+@patch("spectramr.pipelines.ablation.DataBuilder")
 def test_run_ablation_pipeline_failure(
     mock_builder_cls, mock_settings_cls, mock_exists
 ):

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.scanner_profile import (
+from spectramr.infrastructure.physics.scanner_profile import (
     FASTMRI_3T,
     M4RAW_03T,
     ScannerProfile,

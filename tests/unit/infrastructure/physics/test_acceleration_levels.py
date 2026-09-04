@@ -7,7 +7,7 @@ acceleration factors within a defined tolerance.
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     _ACCELERATOR_REGISTRY,
     ColdDiffusionAccelerator,
 )

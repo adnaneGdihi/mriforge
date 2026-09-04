@@ -1,6 +1,6 @@
 """Tests for ``PhysicsInformedConditioning``.
 
-Targets ``mriforge.infrastructure.physics.conditioning``. AdaGN-style FiLM
+Targets ``spectramr.infrastructure.physics.conditioning``. AdaGN-style FiLM
 modulation of feature maps by a physics embedding (acceleration
 factor, timestep, noise level, etc.).
 
@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.conditioning import PhysicsInformedConditioning
+from spectramr.infrastructure.physics.conditioning import PhysicsInformedConditioning
 
 
 # ---------------------------------------------------------------------------

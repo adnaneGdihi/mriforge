@@ -1,6 +1,6 @@
 """Tests for ``DeterministicSeedHarness`` and ``set_global_seed``.
 
-Targets ``mriforge.shared.utils.deterministic_seed``. The harness derives a
+Targets ``spectramr.shared.utils.deterministic_seed``. The harness derives a
 deterministic seed from a configuration dict via SHA-256, applies it
 across ``random``, ``numpy``, and ``torch``, and persists the seed for
 later verification.
@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.shared.utils.deterministic_seed import (
+from spectramr.shared.utils.deterministic_seed import (
     DEFAULT_SEED,
     DeterministicSeedHarness,
     create_deterministic_harness,

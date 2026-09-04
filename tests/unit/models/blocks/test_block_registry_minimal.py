@@ -1,30 +1,30 @@
 import pytest
 import torch
 
-from mriforge.models.blocks.block_registry import (
+from spectramr.models.blocks.block_registry import (
     create_block,
     list_registered_blocks,
 )
-from mriforge.models.blocks.dual_domain_attention_kan import (
+from spectramr.models.blocks.dual_domain_attention_kan import (
     CrossDomainAttention,
     MultiScaleFreqBandAttention,
     RadialBandAttention,
 )
-from mriforge.models.blocks.graph_attention import (
+from spectramr.models.blocks.graph_attention import (
     GraphAttentionBlock,
     LocalGraphAttentionBlock,
 )
-from mriforge.models.blocks.kspace_swin_attention import (
+from spectramr.models.blocks.kspace_swin_attention import (
     KSpaceRadialSwinBlock,
     RadialWindowAttention,
 )
-from mriforge.models.blocks.multi_contrast_kspace_attention import (
+from spectramr.models.blocks.multi_contrast_kspace_attention import (
     MultiContrastKSpaceCrossAttention,
 )
-from mriforge.models.blocks.structure_tensor_attention import (
+from spectramr.models.blocks.structure_tensor_attention import (
     StructureTensorAttention,
 )
-from mriforge.models.blocks.vf_modules import SpatiotemporalMarkerAttention
+from spectramr.models.blocks.vf_modules import SpatiotemporalMarkerAttention
 
 
 def test_create_block_unknown_block_raises():
@@ -110,13 +110,13 @@ def test_trellis_self_attention_2d_registered():
     It depends on the optional trellis attention import (guarded by
     ImportError in block_registry); when available it must be reachable.
     """
-    from mriforge.models.blocks import block_registry as br
+    from spectramr.models.blocks import block_registry as br
 
     if br.TrellisMultiHeadAttention is None:  # optional dep absent
         pytest.skip("trellis attention optional dependency unavailable")
     assert "trellis_self_attention_2d" in list_registered_blocks()
     block = create_block("trellis_self_attention_2d", channels=8, num_heads=2)
-    from mriforge.models.blocks.trellis_attention import TrellisSelfAttention2D
+    from spectramr.models.blocks.trellis_attention import TrellisSelfAttention2D
 
     assert isinstance(block, TrellisSelfAttention2D)
 

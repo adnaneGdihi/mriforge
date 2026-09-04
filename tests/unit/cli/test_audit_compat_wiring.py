@@ -2,7 +2,7 @@
 
 Proves cli/app.py:_audit_one folds compatibility_matrix messages into the health
 report so an error-severity compat rule blocks the audit (exit 2). This is the
-wiring that makes the "components agree" guarantee real at `mriforge audit` time.
+wiring that makes the "components agree" guarantee real at `spectramr audit` time.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.validation import compatibility_matrix as cm
+from spectramr.infrastructure.validation import compatibility_matrix as cm
 
 _YAML = "experiments/inprogress/10_paradigms/exp_01_rectified_flow.yaml"
 
@@ -36,7 +36,7 @@ def _args() -> argparse.Namespace:
 
 @pytest.mark.skipif(not Path(_YAML).exists(), reason="sample inprogress YAML absent")
 def test_audit_blocks_on_compat_error(_isolated_rules: None, capsys) -> None:
-    from mriforge.cli.app import _audit_one
+    from spectramr.cli.app import _audit_one
 
     cm.register_rule(
         lambda ctx: [
@@ -56,7 +56,7 @@ def test_audit_blocks_on_compat_error(_isolated_rules: None, capsys) -> None:
 
 @pytest.mark.skipif(not Path(_YAML).exists(), reason="sample inprogress YAML absent")
 def test_audit_clean_when_no_compat_rules(_isolated_rules: None) -> None:
-    from mriforge.cli.app import _audit_one
+    from spectramr.cli.app import _audit_one
 
     cm._RULES[:] = []  # no rules -> compat contributes nothing
     rc = _audit_one(_args(), _YAML)

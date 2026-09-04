@@ -1,6 +1,6 @@
 """Unit tests for memory management context managers.
 
-Targets ``mriforge.infrastructure.training.memory_context_managers``:
+Targets ``spectramr.infrastructure.training.memory_context_managers``:
 - ``memory_cleanup_context``
 - ``memory_efficient_context``
 - ``gpu_memory_monitor``
@@ -22,7 +22,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_canary_memory_cleanup_context_yields() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_cleanup_context,
     )
 
@@ -38,7 +38,7 @@ def test_canary_memory_cleanup_context_yields() -> None:
 
 
 def test_memory_cleanup_context_passes_through_value() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_cleanup_context,
     )
 
@@ -49,7 +49,7 @@ def test_memory_cleanup_context_passes_through_value() -> None:
 
 
 def test_memory_cleanup_context_reraises_generic_exception() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_cleanup_context,
     )
 
@@ -64,7 +64,7 @@ def test_memory_cleanup_context_reraises_generic_exception() -> None:
 
 
 def test_memory_efficient_context_executes_body() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_efficient_context,
     )
 
@@ -76,7 +76,7 @@ def test_memory_efficient_context_executes_body() -> None:
 
 @pytest.mark.parametrize("enable_gc,empty_cache", [(True, False), (False, False)])
 def test_memory_efficient_context_param_combinations(enable_gc, empty_cache) -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_efficient_context,
     )
 
@@ -86,7 +86,7 @@ def test_memory_efficient_context_param_combinations(enable_gc, empty_cache) -> 
 
 
 def test_memory_efficient_context_reraises() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         memory_efficient_context,
     )
 
@@ -101,7 +101,7 @@ def test_memory_efficient_context_reraises() -> None:
 
 
 def test_gpu_memory_monitor_yields_stats_dict() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         gpu_memory_monitor,
     )
 
@@ -113,7 +113,7 @@ def test_gpu_memory_monitor_yields_stats_dict() -> None:
 
 
 def test_gpu_memory_monitor_stats_non_negative() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         gpu_memory_monitor,
     )
 
@@ -130,7 +130,7 @@ def test_gpu_memory_monitor_stats_non_negative() -> None:
 
 
 def test_edge_all_context_managers_work_with_no_body() -> None:
-    from mriforge.infrastructure.training.memory_context_managers import (
+    from spectramr.infrastructure.training.memory_context_managers import (
         gpu_memory_monitor,
         memory_cleanup_context,
         memory_efficient_context,

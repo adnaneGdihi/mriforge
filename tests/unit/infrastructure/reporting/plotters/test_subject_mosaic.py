@@ -1,6 +1,6 @@
 """Tests for the QC per-subject QC mosaic plotter.
 
-Targets ``mriforge.infrastructure.reporting.plotters.qc.subject_mosaic``.
+Targets ``spectramr.infrastructure.reporting.plotters.qc.subject_mosaic``.
 """
 
 from __future__ import annotations
@@ -12,7 +12,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting import plotters
 
 
 def _cases(n=3):

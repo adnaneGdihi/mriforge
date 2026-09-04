@@ -29,8 +29,8 @@ pytestmark = pytest.mark.unit
 
 @pytest.fixture(scope="module")
 def registry() -> dict:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     return MODEL_REGISTRY
@@ -131,7 +131,7 @@ def test_sota_roster_present_with_mode(registry: dict, name: str, mode: str) -> 
 def _static_register_model_names() -> set[str]:
     """First string arg of every ``@register_model`` decorator (kw or positional
     form), scanned from source at line-start (ignores mentions in comments)."""
-    base = Path(__file__).resolve().parents[3] / "src" / "mriforge" / "models"
+    base = Path(__file__).resolve().parents[3] / "src" / "spectramr" / "models"
     pat = re.compile(
         r"""^\s*@register_model\s*\(\s*(?:name\s*=\s*)?["']([^"']+)["']""",
         re.MULTILINE,
@@ -151,7 +151,7 @@ def test_no_dark_decorators(registry: dict) -> None:
     silently dead — the name is advertised in schemas but resolves to a
     ``KeyError`` at build time. This catches that class directly.
     """
-    from mriforge.models.registry import REJECTED_NAMES
+    from spectramr.models.registry import REJECTED_NAMES
 
     declared = _static_register_model_names()
     rejected = set(REJECTED_NAMES)
@@ -163,7 +163,7 @@ def test_no_dark_decorators(registry: dict) -> None:
 
 
 def test_rejected_names_absent_from_registry(registry: dict) -> None:
-    from mriforge.models.registry import REJECTED_NAMES
+    from spectramr.models.registry import REJECTED_NAMES
 
     leaked = sorted(n for n in REJECTED_NAMES if n in registry)
     assert not leaked, (

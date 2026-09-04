@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-from mriforge.config.schemas.enums import AccelerationSchedule
+from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+from spectramr.config.schemas.enums import AccelerationSchedule
 
 
 class TestAccelerationConfigSchema:

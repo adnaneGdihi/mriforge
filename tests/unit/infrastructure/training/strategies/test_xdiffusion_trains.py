@@ -20,7 +20,7 @@ import types
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     XDiffusionTrainingStrategy,
 )
 

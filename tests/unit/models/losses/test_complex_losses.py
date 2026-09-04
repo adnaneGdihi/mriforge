@@ -1,6 +1,6 @@
 """Tests for complex-valued losses.
 
-Targets ``mriforge.models.losses.complex_losses``:
+Targets ``spectramr.models.losses.complex_losses``:
 
 - ``ComplexL1Loss`` — magnitude of complex residual
 - ``WeightedKSpaceL1Loss`` — frequency-weighted L1 (high-freq emphasis)
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.complex_losses import (
+from spectramr.models.losses.complex_losses import (
     ComplexL1Loss,
     ComplexMSELoss,
     FrequencyDomainLoss,
@@ -230,7 +230,7 @@ def test_complex_l1_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_complex_losses_registered() -> None:
     """All five complex losses are registered under their canonical names."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     available = set(list_available())
     expected = {
@@ -323,7 +323,7 @@ _COILS = 4
 
 def _interleaved_kspace(img: torch.Tensor) -> torch.Tensor:
     """[B, C, H, W] complex image -> [B, 2C, H, W] real-interleaved k-space."""
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     k = fft2c(img)
     return torch.stack([k.real, k.imag], dim=2).flatten(1, 2)
@@ -331,7 +331,7 @@ def _interleaved_kspace(img: torch.Tensor) -> torch.Tensor:
 
 def _outer_bridge(kspace: torch.Tensor) -> torch.Tensor:
     """What LossBuilder's ``image_losses`` wrapper hands the loss."""
-    from mriforge.models.losses.physics_losses import DifferentiableFourierBridge
+    from spectramr.models.losses.physics_losses import DifferentiableFourierBridge
 
     return DifferentiableFourierBridge(spatial_loss_fn=None, return_complex=False)._kspace_to_image(
         kspace
@@ -356,7 +356,7 @@ def test_sense_adjoint_l1_exposes_the_fourier_bridge_flag() -> None:
 
 
 def test_sense_adjoint_l1_declares_the_kspace_domain() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     caps = LossRegistry.get_loss_capabilities("sense_adjoint_l1")
     assert caps is not None, "registration must carry domain metadata"

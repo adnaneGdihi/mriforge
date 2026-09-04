@@ -1,6 +1,6 @@
-"""Tests for ``mriforge.core.types`` protocols and aliases.
+"""Tests for ``spectramr.core.types`` protocols and aliases.
 
-Targets ``mriforge.core.types``. Verifies the type aliases (``Image``,
+Targets ``spectramr.core.types``. Verifies the type aliases (``Image``,
 ``KSpace``, ``Mask``, ``CoilSens``) are usable as type hints and the
 protocols (``IMetrics``, ``IForwardModel``) admit objects implementing
 the documented signatures.
@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.types import (
+from spectramr.core.types import (
     CoilSens,
     Device,
     IForwardModel,

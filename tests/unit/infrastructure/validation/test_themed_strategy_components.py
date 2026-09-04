@@ -13,7 +13,7 @@ integration is tested in test_config_health_checker-adjacent suites.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.themed_strategy_components import (
+from spectramr.infrastructure.validation.themed_strategy_components import (
     THEMED_GENERIC_COMPONENTS,
     themed_component_status,
 )
@@ -62,7 +62,7 @@ def test_themed_key_with_required_model_passes():
 def test_every_mapped_key_routes_to_a_generic_base():
     """The SSOT map must only contain keys that actually route to a generic
     base — otherwise the guardrail is policing the wrong keys."""
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     generic_bases = (
         "reconstruction.ReconstructionTrainingStrategy",

@@ -13,7 +13,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.connectivity.fc_metrics import GeodesicFCErrorMetric
+from spectramr.core.metrics.connectivity.fc_metrics import GeodesicFCErrorMetric
 
 pytestmark = pytest.mark.unit
 

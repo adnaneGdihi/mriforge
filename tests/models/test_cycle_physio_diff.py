@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.generators.cycle_physio_diff import CyclePhysioDiffGenerator
+from spectramr.models.generators.cycle_physio_diff import CyclePhysioDiffGenerator
 
 
 def test_cycle_physio_diff_initialization():

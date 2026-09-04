@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import SoftDataConsistency
+from spectramr.infrastructure.physics.data_consistency import SoftDataConsistency
 
 
 class TestSoftDataConsistency:
@@ -61,7 +61,7 @@ class TestSoftDataConsistency:
 
         # Should be ifft2c(k_meas) because SoftDC does proper centered FFT/IFFT
         # We need to use the SAME inverse transform as the class uses
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
 
         expected_hard = ifft2c(k_meas).abs()
 

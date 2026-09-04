@@ -1,6 +1,6 @@
-"""Tests for ``mriforge audit <dir> --exclude PATTERN`` (bulk mode).
+"""Tests for ``spectramr audit <dir> --exclude PATTERN`` (bulk mode).
 
-Targets ``mriforge.cli.app._excluded_by_patterns`` (the pure matcher) and its
+Targets ``spectramr.cli.app._excluded_by_patterns`` (the pure matcher) and its
 wiring into ``_audit_bulk``. The exclude filter lets a bulk audit skip ablation
 arms (``--exclude '*ablation*'``) to focus on training arms.
 """
@@ -13,7 +13,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.cli.app import _audit_bulk, _excluded_by_patterns
+from spectramr.cli.app import _audit_bulk, _excluded_by_patterns
 
 # ---------------------------------------------------------------------------
 # Pure matcher: _excluded_by_patterns
@@ -70,7 +70,7 @@ def test_multiple_patterns_or_together() -> None:
 @pytest.fixture
 def _stub_audit(monkeypatch: pytest.MonkeyPatch) -> None:
     """Stub the heavy per-file audit so the test only exercises discovery."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         HealthCheckReport,
     )
 
@@ -80,20 +80,20 @@ def _stub_audit(monkeypatch: pytest.MonkeyPatch) -> None:
             return cls()
 
     monkeypatch.setattr(
-        "mriforge.config.settings.TrainingSettings", _StubSettings, raising=True
+        "spectramr.config.settings.TrainingSettings", _StubSettings, raising=True
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.validation.config_health_checker.validate_config_health",
+        "spectramr.infrastructure.validation.config_health_checker.validate_config_health",
         lambda _cfg: HealthCheckReport(results=[]),
         raising=True,
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.validation.inference.derive_tags",
+        "spectramr.infrastructure.validation.inference.derive_tags",
         lambda _cfg: [],
         raising=True,
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.validation.inference.collect_all_recommendations",
+        "spectramr.infrastructure.validation.inference.collect_all_recommendations",
         lambda *_a, **_k: [],
         raising=True,
     )

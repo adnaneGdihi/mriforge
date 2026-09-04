@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.physics_losses import (
+from spectramr.models.losses.physics_losses import (
     BlochResidualLoss,
     DataConsistencyLoss,
     DivergenceFreeLoss,
@@ -26,7 +26,7 @@ from mriforge.models.losses.physics_losses import (
     SNRPreservingLoss,
     SpectralKSpaceLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 32, 32
 

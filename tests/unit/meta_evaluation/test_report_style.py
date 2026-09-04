@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import warnings
 
-from mriforge.core.metrics.meta_evaluation import _report_style as rs
+from spectramr.core.metrics.meta_evaluation import _report_style as rs
 
 # ---------------------------------------------------------------------------
 # Palette

@@ -22,7 +22,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
     HealthCheckReport,
     HealthCheckResult,
@@ -100,12 +100,12 @@ def _patch_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     """Replace ``get_model_class`` with a stub that returns the test models.
 
     ``ConfigHealthChecker.check_advertised_options`` imports
-    ``get_model_class`` from ``mriforge.models.registry`` at call time, so
+    ``get_model_class`` from ``spectramr.models.registry`` at call time, so
     we patch that exact symbol. (Earlier versions of this test patched
     a ``ModelRegistry`` attribute that no longer exists on the module —
     the registry surface is module-level functions.)
     """
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "with_schema": _FakeModelWithSchema,
@@ -294,7 +294,7 @@ def test_loss_domain_image_output_casts_complex_losses() -> None:
 def _patch_loss_domains(
     monkeypatch: pytest.MonkeyPatch, mapping: dict[str, dict]
 ) -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     monkeypatch.setattr(LossRegistry, "_loss_domains", mapping, raising=False)
 
@@ -1168,13 +1168,13 @@ def no_ambient_cluster_roots(monkeypatch, tmp_path):
 
     The exemption ("I AM the cluster owner; this IS my mount") is intended
     behaviour, but a test asserting the check FIRES must not inherit it from the
-    machine. On a cluster node — ``MRIFORGE_DATA_ROOT`` set, or cwd under
+    machine. On a cluster node — ``SPECTRAMR_DATA_ROOT`` set, or cwd under
     ``/project/alpha_lab/$USER`` — the path under test becomes exempt and the
     assertion silently inverts, so these tests passed on a dev box and failed on
     every cluster allocation (#630). ``chdir`` into ``tmp_path`` (never under a
     forbidden prefix) defeats the ``$USER`` + cwd auto-detect too.
     """
-    for var in ("MRIFORGE_DATA_ROOT", "PROJECT_ROOT", "MRIFORGE_ROOT"):
+    for var in ("SPECTRAMR_DATA_ROOT", "PROJECT_ROOT", "SPECTRAMR_ROOT"):
         monkeypatch.delenv(var, raising=False)
     monkeypatch.chdir(tmp_path)
 
@@ -1196,7 +1196,7 @@ def test_hardcoded_path_check_errors_on_project_prefix(
 ) -> None:
     """F5 regression: any absolute path under ``/project/`` is forbidden."""
     cfg = _path_cfg(
-        index_path="/project/alpha_lab/researcher/mriforge/data/manifests/m4raw.json",
+        index_path="/project/alpha_lab/researcher/spectramr/data/manifests/m4raw.json",
     )
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert not res.passed
@@ -1255,8 +1255,8 @@ def test_user_root_auto_detect_finds_the_user_segment_at_any_depth(
 
     monkeypatch.setenv("USER", "researcher")
     for cwd, expected in [
-        ("/scratch/researcher/mriforge", "/scratch/researcher/"),
-        ("/project/alpha_lab/researcher/mriforge", "/project/alpha_lab/researcher/"),
+        ("/scratch/researcher/spectramr", "/scratch/researcher/"),
+        ("/project/alpha_lab/researcher/spectramr", "/project/alpha_lab/researcher/"),
     ]:
         monkeypatch.setattr(Path, "cwd", classmethod(lambda cls, c=cwd: Path(c)))
         assert expected in ConfigHealthChecker()._user_configured_roots(), cwd
@@ -1285,10 +1285,10 @@ def test_hardcoded_path_check_is_not_defeated_by_ambient_env(
 ) -> None:
     """The env exemption must not swallow SOMEONE ELSE's leaked prefix.
 
-    The cluster sets ``MRIFORGE_DATA_ROOT``; a YAML that hardcodes a different
+    The cluster sets ``SPECTRAMR_DATA_ROOT``; a YAML that hardcodes a different
     team's mount is still a leak and must still error.
     """
-    monkeypatch.setenv("MRIFORGE_DATA_ROOT", "/project/alpha_lab/researcher/")
+    monkeypatch.setenv("SPECTRAMR_DATA_ROOT", "/project/alpha_lab/researcher/")
     cfg = _path_cfg(
         # Same forbidden prefix, DIFFERENT account — a literal copied from a
         # colleague's config, which is exactly what this check exists to catch.
@@ -1314,7 +1314,7 @@ def test_user_root_auto_detect_requires_the_running_user(
 
     monkeypatch.setenv("USER", "researcher")
     monkeypatch.setattr(
-        Path, "cwd", classmethod(lambda cls: Path("/project/alpha_lab/researcher/mriforge"))
+        Path, "cwd", classmethod(lambda cls: Path("/project/alpha_lab/researcher/spectramr"))
     )
     roots = ConfigHealthChecker()._user_configured_roots()
     assert "/project/alpha_lab/researcher/" in roots
@@ -1334,20 +1334,20 @@ def test_hardcoded_path_check_handles_none_path_fields() -> None:
 def test_hardcoded_path_check_exempts_user_configured_data_root(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """A path under the user's own ``MRIFORGE_DATA_ROOT`` is not a leak.
+    """A path under the user's own ``SPECTRAMR_DATA_ROOT`` is not a leak.
 
     Regression for the May 18 2026 smoke run where 2 arms passed audit but
     failed training start-up with the same ``hardcoded_cluster_paths`` check:
     on the cluster, ``./data`` (the schema default) was joined against
-    ``PROJECT_ROOT=/project/<user>/mriforge/`` by ``PathNormalizer``, and the
+    ``PROJECT_ROOT=/project/<user>/spectramr/`` by ``PathNormalizer``, and the
     resulting absolute path tripped the forbidden-prefix check. With the
     user-root exemption it no longer trips.
     """
     monkeypatch.setenv(
-        "MRIFORGE_DATA_ROOT",
-        "/project/alpha_lab/researcher/mriforge",
+        "SPECTRAMR_DATA_ROOT",
+        "/project/alpha_lab/researcher/spectramr",
     )
-    cfg = _path_cfg(data_root="/project/alpha_lab/researcher/mriforge/data")
+    cfg = _path_cfg(data_root="/project/alpha_lab/researcher/spectramr/data")
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert res.passed
     assert "no hardcoded" in res.message
@@ -1356,12 +1356,12 @@ def test_hardcoded_path_check_exempts_user_configured_data_root(
 def test_hardcoded_path_check_exempts_user_configured_project_root(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """``PROJECT_ROOT`` is honoured as a synonym for ``MRIFORGE_DATA_ROOT``."""
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
-    monkeypatch.setenv("PROJECT_ROOT", "/project/alpha_lab/researcher/mriforge")
+    """``PROJECT_ROOT`` is honoured as a synonym for ``SPECTRAMR_DATA_ROOT``."""
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
+    monkeypatch.setenv("PROJECT_ROOT", "/project/alpha_lab/researcher/spectramr")
     cfg = _path_cfg(
-        data_root="/project/alpha_lab/researcher/mriforge/databases/fastmri",
-        index_path="/project/alpha_lab/researcher/mriforge/data/manifests/m4raw.json",
+        data_root="/project/alpha_lab/researcher/spectramr/databases/fastmri",
+        index_path="/project/alpha_lab/researcher/spectramr/data/manifests/m4raw.json",
     )
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert res.passed
@@ -1372,11 +1372,11 @@ def test_hardcoded_path_check_still_flags_other_users_prefix(
 ) -> None:
     """Exemption is per-user — paths under another team's prefix still fail.
 
-    If you set ``MRIFORGE_DATA_ROOT=/project/alpha_lab/me`` but the YAML
+    If you set ``SPECTRAMR_DATA_ROOT=/project/alpha_lab/me`` but the YAML
     points at ``/project/alpha_lab/someone_else/...``, the check must still
     fire — otherwise the protection collapses.
     """
-    monkeypatch.setenv("MRIFORGE_DATA_ROOT", "/project/alpha_lab/me")
+    monkeypatch.setenv("SPECTRAMR_DATA_ROOT", "/project/alpha_lab/me")
     cfg = _path_cfg(data_root="/project/alpha_lab/someone_else/cache")
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert not res.passed
@@ -1392,31 +1392,31 @@ def test_hardcoded_path_check_exempts_only_prefix_not_substring(
     ``/project/alpha_lab/me`` must not exempt ``/project/alpha_lab/meadow/...``
     just because they share a prefix without the boundary slash.
     """
-    monkeypatch.setenv("MRIFORGE_DATA_ROOT", "/project/alpha_lab/me")
+    monkeypatch.setenv("SPECTRAMR_DATA_ROOT", "/project/alpha_lab/me")
     cfg = _path_cfg(data_root="/project/alpha_lab/meadow/cache")
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert not res.passed
     assert "data.data_root" in res.yaml_keys
 
 
-def test_hardcoded_path_check_exempts_mriforge_root_env(
+def test_hardcoded_path_check_exempts_spectramr_root_env(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """F5c / 2026-05-20: ``MRIFORGE_ROOT`` (used by ``PathNormalizer``) is now
+    """F5c / 2026-05-20: ``SPECTRAMR_ROOT`` (used by ``PathNormalizer``) is now
     honoured by the exemption logic alongside ``PROJECT_ROOT`` and
-    ``MRIFORGE_DATA_ROOT``.
+    ``SPECTRAMR_DATA_ROOT``.
 
     Previously only the latter two were checked, so a cluster that set
-    ``MRIFORGE_ROOT=/project/alpha_lab/<user>/mriforge`` (the variable used to
+    ``SPECTRAMR_ROOT=/project/alpha_lab/<user>/spectramr`` (the variable used to
     resolve relative YAML paths) still saw the absolute path fail the
     forbidden-prefix check. With F5c the variable that *produced* the path
     is also the one that exempts it.
     """
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
     monkeypatch.delenv("PROJECT_ROOT", raising=False)
-    monkeypatch.setenv("MRIFORGE_ROOT", "/project/alpha_lab/researcher/mriforge")
+    monkeypatch.setenv("SPECTRAMR_ROOT", "/project/alpha_lab/researcher/spectramr")
     cfg = _path_cfg(
-        data_root="/project/alpha_lab/researcher/mriforge/databases/m4raw/data",
+        data_root="/project/alpha_lab/researcher/spectramr/databases/m4raw/data",
     )
     res = ConfigHealthChecker().check_hardcoded_cluster_paths(cfg)
     assert res.passed
@@ -1430,7 +1430,7 @@ def test_hardcoded_path_check_auto_detects_cluster_owner_from_cwd_and_user(
     is auto-exempt for paths under their own subtree even without setting any env-var.
 
     This is the dominant cluster failure mode in the 2026-05-19 smoke audit
-    (389 of 414 configs): the .env didn't set ``MRIFORGE_DATA_ROOT``, but
+    (389 of 414 configs): the .env didn't set ``SPECTRAMR_DATA_ROOT``, but
     the cluster owner WAS legitimately running from their own project mount.
     Auto-detect via ``$USER + cwd.parts`` makes the legitimate case work
     without env-var ceremony while keeping the colleague-leak protection
@@ -1439,11 +1439,11 @@ def test_hardcoded_path_check_auto_detects_cluster_owner_from_cwd_and_user(
     import os
 
     # Build a fake "cluster" cwd path with the proper structure.
-    fake_cluster_root = tmp_path / "project" / "alpha_lab" / "researcher" / "mriforge"
+    fake_cluster_root = tmp_path / "project" / "alpha_lab" / "researcher" / "spectramr"
     fake_cluster_root.mkdir(parents=True, exist_ok=True)
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
     monkeypatch.delenv("PROJECT_ROOT", raising=False)
-    monkeypatch.delenv("MRIFORGE_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_ROOT", raising=False)
     monkeypatch.setenv("USER", "researcher")
     monkeypatch.chdir(fake_cluster_root)
     # Patch the forbidden prefixes so the test doesn't depend on the real
@@ -1468,11 +1468,11 @@ def test_hardcoded_path_check_cwd_auto_detect_does_not_exempt_other_users(
     path-segment after the forbidden prefix — otherwise a colleague's leaked
     path under the same cluster prefix would be silently exempted.
     """
-    fake_cluster_root = tmp_path / "project" / "alpha_lab" / "researcher" / "mriforge"
+    fake_cluster_root = tmp_path / "project" / "alpha_lab" / "researcher" / "spectramr"
     fake_cluster_root.mkdir(parents=True, exist_ok=True)
-    monkeypatch.delenv("MRIFORGE_DATA_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DATA_ROOT", raising=False)
     monkeypatch.delenv("PROJECT_ROOT", raising=False)
-    monkeypatch.delenv("MRIFORGE_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_ROOT", raising=False)
     monkeypatch.setenv("USER", "researcher")
     monkeypatch.chdir(fake_cluster_root)
     monkeypatch.setattr(
@@ -1614,7 +1614,7 @@ def test_themed_check_exempts_honest_generic_key() -> None:
 class TestMambaSsmAuditHook:
     """Mamba-family configs must declare a usable mamba_ssm kernel at audit time."""
 
-    import mriforge.models.blocks.mamba_block as _mb  # noqa: PLC0415
+    import spectramr.models.blocks.mamba_block as _mb  # noqa: PLC0415
 
     def test_non_mamba_model_passes(self) -> None:
         res = ConfigHealthChecker().check_mamba_models_require_mamba_ssm(

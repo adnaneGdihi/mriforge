@@ -22,7 +22,7 @@ class TestGANSyncBlocking:
         2. NOT call .cpu() in actual code (causes GPU/CPU sync)
         3. Let AsyncMetricsReporter handle CPU transfer in background
         """
-        with open("src/mriforge/infrastructure/training/strategies/gan.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/gan.py") as f:
             source = f.read()
 
         tree = ast.parse(source)
@@ -59,7 +59,7 @@ class TestGANSyncBlocking:
 
     def test_has_forensic_fix_comment(self):
         """Verify FORENSIC FIX comment exists in GAN strategy."""
-        with open("src/mriforge/infrastructure/training/strategies/gan.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/gan.py") as f:
             source = f.read()
 
         assert (
@@ -68,7 +68,7 @@ class TestGANSyncBlocking:
 
     def test_uses_async_metrics_reporter(self):
         """Verify GANTrainingStrategy uses AsyncMetricsReporter."""
-        with open("src/mriforge/infrastructure/training/strategies/gan.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/gan.py") as f:
             source = f.read()
 
         assert (
@@ -77,7 +77,7 @@ class TestGANSyncBlocking:
 
     def test_no_item_calls_in_report_metrics(self):
         """Verify _report_metrics doesn't call .item() which triggers sync."""
-        with open("src/mriforge/infrastructure/training/strategies/gan.py") as f:
+        with open("src/spectramr/infrastructure/training/strategies/gan.py") as f:
             source = f.read()
 
         tree = ast.parse(source)

@@ -35,16 +35,16 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mriforge.config.schemas.campaign import (
+from spectramr.config.schemas.campaign import (
     AblationAxisSchema,
     CampaignConfigSchema,
     StageGroupSchema,
 )
-from mriforge.infrastructure.orchestration.slurm_backend import JobStatus, SLURMBackend
-from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+from spectramr.infrastructure.orchestration.slurm_backend import JobStatus, SLURMBackend
+from spectramr.infrastructure.orchestration.campaign_orchestrator import (
     CampaignOrchestrator,
 )
-from mriforge.infrastructure.orchestration.campaign_state import (
+from spectramr.infrastructure.orchestration.campaign_state import (
     CampaignState,
     ExperimentStatus,
 )
@@ -61,8 +61,8 @@ def _slurm_account(monkeypatch):
     site-specific, so the tree carries none (#1146). Tests that render SLURM
     directives must therefore configure one, exactly as a user does.
     """
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
 
 def _write_min_experiment_yaml(path: Path) -> None:
@@ -446,7 +446,7 @@ class TestCheckProgressNoOp:
     ) -> None:
         # Hand-build a state where every arm is already in a terminal
         # state — check_progress must NOT call sacct.
-        from mriforge.infrastructure.orchestration.campaign_state import (
+        from spectramr.infrastructure.orchestration.campaign_state import (
             ExperimentStatus,
         )
 
@@ -483,7 +483,7 @@ class TestCheckProgressNoOp:
 
 class TestCancelCampaignNoActive:
     def test_no_active_jobs_short_circuits(self, tmp_path: Path) -> None:
-        from mriforge.infrastructure.orchestration.campaign_state import (
+        from spectramr.infrastructure.orchestration.campaign_state import (
             ExperimentStatus,
         )
 
@@ -761,7 +761,7 @@ class TestBestMetricsExtraction:
         return SimpleNamespace(metrics_csv_path=str(csv_path), best_metrics={})
 
     def test_higher_is_better_metrics_take_the_maximum(self, tmp_path):
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -773,7 +773,7 @@ class TestBestMetricsExtraction:
         assert exp.best_metrics["ssim"] == 0.91
 
     def test_lower_is_better_metrics_take_the_minimum(self, tmp_path):
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -787,7 +787,7 @@ class TestBestMetricsExtraction:
     def test_no_csv_path_is_a_no_op_not_a_crash(self):
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -799,7 +799,7 @@ class TestBestMetricsExtraction:
         """A capability is not delivered until the production path calls it."""
         import inspect
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 

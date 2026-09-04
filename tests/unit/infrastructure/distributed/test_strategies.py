@@ -12,12 +12,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.distributed.checkpoint_adapters import (
+from spectramr.infrastructure.distributed.checkpoint_adapters import (
     DeepSpeedCheckpointAdapter,
     DefaultCheckpointAdapter,
     FSDPCheckpointAdapter,
 )
-from mriforge.infrastructure.distributed.strategies import (
+from spectramr.infrastructure.distributed.strategies import (
     DataParallelStrategy,
     DDPStrategy,
     DeepSpeedStrategy,
@@ -67,7 +67,7 @@ class TestCheckpointAdapterPerStrategy:
 class TestSaveConsolidatedBestIsRead:
     """The knob is read HERE and nowhere else (pitfall #15).
 
-    ``build_deepspeed_config`` correctly omits it -- it is a mriforge concern,
+    ``build_deepspeed_config`` correctly omits it -- it is a spectramr concern,
     not a DeepSpeed key -- so anything reconstructing the adapter from the
     rendered ds_config in provenance would silently see the default and the
     knob would be validated, stamped, and inert.
@@ -88,7 +88,7 @@ class TestSaveConsolidatedBestIsRead:
     def test_it_is_not_a_deepspeed_config_key(self) -> None:
         """If it ever became one, provenance would carry it and the reader
         above could quietly move -- back to reading a default."""
-        from mriforge.infrastructure.distributed.deepspeed_backend.config_builder import (
+        from spectramr.infrastructure.distributed.deepspeed_backend.config_builder import (
             DERIVED_KEYS,
         )
 
@@ -131,7 +131,7 @@ def test_requires_process_group_values():
     A caller spelling this rule as `strategy != "none"` would block it, which is
     why the flag exists instead of that expression.
     """
-    from mriforge.infrastructure.distributed.strategies import (
+    from spectramr.infrastructure.distributed.strategies import (
         DataParallelStrategy,
         DDPStrategy,
         DeepSpeedStrategy,
@@ -154,7 +154,7 @@ def test_the_flag_agrees_with_the_require_process_group_call_sites():
     sets it without calling — fails here instead of silently profiling into a
     twelve-minute RuntimeError.
     """
-    src = Path("src/mriforge/infrastructure/distributed/strategies.py")
+    src = Path("src/spectramr/infrastructure/distributed/strategies.py")
     tree = ast.parse(src.read_text(encoding="utf-8"))
 
     callers, flagged = set(), set()

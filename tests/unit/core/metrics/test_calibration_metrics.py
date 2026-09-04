@@ -17,8 +17,8 @@ import torch
 # Importing the module self-registers the three metrics (auto-discovery via
 # pkgutil.walk_packages would also pull it in, but the explicit import keeps
 # the unit test independent of package-walk ordering).
-import mriforge.core.metrics.calibration_metrics  # noqa: F401
-from mriforge.core.metrics.registry import MetricsRegistry, get_metric
+import spectramr.core.metrics.calibration_metrics  # noqa: F401
+from spectramr.core.metrics.registry import MetricsRegistry, get_metric
 
 
 @pytest.mark.parametrize(

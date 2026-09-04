@@ -1,6 +1,6 @@
 """Regression tests for TDA-003: temporal transforms preserve the affine.
 
-Targets ``mriforge.data.transforms.temporal_aug``.
+Targets ``spectramr.data.transforms.temporal_aug``.
 
 Each of ``PhaseShiftTransform``, ``TemporalFlipTransform`` and
 ``FrameDropoutTransform`` rebuilds a ``tio.ScalarImage`` from a tensor
@@ -17,7 +17,7 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from mriforge.data.transforms.temporal_aug import (
+from spectramr.data.transforms.temporal_aug import (
     FrameDropoutTransform,
     PhaseShiftTransform,
     TemporalFlipTransform,

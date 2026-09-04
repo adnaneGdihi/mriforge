@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.kspace_swin_attention import (
+from spectramr.models.blocks.kspace_swin_attention import (
     KSpaceRadialSwinBlock,
     RadialWindowAttention,
 )

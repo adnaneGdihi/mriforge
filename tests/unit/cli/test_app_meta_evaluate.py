@@ -1,6 +1,6 @@
 """Regression tests for the ``meta-evaluate`` unknown-metric validation path.
 
-``src/mriforge/cli/app.py::meta_evaluate`` historically *warned-and-skipped*
+``src/spectramr/cli/app.py::meta_evaluate`` historically *warned-and-skipped*
 when ``--metrics`` named a metric that was not in the registry, silently
 yielding a smaller ranking that looked like a successful run. The fix makes
 an unregistered metric name fail loud (CLAUDE.md pitfall #9, no silent
@@ -21,9 +21,9 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import mriforge.core.metrics as core_metrics
-from mriforge.cli import app
-from mriforge.cli.app import meta_evaluate
+import spectramr.core.metrics as core_metrics
+from spectramr.cli import app
+from spectramr.cli.app import meta_evaluate
 
 pytestmark = pytest.mark.unit
 
@@ -88,7 +88,7 @@ def isolated_meta_evaluate(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
 
     pipeline_cls = MagicMock(name="MetaEvaluationPipeline")
     monkeypatch.setattr(
-        "mriforge.core.metrics.meta_evaluation.MetaEvaluationPipeline",
+        "spectramr.core.metrics.meta_evaluation.MetaEvaluationPipeline",
         pipeline_cls,
     )
     return pipeline_cls
@@ -147,7 +147,7 @@ def test_all_known_metrics_pass_validation_reaching_pipeline(
     # own module; patch it there so we never need real metric callables. It
     # feeds ``MetricSet(**...)``, so it must supply the required ``metrics`` key.
     monkeypatch.setattr(
-        "mriforge.core.metrics.meta_evaluation.metric_adapter.build_safe_metric_set",
+        "spectramr.core.metrics.meta_evaluation.metric_adapter.build_safe_metric_set",
         lambda valid: {"metrics": {name: (lambda *a, **k: 0.0) for name in valid}},
     )
     isolated_meta_evaluate.from_defaults.side_effect = _StopAfterValidation
@@ -162,7 +162,7 @@ def test_all_known_metrics_pass_validation_reaching_pipeline(
 
 def _patch_safe_metric_set(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
-        "mriforge.core.metrics.meta_evaluation.metric_adapter.build_safe_metric_set",
+        "spectramr.core.metrics.meta_evaluation.metric_adapter.build_safe_metric_set",
         lambda valid: {"metrics": {name: (lambda *a, **k: 0.0) for name in valid}},
     )
 

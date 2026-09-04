@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.digital_twin_simulator import (
+from spectramr.infrastructure.physics.digital_twin_simulator import (
     CornerFiducialEmbedder,
     DigitalTwinSimulator,
 )

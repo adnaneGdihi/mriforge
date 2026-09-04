@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.acquisition_params_injector import (
+from spectramr.data.transforms.acquisition_params_injector import (
     attach_acquisition_params,
     infer_acquisition_params,
 )
@@ -60,7 +60,7 @@ def test_attach_acquisition_params_mutates_in_place() -> None:
 
 def test_data_config_schema_accepts_expose_flag() -> None:
     """The Pydantic schema must accept the new field."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     cfg = DataConfigSchema(expose={"acquisition_params": True})
     assert cfg.expose.acquisition_params is True

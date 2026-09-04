@@ -1,6 +1,6 @@
 """Phase 4 regression — rejected aspirational names stay rejected.
 
-``mriforge.models.registry.REJECTED_NAMES`` records the 24 deletion-ledger
+``spectramr.models.registry.REJECTED_NAMES`` records the 24 deletion-ledger
 names that have no implementation and were judged ill-specified. None may be
 advertised in ``VALID_MODEL_TYPES`` or resolve in ``MODEL_REGISTRY`` — doing
 so would re-create the audit-surface lie the deletion fixed.
@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.validation_constants import VALID_MODEL_TYPES
-from mriforge.models.registry import REJECTED_NAMES
+from spectramr.config.validation_constants import VALID_MODEL_TYPES
+from spectramr.models.registry import REJECTED_NAMES
 
 
 @pytest.mark.registry_contract
@@ -36,8 +36,8 @@ def test_rejected_name_not_advertised(name: str) -> None:
 @pytest.mark.parametrize("name", sorted(REJECTED_NAMES))
 def test_rejected_name_not_registered(name: str) -> None:
     pytest.importorskip("torch")
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert name not in MODEL_REGISTRY, (

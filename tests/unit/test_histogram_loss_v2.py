@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.losses.histogram_loss import HistogramConsistencyLoss
+from spectramr.models.losses.histogram_loss import HistogramConsistencyLoss
 
 
 def test_histogram_loss_optimization_strong():

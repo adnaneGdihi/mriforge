@@ -115,7 +115,7 @@ except Exception as _exc:
 def _output_domain(model_name: str) -> str | None:
     """Return the advertised output_domain for *model_name*, or None."""
     try:
-        from mriforge.models.registry import get_model_capabilities  # noqa: PLC0415
+        from spectramr.models.registry import get_model_capabilities  # noqa: PLC0415
         caps = get_model_capabilities(model_name)
         if caps is None:
             return None
@@ -135,7 +135,7 @@ def _output_domain(model_name: str) -> str | None:
 def _spatial_dims_declared(model_name: str) -> tuple[int, ...] | None:
     """Return the supported spatial dims tuple, or None if unannotated."""
     try:
-        from mriforge.models.registry import get_model_capabilities  # noqa: PLC0415
+        from spectramr.models.registry import get_model_capabilities  # noqa: PLC0415
         caps = get_model_capabilities(model_name)
         if caps is None:
             return None
@@ -311,7 +311,7 @@ def test_model_shape_envelope(
 
     # Retrieve model class.
     try:
-        from mriforge.models.registry import MODEL_REGISTRY  # noqa: PLC0415
+        from spectramr.models.registry import MODEL_REGISTRY  # noqa: PLC0415
         entry = MODEL_REGISTRY.get(model_name)
         if entry is None:
             pytest.skip(f"Model {model_name!r} not in registry at test time")

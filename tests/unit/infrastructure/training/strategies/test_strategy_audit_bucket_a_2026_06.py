@@ -13,7 +13,7 @@ import torch
 
 
 def test_motion_meta_drops_identity_fft_roundtrip() -> None:
-    from mriforge.infrastructure.training.strategies.motion_meta_strategy import (
+    from spectramr.infrastructure.training.strategies.motion_meta_strategy import (
         ConcreteMotionMetaTrainingStrategy,
     )
 
@@ -23,7 +23,7 @@ def test_motion_meta_drops_identity_fft_roundtrip() -> None:
 
 
 def test_n2n_picks_two_distinct_repetitions() -> None:
-    from mriforge.infrastructure.training.strategies.n2n_strategy import (
+    from spectramr.infrastructure.training.strategies.n2n_strategy import (
         NoiseToNoiseStrategy,
     )
 
@@ -38,7 +38,7 @@ def test_n2n_picks_two_distinct_repetitions() -> None:
 
 
 def test_standard_docstring_drops_unread_training_mode() -> None:
-    from mriforge.infrastructure.training.strategies.standard_strategy import (
+    from spectramr.infrastructure.training.strategies.standard_strategy import (
         StandardTrainingStrategy,
     )
 
@@ -47,7 +47,7 @@ def test_standard_docstring_drops_unread_training_mode() -> None:
 
 
 def test_meta_learning_docstring_lists_real_homes() -> None:
-    from mriforge.infrastructure.training.strategies.meta_learning_strategy import (
+    from spectramr.infrastructure.training.strategies.meta_learning_strategy import (
         MetaLearningTrainingStrategy,
     )
 
@@ -59,7 +59,7 @@ def test_meta_learning_docstring_lists_real_homes() -> None:
 
 
 def test_synthetic_pathology_guards_missing_total_key() -> None:
-    from mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
+    from spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
         SyntheticPathologyAugStrategy,
     )
 
@@ -84,7 +84,7 @@ def test_sfc_conformal_missing_dc_inputs_raises_not_warns() -> None:
     Asserting behaviour rather than source text: a string-grep test cannot tell a
     warning from a raise, which is exactly the distinction that matters here.
     """
-    from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
         ConformalDiffusionReconStrategy,
     )
 

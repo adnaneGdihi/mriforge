@@ -13,10 +13,10 @@ import types
 
 import torch
 
-from mriforge.config.schemas.training.equivariance_conformal import (
+from spectramr.config.schemas.training.equivariance_conformal import (
     EquivarianceConformalConfig,
 )
-from mriforge.infrastructure.training.strategies.equivariance_conformal_strategy import (
+from spectramr.infrastructure.training.strategies.equivariance_conformal_strategy import (
     EquivarianceConformalCalibrationStrategy,
     run_equivariance_calibration,
     _extract_measurement,

@@ -22,8 +22,8 @@ import warnings
 import pytest
 import torch
 
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.builders.leaf.physics_builders import (
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.leaf.physics_builders import (
     DataConsistencyBuilder,
     FFTBuilder,
     MaskBuilder,

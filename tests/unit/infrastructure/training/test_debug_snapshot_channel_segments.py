@@ -49,8 +49,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.training.debug_snapshot import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.training.debug_snapshot import (
     _render_image_preview,
     _split_channel_segments,
     save_debug_snapshot,
@@ -272,7 +272,7 @@ def test_declared_segments_survive_the_declaration_handoff(tmp_path) -> None:
     written, the PNGs are still produced, and the split silently does not
     happen -- the crosshair comes back with nothing red.
     """
-    from mriforge.infrastructure.training.strategies import base as base_mod
+    from spectramr.infrastructure.training.strategies import base as base_mod
 
     mixed, kspace_only = _mixed_model_input()
     segments = {
@@ -383,7 +383,7 @@ def _render_calls(monkeypatch) -> list[tuple[torch.Tensor, bool, bool]]:
     "the picture looks off", which is exactly the reading that took three passes
     to diagnose the first time.
     """
-    import mriforge.infrastructure.training.debug_snapshot as ds
+    import spectramr.infrastructure.training.debug_snapshot as ds
 
     seen: list[tuple[torch.Tensor, bool, bool]] = []
     real = ds._render_image_preview
@@ -502,7 +502,7 @@ def test_declared_log_scaled_keys_survive_the_declaration_handoff() -> None:
     Read-before-clear is the specific trap: the sidecars are cleared in the same
     breath as the declaration triple ("never pin one step's tensors").
     """
-    from mriforge.infrastructure.training.strategies import base as base_mod
+    from spectramr.infrastructure.training.strategies import base as base_mod
 
     mixed, _kspace_only = _mixed_model_input()
     log_keys = {"noisy_kspace", "target", "model_input"}

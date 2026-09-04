@@ -13,7 +13,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.distribution.ksd_metric import (
+from spectramr.core.metrics.distribution.ksd_metric import (
     KernelisedSteinDiscrepancyMetric,
 )
 
@@ -54,7 +54,7 @@ def test_ksd_declares_prior_model_need() -> None:
     sweep that has no such model. The metric still RAISES without a score_fn
     (no silent fallback, CLAUDE.md #9) — this only fixes the classification.
     """
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     needs = set(MetricsRegistry.needs("kernelised_stein_discrepancy"))
     assert "prior_model" in needs, f"ksd must declare prior_model; got {needs}"

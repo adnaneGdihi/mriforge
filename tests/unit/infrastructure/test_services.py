@@ -14,7 +14,7 @@ Run on CI, NOT local dev machine.
 import pytest
 import torch
 
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
 
@@ -25,15 +25,15 @@ class TestEarlyStoppingService:
 
     # @# pytest.mark.timeout(30)
     def test_early_stopping_import(self):
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         assert EarlyStoppingService is not None
 
     # @# pytest.mark.timeout(30)
     def test_early_stopping_triggers_after_patience(self):
         """Early stopping should trigger after patience epochs without improvement."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         config = EarlyStoppingConfigSchema(
             enabled=True,
@@ -57,8 +57,8 @@ class TestEarlyStoppingService:
     # @# pytest.mark.timeout(30)
     def test_early_stopping_resets_on_improvement(self):
         """Counter should reset on improvement."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         config = EarlyStoppingConfigSchema(
             enabled=True,
@@ -79,8 +79,8 @@ class TestEarlyStoppingService:
     # @# pytest.mark.timeout(30)
     def test_early_stopping_disabled(self):
         """Disabled early stopping should never trigger."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         config = EarlyStoppingConfigSchema(enabled=False)
 
@@ -94,8 +94,8 @@ class TestEarlyStoppingService:
     # @# pytest.mark.timeout(30)
     def test_early_stopping_iteration_based(self):
         """Early stopping should be iteration-based."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
         config = EarlyStoppingConfigSchema(
             enabled=True,
@@ -119,7 +119,7 @@ class TestLoggingService:
     # @# pytest.mark.timeout(30)
     def test_logging_service_import(self):
         try:
-            from mriforge.infrastructure.services.logging_service import LoggingService
+            from spectramr.infrastructure.services.logging_service import LoggingService
 
             assert LoggingService is not None
         except ImportError:
@@ -158,7 +158,7 @@ class TestMetricsService:
     # @# pytest.mark.timeout(30)
     def test_metrics_service_import(self):
         try:
-            from mriforge.infrastructure.services.metrics_service import MetricsService
+            from spectramr.infrastructure.services.metrics_service import MetricsService
 
             assert MetricsService is not None
         except ImportError:
@@ -193,7 +193,7 @@ class TestCheckpointService:
     # @# pytest.mark.timeout(30)
     def test_checkpoint_service_import(self):
         try:
-            from mriforge.infrastructure.services.checkpoint_service import CheckpointService
+            from spectramr.infrastructure.services.checkpoint_service import CheckpointService
 
             assert CheckpointService is not None
         except ImportError:
@@ -251,7 +251,7 @@ class TestIterationCounterService:
     # @# pytest.mark.timeout(30)
     def test_iteration_counter_import(self):
         try:
-            from mriforge.infrastructure.services.iteration_counter_service import (
+            from spectramr.infrastructure.services.iteration_counter_service import (
                 IterationCounterService,
             )
 
@@ -301,7 +301,7 @@ class TestTrainingEnvironmentImport:
     # @# pytest.mark.timeout(30)
     def test_training_environment_import(self):
         try:
-            from mriforge.infrastructure.training.builders.environment import (
+            from spectramr.infrastructure.training.builders.environment import (
                 TrainingEnvironment,
             )
 
@@ -313,7 +313,7 @@ class TestTrainingEnvironmentImport:
     def test_training_environment_core_fields(self):
         """TrainingEnvironment should have core fields."""
         try:
-            from mriforge.infrastructure.training.builders.environment import (
+            from spectramr.infrastructure.training.builders.environment import (
                 TrainingEnvironment,
             )
         except ImportError:

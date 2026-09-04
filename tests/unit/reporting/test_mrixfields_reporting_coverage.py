@@ -18,7 +18,7 @@ import pathlib
 import pytest
 import yaml as pyyaml
 
-from mriforge.config.schemas.reporting import ReportingSettings
+from spectramr.config.schemas.reporting import ReportingSettings
 from tests.utils.corpus import tracked_yamls
 
 _REPO_ROOT = pathlib.Path(__file__).resolve().parents[3]
@@ -36,7 +36,7 @@ _TASK_BY_DIR = {
 
 @pytest.fixture(scope="module")
 def registered_ids() -> set[str]:
-    from mriforge.infrastructure.reporting.plotters import PLOTTERS
+    from spectramr.infrastructure.reporting.plotters import PLOTTERS
 
     assert PLOTTERS, "plotter registry is empty — import did not populate PLOTTERS"
     return set(PLOTTERS)

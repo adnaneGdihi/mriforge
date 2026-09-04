@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.bloch_signal_synthesis_consistency_loss import (
+from spectramr.models.losses.bloch_signal_synthesis_consistency_loss import (
     BlochSignalSynthesisConsistencyLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, H, W = 2, 16, 16
 

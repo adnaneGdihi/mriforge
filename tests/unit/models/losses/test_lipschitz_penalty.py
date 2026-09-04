@@ -6,12 +6,12 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.core.metrics.lipschitz_bound_metrics import layer_spectral_norms
-from mriforge.models.losses.lipschitz_penalty import (
+from spectramr.core.metrics.lipschitz_bound_metrics import layer_spectral_norms
+from spectramr.models.losses.lipschitz_penalty import (
     LipschitzSpectralPenalty,
     _power_iteration_sigma,
 )
-from mriforge.models.losses.registry import create_loss, list_available
+from spectramr.models.losses.registry import create_loss, list_available
 
 
 def _scaled_linear(dim: int, c: float) -> nn.Linear:

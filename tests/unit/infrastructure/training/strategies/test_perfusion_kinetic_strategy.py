@@ -13,12 +13,12 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.signal_models.registry import get_signal_model
-from mriforge.infrastructure.physics.signal_models.perfusion_kinetics import (
+from spectramr.infrastructure.physics.signal_models.registry import get_signal_model
+from spectramr.infrastructure.physics.signal_models.perfusion_kinetics import (
     extended_tofts_forward,
     parker_population_aif,
 )
-from mriforge.infrastructure.training.strategies.perfusion_kinetic_strategy import (
+from spectramr.infrastructure.training.strategies.perfusion_kinetic_strategy import (
     PerfusionKineticMappingStrategy,
 )
 
@@ -89,8 +89,8 @@ def _batch(**extra: object) -> dict:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 
@@ -100,7 +100,7 @@ def test_strategy_registered_and_config_mounted() -> None:
 
 def test_data_block_is_mounted_not_silently_dropped() -> None:
     """DataConfigSchema is extra="ignore" — an unmounted block vanishes quietly."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert "perfusion" in DataConfigSchema.model_fields
     data = DataConfigSchema(perfusion={"enabled": True, "num_frames": 40})
@@ -108,7 +108,7 @@ def test_data_block_is_mounted_not_silently_dropped() -> None:
 
 
 def test_strategy_is_perfusion_tagged_for_the_ledger() -> None:
-    from mriforge.config.schemas.enums import Regime, Task
+    from spectramr.config.schemas.enums import Regime, Task
 
     caps = PerfusionKineticMappingStrategy.__dict__["capabilities"]
     assert caps.workflows == frozenset({Regime.PERFUSION})
@@ -139,7 +139,7 @@ def _fit_kinetics(
     The lr is decayed because the residual is L1: a constant gradient magnitude
     means a fixed lr oscillates at scale ~lr rather than settling.
     """
-    from mriforge.models.losses.perfusion_losses import (
+    from spectramr.models.losses.perfusion_losses import (
         PerfusionPhysiologicalBoxLoss,
         ToftsResidualLoss,
     )
@@ -280,7 +280,7 @@ def test_tofts_residual_is_called_by_keyword_not_position() -> None:
     target -> aif, then fails the 1-D check inside the kinetics with a shape
     error that reads like a data bug rather than a wiring bug.
     """
-    from mriforge.models.losses import perfusion_losses
+    from spectramr.models.losses import perfusion_losses
 
     seen: dict[str, object] = {}
     original = perfusion_losses.ToftsResidualLoss.forward
@@ -322,7 +322,7 @@ def test_measured_aif_actually_reaches_the_kinetic_model() -> None:
     the population AIF silently substituted, leaving aif_source unverified as a
     knob (#15). Record the tensor that reaches the loss instead.
     """
-    from mriforge.models.losses import perfusion_losses
+    from spectramr.models.losses import perfusion_losses
 
     measured = parker_population_aif(_time_axis()) * 1.5
     seen: dict[str, torch.Tensor] = {}
@@ -350,7 +350,7 @@ def test_measured_aif_actually_reaches_the_kinetic_model() -> None:
 
 def test_population_aif_is_used_when_that_is_declared() -> None:
     """The other half: 'population' must NOT read a stray 'aif' batch key."""
-    from mriforge.models.losses import perfusion_losses
+    from spectramr.models.losses import perfusion_losses
 
     seen: dict[str, torch.Tensor] = {}
     original = perfusion_losses.ToftsResidualLoss.forward
@@ -399,7 +399,7 @@ def test_builder_losses_are_not_folded_without_a_map_target() -> None:
     maps to a concentration series (pitfall #18). Better to leave the declared
     block unapplied than to apply it to the wrong pair.
     """
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     strat = _strategy()
     strat.env.losses = {"hfen": CharbonnierLoss()}
@@ -414,8 +414,8 @@ def test_builder_losses_are_not_folded_without_a_map_target() -> None:
 
 def test_builder_losses_folded_when_a_map_target_exists() -> None:
     """A supervised arm DOES fold — the pair is then commensurate."""
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = _strategy()
     strat.env.losses = {"l1": CharbonnierLoss(), "hfen": HFENLoss()}
@@ -482,7 +482,7 @@ def test_supervised_fold_grades_activated_maps_not_logits() -> None:
     pre-activation tensor to physical Ktrans/ve/vp — a metric-claim mismatch
     that would silently train against a wrong pair.
     """
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     seen: dict[str, torch.Tensor] = {}
     strat = _strategy(_parameter_activation="softplus")
@@ -541,7 +541,7 @@ def test_compute_losses_rejects_a_bare_tensor_batch() -> None:
 
 def test_compute_losses_accepts_a_canonical_trainingbatch() -> None:
     """REGRESSION: the real pipeline passes batch=<TrainingBatch> in kwargs."""
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     out = _strategy()._compute_losses_impl(
@@ -615,7 +615,7 @@ def test_a_signal_model_with_the_wrong_parameter_contract_is_rejected() -> None:
     bind ktrans->amplitude and ve->t0_s and return a plausible curve, so the
     regime check alone cannot catch it — the parameter contract can.
     """
-    from mriforge.config.schemas.enums import Regime
+    from spectramr.config.schemas.enums import Regime
 
     spec = get_signal_model("gamma_variate")
     assert spec.regime is Regime.PERFUSION  # the regime check would PASS...

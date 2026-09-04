@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.config.presets.cli`.
+"""Unit tests for :mod:`spectramr.config.presets.cli`.
 
 The CLI helpers are thin orchestration over :class:`PresetRegistry`. We
 exercise:
@@ -22,8 +22,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.presets import ConfigPreset, PresetRegistry
-from mriforge.config.presets.cli import (
+from spectramr.config.presets import ConfigPreset, PresetRegistry
+from spectramr.config.presets.cli import (
     _deep_update,
     get_baseline_preset,
     get_preset_categories,

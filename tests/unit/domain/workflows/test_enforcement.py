@@ -6,10 +6,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.enums import Maturity, Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.domain.exceptions import WorkflowNotImplementedError
-from mriforge.domain.workflows import (
+from spectramr.config.schemas.enums import Maturity, Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.domain.exceptions import WorkflowNotImplementedError
+from spectramr.domain.workflows import (
     WORKFLOW_PROFILES,
     enforce_pipeline_maturity,
     enforce_pipeline_maturity_for_config,
@@ -38,7 +38,7 @@ def test_eval_only_raises_only_from_train(monkeypatch: pytest.MonkeyPatch) -> No
     """
     import dataclasses
 
-    from mriforge.domain.workflows import profiles as profiles_module
+    from spectramr.domain.workflows import profiles as profiles_module
 
     live = WORKFLOW_PROFILES[Regime.SPECTROSCOPIC]
     eval_only = dataclasses.replace(live, maturity=Maturity.EVAL_ONLY)

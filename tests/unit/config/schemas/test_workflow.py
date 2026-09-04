@@ -10,9 +10,9 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import Regime, Task
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.domain.workflows import WORKFLOW_PROFILES
+from spectramr.config.schemas.enums import Regime, Task
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.domain.workflows import WORKFLOW_PROFILES
 
 
 def test_valid_regime_and_task() -> None:

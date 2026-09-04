@@ -26,7 +26,7 @@ from tests.utils.config_load_baseline import corpus_params
 # installed. So the mock protected nothing, and its one real effect was harmful:
 # ``patch.dict(sys.modules, ...)`` snapshots ``sys.modules`` on entry and
 # restores it on exit, EVICTING every module imported while it was active. At
-# module scope that is most of ``mriforge``. The next test file to import those
+# module scope that is most of ``spectramr``. The next test file to import those
 # modules re-executed them, re-running every ``@register_model`` decorator, and
 # the registry correctly refused the duplicate:
 #
@@ -41,7 +41,7 @@ from tests.utils.config_load_baseline import corpus_params
 
 # Helper to import Settings inside tests
 def get_settings_class():
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings
 
@@ -70,7 +70,7 @@ class DummyModel(torch.nn.Module):
 @pytest.fixture(scope="session", autouse=True)
 def mock_model_registry():
     """Patch ModelRegistry to return DummyModel for unregistered types."""
-    from mriforge.models.factories.model_factory import ModelRegistry
+    from spectramr.models.factories.model_factory import ModelRegistry
 
     original_get = ModelRegistry.get_generator_class
     original_has = ModelRegistry.has_generator
@@ -121,7 +121,7 @@ def test_config_loads_successfully(config_path):
 @pytest.mark.parametrize("config_path", CONFIG_PARAMS)
 def test_model_type_registered(config_path, mock_model_registry):
     """Test that model types are registered (or can be mocked)."""
-    from mriforge.models.factories.model_factory import ModelFactory
+    from spectramr.models.factories.model_factory import ModelFactory
 
     settings = get_settings_class().from_yaml(config_path)
     model_type = settings.model.model_type

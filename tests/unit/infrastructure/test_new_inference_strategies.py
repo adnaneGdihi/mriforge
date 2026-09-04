@@ -92,7 +92,7 @@ class TestDisentangledInferenceStrategyImport:
 
     def test_import(self) -> None:
         """Test strategy can be imported."""
-        from mriforge.infrastructure.inference.disentangled_inference_strategy import (
+        from spectramr.infrastructure.inference.disentangled_inference_strategy import (
             DisentangledInferenceStrategy,
         )
 
@@ -109,7 +109,7 @@ class TestDisentangledInferenceStrategy:
     @pytest.fixture
     def strategy(self) -> Any:
         """Create strategy with mock model."""
-        from mriforge.infrastructure.inference.disentangled_inference_strategy import (
+        from spectramr.infrastructure.inference.disentangled_inference_strategy import (
             DisentangledInferenceStrategy,
         )
 
@@ -121,7 +121,7 @@ class TestDisentangledInferenceStrategy:
     @pytest.fixture
     def tissue_param_strategy(self) -> Any:
         """Create strategy with tissue parameter model."""
-        from mriforge.infrastructure.inference.disentangled_inference_strategy import (
+        from spectramr.infrastructure.inference.disentangled_inference_strategy import (
             DisentangledInferenceStrategy,
         )
 
@@ -143,7 +143,7 @@ class TestDisentangledInferenceStrategy:
 
     def test_training_mode_property(self, strategy: Any) -> None:
         """Test training_mode property returns correct enum."""
-        from mriforge.config.schemas.enums import TrainingModeTypes
+        from spectramr.config.schemas.enums import TrainingModeTypes
 
         assert strategy.training_mode == TrainingModeTypes.DISENTANGLED
 
@@ -233,7 +233,7 @@ class TestVQVAEInferenceStrategyImport:
 
     def test_import(self) -> None:
         """Test strategy can be imported."""
-        from mriforge.infrastructure.inference.vqvae_inference_strategy import (
+        from spectramr.infrastructure.inference.vqvae_inference_strategy import (
             VQVAEInferenceStrategy,
         )
 
@@ -248,7 +248,7 @@ class TestVQVAEInferenceStrategy:
     @pytest.fixture
     def strategy(self) -> Any:
         """Create strategy with mock model."""
-        from mriforge.infrastructure.inference.vqvae_inference_strategy import (
+        from spectramr.infrastructure.inference.vqvae_inference_strategy import (
             VQVAEInferenceStrategy,
         )
 
@@ -271,7 +271,7 @@ class TestVQVAEInferenceStrategy:
 
     def test_training_mode_property(self, strategy: Any) -> None:
         """Test training_mode property returns VAE enum."""
-        from mriforge.config.schemas.enums import TrainingModeTypes
+        from spectramr.config.schemas.enums import TrainingModeTypes
 
         # VQ-VAE falls under VAE category
         assert strategy.training_mode == TrainingModeTypes.VAE
@@ -333,7 +333,7 @@ class TestPhysicsDrivenInferenceStrategyImport:
 
     def test_import(self) -> None:
         """Test strategy can be imported."""
-        from mriforge.infrastructure.inference.physics_driven_inference_strategy import (
+        from spectramr.infrastructure.inference.physics_driven_inference_strategy import (
             PhysicsDrivenInferenceStrategy,
         )
 
@@ -348,7 +348,7 @@ class TestPhysicsDrivenInferenceStrategy:
     @pytest.fixture
     def strategy(self) -> Any:
         """Create strategy with mock model."""
-        from mriforge.infrastructure.inference.physics_driven_inference_strategy import (
+        from spectramr.infrastructure.inference.physics_driven_inference_strategy import (
             PhysicsDrivenInferenceStrategy,
         )
 
@@ -369,7 +369,7 @@ class TestPhysicsDrivenInferenceStrategy:
     @pytest.fixture
     def strategy_dc_disabled(self) -> Any:
         """Create strategy with DC disabled."""
-        from mriforge.infrastructure.inference.physics_driven_inference_strategy import (
+        from spectramr.infrastructure.inference.physics_driven_inference_strategy import (
             PhysicsDrivenInferenceStrategy,
         )
 
@@ -392,7 +392,7 @@ class TestPhysicsDrivenInferenceStrategy:
 
     def test_training_mode_property(self, strategy: Any) -> None:
         """Test training_mode property returns RECONSTRUCTION enum."""
-        from mriforge.config.schemas.enums import TrainingModeTypes
+        from spectramr.config.schemas.enums import TrainingModeTypes
 
         assert strategy.training_mode == TrainingModeTypes.RECONSTRUCTION
 
@@ -462,7 +462,7 @@ class TestInferenceFactoryRegistration:
 
     def test_disentangled_registered(self) -> None:
         """Test disentangled strategy is registered."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -477,7 +477,7 @@ class TestInferenceFactoryRegistration:
 
     def test_vqvae_registered(self) -> None:
         """Test VQVAE strategy is registered."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -492,7 +492,7 @@ class TestInferenceFactoryRegistration:
 
     def test_physics_driven_registered(self) -> None:
         """Test physics-driven strategy is registered."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -507,7 +507,7 @@ class TestInferenceFactoryRegistration:
 
     def test_factory_infers_disentangled_from_training_mode(self) -> None:
         """Test factory correctly infers disentangled from training_mode."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -517,7 +517,7 @@ class TestInferenceFactoryRegistration:
 
     def test_factory_infers_vqvae_from_training_mode(self) -> None:
         """Test factory correctly infers vqvae from training_mode."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -527,7 +527,7 @@ class TestInferenceFactoryRegistration:
 
     def test_factory_infers_disentangled_from_style_dim(self) -> None:
         """Test factory infers disentangled from style_dim in model config."""
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -541,14 +541,14 @@ class TestEnumRegistration:
 
     def test_disentangled_in_training_mode(self) -> None:
         """Test DISENTANGLED exists in TrainingMode enum."""
-        from mriforge.config.schemas.enums import TrainingMode
+        from spectramr.config.schemas.enums import TrainingMode
 
         assert hasattr(TrainingMode, "DISENTANGLED")
         assert TrainingMode.DISENTANGLED.value == "disentangled"
 
     def test_disentangled_in_training_mode_types(self) -> None:
         """Test DISENTANGLED exists in TrainingModeTypes enum."""
-        from mriforge.config.schemas.enums import TrainingModeTypes
+        from spectramr.config.schemas.enums import TrainingModeTypes
 
         assert hasattr(TrainingModeTypes, "DISENTANGLED")
         assert TrainingModeTypes.DISENTANGLED.value == "disentangled"
@@ -622,7 +622,7 @@ class TestDomainAdaptationInferenceStrategy:
 
     @pytest.fixture
     def strategy(self) -> Any:
-        from mriforge.infrastructure.inference.domain_adaptation_inference_strategy import (
+        from spectramr.infrastructure.inference.domain_adaptation_inference_strategy import (
             DomainAdaptationInferenceStrategy,
         )
 
@@ -658,7 +658,7 @@ class TestLatentGANInferenceStrategy:
 
     @pytest.fixture
     def strategy(self) -> Any:
-        from mriforge.infrastructure.inference.latent_gan_inference_strategy import (
+        from spectramr.infrastructure.inference.latent_gan_inference_strategy import (
             LatentGANInferenceStrategy,
         )
 
@@ -679,7 +679,7 @@ class TestLatentDiffusionInferenceStrategy:
 
     @pytest.fixture
     def strategy(self) -> Any:
-        from mriforge.infrastructure.inference.latent_diffusion_inference_strategy import (
+        from spectramr.infrastructure.inference.latent_diffusion_inference_strategy import (
             LatentDiffusionInferenceStrategy,
         )
 
@@ -700,7 +700,7 @@ class TestMAEInferenceStrategy:
 
     @pytest.fixture
     def strategy(self) -> Any:
-        from mriforge.infrastructure.inference.mae_inference_strategy import (
+        from spectramr.infrastructure.inference.mae_inference_strategy import (
             MAEInferenceStrategy,
         )
 
@@ -720,7 +720,7 @@ class TestExtendedFactoryRegistration:
     """Test factory registration for new strategies."""
 
     def test_all_strategies_registered(self) -> None:
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 
@@ -757,7 +757,7 @@ class TestExtendedFactoryRegistration:
         assert mae_strategy is not None
 
     def test_detection_logic(self) -> None:
-        from mriforge.infrastructure.inference.inference_factory import (
+        from spectramr.infrastructure.inference.inference_factory import (
             InferenceStrategyFactory,
         )
 

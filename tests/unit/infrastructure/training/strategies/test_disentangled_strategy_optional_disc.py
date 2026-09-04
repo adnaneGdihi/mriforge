@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.disentangled_strategy import (
+from spectramr.infrastructure.training.strategies.disentangled_strategy import (
     DisentangledTrainingStrategy,
 )
 
@@ -90,7 +90,7 @@ class DummyEnvironment:
 @pytest.fixture
 def patch_bloch():
     with patch(
-        "mriforge.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
+        "spectramr.infrastructure.training.strategies.disentangled_strategy.MultiPhysicsBlochLayer"
     ) as mock:
         yield mock
 
@@ -98,7 +98,7 @@ def patch_bloch():
 @pytest.fixture
 def patch_loss_computer():
     with patch(
-        "mriforge.models.losses.computers.unified_disentangled.UnifiedDisentangledLossComputer"
+        "spectramr.models.losses.computers.unified_disentangled.UnifiedDisentangledLossComputer"
     ) as mock:
         mock_instance = mock.return_value
 
@@ -125,7 +125,7 @@ def patch_loss_builder():
     builder.return_value.build_latent_losses.return_value = builder.return_value
     builder.return_value.build.return_value = {}
     with patch(
-        "mriforge.infrastructure.training.builders.loss_builder.LossBuilder", builder
+        "spectramr.infrastructure.training.builders.loss_builder.LossBuilder", builder
     ):
         yield builder
 

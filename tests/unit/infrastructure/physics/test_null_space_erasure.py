@@ -1,6 +1,6 @@
 """Tests for ``NullSpaceMarkerEraser``.
 
-Targets ``mriforge.infrastructure.physics.null_space_erasure``. Orthogonal
+Targets ``spectramr.infrastructure.physics.null_space_erasure``. Orthogonal
 projection that removes the marker's spatial-basis component from a
 corrupted measurement via a Tikhonov-regularised pseudo-inverse.
 
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
+from spectramr.infrastructure.physics.null_space_erasure import NullSpaceMarkerEraser
 
 
 # ---------------------------------------------------------------------------

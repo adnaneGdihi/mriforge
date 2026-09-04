@@ -1,6 +1,6 @@
 """Tests for ``CheckpointConfigSchema``.
 
-Targets ``mriforge.config.schemas.checkpoint``. Validates: defaults, ge
+Targets ``spectramr.config.schemas.checkpoint``. Validates: defaults, ge
 constraints, ``frozen=True``, ``extra='ignore'`` (lenient), validation
 alias ``save_dir → checkpoint_dir``.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
 
 # ---------------------------------------------------------------------------

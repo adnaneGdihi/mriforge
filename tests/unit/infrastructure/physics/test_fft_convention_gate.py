@@ -26,7 +26,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.infrastructure.physics.fft_ops import (
     FFTTransformer,
     fft2c,
     fft_volume_full3d_uncentered,

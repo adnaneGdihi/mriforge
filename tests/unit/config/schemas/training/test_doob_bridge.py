@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.doob_bridge import DoobBridgeConfig
+from spectramr.config.schemas.training.doob_bridge import DoobBridgeConfig
 
 
 def test_defaults() -> None:
@@ -38,6 +38,6 @@ def test_anchor_scale_knob_validates() -> None:
 
 
 def test_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "doob_bridge" in TrainingStrategyConfigSchema.model_fields

@@ -1,7 +1,7 @@
 """WS-7 TE-004: the deprecated ``strategy_collaborators`` re-export shim must not
 emit a module-level ``DeprecationWarning`` at import time.
 
-The project promotes ``DeprecationWarning`` from ``mriforge.*`` to an error under
+The project promotes ``DeprecationWarning`` from ``spectramr.*`` to an error under
 strict ``filterwarnings`` (see ``.claude/rules/testing.md``); a warn-on-import on
 a still-first-class shim would break any importer / star-import of it. The
 deprecation remains documented in the module docstring, and the re-exports stay
@@ -16,7 +16,7 @@ import warnings
 
 
 def test_strategy_collaborators_import_emits_no_deprecation_warning() -> None:
-    mod = "mriforge.infrastructure.training.strategy_collaborators"
+    mod = "spectramr.infrastructure.training.strategy_collaborators"
     sys.modules.pop(mod, None)
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")

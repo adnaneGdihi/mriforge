@@ -14,11 +14,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.relaxation_priors import (  # noqa: E402
+from spectramr.infrastructure.physics.relaxation_priors import (  # noqa: E402
     TissueClass,
     bottomley_t1,
 )
-from mriforge.infrastructure.physics.relaxometric_calibration import (  # noqa: E402
+from spectramr.infrastructure.physics.relaxometric_calibration import (  # noqa: E402
     AcquisitionParams,
     measured_gain,
     relaxometric_gain,

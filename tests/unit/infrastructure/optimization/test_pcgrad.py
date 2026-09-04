@@ -6,7 +6,7 @@ interference between conflicting loss gradients.
 
 import torch
 
-from mriforge.infrastructure.optimization.pcgrad import (
+from spectramr.infrastructure.optimization.pcgrad import (
     apply_pcgrad_to_losses,
     project_conflicting_gradients,
 )

@@ -1,4 +1,4 @@
-"""Expansion tests for ``mriforge.infrastructure.physics.sampling``.
+"""Expansion tests for ``spectramr.infrastructure.physics.sampling``.
 
 This module fills the partial-coverage gap in ``sampling.py`` (the largest
 gap in the physics package). It exercises EACH advertised sampling
@@ -39,7 +39,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     MAX_ACCELERATION,
     SUPPORTED_ACCELERATION_TYPES,
     ColdDiffusionAccelerator,
@@ -981,7 +981,7 @@ class TestAcceleratorMemoization:
         assert torch.equal(mask.bool(), expected)
 
     def test_radial_binary_search_runs_once_per_timestep(self, monkeypatch) -> None:
-        from mriforge.infrastructure.physics import trajectories as traj_mod
+        from spectramr.infrastructure.physics import trajectories as traj_mod
 
         calls = {"n": 0}
         orig = traj_mod.TrajectoryFactory.get_radial_trajectory
@@ -1007,7 +1007,7 @@ class TestAcceleratorMemoization:
 
 def test_low_pass_is_reachable_from_config() -> None:
     """An accelerator no YAML can name is dead weight with a test suite (#954)."""
-    from mriforge.infrastructure.physics.sampling import (
+    from spectramr.infrastructure.physics.sampling import (
         LowPassAccelerator,
         create_kspace_accelerator,
     )
@@ -1028,7 +1028,7 @@ def test_linear_honours_a_step_schedule() -> None:
     """
     import pytest
 
-    from mriforge.infrastructure.physics.sampling import create_kspace_accelerator
+    from spectramr.infrastructure.physics.sampling import create_kspace_accelerator
 
     accelerator = create_kspace_accelerator(
         acceleration_type="linear",

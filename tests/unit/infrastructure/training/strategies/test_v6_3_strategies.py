@@ -10,41 +10,41 @@ import importlib
 
 import pytest
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 V6_3_STRATEGIES: list[tuple[str, str, str]] = [
     # ULF Phase-1 remainder
     ("mri_slam",
-     "mriforge.infrastructure.training.strategies.mri_slam_strategy",
+     "spectramr.infrastructure.training.strategies.mri_slam_strategy",
      "MRISLAMStrategy"),
     ("noise_adaptive_score",
-     "mriforge.infrastructure.training.strategies.noise_adaptive_score_strategy",
+     "spectramr.infrastructure.training.strategies.noise_adaptive_score_strategy",
      "NoiseAdaptiveScoreStrategy"),
     ("diffeomorphic_recon",
-     "mriforge.infrastructure.training.strategies.diffeomorphic_recon_strategy",
+     "spectramr.infrastructure.training.strategies.diffeomorphic_recon_strategy",
      "DiffeomorphicReconStrategy"),
     ("field_probe_coupled",
-     "mriforge.infrastructure.training.strategies.field_probe_coupled_strategy",
+     "spectramr.infrastructure.training.strategies.field_probe_coupled_strategy",
      "FieldProbeCoupledStrategy"),
     ("spin_sde",
-     "mriforge.infrastructure.training.strategies.spin_sde_strategy",
+     "spectramr.infrastructure.training.strategies.spin_sde_strategy",
      "SpinSDEStrategy"),
     ("coord_kspace_gen",
-     "mriforge.infrastructure.training.strategies.coord_kspace_gen_strategy",
+     "spectramr.infrastructure.training.strategies.coord_kspace_gen_strategy",
      "CoordKSpaceGenStrategy"),
     # Integration plan ideas
     ("bloch_bottleneck",
-     "mriforge.infrastructure.training.strategies.bloch_bottleneck_strategy",
+     "spectramr.infrastructure.training.strategies.bloch_bottleneck_strategy",
      "BlochBottleneckStrategy"),
     ("cycle_bloch_digital_twin",
-     "mriforge.infrastructure.training.strategies.cycle_bloch_digital_twin_strategy",
+     "spectramr.infrastructure.training.strategies.cycle_bloch_digital_twin_strategy",
      "CycleBlochDigitalTwinStrategy"),
     ("cross_contrast_kspace_diffusion",
-     "mriforge.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy",
+     "spectramr.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy",
      "CrossContrastKspaceDiffusionStrategy"),
     ("synthetic_pathology_aug",
-     "mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy",
+     "spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy",
      "SyntheticPathologyAugStrategy"),
 ]
 
@@ -64,7 +64,7 @@ def test_strategy_factory_resolves(alias: str, module_path: str, cls_name: str) 
 
 def test_phase2_pipelines_render_to_campaign_dict() -> None:
     """ULF Phase-2 pipelines render as sequential campaign dicts."""
-    from mriforge.pipelines.ulf_phase2 import (
+    from spectramr.pipelines.ulf_phase2 import (
         GradientSteeringPipeline,
         KspaceGenSequenceTestPipeline,
         NoiseDominantPipeline,

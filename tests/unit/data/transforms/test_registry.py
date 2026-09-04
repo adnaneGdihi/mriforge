@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.transforms.registry import (
+from spectramr.data.transforms.registry import (
     TRANSFORM_REGISTRY,
     RegisteredTransform,
     build_transform,
@@ -34,7 +34,7 @@ class TestRegistryPopulation:
         """
         import importlib
 
-        importlib.import_module("mriforge.data.transforms")
+        importlib.import_module("spectramr.data.transforms")
         assert list_transforms(), "registry is empty after importing the package"
 
     def test_expected_transforms_are_registered(self):
@@ -71,7 +71,7 @@ class TestUnregisteredNamesRaise:
         a user why their arm's named mechanism did nothing.
         """
         with pytest.raises(KeyError) as exc:
-            get_transform("mriforge.data.transforms.slice_profile.SliceProfileTransform")
+            get_transform("spectramr.data.transforms.slice_profile.SliceProfileTransform")
         assert "Dotted import paths are not supported" in str(exc.value)
 
     def test_build_transform_also_raises_on_an_unknown_name(self):
@@ -79,11 +79,33 @@ class TestUnregisteredNamesRaise:
             build_transform("definitely_not_a_transform")
 
 
+#: Entries needing constructor args to build at all. Anything absent is expected
+#: to construct on defaults.
+#:
+#: ``simulate_ulf_from_qmaps`` takes ``b0_source`` with no default on purpose: it
+#: is the field the maps were measured at, and the operator transports T1 away
+#: from it. Defaulting it to 3.0 would silently mis-transport 7 T maps by 34.5 %
+#: (193.37 ms rendered as 260.12 ms at 0.064 T), which is a plausible image, not
+#: an error. Declaring the arg here is what keeps the constructibility invariant
+#: honest without inventing a wrong physical default.
+_BUILD_KWARGS: dict[str, dict] = {
+    "graph_encoding": {},
+    "simulate_ulf_from_qmaps": {"b0_source": 3.0},
+}
+
+
 class TestConstruction:
     @pytest.mark.parametrize("name", list_transforms())
-    def test_every_registered_transform_constructs_with_defaults(self, name):
-        """Registration without constructibility is a facade of its own."""
-        assert build_transform(name) is not None
+    def test_every_registered_transform_constructs(self, name):
+        """Registration without constructibility is a facade of its own.
+
+        Args a transform genuinely requires come from ``_BUILD_KWARGS``, the
+        same table the both-chains tests below read. Two tests in one file
+        asking "can this be built" through different mechanisms is a second
+        owner for one invariant (non-negotiable 17); this reads the one table,
+        so a required arg with no entry there still fails.
+        """
+        assert build_transform(name, **_BUILD_KWARGS.get(name, {})) is not None
 
     def test_declared_kwargs_reach_the_constructor(self):
         t = build_transform("phase_residual", kernel_size=7)
@@ -162,10 +184,6 @@ class TestProducerInvariant:
             assert entry.produces, f"{name} declares no produces=() keys"
 
 
-#: Entries needing constructor args to build at all. Anything absent is expected
-#: to construct on defaults.
-_BUILD_KWARGS: dict[str, dict] = {"graph_encoding": {}}
-
 #: The five modules D16's wire half attached.
 _D16_WIRED = (
     "homomorphic_bias_field",
@@ -188,23 +206,21 @@ class TestEveryRegisteredTransformReachesBothChains:
 
     @staticmethod
     def _chain(name, kwargs, build):
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformConfig,
         )
         from tests.utils.data_config_stub import DataConfigStub
 
         cfg = DataConfigStub(
-            processing=DataProcessingConfigSchema(
-                transforms=[{"name": name, "kwargs": kwargs}]
-            )
+            processing=DataProcessingConfigSchema(transforms=[{"name": name, "kwargs": kwargs}])
         )
         return build(TorchIOTransformConfig.from_training_config(cfg))
 
     @pytest.mark.parametrize("name", sorted(TRANSFORM_REGISTRY))
     @pytest.mark.parametrize("which", ["train", "val"])
     def test_a_declared_transform_lands_in_the_built_chain(self, name, which):
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformBuilder,
         )
 
@@ -223,7 +239,7 @@ class TestEveryRegisteredTransformReachesBothChains:
         """Applying a declared transform to train only reproduces the
         normalization split this audit already found: the model would be graded
         on data the transform never touched."""
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformBuilder,
         )
 
@@ -287,9 +303,7 @@ class TestD16WiredTransforms:
         import inspect
 
         mod = inspect.getmodule(TRANSFORM_REGISTRY["joint_rotation"].cls)
-        assert "there is no ``@register_transform`` decorator" not in (
-            mod.__doc__ or ""
-        )
+        assert "there is no ``@register_transform`` decorator" not in (mod.__doc__ or "")
 
 
 class TestDeletedAugmentationPipeline:
@@ -300,13 +314,12 @@ class TestDeletedAugmentationPipeline:
         import importlib
 
         with pytest.raises(ModuleNotFoundError):
-            importlib.import_module("mriforge.data.transforms.augmentation_pipeline")
+            importlib.import_module("spectramr.data.transforms.augmentation_pipeline")
 
     def test_it_was_never_registered(self):
         """It must not come back through the registry either: its randomness is
         drawn per CALL, so input and target would get different geometry."""
         assert "augmentation_pipeline" not in TRANSFORM_REGISTRY
         assert not any(
-            "augmentation_pipeline" in entry.cls.__module__
-            for entry in TRANSFORM_REGISTRY.values()
+            "augmentation_pipeline" in entry.cls.__module__ for entry in TRANSFORM_REGISTRY.values()
         )

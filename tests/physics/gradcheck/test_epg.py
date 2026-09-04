@@ -1,6 +1,6 @@
 """Tier-1 gradcheck tests for the EPG (Extended Phase Graph) simulation.
 
-Two functions from ``mriforge.infrastructure.physics.epg`` are covered:
+Two functions from ``spectramr.infrastructure.physics.epg`` are covered:
 
 1. ``simulate_differentiable_epg_fse`` — simplified differentiable FSE proxy.
    All operations are standard torch ops; gradcheck is feasible on a small
@@ -23,7 +23,7 @@ import pytest
 import torch
 from torch.autograd import gradcheck
 
-from mriforge.infrastructure.physics.epg import (
+from spectramr.infrastructure.physics.epg import (
     simulate_differentiable_epg_fse,
     simulate_full_epg_fse,
 )

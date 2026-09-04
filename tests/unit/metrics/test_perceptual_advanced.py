@@ -35,7 +35,7 @@ def _is_finite_scalar(t: torch.Tensor) -> bool:
 class TestPDM:
     @pytest.fixture
     def pdm(self):
-        from mriforge.core.metrics.perceptual_advanced import PDM
+        from spectramr.core.metrics.perceptual_advanced import PDM
         return PDM()
 
     # canary
@@ -99,7 +99,7 @@ class TestPDM:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.perceptual_advanced import PDM
+        from spectramr.core.metrics.perceptual_advanced import PDM
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=99)
@@ -115,7 +115,7 @@ class TestPDM:
 class TestCWSSIM:
     @pytest.fixture
     def cwssim(self):
-        from mriforge.core.metrics.perceptual_advanced import CWSSIM
+        from spectramr.core.metrics.perceptual_advanced import CWSSIM
         return CWSSIM()
 
     # canary
@@ -164,7 +164,7 @@ class TestCWSSIM:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.perceptual_advanced import CWSSIM
+        from spectramr.core.metrics.perceptual_advanced import CWSSIM
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=77)
@@ -180,7 +180,7 @@ class TestCWSSIM:
 class TestMAD:
     @pytest.fixture
     def mad(self):
-        from mriforge.core.metrics.perceptual_advanced import MAD
+        from spectramr.core.metrics.perceptual_advanced import MAD
         return MAD()
 
     # canary
@@ -200,7 +200,7 @@ class TestMAD:
 
     @pytest.mark.parametrize("dw", [0.0, 0.5, 1.0])
     def test_detection_weight_range(self, dw):
-        from mriforge.core.metrics.perceptual_advanced import MAD
+        from spectramr.core.metrics.perceptual_advanced import MAD
         m = MAD(detection_weight=dw)
         x = _img()
         y = _img(seed=4)
@@ -230,7 +230,7 @@ class TestMAD:
     @pytest.mark.sanity_shape
     @pytest.mark.parametrize("shape", SHAPE_MATRIX_2D, ids=shape_id)
     def test_shape_matrix(self, shape):
-        from mriforge.core.metrics.perceptual_advanced import MAD
+        from spectramr.core.metrics.perceptual_advanced import MAD
         b, c, h, w = shape
         x = _img(b, c, h, w)
         y = _img(b, c, h, w, seed=55)
@@ -246,7 +246,7 @@ class TestMAD:
 class TestSTMAD:
     @pytest.fixture
     def stmad(self):
-        from mriforge.core.metrics.perceptual_advanced import STMAD
+        from spectramr.core.metrics.perceptual_advanced import STMAD
         return STMAD()
 
     def _seq(self, b: int = 1, t: int = 4, c: int = 1, h: int = 16, w: int = 16,

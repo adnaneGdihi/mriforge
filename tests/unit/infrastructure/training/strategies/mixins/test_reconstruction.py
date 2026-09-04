@@ -30,7 +30,7 @@ from types import SimpleNamespace
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 
@@ -133,8 +133,8 @@ def test_mixin_multislice_flag_is_read_directly() -> None:
     of the block, so both had to be fixed together."""
     import inspect
 
-    from mriforge.config.schemas.data import DataConfigSchema
-    from mriforge.infrastructure.training.strategies.mixins import reconstruction
+    from spectramr.config.schemas.data import DataConfigSchema
+    from spectramr.infrastructure.training.strategies.mixins import reconstruction
 
     assert "multislice_enabled" in DataConfigSchema.model_fields
     src = inspect.getsource(reconstruction)

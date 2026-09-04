@@ -9,7 +9,7 @@ unpacking, metadata handling, and batch format adaptation.
 import pytest
 import torch
 
-from mriforge.data.batch_types import (
+from spectramr.data.batch_types import (
     BatchAdapter,
     TrainingBatch,
     align_scale_to_batch,
@@ -1016,7 +1016,7 @@ class TestCoilMapsAreOneFieldUnderFiveNames:
     def _batch(**extra):
         import torch
 
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         return BatchAdapter.from_dict(
             {
@@ -1038,7 +1038,7 @@ class TestCoilMapsAreOneFieldUnderFiveNames:
         """The point of the change: 19 consumer files keep their own name."""
         import torch
 
-        from mriforge.data.batch_types import COIL_MAP_ALIASES
+        from spectramr.data.batch_types import COIL_MAP_ALIASES
 
         batch = self._batch(sensitivity=torch.ones(1, 2, 4, 4))
         for alias in COIL_MAP_ALIASES:
@@ -1054,7 +1054,7 @@ class TestCoilMapsAreOneFieldUnderFiveNames:
         """
         import torch
 
-        from mriforge.data.batch_types import COIL_MAP_ALIASES
+        from spectramr.data.batch_types import COIL_MAP_ALIASES
 
         with_maps = self._batch(sensitivity=torch.ones(1, 2, 4, 4))
         without = self._batch()
@@ -1131,13 +1131,13 @@ class TestBatchAxes:
     def test_default_is_none_so_existing_callers_are_unchanged(self) -> None:
         """Every pre-C8 call site must keep behaving as before: unresolved,
         therefore skipped -- NOT a claim that the batch has no axes."""
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         assert BatchAdapter.from_dict(self._minimal()).axes is None
 
     def test_axes_are_carried_through_from_dict(self) -> None:
-        from mriforge.config.schemas.enums import Axis
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.config.schemas.enums import Axis
+        from spectramr.data.batch_types import BatchAdapter
 
         batch = BatchAdapter.from_dict(self._minimal(), axes=frozenset({Axis.TEMPORAL}))
         assert batch.axes == frozenset({Axis.TEMPORAL})
@@ -1146,15 +1146,15 @@ class TestBatchAxes:
         """The trap: every consumer runs AFTER ``.to()``. A field dropped there
         reads ``None`` at literally every point that reads it -- a producer and
         a consumer that both exist, with nothing in between."""
-        from mriforge.config.schemas.enums import Axis
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.config.schemas.enums import Axis
+        from spectramr.data.batch_types import BatchAdapter
 
         batch = BatchAdapter.from_dict(self._minimal(), axes=frozenset({Axis.ECHO}))
         assert batch.to("cpu").axes == frozenset({Axis.ECHO})
 
     def test_empty_axes_are_preserved_as_a_positive_claim(self) -> None:
         """``frozenset()`` must not degrade to ``None`` anywhere in the path."""
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         batch = BatchAdapter.from_dict(self._minimal(), axes=frozenset())
         assert batch.axes == frozenset()
@@ -1164,8 +1164,8 @@ class TestBatchAxes:
     def test_axes_is_not_filed_into_metadata(self) -> None:
         """First-class field, not a metadata entry -- the C11 lesson: a key in
         metadata is a key every consumer's presence check silently misses."""
-        from mriforge.config.schemas.enums import Axis
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.config.schemas.enums import Axis
+        from spectramr.data.batch_types import BatchAdapter
 
         batch = BatchAdapter.from_dict(self._minimal(), axes=frozenset({Axis.COIL}))
         assert "axes" not in batch.metadata
@@ -1178,7 +1178,7 @@ class TestBatchAxesHaveAProducer:
     def test_the_train_loop_resolves_and_passes_axes(self) -> None:
         import inspect
 
-        from mriforge.pipelines.training_loop import _execute_training_loop
+        from spectramr.pipelines.training_loop import _execute_training_loop
 
         src = inspect.getsource(_execute_training_loop)
         assert "resolve_axes_for(" in src
@@ -1187,7 +1187,7 @@ class TestBatchAxesHaveAProducer:
     def test_the_validation_loop_resolves_and_passes_axes(self) -> None:
         import inspect
 
-        from mriforge.pipelines.train import _run_validation
+        from spectramr.pipelines.train import _run_validation
 
         src = inspect.getsource(_run_validation)
         assert "resolve_axes_for(" in src
@@ -1198,7 +1198,7 @@ class TestBatchAxesHaveAProducer:
         hot-path work the training-loop rules forbid. Resolve once."""
         import inspect
 
-        from mriforge.pipelines.training_loop import _execute_training_loop
+        from spectramr.pipelines.training_loop import _execute_training_loop
 
         src = inspect.getsource(_execute_training_loop)
         assert src.count("resolve_axes_for(") == 1

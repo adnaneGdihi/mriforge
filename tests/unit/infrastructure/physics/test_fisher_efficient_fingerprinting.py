@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fisher_efficient_fingerprinting import (
+from spectramr.infrastructure.physics.fisher_efficient_fingerprinting import (
     FisherEfficientFingerprintCert,
     cramer_rao_lower_bound,
     crb_efficiency,

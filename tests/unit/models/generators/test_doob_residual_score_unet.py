@@ -7,7 +7,7 @@ import inspect
 import pytest
 import torch
 
-from mriforge.models.generators.doob_residual_score_unet import DoobResidualScoreUNet
+from spectramr.models.generators.doob_residual_score_unet import DoobResidualScoreUNet
 
 
 def _net() -> DoobResidualScoreUNet:
@@ -101,8 +101,8 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "doob_residual_score_unet" in MODEL_REGISTRY

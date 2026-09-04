@@ -6,12 +6,12 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.field_conditioned_inr_strategy import (
+from spectramr.infrastructure.training.strategies.field_conditioned_inr_strategy import (
     FieldConditionedINRStrategy,
     _render,
     compute_field_conditioned_inr_loss,
 )
-from mriforge.models.generators.field_conditioned_inr import FieldConditionedINR
+from spectramr.models.generators.field_conditioned_inr import FieldConditionedINR
 
 
 def _net() -> FieldConditionedINR:
@@ -35,8 +35,8 @@ def test_forward_shape() -> None:
 def test_builder_image_losses_folded_via_seam() -> None:
     """Regime-2 suppression: declarative tv/log_spectral fold onto the inline L1 via the
     loss-SSOT seam; the inline l1 placeholder is skipped (no double-count)."""
-    from mriforge.models.losses.spectral_loss import LogSpectralLoss
-    from mriforge.models.losses.standard_losses import TotalVariationLoss
+    from spectramr.models.losses.spectral_loss import LogSpectralLoss
+    from spectramr.models.losses.standard_losses import TotalVariationLoss
 
     strat = object.__new__(FieldConditionedINRStrategy)
     strat.env = types.SimpleNamespace(
@@ -175,9 +175,9 @@ def test_validation_forward_raises_without_field() -> None:
 
 
 def test_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "field_conditioned_inr" in MODEL_REGISTRY
     assert "field_conditioned_inr" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
@@ -192,7 +192,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(FieldConditionedINRStrategy)
@@ -208,7 +208,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
 
 
 def test_contrast_id_threaded_to_model() -> None:
-    from mriforge.infrastructure.training.strategies.field_conditioned_inr_strategy import (
+    from spectramr.infrastructure.training.strategies.field_conditioned_inr_strategy import (
         compute_field_conditioned_inr_loss,
     )
 

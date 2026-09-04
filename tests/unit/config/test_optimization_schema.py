@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.optimization import OptimizationConfigSchema
+from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
 
 class TestOptimizationConfigSchema:
@@ -87,7 +87,7 @@ class TestAccumulateGradStepsRetired:
     def test_legacy_key_raises_naming_the_replacement(self) -> None:
         import pytest
 
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         with pytest.raises(Exception) as exc:
             OptimizationConfigSchema(accumulate_grad_steps=4)
@@ -101,12 +101,12 @@ class TestAccumulateGradStepsRetired:
         assert "migrate_config_keys.py" in msg
 
     def test_field_is_gone(self) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         assert "accumulate_grad_steps" not in OptimizationConfigSchema.model_fields
 
     def test_canonical_still_works(self) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         cfg = OptimizationConfigSchema(gradient_accumulation_steps=4)
         assert cfg.gradient.accumulation_steps == 4

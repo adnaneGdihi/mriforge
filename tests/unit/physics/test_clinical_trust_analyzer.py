@@ -19,7 +19,7 @@ class SimpleGenerator(nn.Module):
 
 class TestEstimateNoiseFloor:
     def test_noise_floor_positive(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             estimate_noise_floor,
         )
 
@@ -29,7 +29,7 @@ class TestEstimateNoiseFloor:
         assert (sigma > 0).all()
 
     def test_higher_noise_higher_estimate(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             estimate_noise_floor,
         )
 
@@ -42,7 +42,7 @@ class TestEstimateNoiseFloor:
 
 class TestNullSpaceResidual:
     def test_perfect_reconstruction_zero_residual(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -50,7 +50,7 @@ class TestNullSpaceResidual:
         # If prediction exactly matches what produced the k-space,
         # residual should be near zero
         image = torch.randn(1, 1, 16, 16)
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         kspace = fft2c(image.to(torch.complex64))
 
@@ -59,14 +59,14 @@ class TestNullSpaceResidual:
         assert residual.abs().max() < 1e-4, "Perfect recon should have zero residual"
 
     def test_hallucination_detected(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
         analyzer = ClinicalTrustAnalyzer(noise_threshold_sigma=0.0)
         # Create kspace from one image, but predict a different image
         image_real = torch.randn(1, 1, 16, 16)
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         kspace = fft2c(image_real.to(torch.complex64))
         # Predict something totally different
@@ -76,13 +76,13 @@ class TestNullSpaceResidual:
         assert trust_map.sum() > 0, "Hallucination should produce nonzero trust map"
 
     def test_masked_residual(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
         analyzer = ClinicalTrustAnalyzer(noise_threshold_sigma=0.0)
         image = torch.randn(1, 1, 16, 16)
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         kspace = fft2c(image.to(torch.complex64))
         mask = torch.zeros(1, 1, 16, 16)
@@ -94,7 +94,7 @@ class TestNullSpaceResidual:
 
 class TestJacobianSensitivity:
     def test_jacobian_computes(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -108,7 +108,7 @@ class TestJacobianSensitivity:
         assert jacs["t1"].shape == (1, 1, 8, 8)
 
     def test_jacobian_nonzero_for_used_param(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -135,7 +135,7 @@ class TestJacobianSensitivity:
         benign "parameter unused" Jacobian (CLAUDE.md pitfall #9). The fix uses
         signature introspection, so the inner crash now surfaces.
         """
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -158,7 +158,7 @@ class TestJacobianSensitivity:
         from the signature even without ``**kwargs`` — the Jacobian must be
         nonzero, proving the physical param actually reached the generator.
         """
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -178,7 +178,7 @@ class TestJacobianSensitivity:
         The physical param is genuinely unused -> the Jacobian is None and is
         reported as such (no crash, no silent kwarg injection).
         """
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
 
@@ -203,10 +203,10 @@ class TestJacobianSensitivity:
 
 class TestFullPipeline:
     def test_full_analysis_runs(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         analyzer = ClinicalTrustAnalyzer()
         gen = SimpleGenerator()
@@ -222,10 +222,10 @@ class TestFullPipeline:
         assert result.jacobian_b0 is not None
 
     def test_no_physical_params(self):
-        from mriforge.infrastructure.physics.clinical_trust_analyzer import (
+        from spectramr.infrastructure.physics.clinical_trust_analyzer import (
             ClinicalTrustAnalyzer,
         )
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         analyzer = ClinicalTrustAnalyzer()
         gen = SimpleGenerator()

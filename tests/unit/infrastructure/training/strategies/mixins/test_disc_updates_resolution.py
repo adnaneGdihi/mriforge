@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.mixins.adversarial import (
+from spectramr.infrastructure.training.strategies.mixins.adversarial import (
     _resolve_disc_updates,
 )
 

@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import math
 
-from mriforge.pipelines.hpo import _better_metric, _resolve_metric
+from spectramr.pipelines.hpo import _better_metric, _resolve_metric
 
 
 def test_minimize_prefers_lower_loss():

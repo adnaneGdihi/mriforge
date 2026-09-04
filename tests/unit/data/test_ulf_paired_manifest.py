@@ -27,7 +27,7 @@ import os
 import sys
 from pathlib import Path
 
-os.environ.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+os.environ.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
 
 import pytest
 

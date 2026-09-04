@@ -8,8 +8,8 @@ every check and early stopping never fired. The comparison is now strict.
 
 from __future__ import annotations
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.infrastructure.services.early_stopping import (
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.infrastructure.services.early_stopping import (
     EarlyStoppingService,
     MetricMode,
 )

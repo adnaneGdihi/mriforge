@@ -14,7 +14,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 64, 64
 
@@ -59,7 +59,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_canary_builds_and_forward_finite(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss()
         x = _img()
         y = _img(seed=1)
@@ -72,7 +72,7 @@ class TestPerceptualLoss:
     @_vgg_skip
     @pytest.mark.parametrize("criterion", ["l1", "mse"])
     def test_parametric_criteria(self, criterion: str):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss(criterion=criterion)
         x = _img()
         y = _img(seed=1)
@@ -84,7 +84,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_identity_near_zero(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss()
         x = _img()
         # Perceptual loss(x,x) should be 0 or very near 0
@@ -94,7 +94,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_nonneg(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss()
         x = _img()
         y = _img(seed=2)
@@ -103,7 +103,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_gradient_reaches_input(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss()
         x = _img().requires_grad_(True)
         y = _img(seed=2)
@@ -115,7 +115,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_edge_multichannel_grayscale(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss()
         x = _img(c=1)
         y = _img(c=1, seed=3)
@@ -126,7 +126,7 @@ class TestPerceptualLoss:
     @_vgg_skip
     def test_edge_nan_input_returns_zero(self):
         """NaN inputs should return 0 (nan-guard in PerceptualLoss.forward)."""
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = PerceptualLoss(use_input_norm=True)
         x = torch.full((B, 1, H, W), float("nan"))
         y = _img()
@@ -136,7 +136,7 @@ class TestPerceptualLoss:
     # ── Raises ──────────────────────────────────────────────────────────────
 
     def test_raises_unknown_criterion(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         # The PerceptualLoss constructor raises on unknown criterion.
         # We skip VGG instantiation by checking before the class init reaches VGG load.
         # NOTE: This will succeed or fail depending on whether VGG is available;
@@ -144,7 +144,7 @@ class TestPerceptualLoss:
         if not _VGG_AVAILABLE:
             pytest.skip("VGG not available; ImportError would mask ValueError")
         with pytest.raises(ValueError, match="criterion"):
-            from mriforge.models.losses.perceptual_loss import PerceptualLoss
+            from spectramr.models.losses.perceptual_loss import PerceptualLoss
             PerceptualLoss(criterion="nonexistent_criterion_xyz")
 
     def test_raises_actionable_message_when_torchvision_missing(
@@ -155,9 +155,9 @@ class TestPerceptualLoss:
         pointing at the pinned index, not a bare ModuleNotFoundError and not a
         silent fallback (non-negotiable #3)."""
         monkeypatch.setitem(sys.modules, "torchvision", None)
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
 
-        with pytest.raises(ImportError, match="pytorch-cu129"):
+        with pytest.raises(ImportError, match="pytorch-cu126"):
             PerceptualLoss()
 
     def test_raises_actionable_message_when_torchvision_abi_mismatched(
@@ -175,9 +175,9 @@ class TestPerceptualLoss:
         monkeypatch.setitem(
             sys.modules, "torchvision", _BrokenTorchvision("torchvision")
         )
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
 
-        with pytest.raises(ImportError, match="pytorch-cu129"):
+        with pytest.raises(ImportError, match="pytorch-cu126"):
             PerceptualLoss()
 
     # ── Registry ────────────────────────────────────────────────────────────
@@ -185,7 +185,7 @@ class TestPerceptualLoss:
     @pytest.mark.slow
     @_vgg_skip
     def test_registry_lookup(self):
-        from mriforge.models.losses.perceptual_loss import PerceptualLoss
+        from spectramr.models.losses.perceptual_loss import PerceptualLoss
         loss_fn = create_loss("perceptual")
         assert isinstance(loss_fn, PerceptualLoss)
 
@@ -200,7 +200,7 @@ class TestDISTS:
     @pytest.mark.slow
     @_vgg_skip
     def test_canary_builds_and_forward_finite(self):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = DISTS()
         x = _img(c=1)
         y = _img(c=1, seed=1)
@@ -211,7 +211,7 @@ class TestDISTS:
     @_vgg_skip
     @pytest.mark.parametrize("backbone", ["vgg19", "vgg16"])
     def test_parametric_backbones(self, backbone: str):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = DISTS(backbone=backbone)
         x = _img(c=1)
         y = _img(c=1, seed=2)
@@ -221,7 +221,7 @@ class TestDISTS:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_nonneg(self):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = DISTS()
         x = _img(c=1)
         y = _img(c=1, seed=3)
@@ -230,7 +230,7 @@ class TestDISTS:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_identity_near_zero(self):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = DISTS()
         x = _img(c=1)
         out = loss_fn(x, x)
@@ -239,7 +239,7 @@ class TestDISTS:
     @pytest.mark.slow
     @_vgg_skip
     def test_property_return_components(self):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = DISTS()
         x = _img(c=1)
         y = _img(c=1, seed=4)
@@ -249,14 +249,14 @@ class TestDISTS:
     def test_raises_unsupported_backbone(self):
         if not _VGG_AVAILABLE:
             pytest.skip("VGG not available")
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         with pytest.raises(ValueError, match="backbone"):
             DISTS(backbone="resnet50_xyz_unknown")
 
     @pytest.mark.slow
     @_vgg_skip
     def test_registry_lookup(self):
-        from mriforge.models.losses.perceptual_loss import DISTS
+        from spectramr.models.losses.perceptual_loss import DISTS
         loss_fn = create_loss("dists")
         assert isinstance(loss_fn, DISTS)
 
@@ -302,7 +302,7 @@ class TestTorchvisionWeightsAPI:
     def test_no_losses_module_passes_pretrained(self):
         from pathlib import Path
 
-        import mriforge.models.losses as losses_pkg
+        import spectramr.models.losses as losses_pkg
 
         root = Path(losses_pkg.__file__).parent
         offenders: list[str] = []

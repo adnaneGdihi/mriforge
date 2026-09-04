@@ -1,6 +1,6 @@
 """Tests for ``FieldFiLMBlock`` and ``FieldFiLMHypernet``.
 
-Targets ``mriforge.models.blocks.field_film_modulation`` — the FiLM
+Targets ``spectramr.models.blocks.field_film_modulation`` — the FiLM
 modulation primitive of XField-FM (idea 2 of
 ``TODO/integration_plan_ulf_cheap_fast_mri.md``).
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.field_film_modulation import FieldFiLMBlock
+from spectramr.models.blocks.field_film_modulation import FieldFiLMBlock
 
 
 # ---------------------------------------------------------------------------
@@ -149,7 +149,7 @@ def test_gradient_flows_to_block_parameters() -> None:
 # ---------------------------------------------------------------------------
 
 
-from mriforge.models.blocks.field_film_modulation import FieldFiLMHypernet  # noqa: E402
+from spectramr.models.blocks.field_film_modulation import FieldFiLMHypernet  # noqa: E402
 
 
 class TestFieldFiLMHypernet:
@@ -183,7 +183,7 @@ class TestFieldFiLMHypernet:
 
     def test_registered_under_field_film(self) -> None:
         """``get_hypernet('field_film', ...)`` returns a FieldFiLMHypernet."""
-        from mriforge.models.blocks.hypernet_api import get_hypernet
+        from spectramr.models.blocks.hypernet_api import get_hypernet
 
         h = get_hypernet(
             "field_film",

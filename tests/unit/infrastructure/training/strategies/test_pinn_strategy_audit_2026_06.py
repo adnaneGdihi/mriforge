@@ -1,7 +1,7 @@
 """Regression tests for the 2026-06 audit fixes to ``pinn_strategy``.
 
 Covers three BROKEN_STRATEGY_ONLY findings, all confined to
-``src/mriforge/infrastructure/training/strategies/pinn_strategy.py``:
+``src/spectramr/infrastructure/training/strategies/pinn_strategy.py``:
 
 1. Dead ``image_size`` config read replaced with canonical ``data.patch_size``.
 2. Broad ``except Exception`` around TensorBoard image logging narrowed to
@@ -20,7 +20,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.pinn_strategy import (
+from spectramr.infrastructure.training.strategies.pinn_strategy import (
     ConcretePINNSensitivityStrategy,
 )
 
@@ -85,7 +85,7 @@ class TestPatchSizePrecompute:
         # Avoid touching the registry: stub the schema check + loss creation.
         strategy._verify_strategy_config = lambda **_: None  # type: ignore[method-assign]
 
-        import mriforge.infrastructure.training.strategies.pinn_strategy as mod
+        import spectramr.infrastructure.training.strategies.pinn_strategy as mod
 
         orig_create_loss = mod.create_loss
         mod.create_loss = lambda *a, **k: MagicMock(  # type: ignore[assignment]

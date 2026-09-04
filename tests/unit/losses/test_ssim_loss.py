@@ -8,8 +8,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.ssim_loss import MSSSIMLoss, SSIMLoss, msssim_loss, ssim_loss
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.ssim_loss import MSSSIMLoss, SSIMLoss, msssim_loss, ssim_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 64, 64  # SSIM needs reasonably large images
 

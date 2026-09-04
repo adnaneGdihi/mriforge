@@ -1,6 +1,6 @@
 """Tests for density-compensation and gridding helpers.
 
-Targets ``mriforge.infrastructure.physics.gridding``. ``RadialDCF`` and
+Targets ``spectramr.infrastructure.physics.gridding``. ``RadialDCF`` and
 ``IterativeDCF`` produce per-sample density-compensation weights for
 non-Cartesian k-space; ``KaiserBesselKernel`` is the apodization helper
 used in analytic gridding inside iterative solvers.
@@ -13,7 +13,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.gridding import (
+from spectramr.infrastructure.physics.gridding import (
     IterativeDCF,
     KaiserBesselKernel,
     RadialDCF,

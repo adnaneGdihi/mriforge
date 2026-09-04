@@ -57,7 +57,7 @@ class TestTheDeletedPipelineIsResolved:
         import importlib
 
         with pytest.raises(ModuleNotFoundError):
-            importlib.import_module("mriforge.data.transforms.augmentation_pipeline")
+            importlib.import_module("spectramr.data.transforms.augmentation_pipeline")
 
     def test_the_formerly_stranded_flags_are_still_schema_fields(self):
         """Anti-staleness: a renamed field would silently empty this record."""
@@ -131,7 +131,7 @@ class TestAugmentationParameterOrphans:
         - Paired with an enable_* flag
         - Listed in INTENTIONAL_ORPHAN_PARAMS
         """
-        from mriforge.config.schemas.augmentation import AugmentationConfigSchema
+        from spectramr.config.schemas.augmentation import AugmentationConfigSchema
 
         all_fields = set(AugmentationConfigSchema.model_fields.keys())
         enable_flags = {f for f in all_fields if f.startswith("enable_")}

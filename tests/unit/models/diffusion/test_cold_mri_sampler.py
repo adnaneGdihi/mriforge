@@ -16,9 +16,9 @@ import pytest
 import torch
 
 # Importing the module triggers ``@register_sampler`` registration.
-from mriforge.models.diffusion import cold_mri_sampler  # noqa: F401
-from mriforge.models.diffusion.cold_mri_sampler import ColdMRISampler
-from mriforge.models.diffusion.samplers import SamplerRegistry, get_sampler
+from spectramr.models.diffusion import cold_mri_sampler  # noqa: F401
+from spectramr.models.diffusion.cold_mri_sampler import ColdMRISampler
+from spectramr.models.diffusion.samplers import SamplerRegistry, get_sampler
 
 
 def test_cold_mri_is_registered() -> None:
@@ -203,3 +203,75 @@ def test_wrapper_still_declares_no_var_keyword() -> None:
     """
     kinds = [p.kind for p in inspect.signature(ColdMRISampler.sample).parameters.values()]
     assert inspect.Parameter.VAR_KEYWORD not in kinds
+
+
+# ---------------------------------------------------------------------------
+# C6 knobs and the ensemble seed offset (issue #1286; validation ensemble, 2026-09)
+#
+# The wrapper's parameter list is the filter (see the test above). The three
+# determinism knobs are named parameters now, so what a generator forwards is
+# what the reverse loop runs with; ``seed_offset`` follows ``start_timestep``'s
+# rule and is pinned in both shapes for the same reason (#1422).
+# ---------------------------------------------------------------------------
+
+
+def test_sampler_determinism_kwargs_reach_the_wrapped_diffusion() -> None:
+    """The planted #1286 shape: the values must ARRIVE on the wrapped object."""
+    sampler = get_sampler(
+        "cold_mri",
+        kspace_log_scaled=False,
+        model=Mock(),
+        num_timesteps=7,
+        sampler_sigma=0.25,
+        sampler_seed=11,
+        selection_rule="fixed",
+    )
+    inner = sampler._diffusion
+    assert inner.sampler_sigma == pytest.approx(0.25)
+    assert inner.sampler_seed == 11
+    assert inner.selection_rule == "fixed"
+
+
+def test_sampler_determinism_kwargs_default_to_the_deterministic_sampler() -> None:
+    """Omitting them keeps the bit-for-bit deterministic loop every arm ran."""
+    inner = _make_sampler()._diffusion
+    assert inner.sampler_sigma == 0.0
+    assert inner.sampler_seed is None
+    assert inner.selection_rule == "fixed"
+
+
+def test_illegal_sampler_sigma_is_refused_at_construction() -> None:
+    with pytest.raises(ValueError, match="sampler_sigma"):
+        get_sampler(
+            "cold_mri", kspace_log_scaled=False, model=Mock(), num_timesteps=7, sampler_sigma=-1.0
+        )
+
+
+def test_sample_signature_exposes_seed_offset() -> None:
+    """Shape A: the generator's gate reads the signature, so it must be NAMED."""
+    assert "seed_offset" in inspect.signature(ColdMRISampler.sample).parameters
+
+
+def test_seed_offset_reaches_the_wrapped_diffusion() -> None:
+    """Shape B: the value must ARRIVE at ``PhysicsInformedColdDiffusion.sample``."""
+    sampler = _make_sampler()
+    spy = Mock(return_value=torch.zeros(1, 2, 4, 4))
+    sampler._diffusion.sample = spy
+
+    sampler.sample(
+        measurement=torch.zeros(1, 2, 4, 4),
+        mask=torch.ones(1, 1, 4, 4),
+        seed_offset=3,
+    )
+
+    assert spy.call_args.kwargs["seed_offset"] == 3
+
+
+def test_seed_offset_defaults_to_the_legacy_stream() -> None:
+    sampler = _make_sampler()
+    spy = Mock(return_value=torch.zeros(1, 2, 4, 4))
+    sampler._diffusion.sample = spy
+
+    sampler.sample(measurement=torch.zeros(1, 2, 4, 4), mask=torch.ones(1, 1, 4, 4))
+
+    assert spy.call_args.kwargs["seed_offset"] == 0

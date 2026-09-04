@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.regularizers import (
+from spectramr.models.losses.regularizers import (
     HankelLowRankLoss,
     HermitianSymmetryLoss,
     HessianSchattenLoss,
@@ -19,7 +19,7 @@ from mriforge.models.losses.regularizers import (
     PhaseSmoothnessComplexLoss,
     WaveletSparsityLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 32, 32
 

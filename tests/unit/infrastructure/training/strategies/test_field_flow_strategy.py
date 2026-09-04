@@ -6,11 +6,11 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+from spectramr.infrastructure.training.strategies.field_flow_strategy import (
     compute_field_flow_losses,
     integrate_field_flow,
 )
-from mriforge.models.generators.field_velocity_unet import FieldVelocityUNet
+from spectramr.models.generators.field_velocity_unet import FieldVelocityUNet
 from tests.utils.config_block_stub import block_stub
 
 
@@ -100,7 +100,7 @@ def test_velocity_regression_reduces() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_flow" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
 
@@ -108,7 +108,7 @@ def test_strategy_registered_in_factory() -> None:
 def _bare_strategy(generator) -> object:
     import types
 
-    from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+    from spectramr.infrastructure.training.strategies.field_flow_strategy import (
         FieldFlowStrategy,
     )
 
@@ -151,7 +151,7 @@ def test_validation_step_declares_field_keys_for_pipeline_seam() -> None:
     # the signature carries the keys so the seam (train.py) actually forwards them.
     import inspect
 
-    from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+    from spectramr.infrastructure.training.strategies.field_flow_strategy import (
         FieldFlowStrategy,
     )
 
@@ -181,7 +181,7 @@ def test_validation_step_end_to_end_no_batch_context_collision() -> None:
     # The prior tests called _validation_forward directly and MASKED this.
     import types
 
-    from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+    from spectramr.infrastructure.training.strategies.field_flow_strategy import (
         FieldFlowStrategy,
     )
 
@@ -228,8 +228,8 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.infrastructure.training.strategies.field_flow_strategy import (
         FieldFlowStrategy,
     )
     tb = BatchAdapter.from_dict(_batch())
@@ -246,7 +246,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
 
 
 def test_contrast_id_threaded_train_and_validation() -> None:
-    from mriforge.infrastructure.training.strategies.field_flow_strategy import (
+    from spectramr.infrastructure.training.strategies.field_flow_strategy import (
         compute_field_flow_losses,
         integrate_field_flow,
     )

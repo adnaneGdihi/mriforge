@@ -14,7 +14,7 @@ import argparse
 
 import pytest
 
-from mriforge import main as main_mod
+from spectramr import main as main_mod
 
 
 def test_experiment_command_applies_knobs_and_runs_pipeline(monkeypatch):
@@ -29,8 +29,8 @@ def test_experiment_command_applies_knobs_and_runs_pipeline(monkeypatch):
     monkeypatch.setattr(main_mod, "initialize_accelerator", lambda *a, **k: None)
     # ``run_training_pipeline`` is imported lazily INSIDE experiment_command
     # (startup-perf work, 2026-06), so it must be patched at its source
-    # module, not on mriforge.main.
-    monkeypatch.setattr("mriforge.pipelines.run_training_pipeline", fake_run)
+    # module, not on spectramr.main.
+    monkeypatch.setattr("spectramr.pipelines.run_training_pipeline", fake_run)
 
     args = argparse.Namespace(
         config="experiments/inprogress/dummy/dummy_gan.yaml",
@@ -64,7 +64,7 @@ def test_experiment_command_honours_config_seed_and_determinism(monkeypatch):
 
     monkeypatch.setattr(main_mod, "initialize_accelerator", fake_init)
     monkeypatch.setattr(
-        "mriforge.pipelines.run_training_pipeline",
+        "spectramr.pipelines.run_training_pipeline",
         lambda settings, device=None, resume_path=None, **kw: {"success": True},
     )
     args = argparse.Namespace(
@@ -96,7 +96,7 @@ def test_experiment_command_does_not_use_dead_director():
 def test_experiment_command_propagates_pipeline_failure(monkeypatch):
     monkeypatch.setattr(main_mod, "initialize_accelerator", lambda *a, **k: None)
     monkeypatch.setattr(
-        "mriforge.pipelines.run_training_pipeline",
+        "spectramr.pipelines.run_training_pipeline",
         lambda *a, **k: {"success": False, "error": "boom"},
     )
     args = argparse.Namespace(

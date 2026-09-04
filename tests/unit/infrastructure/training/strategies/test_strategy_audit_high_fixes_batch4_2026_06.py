@@ -9,7 +9,7 @@ import inspect
 
 
 def test_vae_does_not_force_kl_weight_zero_to_one() -> None:
-    from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+    from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
     src = inspect.getsource(VAETrainingStrategy)
     # The β=0 → β=1 override is gone (a deliberate lambda_kl_divergence: 0 must
@@ -19,7 +19,7 @@ def test_vae_does_not_force_kl_weight_zero_to_one() -> None:
 
 
 def test_motion_meta_uses_block_layout_destack() -> None:
-    from mriforge.infrastructure.training.strategies.motion_meta_strategy import (
+    from spectramr.infrastructure.training.strategies.motion_meta_strategy import (
         ConcreteMotionMetaTrainingStrategy,
     )
 
@@ -31,7 +31,7 @@ def test_motion_meta_uses_block_layout_destack() -> None:
 
 
 def test_fmri_surface_dead_terms_removed() -> None:
-    from mriforge.infrastructure.training.strategies import fmri_surface_strategies as mod
+    from spectramr.infrastructure.training.strategies import fmri_surface_strategies as mod
 
     # The dead-helper imports are gone from the module namespace.
     assert not hasattr(mod, "cayley_transform")

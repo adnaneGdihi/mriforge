@@ -23,7 +23,7 @@ from typing import ClassVar
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     UniformCartesianKSpaceAccelerator,
 )
 

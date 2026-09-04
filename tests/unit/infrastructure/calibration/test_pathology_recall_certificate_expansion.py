@@ -1,4 +1,4 @@
-"""Unit tests for ``mriforge.infrastructure.calibration.pathology_recall_certificate``.
+"""Unit tests for ``spectramr.infrastructure.calibration.pathology_recall_certificate``.
 
 Covers:
 
@@ -18,7 +18,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.calibration.pathology_recall_certificate import (
+from spectramr.infrastructure.calibration.pathology_recall_certificate import (
     PathologyRecallCertificate,
     PathologyRecallReport,
     hoeffding_recall_lower_bound,

@@ -1,0 +1,78 @@
+name: Conda package
+
+# `workflow_dispatch` ONLY. A tag trigger was considered and rejected: the upload
+# needs ANACONDA_API_TOKEN, and a tag-driven job that fails for a missing
+# credential turns every release red for a step that is not on the release's
+# critical path. release.yml stays the one lane a tag can break.
+on:
+  workflow_dispatch:
+    inputs:
+      upload:
+        description: "Upload to anaconda.org (irreversible for that version+build). Leave off to build and test only."
+        type: boolean
+        default: false
+      channel:
+        description: "anaconda.org channel to upload to. Defaults to the ANACONDA_CHANNEL repository variable."
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # conda-build shells out through a login shell; without this the `conda`
+    # activation never happens and every step runs against the runner's system
+    # Python, which silently builds nothing.
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: "3.12"
+          channels: conda-forge
+          conda-remove-defaults: "true"
+
+      - name: Install the builder
+        run: conda install -y conda-build anaconda-client
+
+      # noarch: python, so one artefact serves every platform. The recipe reads the
+      # version out of src/spectramr/__init__.py rather than declaring its own, so
+      # this cannot ship a version the tree does not claim.
+      - name: Build and test the package
+        run: conda build conda/ --output-folder dist-conda/
+
+      - name: Show what was built
+        run: |
+          find dist-conda -name '*.conda' -o -name '*.tar.bz2' | sort
+          conda build conda/ --output-folder dist-conda/ --output
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conda-package
+          path: dist-conda/
+
+      - name: Upload to anaconda.org
+        if: inputs.upload
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+          CHANNEL: ${{ inputs.channel || vars.ANACONDA_CHANNEL }}
+        run: |
+          if [ -z "$ANACONDA_API_TOKEN" ]; then
+            echo "::error::ANACONDA_API_TOKEN is not set. Absent is a state to report, not one to infer." >&2
+            exit 2
+          fi
+          if [ -z "$CHANNEL" ]; then
+            echo "::error::No channel. Set the ANACONDA_CHANNEL repository variable or pass one to this dispatch." >&2
+            exit 2
+          fi
+          # --user, not --label: the channel IS the account here (a personal
+          # channel), and anaconda-client silently uploads to the token owner's
+          # own channel when --user is omitted, which is a different destination
+          # than the one this job was asked for.
+          find dist-conda -name '*.conda' -print0 \
+            | xargs -0 -r anaconda --token "$ANACONDA_API_TOKEN" upload --user "$CHANNEL"

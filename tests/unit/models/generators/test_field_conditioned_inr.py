@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_conditioned_inr import FieldConditionedINR
+from spectramr.models.generators.field_conditioned_inr import FieldConditionedINR
 
 
 def _net() -> FieldConditionedINR:
@@ -66,7 +66,7 @@ def test_field_inert_at_identity_init() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "field_conditioned_inr" in MODEL_REGISTRY
 

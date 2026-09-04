@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.vq.hierarchical_vq_vae import HierarchicalVQVAE
+from spectramr.models.vq.hierarchical_vq_vae import HierarchicalVQVAE
 
 from ._vae_base import assert_gradient_flows, assert_recon_shape, assert_registered
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.signal_models.perfusion_kinetics import (
+from spectramr.infrastructure.physics.signal_models.perfusion_kinetics import (
     extended_tofts_forward,
     gamma_variate,
     parker_population_aif,
@@ -150,7 +150,7 @@ def test_tofts_forward_issues_no_host_sync() -> None:
     import ast
     import inspect
 
-    from mriforge.infrastructure.physics.signal_models import perfusion_kinetics
+    from spectramr.infrastructure.physics.signal_models import perfusion_kinetics
 
     tree = ast.parse(inspect.getsource(perfusion_kinetics.extended_tofts_forward))
     called_attrs = {

@@ -3,7 +3,7 @@
 Executed as a subprocess by :mod:`tests.smoke.test_all_imports`; the leading
 underscore keeps pytest from collecting it. The separate process is the point:
 by the time the smoke suite runs, the conftest chain has already imported most
-of ``mriforge``, so an in-process ``importlib.import_module`` is a
+of ``spectramr``, so an in-process ``importlib.import_module`` is a
 ``sys.modules`` dict hit that passes over a module which cannot actually load.
 
 Usage: ``python _import_sweep.py <modules.json> <failures.json>``

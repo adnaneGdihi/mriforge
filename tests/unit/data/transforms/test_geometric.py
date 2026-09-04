@@ -1,6 +1,6 @@
 """Tests for ``EnsureSpatialConsistency`` and ``SmartGeometricStandardization``.
 
-Targets ``mriforge.data.transforms.geometric``. These two TorchIO transforms
+Targets ``spectramr.data.transforms.geometric``. These two TorchIO transforms
 are the spatial-alignment SSOT used by every dataset before the
 ``Queue / Sampler`` because TorchIO requires identical affines across
 images in a Subject.
@@ -20,7 +20,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.geometric import (
+from spectramr.data.transforms.geometric import (
     EnsureSpatialConsistency,
     SmartGeometricStandardization,
 )

@@ -47,26 +47,26 @@ import pytest
 # is the only form that generalises across the five.
 _POPULATION_EXPR = {
     "models": (
-        "from mriforge.models.init_registry import populate_model_registry;"
-        "from mriforge.models.registry import MODEL_REGISTRY;"
+        "from spectramr.models.init_registry import populate_model_registry;"
+        "from spectramr.models.registry import MODEL_REGISTRY;"
         "populate_model_registry();"
         "out = sorted(MODEL_REGISTRY)"
     ),
     "losses": (
-        "from mriforge.models.losses.registry import LossRegistry;"
+        "from spectramr.models.losses.registry import LossRegistry;"
         "out = sorted(LossRegistry.list_available())"
     ),
     "metrics": (
-        "from mriforge.core.metrics.registry import MetricsRegistry;"
+        "from spectramr.core.metrics.registry import MetricsRegistry;"
         "out = sorted(MetricsRegistry.list_available())"
     ),
     "strategies": (
-        "from mriforge.infrastructure.training.strategy_factory import"
+        "from spectramr.infrastructure.training.strategy_factory import"
         " TrainingStrategyFactory;"
         "out = sorted(TrainingStrategyFactory.STRATEGY_CLASS_PATHS)"
     ),
     "transforms": (
-        "import mriforge.data.transforms as t;"
+        "import spectramr.data.transforms as t;"
         "out = sorted(t.list_transforms())"
     ),
 }
@@ -78,17 +78,17 @@ _POPULATION_EXPR = {
 # point its reader at a path outside the distribution.
 _CURATION_SITE = {
     "models": (
-        "mriforge/models/init_registry.py -- a hand-curated package list walked "
+        "spectramr/models/init_registry.py -- a hand-curated package list walked "
         "with pkgutil. A new FILE in a listed package is picked up; a new "
         "PACKAGE must be added to the list."
     ),
-    "losses": "mriforge/models/losses/__init__.py -- add the import.",
+    "losses": "spectramr/models/losses/__init__.py -- add the import.",
     "metrics": (
-        "the pkgutil walk over mriforge/core/metrics/, which SKIPS sub-packages "
+        "the pkgutil walk over spectramr/core/metrics/, which SKIPS sub-packages "
         "-- a sub-package needs an explicit import."
     ),
     "transforms": (
-        "mriforge/data/transforms/__init__.py -- add a `noqa: F401` line to the "
+        "spectramr/data/transforms/__init__.py -- add a `noqa: F401` line to the "
         "curation block, which states this contract in its own header."
     ),
     "strategies": (
@@ -100,8 +100,8 @@ _CURATION_SITE = {
 
 
 _WALK_FIRST = (
-    "import pkgutil, importlib, mriforge\n"
-    "for _m in pkgutil.walk_packages(mriforge.__path__, 'mriforge.'):\n"
+    "import pkgutil, importlib, spectramr\n"
+    "for _m in pkgutil.walk_packages(spectramr.__path__, 'spectramr.'):\n"
     "    try: importlib.import_module(_m.name)\n"
     "    except Exception: pass\n"
 )

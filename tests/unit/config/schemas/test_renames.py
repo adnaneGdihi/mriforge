@@ -14,7 +14,7 @@ from typing import ClassVar
 import pytest
 from pydantic import BaseModel, ValidationError, model_validator
 
-from mriforge.config.schemas.renames import (
+from spectramr.config.schemas.renames import (
     _DRAINED,
     RENAMES,
     ROOT,
@@ -53,9 +53,7 @@ class _Demo(BaseModel):
     new_name: int = 1
     enable_thing: bool = False
 
-    _reject = model_validator(mode="before")(
-        classmethod(reject_renamed_keys("demo", _FIXTURE))
-    )
+    _reject = model_validator(mode="before")(classmethod(reject_renamed_keys("demo", _FIXTURE)))
 
 
 class TestRejectionShim:
@@ -148,9 +146,7 @@ class TestCreateDestinationBlock:
         """A missing destination block usually means the arm relies on that
         block's defaults; conjuring it invents structure the author never
         wrote. Only a move into a genuinely NEW block opts in."""
-        rec = RenameRecord(
-            legacy="a.b", canonical="c.d", since="2026-01-01", reason="x"
-        )
+        rec = RenameRecord(legacy="a.b", canonical="c.d", since="2026-01-01", reason="x")
         assert rec.create_destination_block is False
 
     def test_every_record_targeting_a_new_block_opts_in(self) -> None:
@@ -192,8 +188,8 @@ class TestProductionTableDoesNotRot:
         models sit two wrappers down. Six introspection sites in this repo made
         the same one-level assumption; they now share one implementation.
         """
-        from mriforge.config.schemas.introspection import nested_models as _models
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.introspection import nested_models as _models
+        from spectramr.config.settings import TrainingSettings
 
         def _walk(model: type[BaseModel], parts: list[str]) -> bool:
             field = model.model_fields.get(parts[0])
@@ -276,9 +272,7 @@ class TestFoldPosture:
         assert out == {"sub": {"k": 1, "new": 7}}
 
     def test_agreeing_duplicates_collapse(self) -> None:
-        out = fold_renamed_keys("blk", self._table())(
-            None, {"old": 7, "sub": {"new": 7}}
-        )
+        out = fold_renamed_keys("blk", self._table())(None, {"old": 7, "sub": {"new": 7}})
         assert out == {"sub": {"new": 7}}
 
     def test_disagreeing_duplicates_raise(self) -> None:
@@ -288,9 +282,7 @@ class TestFoldPosture:
 
     def test_a_negating_fold_inverts_the_value(self) -> None:
         table = self._table(value_transform="negate")
-        assert fold_renamed_keys("blk", table)(None, {"old": True}) == {
-            "sub": {"new": False}
-        }
+        assert fold_renamed_keys("blk", table)(None, {"old": True}) == {"sub": {"new": False}}
 
     def test_a_non_bool_under_negate_raises(self) -> None:
         table = self._table(value_transform="negate")
@@ -309,9 +301,7 @@ class TestFoldPosture:
         }
         assert fold_renamed_keys("blk", raising)(None, {"gone": 1}) == {"gone": 1}
 
-    @pytest.mark.parametrize(
-        "legacy", sorted(k for k, r in RENAMES.items() if r.posture == "fold")
-    )
+    @pytest.mark.parametrize("legacy", sorted(k for k, r in RENAMES.items() if r.posture == "fold"))
     def test_every_fold_stays_inside_its_own_block(self, legacy: str) -> None:
         """A per-block fold validator is mounted on ONE class and cannot reach a
         sibling, so a cross-block fold would drop the value on the floor.
@@ -395,7 +385,7 @@ class TestPhase8FoldTableIsTotal:
 
     @pytest.mark.parametrize("name", sorted(FIELDS_BEFORE_PHASE_8))
     def test_every_old_field_still_has_somewhere_to_go(self, name: str) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         still_declared = name in OptimizationConfigSchema.model_fields
         has_record = f"optimization.{name}" in RENAMES
@@ -519,7 +509,7 @@ class TestPhase9FoldTableIsTotal:
 
     @pytest.mark.parametrize("name", sorted(SCALARS_BEFORE_PHASE_9))
     def test_every_old_scalar_still_has_somewhere_to_go(self, name: str) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         still_declared = name in DataConfigSchema.model_fields
         has_record = f"data.{name}" in RENAMES
@@ -566,19 +556,39 @@ class TestNoDataKeyIsSilentlyDropped:
     #: The leaf paths those drops land on. A count-only ratchet would let a brand
     #: new phantom key hide behind any decrease elsewhere, so the NAMES are
     #: pinned too: an unlisted key fails immediately even while the total falls.
-    KNOWN_DROPPED_DATA_PATHS = frozenset({
-        "data.augmentation.custom_transforms", "data.caching.dataset_type",
-        "data.caching.path", "data.channels", "data.coil_sensitivity_source",
-        "data.custom_transforms", "data.data_type", "data.dataset_name",
-        "data.enable_geometric_standardization", "data.ground_truth_folder",
-        "data.image_size", "data.img_size", "data.input_domain",
-        "data.input_hr_dir", "data.input_lr_dir", "data.limit_samples",
-        "data.multicoil", "data.normalization", "data.phase",
-        "data.preprocessing", "data.shape_spec", "data.site_partition",
-        "data.slice_aware", "data.synthetic_samples", "data.target_is_complex",
-        "data.train_manifest", "data.transform_strategy", "data.val_manifest",
-        "data.volume_format",
-    })
+    KNOWN_DROPPED_DATA_PATHS = frozenset(
+        {
+            "data.augmentation.custom_transforms",
+            "data.caching.dataset_type",
+            "data.caching.path",
+            "data.channels",
+            "data.coil_sensitivity_source",
+            "data.custom_transforms",
+            "data.data_type",
+            "data.dataset_name",
+            "data.enable_geometric_standardization",
+            "data.ground_truth_folder",
+            "data.image_size",
+            "data.img_size",
+            "data.input_domain",
+            "data.input_hr_dir",
+            "data.input_lr_dir",
+            "data.limit_samples",
+            "data.multicoil",
+            "data.normalization",
+            "data.phase",
+            "data.preprocessing",
+            "data.shape_spec",
+            "data.site_partition",
+            "data.slice_aware",
+            "data.synthetic_samples",
+            "data.target_is_complex",
+            "data.train_manifest",
+            "data.transform_strategy",
+            "data.val_manifest",
+            "data.volume_format",
+        }
+    )
 
     @staticmethod
     def _census():
@@ -590,8 +600,8 @@ class TestNoDataKeyIsSilentlyDropped:
         """
         import collections
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         counts: collections.Counter = collections.Counter()
         checked = 0
@@ -603,9 +613,8 @@ class TestNoDataKeyIsSilentlyDropped:
                 continue  # a broken arm is a different test's problem
             checked += 1
             for sub in ledger.substitutions:
-                if (
-                    sub.class_id is SubstitutionClass.EXTRA_IGNORE_DROPPED
-                    and sub.path.startswith("data.")
+                if sub.class_id is SubstitutionClass.EXTRA_IGNORE_DROPPED and sub.path.startswith(
+                    "data."
                 ):
                     counts[sub.path] += 1
         return checked, counts
@@ -678,9 +687,7 @@ class TestFoldMergesIntoAPartiallyAuthoredTarget:
         assert out == {"sub": {"untouched": "keep me", "new": 7}}
 
     def test_an_agreeing_duplicate_is_dropped_not_doubled(self) -> None:
-        out = fold_renamed_keys("blk", self._table())(
-            None, {"old": 7, "sub": {"new": 7}}
-        )
+        out = fold_renamed_keys("blk", self._table())(None, {"old": 7, "sub": {"new": 7}})
         assert out == {"sub": {"new": 7}}
 
     def test_the_callers_nested_dict_is_not_mutated(self) -> None:
@@ -709,20 +716,14 @@ class TestFoldValidatorRunsLast:
     """
 
     @pytest.mark.parametrize("module", ["data", "optimization"])
-    def test_the_fold_mount_precedes_every_other_before_validator(
-        self, module: str
-    ) -> None:
+    def test_the_fold_mount_precedes_every_other_before_validator(self, module: str) -> None:
         import importlib
         import inspect
         import re
 
-        src = inspect.getsource(
-            importlib.import_module(f"mriforge.config.schemas.{module}")
-        )
+        src = inspect.getsource(importlib.import_module(f"spectramr.config.schemas.{module}"))
         lines = src.splitlines()
-        mount = next(
-            i for i, ln in enumerate(lines) if "_fold_renamed = model_validator" in ln
-        )
+        mount = next(i for i, ln in enumerate(lines) if "_fold_renamed = model_validator" in ln)
         later = [
             i
             for i, ln in enumerate(lines)
@@ -764,12 +765,10 @@ class TestFoldValidatorRunsLast:
         import inspect
         import re
 
-        from mriforge.config.schemas import data as data_mod
+        from spectramr.config.schemas import data as data_mod
 
         lines = inspect.getsource(data_mod).splitlines()
-        mount = next(
-            i for i, ln in enumerate(lines) if "_fold_renamed = model_validator" in ln
-        )
+        mount = next(i for i, ln in enumerate(lines) if "_fold_renamed = model_validator" in ln)
         later_same_class = [
             i
             for i, ln in enumerate(lines)
@@ -806,7 +805,7 @@ class TestM4RawPresetSurvivesTheFold:
     """
 
     def test_injected_preset_reaches_the_sub_block(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(dataset_type="m4raw", data_root="/tmp")
         default = type(cfg.coils).model_fields["processing_mode"].default
@@ -817,11 +816,9 @@ class TestM4RawPresetSurvivesTheFold:
         assert cfg.coils.processing_mode == "svd"
 
     def test_an_explicit_value_still_wins_over_the_preset(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
-        cfg = DataConfigSchema(
-            dataset_type="m4raw", data_root="/tmp", coil_processing_mode="rss"
-        )
+        cfg = DataConfigSchema(dataset_type="m4raw", data_root="/tmp", coil_processing_mode="rss")
         assert cfg.coils.processing_mode == "rss"
 
     # The case above passes the LEGACY spelling, so it could never see the
@@ -853,7 +850,7 @@ class TestM4RawPresetSurvivesTheFold:
     def test_a_canonical_declaration_wins_without_colliding(
         self, kwargs: dict, read: tuple[str, str], expected: object
     ) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(dataset_type="m4raw", data_root="/tmp", **kwargs)
         block, leaf = read
@@ -861,7 +858,7 @@ class TestM4RawPresetSurvivesTheFold:
 
     def test_the_preset_still_fires_when_nothing_is_declared(self) -> None:
         """Anti-vacuity: the fix must not have simply stopped injecting."""
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(dataset_type="m4raw", data_root="/tmp")
         assert cfg.coils.processing_mode == "svd"
@@ -870,7 +867,7 @@ class TestM4RawPresetSurvivesTheFold:
         assert cfg.use_repetitions is True
 
     def test_a_non_m4raw_arm_is_untouched(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(dataset_type="nifti", data_root="/tmp")
         assert cfg.coils.processing_mode != "svd"
@@ -887,7 +884,7 @@ class TestDefaultKnob:
     """
 
     def test_it_writes_the_canonical_path_not_the_legacy_leaf(self) -> None:
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {}
         default_knob(raw, "data", "coil_processing_mode", "svd")
@@ -895,7 +892,7 @@ class TestDefaultKnob:
         assert "coil_processing_mode" not in raw
 
     def test_a_legacy_declaration_suppresses_the_write(self) -> None:
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {"coil_processing_mode": "rss"}
         default_knob(raw, "data", "coil_processing_mode", "svd")
@@ -905,14 +902,14 @@ class TestDefaultKnob:
         )
 
     def test_a_canonical_declaration_suppresses_the_write(self) -> None:
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {"coils": {"processing_mode": "rss"}}
         default_knob(raw, "data", "coil_processing_mode", "svd")
         assert raw == {"coils": {"processing_mode": "rss"}}
 
     def test_it_merges_into_a_partially_authored_sub_block(self) -> None:
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {"coils": {"num_virtual_coils": 8}}
         default_knob(raw, "data", "coil_processing_mode", "svd")
@@ -920,7 +917,7 @@ class TestDefaultKnob:
 
     def test_an_unfolded_leaf_stays_flat(self) -> None:
         """No record -> the knob has no canonical home; write it where it is."""
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {}
         default_knob(raw, "data", "use_repetitions", True)
@@ -942,7 +939,7 @@ class TestDefaultKnob:
         naming a key the user never authored. `_canonical_tail` records the two
         further contracts it inverted, and the promotion that exposed it.
         """
-        from mriforge.config.schemas.renames import (
+        from spectramr.config.schemas.renames import (
             RenameRecord,
             _canonical_tail,
             default_knob,
@@ -974,7 +971,7 @@ class TestDefaultKnob:
         nothing -- leaving the key exactly where `reject_renamed_keys` will find
         it. The rejection is the raw block's business, never this function's.
         """
-        from mriforge.config.schemas.renames import (
+        from spectramr.config.schemas.renames import (
             RenameRecord,
             declared_knob,
             default_knob,
@@ -1008,13 +1005,13 @@ class TestDefaultKnob:
         Real record, not a fixture -- a synthetic table would not notice if the
         production one grew a second cross-block move with a live caller.
         """
-        from mriforge.config.schemas.renames import RENAMES, _canonical_tail
+        from spectramr.config.schemas.renames import RENAMES, _canonical_tail
 
         assert RENAMES["training.seed"].canonical == "run.seed"
         assert _canonical_tail("training", "seed") == ["seed"]
 
     def test_a_non_dict_sub_block_is_never_overwritten(self) -> None:
-        from mriforge.config.schemas.renames import default_knob
+        from spectramr.config.schemas.renames import default_knob
 
         raw: dict = {"coils": "not-a-mapping"}
         default_knob(raw, "data", "coil_processing_mode", "svd")
@@ -1022,25 +1019,20 @@ class TestDefaultKnob:
 
     def test_undeclared_is_distinct_from_a_declared_none(self) -> None:
         """``svd_calibration_lines: null`` means "full FoV" — a value, not absence."""
-        from mriforge.config.schemas.renames import UNDECLARED, declared_knob
+        from spectramr.config.schemas.renames import UNDECLARED, declared_knob
 
         assert declared_knob({}, "data", "svd_calibration_lines") is UNDECLARED
         raw = {"coils": {"svd_calibration_lines": None}}
         assert declared_knob(raw, "data", "svd_calibration_lines") is None
 
     def test_declared_knob_sees_either_spelling(self) -> None:
-        from mriforge.config.schemas.renames import declared_knob
+        from spectramr.config.schemas.renames import declared_knob
 
         assert (
-            declared_knob(
-                {"coil_processing_mode": "rss"}, "data", "coil_processing_mode"
-            )
-            == "rss"
+            declared_knob({"coil_processing_mode": "rss"}, "data", "coil_processing_mode") == "rss"
         )
         assert (
-            declared_knob(
-                {"coils": {"processing_mode": "rss"}}, "data", "coil_processing_mode"
-            )
+            declared_knob({"coils": {"processing_mode": "rss"}}, "data", "coil_processing_mode")
             == "rss"
         )
 
@@ -1055,7 +1047,7 @@ class TestOverrideKnob:
     """
 
     def test_it_displaces_a_canonical_declaration(self) -> None:
-        from mriforge.config.schemas.renames import override_knob
+        from spectramr.config.schemas.renames import override_knob
 
         raw: dict = {"coils": {"processing_mode": "rss"}}
         previous = override_knob(raw, "data", "coil_processing_mode", "svd")
@@ -1065,7 +1057,7 @@ class TestOverrideKnob:
     def test_it_clears_the_legacy_spelling_it_displaces(self) -> None:
         """The load-bearing half: leaving it beside the canonical write is
         exactly the "two spellings disagree" failure."""
-        from mriforge.config.schemas.renames import override_knob
+        from spectramr.config.schemas.renames import override_knob
 
         raw: dict = {"coil_processing_mode": "rss"}
         assert override_knob(raw, "data", "coil_processing_mode", "svd") == "rss"
@@ -1073,7 +1065,7 @@ class TestOverrideKnob:
         assert "coil_processing_mode" not in raw
 
     def test_it_reports_undeclared_when_nothing_was_there(self) -> None:
-        from mriforge.config.schemas.renames import UNDECLARED, override_knob
+        from spectramr.config.schemas.renames import UNDECLARED, override_knob
 
         raw: dict = {}
         assert override_knob(raw, "data", "coil_processing_mode", "svd") is UNDECLARED
@@ -1092,11 +1084,9 @@ class TestCoilProcessingBridgeIsNotInert:
     def _load(tmp_path, mutate):
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
-        template = pathlib.Path(
-            "src/mriforge/config/schemas/templates/v1.0_reference.yaml"
-        )
+        template = pathlib.Path("src/spectramr/config/schemas/templates/v1.0_reference.yaml")
         base = yaml.safe_load(template.read_text())
         mutate(base)
         target = tmp_path / "arm.yaml"
@@ -1105,9 +1095,11 @@ class TestCoilProcessingBridgeIsNotInert:
 
     @staticmethod
     def _svd(doc: dict) -> None:
-        doc.setdefault("physics", {}).setdefault("coil_processing", {})[
-            "compression"
-        ] = {"method": "svd", "num_virtual_coils": 8, "calibration_lines": 24}
+        doc.setdefault("physics", {}).setdefault("coil_processing", {})["compression"] = {
+            "method": "svd",
+            "num_virtual_coils": 8,
+            "calibration_lines": 24,
+        }
 
     def test_it_wins_over_the_templates_own_coils_block(self, tmp_path) -> None:
         cfg = self._load(tmp_path, self._svd)
@@ -1123,9 +1115,7 @@ class TestCoilProcessingBridgeIsNotInert:
         ],
         ids=["canonical", "legacy"],
     )
-    def test_it_wins_over_either_conflicting_spelling(
-        self, tmp_path, conflicting: dict
-    ) -> None:
+    def test_it_wins_over_either_conflicting_spelling(self, tmp_path, conflicting: dict) -> None:
         def mutate(doc: dict) -> None:
             self._svd(doc)
             doc["data"].pop("coils", None)
@@ -1158,7 +1148,7 @@ class TestCanonicalOverridePath:
     """
 
     def test_a_fold_record_translates(self) -> None:
-        from mriforge.config.schemas.renames import canonical_override_path
+        from spectramr.config.schemas.renames import canonical_override_path
 
         table = {
             "blk.old": RenameRecord(
@@ -1172,18 +1162,18 @@ class TestCanonicalOverridePath:
         assert canonical_override_path("blk.old", table) == "blk.sub.new"
 
     def test_a_raise_record_falls_through_untranslated(self) -> None:
-        from mriforge.config.schemas.renames import canonical_override_path
+        from spectramr.config.schemas.renames import canonical_override_path
 
         assert canonical_override_path("demo.old_name", _FIXTURE) == "demo.old_name"
 
     def test_an_unknown_path_is_returned_unchanged(self) -> None:
-        from mriforge.config.schemas.renames import canonical_override_path
+        from spectramr.config.schemas.renames import canonical_override_path
 
         assert canonical_override_path("blk.never_renamed") == "blk.never_renamed"
 
     def test_a_negating_fold_refuses_rather_than_mistranslate(self) -> None:
         """Rewriting the key while leaving the literal alone inverts intent."""
-        from mriforge.config.schemas.renames import canonical_override_path
+        from spectramr.config.schemas.renames import canonical_override_path
 
         table = {
             "blk.disable_x": RenameRecord(
@@ -1213,62 +1203,68 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         # renamed config block. 28 of the 75 repo-wide `.acceleration` reads are
         # of that kind -- on transforms, simulators and argparse namespaces.
         (
-            "src/mriforge/infrastructure/training/strategies/virtual_fiducial_strategy.py",
+            "src/spectramr/infrastructure/training/strategies/virtual_fiducial_strategy.py",
             "simulator",
             "acceleration",
         ),
         # --- phase 10 leaf names that collide with an unrelated object ------
         # `config.metrics` is the TOP-LEVEL `metrics:` block (MetricsConfigSchema),
         # not the retired `validation.metrics`. Same name, different block.
-        ("src/mriforge/bootstrap.py", "config", "metrics"),
-        ("src/mriforge/core/metrics/computer.py", "config", "metrics"),
+        ("src/spectramr/bootstrap.py", "config", "metrics"),
+        ("src/spectramr/core/metrics/computer.py", "config", "metrics"),
         # (disentangled_strategy.py, "self.config", "metrics") was here until
         # 30fa0ea0a converted that site to direct `self.config.metrics.output_dir`
         # access. The entry then matched nothing, which is exactly what the
         # stale-entry check below exists to catch.
         (
-            "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py",
+            "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py",
             "config",
             "metrics",
         ),
         (
-            "src/mriforge/infrastructure/validation/config_health_checker.py",
+            "src/spectramr/infrastructure/validation/config_health_checker.py",
             "config",
             "metrics",
         ),
-        ("src/mriforge/pipelines/training_loop.py", "config", "metrics"),
+        ("src/spectramr/pipelines/training_loop.py", "config", "metrics"),
         # `reporting.metrics`, a third block with the same leaf.
-        ("src/mriforge/cli/app.py", "rep", "metrics"),
-        ("src/mriforge/pipelines/train.py", "reporting", "metrics"),
+        ("src/spectramr/cli/app.py", "rep", "metrics"),
+        ("src/spectramr/pipelines/train.py", "reporting", "metrics"),
+        # top-level `metrics.best_metric_name`, the checkpoint selector.
+        (
+            "src/spectramr/infrastructure/validation/witness/checks/validation_metric_checks.py",
+            "settings",
+            "metrics",
+        ),
         # top-level `metrics.domain`, not `validation.scoring.domain`.
         (
-            "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py",
+            "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py",
             "metrics_s",
             "domain",
         ),
         (
-            "src/mriforge/infrastructure/validation/config_health_checker.py",
+            "src/spectramr/infrastructure/validation/config_health_checker.py",
             "metrics",
             "domain",
         ),
         # ExperimentMetadataSchema, not validation/logging.
-        ("src/mriforge/core/metrics/computer.py", "config", "primary_metric"),
+        ("src/spectramr/core/metrics/computer.py", "config", "primary_metric"),
         (
-            "src/mriforge/infrastructure/validation/config_health_checker.py",
+            "src/spectramr/infrastructure/validation/config_health_checker.py",
             "meta",
             "primary_metric",
         ),
         (
-            "src/mriforge/infrastructure/validation/config_health_checker.py",
+            "src/spectramr/infrastructure/validation/config_health_checker.py",
             "meta",
             "tags",
         ),
-        ("src/mriforge/infrastructure/validation/inference.py", "metadata", "tags"),
+        ("src/spectramr/infrastructure/validation/inference.py", "metadata", "tags"),
         # a stdlib `logging.Handler`, not `logging.sinks.level`.
-        ("src/mriforge/infrastructure/services/logging_service.py", "handler", "level"),
+        ("src/spectramr/infrastructure/services/logging_service.py", "handler", "level"),
         # physics coil-processing output domain, not losses.policy.output_domain.
         (
-            "src/mriforge/infrastructure/validation/spec_card.py",
+            "src/spectramr/infrastructure/validation/spec_card.py",
             "getattr(coil_proc, 'output', None)",
             "domain",
         ),
@@ -1282,29 +1278,29 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         #
         # `DiffusionTrainingStrategy(BaseTrainingStrategy, DiffusionStrategyMixin)`
         # inherits the attribute, so these reads are live, not vestigial.
-        ("src/mriforge/infrastructure/training/strategies/diffusion.py", "self", "num_timesteps"),
+        ("src/spectramr/infrastructure/training/strategies/diffusion.py", "self", "num_timesteps"),
         # an nn.Module (e.g. BlurringDiffusion, which sets it in __init__).
-        ("src/mriforge/infrastructure/validation/phase3_probes.py", "model", "num_timesteps"),
+        ("src/spectramr/infrastructure/validation/phase3_probes.py", "model", "num_timesteps"),
         # argparse Namespaces
-        ("src/mriforge/cli/app.py", "args", "batch_size"),
-        ("src/mriforge/main.py", "args", "batch_size"),
+        ("src/spectramr/cli/app.py", "args", "batch_size"),
+        ("src/spectramr/main.py", "args", "batch_size"),
         # physics.coil_processing.compression, a different block
         (
-            "src/mriforge/infrastructure/validation/config_health_checker.py",
+            "src/spectramr/infrastructure/validation/config_health_checker.py",
             "compression",
             "num_virtual_coils",
         ),
         # the strategy's own uncertainty block, not optimization.optimizer.eps
         (
-            "src/mriforge/infrastructure/training/strategies/geomamba_ulf_strategy.py",
+            "src/spectramr/infrastructure/training/strategies/geomamba_ulf_strategy.py",
             "unc_cfg",
             "eps",
         ),
         # a diffusion model's registered `betas` buffer
-        ("src/mriforge/models/diffusion/cold_diffusion.py", "self", "betas"),
+        ("src/spectramr/models/diffusion/cold_diffusion.py", "self", "betas"),
         # AMPPolicy / StepExecutor attributes that happen to share a config name
         (
-            "src/mriforge/pipelines/training_loop.py",
+            "src/spectramr/pipelines/training_loop.py",
             "current",
             "enable_gradient_clipping",
         ),
@@ -1315,7 +1311,7 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         # negotiated one only as a fallback. Only the negotiated name is a folded
         # leaf, so only it reaches this scan.
         (
-            "src/mriforge/pipelines/training_loop.py",
+            "src/spectramr/pipelines/training_loop.py",
             "executor",
             "gradient_accumulation_steps",
         ),
@@ -1326,7 +1322,7 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         # ever moves too, its entry here must be deleted, and the stale-entry
         # check below will not let it linger once the site changes.
         (
-            "src/mriforge/infrastructure/training/utils/domain_inference.py",
+            "src/spectramr/infrastructure/training/utils/domain_inference.py",
             "caps",
             "output_domain",
         ),
@@ -1335,10 +1331,10 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         # block. Neither moved; only `data.transforms` / `data.data_range` did.
         # This is the cost of a genuinely generic leaf name, and the receiver is
         # what separates them.
-        ("src/mriforge/data/transforms/signature.py", "t", "transforms"),
-        ("src/mriforge/data/transforms/signature.py", "transforms", "transforms"),
+        ("src/spectramr/data/transforms/signature.py", "t", "transforms"),
+        ("src/spectramr/data/transforms/signature.py", "transforms", "transforms"),
         (
-            "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py",
+            "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py",
             "metrics_s",
             "data_range",
         ),
@@ -1346,17 +1342,17 @@ _NOT_CONFIG_RECEIVERS: frozenset[tuple[str, str, str]] = frozenset(
         # (pitfall #1, predates the renames). Tracked separately; listed here so
         # this gate reports only NEW breakage.
         (
-            "src/mriforge/infrastructure/reporting/advanced_reporting.py",
+            "src/spectramr/infrastructure/reporting/advanced_reporting.py",
             "cfg",
             "batch_size",
         ),
         (
-            "src/mriforge/infrastructure/reporting/advanced_reporting.py",
+            "src/spectramr/infrastructure/reporting/advanced_reporting.py",
             "cfg",
             "learning_rate",
         ),
-        ("src/mriforge/models/model_cards.py", "config", "batch_size"),
-        ("src/mriforge/models/model_cards.py", "config", "learning_rate"),
+        ("src/spectramr/models/model_cards.py", "config", "batch_size"),
+        ("src/spectramr/models/model_cards.py", "config", "learning_rate"),
     }
 )
 
@@ -1366,15 +1362,13 @@ def _string_keyed_reads_of_folded_names() -> list[tuple[str, int, str, str, str]
     import ast
     import pathlib as _pl
 
-    from mriforge.config.schemas.renames import RENAMES
+    from spectramr.config.schemas.renames import RENAMES
 
     leaves: dict[str, set[str]] = {}
     for legacy, rec in RENAMES.items():
         if rec.posture == "fold":
             leaves.setdefault(legacy.split(".")[-1], set()).add(rec.canonical)
-    subblocks = {
-        c.split(".")[1] for cs in leaves.values() for c in cs if c.count(".") >= 2
-    }
+    subblocks = {c.split(".")[1] for cs in leaves.values() for c in cs if c.count(".") >= 2}
 
     found: list[tuple[str, int, str, str, str]] = []
 
@@ -1405,9 +1399,7 @@ def _string_keyed_reads_of_folded_names() -> list[tuple[str, int, str, str, str]
                 if isinstance(key, ast.Constant) and key.value in leaves:
                     recv = ast.unparse(value)
                     if not any(sb in recv.lower() for sb in subblocks):
-                        found.append(
-                            (self.path, node.lineno, "model_fields[]", key.value, recv)
-                        )
+                        found.append((self.path, node.lineno, "model_fields[]", key.value, recv))
             self.generic_visit(node)
 
     root = _pl.Path(__file__).resolve().parents[4]
@@ -1449,9 +1441,7 @@ class TestNoStringKeyedReadsOfFoldedNames:
             for p, ln, fn, field, recv in _string_keyed_reads_of_folded_names()
             if (p, recv, field) not in _NOT_CONFIG_RECEIVERS
         ]
-        assert (
-            not offenders
-        ), "string-keyed read(s) of a folded legacy field name:\n" + "\n".join(
+        assert not offenders, "string-keyed read(s) of a folded legacy field name:\n" + "\n".join(
             f"  {p}:{ln}  {fn}({recv}, {field!r}) -- the attribute moved; "
             "read the canonical path directly"
             for p, ln, fn, field, recv in offenders
@@ -1460,8 +1450,7 @@ class TestNoStringKeyedReadsOfFoldedNames:
     def test_the_allowlist_has_no_stale_entries(self) -> None:
         """An entry that matches nothing is a comment pretending to be a gate."""
         live = {
-            (p, recv, field)
-            for p, _ln, _fn, field, recv in _string_keyed_reads_of_folded_names()
+            (p, recv, field) for p, _ln, _fn, field, recv in _string_keyed_reads_of_folded_names()
         }
         stale = sorted(_NOT_CONFIG_RECEIVERS - live)
         assert not stale, (
@@ -1525,7 +1514,7 @@ class TestPhase10FoldTableIsTotal:
 
     @pytest.mark.parametrize("name", sorted(SCALARS_BEFORE_PHASE_10))
     def test_every_old_scalar_still_has_somewhere_to_go(self, name: str) -> None:
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         still_declared = name in ValidationConfigSchema.model_fields
         has_record = f"validation.{name}" in RENAMES
@@ -1556,7 +1545,7 @@ class TestPhase10FoldTableIsTotal:
         `test_the_long_batch_size_spelling_still_works_alone` just below, which
         is what the 26 arms actually rely on.
         """
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         with pytest.raises(ValidationError, match=r"validation\.val_batch_size"):
             ValidationConfigSchema(val_batch_size=2, validation_batch_size=1)
@@ -1567,7 +1556,7 @@ class TestPhase10FoldTableIsTotal:
         assert "validation.loader.batch_size" in str(exc.value)
 
     def test_the_long_batch_size_spelling_still_works_alone(self) -> None:
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         assert ValidationConfigSchema(validation_batch_size=3).loader.batch_size == 3
 
@@ -1637,7 +1626,7 @@ class TestNoLegacyLeafNamesADestinationBlock:
 
     def test_a_migrated_arm_round_trips(self) -> None:
         """The shape the collision destroyed: canonical in, canonical out."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         cfg = ValidationConfigSchema(
             scoring={"compute": ["psnr", "ssim"], "primary": "ssim", "domain": "image"}
@@ -1648,7 +1637,7 @@ class TestNoLegacyLeafNamesADestinationBlock:
 
     def test_declaration_order_does_not_change_the_result(self) -> None:
         """With the collision gone, any rotation of the legacy keys agrees."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         items = list(
             {
@@ -1659,16 +1648,13 @@ class TestNoLegacyLeafNamesADestinationBlock:
                 "compute_image_metrics": False,
             }.items()
         )
-        builds = [
-            ValidationConfigSchema(**dict(items[i:] + items[:i]))
-            for i in range(len(items))
-        ]
+        builds = [ValidationConfigSchema(**dict(items[i:] + items[:i])) for i in range(len(items))]
         assert all(b == builds[0] for b in builds)
         assert builds[0].scoring.compute == ["psnr", "ssim"]
 
     def test_it_still_refuses_a_genuine_disagreement(self) -> None:
         """The fix must not have cost the two-spellings-disagree guard."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         with pytest.raises(ValidationError, match="disagree"):
             ValidationConfigSchema(eval_interval=1000, schedule={"interval_steps": 500})
@@ -1738,7 +1724,7 @@ class TestPhase10bFoldTableIsTotal:
 
     @pytest.mark.parametrize("name", sorted(SCALARS_BEFORE_PHASE_10B))
     def test_every_old_scalar_still_has_somewhere_to_go(self, name: str) -> None:
-        from mriforge.config.schemas.logging import LoggingConfigSchema
+        from spectramr.config.schemas.logging import LoggingConfigSchema
 
         still_declared = name in LoggingConfigSchema.model_fields
         has_record = f"logging.{name}" in RENAMES
@@ -1750,13 +1736,9 @@ class TestPhase10bFoldTableIsTotal:
         )
 
     def test_the_seven_blocks_are_mounted(self) -> None:
-        from mriforge.config.schemas.logging import LoggingConfigSchema as L
+        from spectramr.config.schemas.logging import LoggingConfigSchema as L
 
-        blocks = {
-            k
-            for k, v in L.model_fields.items()
-            if hasattr(v.annotation, "model_fields")
-        }
+        blocks = {k for k, v in L.model_fields.items() if hasattr(v.annotation, "model_fields")}
         assert blocks == {
             "identity",
             "sinks",
@@ -1779,17 +1761,11 @@ class TestPhase10bFoldTableIsTotal:
         sys.path.insert(0, "tests/unit/config")
         from test_schema_key_consumption import KNOWN_UNCONSUMED
 
-        from mriforge.config.schemas.logging import LoggingConfigSchema as L
+        from spectramr.config.schemas.logging import LoggingConfigSchema as L
 
-        flat = {
-            k
-            for k, v in L.model_fields.items()
-            if not hasattr(v.annotation, "model_fields")
-        }
+        flat = {k for k, v in L.model_fields.items() if not hasattr(v.annotation, "model_fields")}
         unexplained = {
-            k
-            for k in flat
-            if f"logging.{k}" not in KNOWN_UNCONSUMED and k != "log_gradients"
+            k for k in flat if f"logging.{k}" not in KNOWN_UNCONSUMED and k != "log_gradients"
         }
         assert not unexplained, (
             f"{sorted(unexplained)} stayed flat but are not tracked as inert -- "
@@ -1842,16 +1818,12 @@ class TestPhase10dFoldTableIsTotal:
         """An escape hatch easier to reach than the fix inverts the ratchet."""
         assert len(self.RETIRED_WITHOUT_REPLACEMENT) == 3
         assert self.RETIRED_WITHOUT_REPLACEMENT <= self.SCALARS_BEFORE_PHASE_10D
-        overlap = {
-            n for n in self.RETIRED_WITHOUT_REPLACEMENT if f"losses.{n}" in RENAMES
-        }
-        assert (
-            not overlap
-        ), f"{overlap} now HAVE a rename record -- take them out of the hatch"
+        overlap = {n for n in self.RETIRED_WITHOUT_REPLACEMENT if f"losses.{n}" in RENAMES}
+        assert not overlap, f"{overlap} now HAVE a rename record -- take them out of the hatch"
 
     @pytest.mark.parametrize("name", sorted(SCALARS_BEFORE_PHASE_10D))
     def test_every_old_scalar_still_has_somewhere_to_go(self, name: str) -> None:
-        from mriforge.config.schemas.loss import LossConfigSchema
+        from spectramr.config.schemas.loss import LossConfigSchema
 
         if name in self.RETIRED_WITHOUT_REPLACEMENT:
             pytest.skip(f"`losses.{name}` was retired outright (#676), not moved")
@@ -1913,7 +1885,7 @@ class TestPhase10dFoldTableIsTotal:
         to `raise`, it dropped out of that set and the guard resumed shadowing
         the rename message. Now retired, so the assertion is that the author is
         told the replacement rather than sent to fix a loss list."""
-        from mriforge.config.schemas.loss import LossConfigSchema
+        from spectramr.config.schemas.loss import LossConfigSchema
 
         with pytest.raises(ValidationError) as exc:
             LossConfigSchema(disable_default_losses=["mse"])
@@ -1923,7 +1895,7 @@ class TestPhase10dFoldTableIsTotal:
 
     def test_the_guard_still_rejects_a_genuinely_unknown_list(self) -> None:
         """Both directions: making the guard fold-aware must not blunt it."""
-        from mriforge.config.schemas.loss import LossConfigSchema
+        from spectramr.config.schemas.loss import LossConfigSchema
 
         with pytest.raises(ValidationError, match="not a declared loss list"):
             LossConfigSchema(custom_losses=[])
@@ -1953,12 +1925,8 @@ class TestRootFoldRenamesAWholeBlock:
         return fold_renamed_keys(ROOT, self.TABLE)(None, doc)
 
     def test_the_whole_mapping_moves_intact(self) -> None:
-        out = self._fold(
-            {"acceleration": {"center_fraction": 0.08, "base_acceleration": 4.0}}
-        )
-        assert out == {
-            "undersampling": {"center_fraction": 0.08, "base_acceleration": 4.0}
-        }
+        out = self._fold({"acceleration": {"center_fraction": 0.08, "base_acceleration": 4.0}})
+        assert out == {"undersampling": {"center_fraction": 0.08, "base_acceleration": 4.0}}
 
     def test_sibling_blocks_are_untouched(self) -> None:
         out = self._fold({"acceleration": {"a": 1}, "seed": 7, "data": {"b": 2}})
@@ -2045,20 +2013,18 @@ class TestRootFoldRunsBeforeAnySubModel:
             model_config = {"extra": "forbid"}
             new_block: Inner = Field(default_factory=Inner)
 
-            _fold = model_validator(mode="before")(
-                classmethod(fold_renamed_keys(ROOT, table))
-            )
+            _fold = model_validator(mode="before")(classmethod(fold_renamed_keys(ROOT, table)))
 
         assert Outer(legacy_block={"x": 7}).new_block.x == 7
         assert Outer(new_block={"x": 7}).new_block.x == 7
 
     def test_the_root_validator_is_mounted_on_the_real_settings(self) -> None:
         """Anti-vacuity: the fixture above proves the mechanism, not the wiring."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
-        assert any(
-            "fold" in name for name in vars(TrainingSettings) if name.startswith("_")
-        ), "TrainingSettings has no root fold validator mounted"
+        assert any("fold" in name for name in vars(TrainingSettings) if name.startswith("_")), (
+            "TrainingSettings has no root fold validator mounted"
+        )
 
 
 class TestAccelerationBlockRename:
@@ -2079,7 +2045,7 @@ class TestAccelerationBlockRename:
         }
 
     def test_the_legacy_block_still_loads(self) -> None:
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         cfg = TrainingSettings(**self._minimal(acceleration={"base_acceleration": 6.0}))
         assert cfg.undersampling is not None
@@ -2088,24 +2054,22 @@ class TestAccelerationBlockRename:
     def test_the_legacy_name_is_gone_from_python(self) -> None:
         """One read path: the whole point of a fold is that only the YAML
         surface keeps two spellings."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         assert "acceleration" not in TrainingSettings.model_fields
         cfg = TrainingSettings(**self._minimal(acceleration={"base_acceleration": 6.0}))
         assert not hasattr(cfg, "acceleration")
 
     def test_the_canonical_block_loads(self) -> None:
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
-        cfg = TrainingSettings(
-            **self._minimal(undersampling={"base_acceleration": 3.0})
-        )
+        cfg = TrainingSettings(**self._minimal(undersampling={"base_acceleration": 3.0}))
         assert cfg.undersampling.base_acceleration == 3.0
 
     def test_declaring_both_with_different_values_is_refused(self) -> None:
         """A block-level fold must refuse rather than merge -- silently unioning
         two blocks would invent a configuration nobody wrote."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         with pytest.raises(ValidationError, match="disagree"):
             TrainingSettings(
@@ -2132,7 +2096,7 @@ class TestFoldedInputPaths:
     """
 
     def test_root_fold_resolves_acceleration_to_undersampling(self) -> None:
-        from mriforge.config.schemas.renames import ROOT, folded_input_paths
+        from spectramr.config.schemas.renames import ROOT, folded_input_paths
 
         assert folded_input_paths(ROOT)["acceleration"] == ("undersampling",)
 
@@ -2142,7 +2106,7 @@ class TestFoldedInputPaths:
         Relative, because the ledger is already positioned on the block's model
         when it descends; an absolute chain would walk `data.data.loader`.
         """
-        from mriforge.config.schemas.renames import folded_input_paths
+        from spectramr.config.schemas.renames import folded_input_paths
 
         assert folded_input_paths("data")["batch_size"] == ("loader", "batch_size")
 
@@ -2153,7 +2117,7 @@ class TestFoldedInputPaths:
         ``optimization.gradient.clip.*`` records are three levels deep, and a
         two-level cap silently returned the enclosing block.
         """
-        from mriforge.config.schemas.renames import folded_input_paths
+        from spectramr.config.schemas.renames import folded_input_paths
 
         assert folded_input_paths("optimization")["gradient_clip_value"] == (
             "gradient",
@@ -2164,7 +2128,7 @@ class TestFoldedInputPaths:
     def test_keys_agree_with_folded_input_keys(self) -> None:
         """The two publications must describe the same set, or the ledger would
         accept a key it cannot then descend into."""
-        from mriforge.config.schemas.renames import (
+        from spectramr.config.schemas.renames import (
             ROOT,
             folded_input_keys,
             folded_input_paths,
@@ -2172,6 +2136,7 @@ class TestFoldedInputPaths:
 
         for block in (ROOT, "data", "logging", "losses", "optimization", "validation"):
             assert set(folded_input_paths(block)) == set(folded_input_keys(block)), block
+
 
 class TestDrainedRecordsArePromoted:
     """The fold records whose corpus count reached zero now RAISE.
@@ -2203,9 +2168,7 @@ class TestDrainedRecordsArePromoted:
         )
 
     @pytest.mark.parametrize("legacy", sorted(_DRAINED))
-    def test_a_promoted_spelling_raises_naming_its_replacement(
-        self, legacy: str
-    ) -> None:
+    def test_a_promoted_spelling_raises_naming_its_replacement(self, legacy: str) -> None:
         """One case per promoted record, so a failure names the offender.
 
         The message must carry the canonical path: a bare "extra fields not
@@ -2222,9 +2185,7 @@ class TestDrainedRecordsArePromoted:
         """It must not ALSO still fold — one posture, not two behaviours."""
         legacy = sorted(_DRAINED)[0]
         rec = RENAMES[legacy]
-        folded = fold_renamed_keys(rec.block)(
-            type(None), {rec.legacy_key: "anything"}
-        )
+        folded = fold_renamed_keys(rec.block)(type(None), {rec.legacy_key: "anything"})
         assert rec.legacy_key in folded, (
             "the fold validator must leave a raise-posture key alone, so the "
             "reject validator is what the author actually hits"
@@ -2363,27 +2324,22 @@ class TestAFoldedKeyLeavesEvidence:
 
     @staticmethod
     def _fold(block: str, data: dict):
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ledger = ExecutionLedger.begin_run(source="test")
         out = fold_renamed_keys(block)(type(None), data)
         return out, ledger
 
     def test_a_folded_key_is_recorded_with_both_spellings(self) -> None:
-        from mriforge.core.execution_ledger import SubstitutionClass
+        from spectramr.core.execution_ledger import SubstitutionClass
 
-        rec = next(
-            r
-            for r in RENAMES.values()
-            if r.posture == "fold" and r.block == "losses"
-        )
+        rec = next(r for r in RENAMES.values() if r.posture == "fold" and r.block == "losses")
         out, ledger = self._fold("losses", {rec.legacy_key: "kspace"})
 
         subs = [
             s
             for s in ledger.substitutions
-            if s.class_id is SubstitutionClass.VALUE_CHANGED_ON_FINALIZE
-            and s.path == rec.legacy
+            if s.class_id is SubstitutionClass.VALUE_CHANGED_ON_FINALIZE and s.path == rec.legacy
         ]
         assert subs, f"folding {rec.legacy} left no evidence"
         assert subs[0].resolved == rec.canonical, (
@@ -2398,15 +2354,11 @@ class TestAFoldedKeyLeavesEvidence:
 
     def test_folding_works_with_no_ledger_armed(self) -> None:
         """Recording is best-effort: config loading must never depend on it."""
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.reset()
         assert ExecutionLedger.current() is None
-        rec = next(
-            r
-            for r in RENAMES.values()
-            if r.posture == "fold" and r.block == "losses"
-        )
+        rec = next(r for r in RENAMES.values() if r.posture == "fold" and r.block == "losses")
         out = fold_renamed_keys("losses")(type(None), {rec.legacy_key: "kspace"})
         assert rec.legacy_key not in out
 
@@ -2427,14 +2379,14 @@ class TestNestedMount:
         If this drifts, every record that predates the field changes which
         validator serves it — a silent, corpus-wide behaviour change.
         """
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         undeclared = [r for r in RENAMES.values() if r.mount is None]
         assert undeclared, "no records left with mount unset; this test is vacuous"
         assert all(r.mount_path == r.block for r in undeclared)
 
     def test_a_nested_record_reaches_its_own_validator_only(self) -> None:
-        from mriforge.config.schemas.renames import renames_for_block
+        from spectramr.config.schemas.renames import renames_for_block
 
         assert "num_timesteps" in renames_for_block("training.diffusion")
         assert "num_timesteps" not in renames_for_block("training"), (
@@ -2444,7 +2396,7 @@ class TestNestedMount:
 
     def test_the_fold_fires_and_lands_on_the_field(self) -> None:
         """Registered is not enough — the mechanism has to do work."""
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         config = DiffusionTrainingConfigSchema(num_timesteps=250)
 
@@ -2452,12 +2404,10 @@ class TestNestedMount:
             "num_timesteps did not fold onto timesteps; without the fold this is "
             "1000 (the default) and the declared value is silently discarded"
         )
-        assert config.model_extra == {}, (
-            "num_timesteps is still being absorbed as an untyped extra"
-        )
+        assert config.model_extra == {}, "num_timesteps is still being absorbed as an untyped extra"
 
     def test_the_canonical_spelling_still_works(self) -> None:
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         assert DiffusionTrainingConfigSchema(timesteps=250).timesteps == 250
 
@@ -2465,13 +2415,13 @@ class TestNestedMount:
         """A fold must not silently pick a winner."""
         import pytest
 
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         with pytest.raises(Exception, match="disagree"):
             DiffusionTrainingConfigSchema(timesteps=250, num_timesteps=500)
 
     def test_two_spellings_that_agree_are_accepted(self) -> None:
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         config = DiffusionTrainingConfigSchema(timesteps=250, num_timesteps=250)
         assert config.timesteps == 250
@@ -2485,7 +2435,7 @@ class TestNestedMount:
         """
         import pytest
 
-        from mriforge.config.schemas.renames import RenameRecord
+        from spectramr.config.schemas.renames import RenameRecord
 
         with pytest.raises(ValueError, match="does not own legacy"):
             RenameRecord(
@@ -2502,7 +2452,7 @@ class TestNestedMount:
         would silently land in the wrong place."""
         import pytest
 
-        from mriforge.config.schemas.renames import RenameRecord
+        from spectramr.config.schemas.renames import RenameRecord
 
         with pytest.raises(ValueError, match="does not own canonical"):
             RenameRecord(
@@ -2516,7 +2466,7 @@ class TestNestedMount:
 
     def test_a_raise_record_may_point_outside_its_mount(self) -> None:
         """`raise` only ever formats a message, so it has no such constraint."""
-        from mriforge.config.schemas.renames import RenameRecord
+        from spectramr.config.schemas.renames import RenameRecord
 
         record = RenameRecord(
             legacy="training.diffusion.foo",
@@ -2534,6 +2484,6 @@ class TestNestedMount:
         With a two-component mount, a one-component strip would have written the
         value to `training.diffusion.diffusion.timesteps`.
         """
-        from mriforge.config.schemas.renames import folded_input_paths
+        from spectramr.config.schemas.renames import folded_input_paths
 
         assert folded_input_paths("training.diffusion")["num_timesteps"] == ("timesteps",)

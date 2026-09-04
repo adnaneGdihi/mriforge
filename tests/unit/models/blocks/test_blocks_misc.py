@@ -19,7 +19,7 @@ import torch
 # ═══════════════════════════════════════════════════════════════════════
 
 
-from mriforge.models.blocks.pseudo_3d_kspace import (  # noqa: E402
+from spectramr.models.blocks.pseudo_3d_kspace import (  # noqa: E402
     Pseudo3DKSpaceBlock,
     RepetitionFusion,
 )
@@ -112,7 +112,7 @@ class TestRepetitionFusion:
 # ═══════════════════════════════════════════════════════════════════════
 
 
-from mriforge.models.blocks.sfc_windowed_attention import (  # noqa: E402
+from spectramr.models.blocks.sfc_windowed_attention import (  # noqa: E402
     CrossDomainBlock,
     SFCWindowedAttention,
 )

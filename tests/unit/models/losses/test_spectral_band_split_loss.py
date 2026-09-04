@@ -1,6 +1,6 @@
 """Tests for the spectral band-split loss.
 
-Targets ``mriforge.models.losses.spectral_band_split_loss.SpectralBandSplitLoss``.
+Targets ``spectramr.models.losses.spectral_band_split_loss.SpectralBandSplitLoss``.
 
 Regression: the loss used to pre-cast real inputs with ``.to(torch.complex64)``
 before calling ``fft2c``. That defeats ``fft2c``'s ``_to_complex`` routing,
@@ -17,7 +17,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.spectral_band_split_loss import (  # noqa: E402
+from spectramr.models.losses.spectral_band_split_loss import (  # noqa: E402
     SpectralBandSplitLoss,
 )
 
@@ -61,6 +61,6 @@ def test_identical_prediction_source_has_zero_low_band() -> None:
 
 
 def test_registered_under_canonical_name() -> None:
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "spectral_band_split" in list_available()

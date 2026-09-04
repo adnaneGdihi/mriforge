@@ -8,7 +8,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.masked_uncertainty_multi_contrast_loss import (  # noqa: E402
+from spectramr.models.losses.masked_uncertainty_multi_contrast_loss import (  # noqa: E402
     MaskedUncertaintyMultiContrastLoss,
 )
 

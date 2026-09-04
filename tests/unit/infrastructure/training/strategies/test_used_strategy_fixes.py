@@ -14,14 +14,14 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.multi_contrast_contrastive_strategy import (
+from spectramr.infrastructure.training.strategies.multi_contrast_contrastive_strategy import (
     MultiContrastContrastiveStrategy,
 )
-from mriforge.infrastructure.training.strategies.qsm_pipeline_strategy import (
+from spectramr.infrastructure.training.strategies.qsm_pipeline_strategy import (
     QSMPipelineStrategy,
 )
-import mriforge.infrastructure.training.strategies.qsm_pipeline_strategy as qsm_mod
-from mriforge.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
+import spectramr.infrastructure.training.strategies.qsm_pipeline_strategy as qsm_mod
+from spectramr.infrastructure.training.strategies.synthetic_pathology_aug_strategy import (
     SyntheticPathologyAugStrategy,
 )
 

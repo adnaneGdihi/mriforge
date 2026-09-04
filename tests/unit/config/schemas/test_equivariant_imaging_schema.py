@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.equivariant_imaging import (
+from spectramr.config.schemas.training.equivariant_imaging import (
     TrainingConfigEquivariantImaging,
 )
 
@@ -63,7 +63,7 @@ def test_rejects_nonpositive_noise_std():
 
 
 def test_mounts_on_training_schema():
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "equivariant_imaging" in TrainingStrategyConfigSchema.model_fields, (
         "training.equivariant_imaging sub-block not mounted on TrainingStrategyConfigSchema"
@@ -71,7 +71,7 @@ def test_mounts_on_training_schema():
 
 
 def test_ei_keys_registered_and_resolvable():
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

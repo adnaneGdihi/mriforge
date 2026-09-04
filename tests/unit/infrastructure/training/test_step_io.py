@@ -7,7 +7,7 @@ import warnings
 
 import pytest
 
-from mriforge.infrastructure.training.step_io import (
+from spectramr.infrastructure.training.step_io import (
     TrainingStepInput,
     TrainingStepOutput,
     accepts_step_io,
@@ -62,7 +62,7 @@ def test_marker_attribute_present() -> None:
 
 
 def test_silent_on_legacy_by_default() -> None:
-    # The repo promotes mriforge DeprecationWarning to an error; the shim MUST be
+    # The repo promotes spectramr DeprecationWarning to an error; the shim MUST be
     # silent on the legacy path by default.
     with warnings.catch_warnings():
         warnings.simplefilter("error")

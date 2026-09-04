@@ -18,10 +18,10 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.config.schemas.training.teichmuller import (
+from spectramr.config.schemas.training.teichmuller import (
     TeichmullerTrainingConfigSchema,
 )
-from mriforge.infrastructure.training.strategies.teichmuller_cold_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.teichmuller_cold_diffusion_strategy import (
     TeichmullerColdDiffusionStrategy,
 )
 from tests.utils.mock_environment import create_mock_training_env
@@ -50,7 +50,7 @@ def _mock_config(teichmuller: TeichmullerTrainingConfigSchema | None) -> MagicMo
     config.physics = None
     config.training = MagicMock()
     config.training.strategy_class = (
-        "mriforge.infrastructure.training.strategies."
+        "spectramr.infrastructure.training.strategies."
         "teichmuller_cold_diffusion_strategy.TeichmullerColdDiffusionStrategy"
     )
     # Explicit: a MagicMock would auto-create a child attr (never None).

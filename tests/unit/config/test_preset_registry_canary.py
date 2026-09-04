@@ -25,7 +25,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.presets import ConfigPreset, PresetRegistry
+from spectramr.config.presets import ConfigPreset, PresetRegistry
 
 
 # ---------------------------------------------------------------------------

@@ -12,7 +12,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.domain_adaptation import (
+from spectramr.infrastructure.training.strategies.domain_adaptation import (
     DomainAdaptationTrainingStrategy,
 )
 
@@ -66,7 +66,7 @@ def _patch_loss_builder():
         getattr(bi, _m).return_value = bi
     bi.build.return_value = {}
     with patch(
-        "mriforge.infrastructure.training.builders.loss_builder.LossBuilder", builder
+        "spectramr.infrastructure.training.builders.loss_builder.LossBuilder", builder
     ):
         yield
 
@@ -149,7 +149,7 @@ def domain_adaptation_models():
 class TestDomainAdaptationStrategyInitialization:
     """Test domain adaptation strategy initialization."""
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_initialization_success(self, mock_resolve, mock_domain_adaptation_state):
         """Test successful initialization."""
         mock_logging = MagicMock()
@@ -160,7 +160,7 @@ class TestDomainAdaptationStrategyInitialization:
         assert strategy is not None
         assert strategy.state == mock_domain_adaptation_state
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_requires_domain_config(self, mock_resolve, mock_domain_adaptation_state):
         """Test that domain adaptation requires domain config."""
         mock_logging = MagicMock()
@@ -177,7 +177,7 @@ class TestDomainAdaptationStrategyInitialization:
 class TestDomainAdaptationLossComputation:
     """Test domain adaptation loss computation."""
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_compute_losses_returns_dict(
         self, mock_resolve, mock_domain_adaptation_state
     ):
@@ -202,7 +202,7 @@ class TestDomainAdaptationLossComputation:
         assert "g_total_loss" in losses
         assert isinstance(losses["g_total_loss"], torch.Tensor)
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_domain_discriminator_loss_present(
         self, mock_resolve, mock_domain_adaptation_state
     ):
@@ -236,7 +236,7 @@ class TestDomainAdaptationLossComputation:
 class TestDomainAdaptationMultiDomain:
     """Test multi-domain training capabilities."""
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_handles_multiple_domains(self, mock_resolve, mock_domain_adaptation_state):
         """Test that strategy can handle multiple domains."""
         mock_logging = MagicMock()
@@ -251,7 +251,7 @@ class TestDomainAdaptationMultiDomain:
 class TestDomainAdaptationValidation:
     """Test domain adaptation validation."""
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_validation_step_returns_metrics(
         self, mock_resolve, mock_domain_adaptation_state
     ):
@@ -278,7 +278,7 @@ class TestDomainAdaptationValidation:
 class TestDomainAdaptationTrainingStep:
     """Test domain adaptation training mechanics."""
 
-    @patch("mriforge.infrastructure.di.di_container.resolve_service")
+    @patch("spectramr.infrastructure.di.di_container.resolve_service")
     def test_train_step_inherited_from_base(
         self, mock_resolve, mock_domain_adaptation_state
     ):

@@ -10,8 +10,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.adapters import AdaptersConfigSchema, AdapterStepSchema
-from mriforge.config.schemas.reporting import ReportingSettings
+from spectramr.config.schemas.adapters import AdaptersConfigSchema, AdapterStepSchema
+from spectramr.config.schemas.reporting import ReportingSettings
 
 
 def _assert_frozen(instance) -> None:

@@ -24,7 +24,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.se3_equivariant_navigator_strategy import (
+from spectramr.infrastructure.training.strategies.se3_equivariant_navigator_strategy import (
     SE3EquivariantNavigatorStrategy,
 )
 

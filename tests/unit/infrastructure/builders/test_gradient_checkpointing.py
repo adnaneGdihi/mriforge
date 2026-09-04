@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.infrastructure.builders.gradient_checkpointing import (
+from spectramr.infrastructure.builders.gradient_checkpointing import (
     apply_gradient_checkpointing,
 )
 
@@ -33,8 +33,8 @@ class _Native:
 
 class TestReExportIdentity:
     def test_generator_kwargs_and_model_builder_share_one_function(self) -> None:
-        from mriforge.infrastructure.builders import generator_kwargs as gk
-        from mriforge.infrastructure.training.builders import model_builder
+        from spectramr.infrastructure.builders import generator_kwargs as gk
+        from spectramr.infrastructure.training.builders import model_builder
 
         assert gk.apply_gradient_checkpointing is apply_gradient_checkpointing
         assert model_builder.apply_gradient_checkpointing is apply_gradient_checkpointing

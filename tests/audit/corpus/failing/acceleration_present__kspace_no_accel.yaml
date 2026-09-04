@@ -16,7 +16,7 @@ metadata:
   name: Failing — acceleration_present (kspace dataset, no acceleration block)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   training_mode: reconstruction
   max_iterations: 10
   device: cuda

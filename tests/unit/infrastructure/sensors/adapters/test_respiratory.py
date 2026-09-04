@@ -1,6 +1,6 @@
 r"""Tests for ``extract_respiratory_phase`` (idea 9 §9.2).
 
-Targets ``mriforge.infrastructure.sensors.adapters.respiratory``.
+Targets ``spectramr.infrastructure.sensors.adapters.respiratory``.
 
 Categories:
 
@@ -18,7 +18,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.sensors.adapters.respiratory import (
+from spectramr.infrastructure.sensors.adapters.respiratory import (
     RespiratoryGate,
     extract_respiratory_phase,
 )

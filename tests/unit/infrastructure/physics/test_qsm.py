@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.dipole import apply_3d_dipole_kernel
-from mriforge.infrastructure.physics.qsm import (
+from spectramr.infrastructure.physics.dipole import apply_3d_dipole_kernel
+from spectramr.infrastructure.physics.qsm import (
     compute_field_map,
     ilsqr_dipole_inversion,
     laplacian_phase_unwrap,

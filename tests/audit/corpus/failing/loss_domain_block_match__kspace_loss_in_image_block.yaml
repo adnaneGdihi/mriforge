@@ -25,7 +25,7 @@ metadata:
   name: Failing — loss_domain_block_match (kspace_l1 under image_losses)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   training_mode: reconstruction
   max_iterations: 10
   device: cuda

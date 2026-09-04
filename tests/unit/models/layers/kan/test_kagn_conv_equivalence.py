@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.layers.kan.kan_convs.kagn_conv import KAGNConv2DLayer
+from spectramr.models.layers.kan.kan_convs.kagn_conv import KAGNConv2DLayer
 
 
 @pytest.mark.unit
@@ -47,7 +47,7 @@ def test_group_loop_has_no_clone() -> None:
     """Pin the perf contract at source level for both KAGN conv modules."""
     import inspect
 
-    from mriforge.models.layers.kan.kan_convs import kagn_bottleneck_conv, kagn_conv
+    from spectramr.models.layers.kan.kan_convs import kagn_bottleneck_conv, kagn_conv
 
     for mod in (kagn_conv, kagn_bottleneck_conv):
         src = inspect.getsource(mod)

@@ -6,10 +6,10 @@ import yaml
 # Add src to path
 sys.path.append(os.getcwd())
 
-from mriforge.data.datasets.medical_volume_dataset import MedicalVolumeDataset
+from spectramr.data.datasets.medical_volume_dataset import MedicalVolumeDataset
 
-from mriforge.infrastructure.physics.data_consistency import AdaptiveDataConsistency
-from mriforge.infrastructure.physics.implementations.fft_operator import MultiCoilFFTOperator
+from spectramr.infrastructure.physics.data_consistency import AdaptiveDataConsistency
+from spectramr.infrastructure.physics.implementations.fft_operator import MultiCoilFFTOperator
 
 
 def verify():

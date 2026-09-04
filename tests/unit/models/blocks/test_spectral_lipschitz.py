@@ -1,6 +1,6 @@
 r"""Unit tests for the spectral-norm Lipschitz certificate utilities (LCAH core).
 
-Targets ``mriforge.models.blocks.spectral_lipschitz``.
+Targets ``spectramr.models.blocks.spectral_lipschitz``.
 
 LCAH attaches a *finite, computable extrapolation certificate* to acquisition-
 parameter conditioning: with the hypernetwork and target both spectral-normalised,
@@ -21,7 +21,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_layer_spectral_norm_matches_matrix_2norm() -> None:
-    from mriforge.models.blocks.spectral_lipschitz import layer_spectral_norm
+    from spectramr.models.blocks.spectral_lipschitz import layer_spectral_norm
 
     torch.manual_seed(0)
     layer = nn.Linear(5, 3, bias=True)
@@ -31,7 +31,7 @@ def test_layer_spectral_norm_matches_matrix_2norm() -> None:
 
 
 def test_spectral_norm_product_bounds_empirical_lipschitz() -> None:
-    from mriforge.models.blocks.spectral_lipschitz import spectral_norm_product
+    from spectramr.models.blocks.spectral_lipschitz import spectral_norm_product
 
     torch.manual_seed(1)
     mlp = nn.Sequential(nn.Linear(4, 8), nn.ReLU(), nn.Linear(8, 2))
@@ -47,7 +47,7 @@ def test_spectral_norm_product_bounds_empirical_lipschitz() -> None:
 
 
 def test_extrapolation_radius_zero_at_training_point() -> None:
-    from mriforge.models.blocks.spectral_lipschitz import extrapolation_radius
+    from spectramr.models.blocks.spectral_lipschitz import extrapolation_radius
 
     phi_train = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
     radius = extrapolation_radius(2.0, torch.tensor([3.0, 4.0]), phi_train)
@@ -55,7 +55,7 @@ def test_extrapolation_radius_zero_at_training_point() -> None:
 
 
 def test_extrapolation_radius_grows_linearly_with_distance() -> None:
-    from mriforge.models.blocks.spectral_lipschitz import extrapolation_radius
+    from spectramr.models.blocks.spectral_lipschitz import extrapolation_radius
 
     phi_train = torch.tensor([[0.0, 0.0]])
     r1 = extrapolation_radius(3.0, torch.tensor([1.0, 0.0]), phi_train)

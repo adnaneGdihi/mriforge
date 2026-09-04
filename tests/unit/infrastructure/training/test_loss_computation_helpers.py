@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.loss_computation_helpers import (
+from spectramr.infrastructure.training.loss_computation_helpers import (
     GANLossHelper,
     ReconstructionLossHelper,
 )

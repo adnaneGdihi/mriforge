@@ -1,6 +1,6 @@
 """Unit tests for the TorchIO intensity-augmentation adapters.
 
-Pairs ``src/mriforge/data/transforms/intensity_augmentation.py``.
+Pairs ``src/spectramr/data/transforms/intensity_augmentation.py``.
 
 The adapters exist to bridge two layouts, so the layout assertions here are the
 point, not boilerplate: TorchIO hands out ``[C, W, H, D]`` with no batch axis
@@ -15,7 +15,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.intensity_augmentation import (
+from spectramr.data.transforms.intensity_augmentation import (
     RandomBrightness,
     RandomContrast,
     RandomMotionBlur,

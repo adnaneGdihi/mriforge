@@ -16,11 +16,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.schemas.training.operator_id import OperatorIDConfig
-from mriforge.infrastructure.training.strategies.operator_id_bch_strategy import (
+from spectramr.config.schemas.training.operator_id import OperatorIDConfig
+from spectramr.infrastructure.training.strategies.operator_id_bch_strategy import (
     OperatorIdBCHTrainingStrategy,
 )
-from mriforge.models.operator_id.bch_conditioner import BCHOperatorConditioner
+from spectramr.models.operator_id.bch_conditioner import BCHOperatorConditioner
 
 
 def _make_strategy(h=16, w=16, modes=None):
@@ -55,8 +55,8 @@ def _make_strategy(h=16, w=16, modes=None):
     strat.config = SimpleNamespace(training=SimpleNamespace(operator_id=op_cfg))
     strat.device = torch.device("cpu")
     strat._op_cfg = op_cfg
-    from mriforge.models.losses.complex.structured_gaussian_nll import StructuredGaussianNLL
-    from mriforge.models.losses.image.pushforward_mmd import PushforwardMMD
+    from spectramr.models.losses.complex.structured_gaussian_nll import StructuredGaussianNLL
+    from spectramr.models.losses.image.pushforward_mmd import PushforwardMMD
 
     strat.nll_loss = StructuredGaussianNLL()
     strat.mmd_loss = PushforwardMMD()

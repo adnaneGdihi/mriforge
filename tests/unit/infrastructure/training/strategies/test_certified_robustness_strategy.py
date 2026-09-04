@@ -8,11 +8,11 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.config.schemas.training.certified_robustness import CertifiedRobustnessConfig
-from mriforge.infrastructure.training.strategies.certified_robustness_strategy import (
+from spectramr.config.schemas.training.certified_robustness import CertifiedRobustnessConfig
+from spectramr.infrastructure.training.strategies.certified_robustness_strategy import (
     CertifiedRobustnessStrategy,
 )
-from mriforge.models.losses.lipschitz_penalty import LipschitzSpectralPenalty
+from spectramr.models.losses.lipschitz_penalty import LipschitzSpectralPenalty
 
 
 def _high_gain_model() -> nn.Sequential:
@@ -39,7 +39,7 @@ def _strategy_with(lam: float) -> CertifiedRobustnessStrategy:
 def test_compute_losses_adds_penalty_to_g_total_loss_when_lambda_positive(monkeypatch) -> None:
     # The penalty must attach to the CANONICAL grad-carrying key g_total_loss (the
     # key base.py reads for backward) — not loss_total, which the parent never emits.
-    import mriforge.infrastructure.training.strategies.certified_robustness_strategy as mod
+    import spectramr.infrastructure.training.strategies.certified_robustness_strategy as mod
 
     base = torch.tensor(1.0, requires_grad=True)
     monkeypatch.setattr(
@@ -58,7 +58,7 @@ def test_compute_losses_adds_penalty_to_g_total_loss_when_lambda_positive(monkey
 def test_compute_losses_no_penalty_when_total_not_grad_carrying(monkeypatch) -> None:
     # If the parent returns a detached / non-grad total, the penalty must NOT attach
     # (adding to a non-leaf detached tensor would not train the weights -> inert #16).
-    import mriforge.infrastructure.training.strategies.certified_robustness_strategy as mod
+    import spectramr.infrastructure.training.strategies.certified_robustness_strategy as mod
 
     monkeypatch.setattr(
         mod.AdversarialRobustnessStrategy,
@@ -71,7 +71,7 @@ def test_compute_losses_no_penalty_when_total_not_grad_carrying(monkeypatch) -> 
 
 
 def test_compute_losses_no_penalty_when_lambda_zero(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.certified_robustness_strategy as mod
+    import spectramr.infrastructure.training.strategies.certified_robustness_strategy as mod
 
     base = torch.tensor(1.0, requires_grad=True)
     monkeypatch.setattr(
@@ -91,8 +91,8 @@ def test_compute_losses_no_penalty_when_lambda_zero(monkeypatch) -> None:
 
 
 def test_validation_step_emits_bound_witnesses(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.certified_robustness_strategy as mod
-    from mriforge.core.metrics.lipschitz_bound_metrics import (
+    import spectramr.infrastructure.training.strategies.certified_robustness_strategy as mod
+    from spectramr.core.metrics.lipschitz_bound_metrics import (
         ComposedSpectralNormBound,
         MaxLayerSpectralNorm,
     )
@@ -118,7 +118,7 @@ def test_validation_step_emits_bound_witnesses(monkeypatch) -> None:
 
 
 def test_setup_reads_config_block(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.certified_robustness_strategy as mod
+    import spectramr.infrastructure.training.strategies.certified_robustness_strategy as mod
 
     monkeypatch.setattr(
         mod.AdversarialRobustnessStrategy,
@@ -147,8 +147,8 @@ def test_setup_reads_config_block(monkeypatch) -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "certified_robustness" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "certified_robustness" in TrainingStrategyConfigSchema.model_fields

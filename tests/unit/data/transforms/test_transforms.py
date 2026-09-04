@@ -6,7 +6,7 @@ shim (no live dispatch path references it) but now emits a ``DeprecationWarning`
 on construction steering callers to the canonical transform / the unified
 ``physics.coil_processing`` config block.
 
-NOTE: ``mriforge.*`` deprecation warnings are promoted to errors during tests
+NOTE: ``spectramr.*`` deprecation warnings are promoted to errors during tests
 (``pyproject.toml`` ``filterwarnings``), so every construction here is wrapped in
 ``pytest.warns``.
 """
@@ -17,7 +17,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.transforms import VirtualCoilCompression
+from spectramr.data.transforms.transforms import VirtualCoilCompression
 
 
 def test_virtualcoilcompression_construction_warns() -> None:

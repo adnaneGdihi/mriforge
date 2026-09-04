@@ -19,10 +19,10 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.infrastructure.training.optimizer_registry import (  # noqa: E402
+from spectramr.infrastructure.training.optimizer_registry import (  # noqa: E402
     OptimizerRegistry,
 )
-from mriforge.infrastructure.training.optimizers import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers import (  # noqa: E402
     LAMB,
     LARS,
     Lion,
@@ -52,7 +52,7 @@ class TestRegistration:
         """The lockstep invariant. A ``@register_optimizer`` in a module nothing
         imports is dead, and the symptom -- 'unknown optimizer' -- reads as a
         typo rather than a missing import."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         assert not OPTIMIZER_NAMES - set(OptimizerRegistry.list_available())
 
@@ -63,10 +63,10 @@ class TestRegistration:
         yield the same table."""
         import importlib
 
-        import mriforge.infrastructure.training.optimizer_registry as reg
+        import spectramr.infrastructure.training.optimizer_registry as reg
 
         before = set(reg.OptimizerRegistry.list_available())
-        importlib.import_module("mriforge.infrastructure.training.optimizers")
+        importlib.import_module("spectramr.infrastructure.training.optimizers")
         assert set(reg.OptimizerRegistry.list_available()) == before
 
     def test_lookahead_is_not_registered_as_a_name(self) -> None:
@@ -78,7 +78,7 @@ class TestRegistration:
         current single-backward seam would perturb the weights and never restore
         them -- the run would train on w + rho*g and report success."""
         assert "sam" not in OptimizerRegistry.list_available()
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         assert "sam" not in OPTIMIZER_NAMES
 
@@ -219,15 +219,15 @@ class TestLookahead:
 
     def test_is_still_importable_from_its_historical_module(self) -> None:
         """``gradient_stability`` keeps a re-export, not a second copy."""
-        from mriforge.infrastructure.training.gradient_stability import (
+        from spectramr.infrastructure.training.gradient_stability import (
             Lookahead as Shim,
         )
 
         assert Shim is Lookahead
 
     def test_reached_through_the_config_sub_block_not_optimizer_type(self) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.optimizer_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.optimizer_resolution import (
             build_optimizer_from_spec,
             resolve_optimizer_spec,
         )
@@ -242,8 +242,8 @@ class TestLookahead:
         assert opt.la_steps == 4 and opt.la_alpha == pytest.approx(0.3)
 
     def test_absent_sub_block_leaves_the_base_optimizer_unwrapped(self) -> None:
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.optimizer_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.optimizer_resolution import (
             build_optimizer_from_spec,
             resolve_optimizer_spec,
         )
@@ -291,7 +291,7 @@ class TestOptionalExtras:
         assert "lr" in OptimizerRegistry.accepted_kwargs(name)
 
     def test_schedule_free_mode_detection_is_duck_typed(self) -> None:
-        from mriforge.infrastructure.training.optimizers import (
+        from spectramr.infrastructure.training.optimizers import (
             supports_schedule_free_modes,
         )
 

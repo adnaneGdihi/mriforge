@@ -35,12 +35,12 @@ class TestOptimizerBuilderAgreesWithTheConfigResolver:
     The leaf path is not a backwater: ``pipelines/fit.py`` builds BOTH the
     generator and the discriminator optimizer through it, so a scripting
     ``fit(...)`` run silently trained a different objective from the one
-    ``mriforge train`` ran off the same YAML.
+    ``spectramr train`` ran off the same YAML.
     """
 
     @staticmethod
     def _config(**overrides):
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         class _Cfg:
             def __init__(self, optimization):
@@ -56,10 +56,10 @@ class TestOptimizerBuilderAgreesWithTheConfigResolver:
     def _both_paths(self, **overrides):
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
-        from mriforge.infrastructure.training.optimizer_resolution import (
+        from spectramr.infrastructure.training.optimizer_resolution import (
             build_optimizer_from_spec,
             resolve_optimizer_spec,
         )
@@ -90,7 +90,7 @@ class TestOptimizerBuilderAgreesWithTheConfigResolver:
         """Reading the config must not disable the builder's own API."""
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
 
@@ -116,7 +116,7 @@ class TestOptimizerBuilderHonoursTTUR:
 
     @staticmethod
     def _config():
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         class _Cfg:
             def __init__(self, optimization):
@@ -131,7 +131,7 @@ class TestOptimizerBuilderHonoursTTUR:
     def test_discriminator_role_picks_up_the_ttur_learning_rate(self) -> None:
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
 
@@ -150,7 +150,7 @@ class TestOptimizerBuilderHonoursTTUR:
     def test_generator_role_is_unaffected_by_the_discriminator_knob(self) -> None:
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
 
@@ -160,7 +160,7 @@ class TestOptimizerBuilderHonoursTTUR:
     def test_an_explicit_learning_rate_still_beats_the_role(self) -> None:
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
 
@@ -190,7 +190,7 @@ class TestTheLearningRateComesFromTheConfig:
 
     @staticmethod
     def _config(**optimizer):
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         class _Cfg:
             def __init__(self, optimization):
@@ -201,7 +201,7 @@ class TestTheLearningRateComesFromTheConfig:
     def _build(self, role="generator", **optimizer):
         import torch.nn as nn
 
-        from mriforge.infrastructure.builders.leaf.optimizer_builders import (
+        from spectramr.infrastructure.builders.leaf.optimizer_builders import (
             OptimizerBuilder,
         )
 

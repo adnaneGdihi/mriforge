@@ -15,14 +15,14 @@ import pytest
 torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 
-from mriforge.domain.services.mrf_dictless_matching import (  # noqa: E402
+from spectramr.domain.services.mrf_dictless_matching import (  # noqa: E402
     MRFDictionary,
     MRFDictlessMatcher,
 )
 
 
 def test_shim_reexports_same_objects() -> None:
-    from mriforge.application.use_cases import mrf_dictless_matching_use_case as shim
+    from spectramr.application.use_cases import mrf_dictless_matching_use_case as shim
 
     assert shim.MRFDictlessMatcher is MRFDictlessMatcher
     assert shim.MRFDictionary is MRFDictionary

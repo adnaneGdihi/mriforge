@@ -51,7 +51,7 @@ class TestKSpaceNormalizationTimingFix:
 
         # For Cartesian masking test:
         # 1. Compute scale on full k-space
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         kspace_full = fft2c(image)
         scale_full = torch.quantile(torch.abs(kspace_full), 0.99)
@@ -107,7 +107,7 @@ class TestKSpaceNormalizationTimingFix:
         image_train = torch.randn(1, 1, 64, 64)
         image_infer = image_train.clone()
 
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         # Training path (should use normalized k-space)
         kspace_train = fft2c(image_train)
@@ -142,7 +142,7 @@ class TestKSpaceNormalizationTimingFix:
         image = torch.zeros(1, 1, 128, 128)
         image[:, :, 48:80, 48:80] = 1.0  # Centered square
 
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         kspace_full = fft2c(image)
 

@@ -1,13 +1,13 @@
 """Tests for ``LossLoggingConfigSchema``.
 
-Targets ``mriforge.config.schemas.loss_logging``. A minimal Pydantic schema whose
+Targets ``spectramr.config.schemas.loss_logging``. A minimal Pydantic schema whose
 legacy keys are silently ignored (``extra="ignore"``).
 
 **Which fields are actually consumed, measured 2026-08-09** — the previous claim
 here ("two consumed fields, ``frequency`` and ``output_dir``") was half wrong,
 and a duplicate of this file at ``tests/unit/config/test_loss_logging_schema.py``
 repeated it verbatim. That file has been deleted; this one is on the canonical
-pairing path for ``src/mriforge/config/schemas/loss_logging.py``.
+pairing path for ``src/spectramr/config/schemas/loss_logging.py``.
 
 ===============  ==========================================================
 ``output_dir``   read — ``strategies/pinn_strategy.py:109``; written by
@@ -28,7 +28,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.loss_logging import LossLoggingConfigSchema
+from spectramr.config.schemas.loss_logging import LossLoggingConfigSchema
 
 # ---------------------------------------------------------------------------
 # Defaults

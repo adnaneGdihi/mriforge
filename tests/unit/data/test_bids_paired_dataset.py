@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.bids_paired_dataset import (
+from spectramr.data.datasets.bids_paired_dataset import (
     BidsPairedDataset,
     build_bids_paired_index,
     parse_bids_entities,
@@ -118,7 +118,7 @@ def test_dataset_getitem_returns_subject(tmp_path):
 # ── schema (spec E5) ──────────────────────────────────────────────────────────
 
 def test_bids_schema_defaults_disabled():
-    from mriforge.config.schemas.data import BidsPairedConfigSchema, DataConfigSchema
+    from spectramr.config.schemas.data import BidsPairedConfigSchema, DataConfigSchema
 
     assert BidsPairedConfigSchema().enabled is False
     assert DataConfigSchema().bids_paired.enabled is False
@@ -127,7 +127,7 @@ def test_bids_schema_defaults_disabled():
 def test_bids_schema_same_dir_raises():
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.data import BidsPairedConfigSchema
+    from spectramr.config.schemas.data import BidsPairedConfigSchema
 
     with pytest.raises(ValidationError, match="differ"):
         BidsPairedConfigSchema(enabled=True, low_field_dir="x", high_field_dir="x")
@@ -136,7 +136,7 @@ def test_bids_schema_same_dir_raises():
 def test_bids_schema_empty_contrasts_raises():
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.data import BidsPairedConfigSchema
+    from spectramr.config.schemas.data import BidsPairedConfigSchema
 
     with pytest.raises(ValidationError, match="contrasts"):
         BidsPairedConfigSchema(enabled=True, contrasts=[])
@@ -204,7 +204,7 @@ def test_dry_iter_returns_length_correct_stub_subjects() -> None:
     """
     import torchio as tio
 
-    from mriforge.data.datasets.bids_paired_dataset import BidsPairedDataset
+    from spectramr.data.datasets.bids_paired_dataset import BidsPairedDataset
 
     ds = BidsPairedDataset.__new__(BidsPairedDataset)
     ds.index = [{}, {}, {}]

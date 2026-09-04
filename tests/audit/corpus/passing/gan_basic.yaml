@@ -14,7 +14,7 @@ metadata:
     - gan
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy
   training_mode: gan
   epochs: 2
   max_iterations: 10

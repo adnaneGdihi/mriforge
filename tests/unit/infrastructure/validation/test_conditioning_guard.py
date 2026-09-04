@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 def _err(sources, registered, supported):
@@ -60,7 +60,7 @@ def test_passing_message_is_honest_about_runtime_propagation(monkeypatch):
     """The Tier-1 check is structural; it must not over-claim runtime
     consumption. The passing message points at the mechanism-fires guard that
     actually enforces propagation, rather than asserting 'consumed'."""
-    import mriforge.infrastructure.training.strategy_factory as sf
+    import spectramr.infrastructure.training.strategy_factory as sf
 
     class _Strat:
         _SUPPORTED_CONDITION_SOURCES = ("field_strength",)

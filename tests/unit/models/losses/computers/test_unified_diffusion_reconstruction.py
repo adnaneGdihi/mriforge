@@ -23,13 +23,13 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.schemas.loss_schedule import LossScheduleConfigSchema
-from mriforge.config.schemas.loss import (
+from spectramr.config.schemas.loss_schedule import LossScheduleConfigSchema
+from spectramr.config.schemas.loss import (
     LossConfigSchema,
     PhysicsLossesConfig,
     ReconstructionLossesConfig,
 )
-from mriforge.models.losses.computers.unified_diffusion_reconstruction import (
+from spectramr.models.losses.computers.unified_diffusion_reconstruction import (
     UnifiedDiffusionLossComputer,
     UnifiedReconstructionLossComputer,
 )
@@ -209,13 +209,13 @@ class TestWeightResolutionIsSingleSourced:
     """
 
     def test_the_legacy_resolver_and_its_default_table_are_deleted(self):
-        import mriforge.models.losses.computers.unified_diffusion_reconstruction as mod
+        import spectramr.models.losses.computers.unified_diffusion_reconstruction as mod
 
         assert not hasattr(mod, "resolve_static_loss_weight")
         assert not hasattr(mod, "_DEFAULT_LOSS_WEIGHTS")
 
     def test_computer_and_schedule_controller_resolve_identically(self):
-        from mriforge.infrastructure.training.loss_schedule_controller import (
+        from spectramr.infrastructure.training.loss_schedule_controller import (
             LossScheduleController,
         )
 
@@ -343,7 +343,7 @@ class TestDiffusionWeightWiring:
         assert comp._get_loss_weight("diffusion") == 1.0
 
     def test_losses_diffusion_lambda_mse_beats_training_knob(self):
-        from mriforge.config.schemas.loss import DiffusionLossesConfig
+        from spectramr.config.schemas.loss import DiffusionLossesConfig
 
         cfg = SimpleNamespace(
             losses=LossConfigSchema(

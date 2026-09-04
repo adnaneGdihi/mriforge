@@ -30,8 +30,8 @@ from __future__ import annotations
 
 import torch
 
-import mriforge  # noqa: F401
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+import spectramr  # noqa: F401
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
 
 def _fft_round_trip(side: int = 64) -> float:

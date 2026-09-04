@@ -1,6 +1,6 @@
 """Unit tests for the PR-CC physics-residual consistency metric.
 
-Targets ``mriforge.core.metrics.uncertainty.phys_residual_conformal``.
+Targets ``spectramr.core.metrics.uncertainty.phys_residual_conformal``.
 
 The registered metric is the live eval-tier handle: it computes the *mean
 physics residual* (a real forward-model consistency scalar, lower is better).
@@ -27,7 +27,7 @@ def _params() -> torch.Tensor:
 
 
 def _render(params: torch.Tensor) -> torch.Tensor:
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -39,13 +39,13 @@ def _render(params: torch.Tensor) -> torch.Tensor:
 
 
 def test_metric_is_registered() -> None:
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     assert MetricsRegistry.is_registered("phys_residual_consistency")
 
 
 def test_zero_for_consistent_params() -> None:
-    from mriforge.core.metrics.uncertainty.phys_residual_conformal import (
+    from spectramr.core.metrics.uncertainty.phys_residual_conformal import (
         PhysResidualConsistencyMetric,
     )
 
@@ -59,7 +59,7 @@ def test_zero_for_consistent_params() -> None:
 
 
 def test_positive_for_inconsistent_params() -> None:
-    from mriforge.core.metrics.uncertainty.phys_residual_conformal import (
+    from spectramr.core.metrics.uncertainty.phys_residual_conformal import (
         PhysResidualConsistencyMetric,
     )
 
@@ -74,7 +74,7 @@ def test_positive_for_inconsistent_params() -> None:
 
 
 def test_acquisition_via_kwargs_overrides_default() -> None:
-    from mriforge.core.metrics.uncertainty.phys_residual_conformal import (
+    from spectramr.core.metrics.uncertainty.phys_residual_conformal import (
         PhysResidualConsistencyMetric,
     )
 
@@ -86,7 +86,7 @@ def test_acquisition_via_kwargs_overrides_default() -> None:
 
 
 def test_missing_acquisition_raises() -> None:
-    from mriforge.core.metrics.uncertainty.phys_residual_conformal import (
+    from spectramr.core.metrics.uncertainty.phys_residual_conformal import (
         PhysResidualConsistencyMetric,
     )
 
@@ -108,8 +108,8 @@ def test_import_does_not_pull_infrastructure_calibration() -> None:
 
     code = (
         "import sys\n"
-        "import mriforge.core.metrics.uncertainty.phys_residual_conformal\n"
-        "assert 'mriforge.infrastructure.calibration.scores' not in sys.modules, (\n"
+        "import spectramr.core.metrics.uncertainty.phys_residual_conformal\n"
+        "assert 'spectramr.infrastructure.calibration.scores' not in sys.modules, (\n"
         "    'module-scope leftward import reintroduced')\n"
     )
     proc = subprocess.run(

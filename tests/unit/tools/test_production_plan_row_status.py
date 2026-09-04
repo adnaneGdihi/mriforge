@@ -341,8 +341,8 @@ class TestTheCorpusClearsTheTripwire:
             classify(st) for _, st in TestAgainstTheRealAnnotations._statuses()
         )
         assert dict(got) == {
-            "skip": 2,
-            "done": 27,
+            "skip": 1,
+            "done": 29,
             "part": 4,
             "refuted": 14,
             "corrected": 25,

@@ -1,6 +1,6 @@
 """Domain-bridge contract for ``LossBuilder._build_list_based_losses``.
 
-Targets ``mriforge.infrastructure.training.builders.loss_builder``.
+Targets ``spectramr.infrastructure.training.builders.loss_builder``.
 
 The regression under test is the **double Fourier bridge** (issue #467). With
 ``losses.output_domain: kspace`` the builder wraps every ``image_losses`` entry in
@@ -27,9 +27,9 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.loss import LossComponentConfig, LossConfigSchema
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+from spectramr.config.schemas.loss import LossComponentConfig, LossConfigSchema
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
 # Losses that bridge from k-space internally. Kept in sync with the guard, which
 # detects them structurally via the ``use_fourier_bridge`` attribute rather than

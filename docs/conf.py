@@ -1,4 +1,4 @@
-"""Sphinx configuration for the mriforge Read the Docs site."""
+"""Sphinx configuration for the spectramr Read the Docs site."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.abspath("../src"))
 sys.path.insert(0, os.path.abspath(".."))
 
-project = "MRIForge"
+project = "spectraMR"
 author = "Adnane Gdihi"
 copyright = "2026, Adnane Gdihi"
 release = "0.1.0"
@@ -142,7 +142,7 @@ try:
 except ImportError:
     html_theme = "alabaster"
 
-html_title = "MRIForge"
+html_title = "spectraMR"
 html_static_path = ["_static"]
 
 # Navigation behaviour. The tree is wide (14 captioned sections over ~415
@@ -209,6 +209,21 @@ exclude_patterns = [
     # usage documentation, so they are excluded from the build rather than
     # wired into the sidebar.
     "lean/**/README.md",
+    # The 16 design-compliance dossiers (+ their master) are the *compiler input*
+    # for `TODO/production_plan/`, not pages: `compile_plan.py` transcribes each
+    # one's §9 fix set into a plan file. They are dated point-in-time evidence
+    # for one audit, nobody navigates to them, and `check_docs_navigation.py`
+    # reports all 17 as orphans otherwise. They are deliberately unshipped to the
+    # public export too — see the NOT-SHIPPED foot of
+    # `scripts/release/public_allowlist.txt`.
+    #
+    # Excluding a page normally suppresses every check on it. These are the
+    # exception: `TODO/production_plan/tools/check_fidelity.py` re-parses all 249
+    # §9 rows independently of the compiler and fails on any drift between
+    # dossier and plan file. That is a stronger and far more relevant check than
+    # Sphinx applies to an orphan page — this exclusion removes them from
+    # *navigation*, not from *verification*.
+    "audits/**",
 ]
 
 # Don't fail the build on missing references inside autoapi-generated pages —
@@ -219,8 +234,8 @@ nitpicky = False
 #
 # `ref.python` —  `__init__.py` re-exports classes (e.g. `MRIVolume`) from
 #   submodules. Sphinx's `automodule::` registers the class both under the
-#   submodule path (`mriforge.domain.entities.entities_3d.MRIVolume`) and under
-#   the package path (`mriforge.domain.entities.MRIVolume`). A bare
+#   submodule path (`spectramr.domain.entities.entities_3d.MRIVolume`) and under
+#   the package path (`spectramr.domain.entities.MRIVolume`). A bare
 #   `:py:attr:`shape\`` in a docstring then matches both, producing an
 #   ambiguity warning. The targets are identical Python objects — the
 #   ambiguity is structural, not a real ref bug.

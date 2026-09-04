@@ -7,7 +7,7 @@ three failure modes:
   (and ``manifest_path``, ``checkpoint_dir``, ``output_dir``, …)
   pointing at ``/project/<user>/<rest>``. Mechanically safe to rewrite
   to a relative ``databases/<rest>`` path that ``PathResolver`` resolves
-  against ``$PROJECT_ROOT`` / ``$MRIFORGE_DATA_ROOT``.
+  against ``$PROJECT_ROOT`` / ``$SPECTRAMR_DATA_ROOT``.
 
 * **7** ``data_model_compatibility`` failures — model declares
   ``spatial_dims=(1,)`` (a fingerprint / time-series operator) but
@@ -30,7 +30,7 @@ Usage:
 * ``--log PATH`` parses a specific smoke log to enumerate affected
   YAMLs (default scans ``experiments/`` recursively).
 * ``--scope DIR`` restricts the rewrite to one directory.
-* ``--no-verify`` skips the post-fix ``mriforge audit`` re-run.
+* ``--no-verify`` skips the post-fix ``spectramr audit`` re-run.
 
 The rewrite is **idempotent**: a second invocation finds nothing to do.
 """
@@ -181,7 +181,7 @@ def main() -> int:
     parser.add_argument(
         "--no-verify",
         action="store_true",
-        help="Skip the post-fix `mriforge audit` re-run.",
+        help="Skip the post-fix `spectramr audit` re-run.",
     )
     parser.add_argument(
         "--verify-limit",
@@ -246,7 +246,7 @@ def main() -> int:
             rel = f.relative_to(REPO_ROOT)
             try:
                 proc = subprocess.run(
-                    [sys.executable, "-m", "mriforge.cli", "audit", str(f)],
+                    [sys.executable, "-m", "spectramr.cli", "audit", str(f)],
                     capture_output=True,
                     text=True,
                     timeout=60,

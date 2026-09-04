@@ -36,11 +36,11 @@ import torch
 import torch.nn as nn
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     MultiContrastContrastiveConfigSchema,
     SSLConfigSchema,
 )
-from mriforge.infrastructure.training.strategies.multi_contrast_contrastive_strategy import (
+from spectramr.infrastructure.training.strategies.multi_contrast_contrastive_strategy import (
     MultiContrastContrastiveStrategy,
 )
 

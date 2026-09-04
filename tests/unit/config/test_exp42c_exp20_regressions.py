@@ -120,7 +120,7 @@ def test_exp20_vit_channels_override_present() -> None:
 def test_ifft_kspace_to_image_supports_pre_model() -> None:
     """The pre_model insertion point was added 2026-05-12 so the
     bridge can sit at the front of an adapter chain."""
-    from mriforge.data.adapters import get_adapter_capabilities
+    from spectramr.data.adapters import get_adapter_capabilities
 
     caps = get_adapter_capabilities("ifft_kspace_to_image")
     assert caps is not None, "ifft_kspace_to_image not registered"
@@ -132,7 +132,7 @@ def test_ifft_kspace_to_image_supports_pre_model() -> None:
 
 def test_complex_to_real_imag_interleave_supports_pre_model() -> None:
     """Same fix for the channel adapter that completes the chain."""
-    from mriforge.data.adapters import get_adapter_capabilities
+    from spectramr.data.adapters import get_adapter_capabilities
 
     caps = get_adapter_capabilities("complex_to_real_imag_interleave")
     assert caps is not None
@@ -146,8 +146,8 @@ def test_graph_unet_decorator_accepts_complex() -> None:
     previously claimed ``accepts_complex=False`` and the audit
     rejected pre_model iFFT chains. 2026-05-12 fix."""
     # Force registration by importing the module.
-    import mriforge.models.generators.graph_unet_generator  # noqa: F401
-    from mriforge.models.registry import get_model_capabilities
+    import spectramr.models.generators.graph_unet_generator  # noqa: F401
+    from spectramr.models.registry import get_model_capabilities
 
     for name in ("graph_unet", "graph_unet_diffusion"):
         caps = get_model_capabilities(name)

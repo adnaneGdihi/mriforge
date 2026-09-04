@@ -1,6 +1,6 @@
 """Tests for the retry / backoff utilities.
 
-Targets ``mriforge.shared.utils.retry``. Verifies exponential growth, cap
+Targets ``spectramr.shared.utils.retry``. Verifies exponential growth, cap
 behaviour, jitter randomisation, and the side-effecting sleep variant.
 """
 
@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from mriforge.shared.utils.retry import compute_backoff_seconds, sleep_with_backoff
+from spectramr.shared.utils.retry import compute_backoff_seconds, sleep_with_backoff
 
 
 # ---------------------------------------------------------------------------

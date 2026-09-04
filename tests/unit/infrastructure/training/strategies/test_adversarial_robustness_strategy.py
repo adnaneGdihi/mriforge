@@ -15,7 +15,7 @@ import types
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.adversarial_robustness_strategy import (
+from spectramr.infrastructure.training.strategies.adversarial_robustness_strategy import (
     AdversarialRobustnessStrategy,
 )
 
@@ -32,7 +32,7 @@ def _make_strategy(gen: nn.Module) -> AdversarialRobustnessStrategy:
 
 
 def test_merge_emits_grad_carrying_g_total_loss(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.adversarial_robustness_strategy as mod
+    import spectramr.infrastructure.training.strategies.adversarial_robustness_strategy as mod
 
     # The grandparent (ReconstructionTrainingStrategy) emits g_total_loss, NOT loss_total.
     def _fake_super(self, input_batch=None, target_batch=None, epoch=0, **k):

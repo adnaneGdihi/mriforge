@@ -8,7 +8,7 @@ Tests cover:
 
 import unittest
 
-from mriforge.core.cascading_validation import (
+from spectramr.core.cascading_validation import (
     CASCADE_ID_COLUMNS,
     CASCADING_LEVELS,
     build_cascade_row,

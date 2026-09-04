@@ -1,14 +1,14 @@
 """Unit tests for edge Q-KAN quantization.
 
 Regression coverage for the silent-fallback fix in
-``src/mriforge/models/edge/quantization.py``: unsupported bit-widths must RAISE
+``src/spectramr/models/edge/quantization.py``: unsupported bit-widths must RAISE
 (pitfall #9) rather than silently degrading to an identity / unquantized layer.
 """
 
 import pytest
 import torch
 
-from mriforge.models.edge.quantization import (
+from spectramr.models.edge.quantization import (
     QKANLayer,
     SplineQuantizer,
     create_q_kan,

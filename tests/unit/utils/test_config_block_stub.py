@@ -23,7 +23,7 @@ class TestTheStubIsTheRealSchema:
 
     def test_defaults_come_from_the_schema_not_from_here(self) -> None:
         """If this module restated a default it could drift; it must not."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         assert (
             block_stub("validation").schedule.interval_steps
@@ -47,7 +47,7 @@ class TestRoutingIsDerivedFromRenames:
 
     def test_routing_agrees_with_the_rename_ssot(self) -> None:
         """Anti-drift: every route must BE a RENAMES record, not a lookalike."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         for block in BLOCK_SCHEMAS:
             routes = flat_to_canonical(block)
@@ -94,7 +94,7 @@ class TestRoutingIsDerivedFromRenames:
 
     def test_routing_covers_every_same_block_rename(self) -> None:
         """No same-block fold record may be silently unroutable."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         for block in BLOCK_SCHEMAS:
             prefix = f"{block}."
@@ -116,7 +116,7 @@ class TestDirectKwargs:
 
     def test_a_canonical_kwarg_is_not_double_routed(self) -> None:
         """Passing the canonical sub-block wholesale must win, not be ignored."""
-        from mriforge.config.schemas.validation import ValidationConfigSchema
+        from spectramr.config.schemas.validation import ValidationConfigSchema
 
         scoring = ValidationConfigSchema().scoring.model_copy(
             update={"compute": ["ssim"]}

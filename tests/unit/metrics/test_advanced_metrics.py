@@ -22,7 +22,7 @@ import pytest
 class TestLossStatistics:
     @pytest.fixture
     def ls(self):
-        from mriforge.core.metrics.advanced_metrics import LossStatistics
+        from spectramr.core.metrics.advanced_metrics import LossStatistics
         return LossStatistics(component_name="test_loss")
 
     # canary
@@ -40,7 +40,7 @@ class TestLossStatistics:
         [1e-6, 2e-6, 3e-6],
     ])
     def test_value_ranges(self, values):
-        from mriforge.core.metrics.advanced_metrics import LossStatistics
+        from spectramr.core.metrics.advanced_metrics import LossStatistics
         s = LossStatistics("x")
         for v in values:
             s.update(v)
@@ -71,7 +71,7 @@ class TestLossStatistics:
 
     # parametrize trend detection: needs >10 samples
     def test_trend_increasing(self):
-        from mriforge.core.metrics.advanced_metrics import LossStatistics
+        from spectramr.core.metrics.advanced_metrics import LossStatistics
         s = LossStatistics("inc")
         # 15 values increasing significantly
         for i in range(15):
@@ -79,7 +79,7 @@ class TestLossStatistics:
         assert s.trend == "increasing"
 
     def test_trend_decreasing(self):
-        from mriforge.core.metrics.advanced_metrics import LossStatistics
+        from spectramr.core.metrics.advanced_metrics import LossStatistics
         s = LossStatistics("dec")
         for i in range(15):
             s.update(float(15 - i) * 10)
@@ -100,7 +100,7 @@ class TestLossStatistics:
 class TestLossAnalyzer:
     @pytest.fixture
     def analyzer(self):
-        from mriforge.core.metrics.advanced_metrics import LossAnalyzer
+        from spectramr.core.metrics.advanced_metrics import LossAnalyzer
         return LossAnalyzer()
 
     # canary
@@ -113,7 +113,7 @@ class TestLossAnalyzer:
     # parametrize over batch sizes (number of records)
     @pytest.mark.parametrize("n_steps", [1, 2])
     def test_n_steps(self, n_steps):
-        from mriforge.core.metrics.advanced_metrics import LossAnalyzer
+        from spectramr.core.metrics.advanced_metrics import LossAnalyzer
         a = LossAnalyzer()
         for i in range(n_steps):
             a.record_loss({"loss": float(i + 1)})
@@ -123,7 +123,7 @@ class TestLossAnalyzer:
 
     # edge: NaN value produces NAN_INF anomaly
     def test_edge_nan_triggers_nan_inf_anomaly(self, analyzer):
-        from mriforge.core.metrics.advanced_metrics import AnomalyType
+        from spectramr.core.metrics.advanced_metrics import AnomalyType
         analyzer.record_loss({"loss": 1.0})
         analyzer.record_loss({"loss": float("nan")})
         anomalies = analyzer.detect_anomalies()
@@ -132,7 +132,7 @@ class TestLossAnalyzer:
 
     # edge: divergence detected when recent >> older
     def test_edge_divergence_detected(self, analyzer):
-        from mriforge.core.metrics.advanced_metrics import AnomalyType
+        from spectramr.core.metrics.advanced_metrics import AnomalyType
         # 10 baseline values + 5 very large values
         for _ in range(10):
             analyzer.record_loss({"loss": 1.0})
@@ -167,7 +167,7 @@ class TestLossAnalyzer:
 class TestMetricsAggregator:
     @pytest.fixture
     def agg(self):
-        from mriforge.core.metrics.advanced_metrics import MetricsAggregator
+        from spectramr.core.metrics.advanced_metrics import MetricsAggregator
         return MetricsAggregator()
 
     # canary
@@ -180,7 +180,7 @@ class TestMetricsAggregator:
     # parametrize
     @pytest.mark.parametrize("n", [1, 2])
     def test_n_records(self, n):
-        from mriforge.core.metrics.advanced_metrics import MetricsAggregator
+        from spectramr.core.metrics.advanced_metrics import MetricsAggregator
         a = MetricsAggregator()
         for i in range(n):
             a.record_metrics({"m": float(i + 1)})
@@ -233,7 +233,7 @@ class TestMetricsAggregator:
 class TestLossInteractionAnalyzer:
     @pytest.fixture
     def lia(self):
-        from mriforge.core.metrics.advanced_metrics import LossInteractionAnalyzer
+        from spectramr.core.metrics.advanced_metrics import LossInteractionAnalyzer
         return LossInteractionAnalyzer()
 
     def _fill(self, lia, n: int = 20):
@@ -255,7 +255,7 @@ class TestLossInteractionAnalyzer:
     # parametrize
     @pytest.mark.parametrize("n", [1, 2])
     def test_n_records_correlation(self, n):
-        from mriforge.core.metrics.advanced_metrics import LossInteractionAnalyzer
+        from spectramr.core.metrics.advanced_metrics import LossInteractionAnalyzer
         la = LossInteractionAnalyzer()
         for i in range(max(n, 2)):  # Need >= 2 for correlation
             la.record_losses({"a": float(i), "b": float(i) + 1.0})

@@ -12,7 +12,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.neural_advection_generator import NeuralAdvectionGenerator
+from spectramr.models.generators.neural_advection_generator import NeuralAdvectionGenerator
 
 
 def test_forward_caches_deformation_field() -> None:

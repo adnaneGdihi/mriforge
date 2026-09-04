@@ -12,7 +12,7 @@ arms' declared intent was expressible all along, just not that way.
 
 import torch
 
-from mriforge.models.losses.kspace_physics_losses import SobolevKSpaceLoss
+from spectramr.models.losses.kspace_physics_losses import SobolevKSpaceLoss
 
 
 def _expected_weight(size: int, order: float) -> torch.Tensor:
@@ -77,7 +77,7 @@ def test_shape_only_cache_key_is_sufficient_because_order_is_per_instance():
 
 def test_order_is_reachable_through_the_registry_kwargs_path():
     """The whole point: `kwargs: {order: 1.0}` must now reach the constructor."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     loss = LossRegistry.create("sobolev_kspace", order=1.0)
     assert loss.order == 1.0

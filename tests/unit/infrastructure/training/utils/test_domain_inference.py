@@ -40,8 +40,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.utils.domain_inference import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.utils.domain_inference import (
     IMAGE_DOMAIN_COIL_MODES,
     infer_output_domain,
     metric_transform_produced_image,
@@ -327,7 +327,7 @@ class TestDeclarationsOutrankLegacyTables:
         )
 
     def test_declared_image_beats_the_kspace_legacy_set(self):
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.training.utils.domain_inference import (
             KNOWN_KSPACE_OUTPUT_MODELS,
             infer_output_domain,
         )
@@ -336,7 +336,7 @@ class TestDeclarationsOutrankLegacyTables:
         assert infer_output_domain(self._cfg(legacy_kspace, "image")) == "image"
 
     def test_declared_kspace_beats_the_image_legacy_set(self):
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.training.utils.domain_inference import (
             KNOWN_IMAGE_OUTPUT_MODELS,
             infer_output_domain,
         )
@@ -348,7 +348,7 @@ class TestDeclarationsOutrankLegacyTables:
         """The reorder must not disable tier 4, only rank it."""
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.training.utils.domain_inference import (
             KNOWN_KSPACE_OUTPUT_MODELS,
             infer_output_domain,
         )
@@ -365,7 +365,7 @@ class TestDeclarationsOutrankLegacyTables:
         """Tier 1 is unmoved; the swap is strictly between 3 and 4."""
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.training.utils.domain_inference import (
             KNOWN_KSPACE_OUTPUT_MODELS,
             infer_output_domain,
         )

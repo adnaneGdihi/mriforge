@@ -1,6 +1,6 @@
 """Tests for ``GradientDomainConsistencyLoss``.
 
-Targets ``mriforge.models.losses.gradient_domain_consistency_loss``.
+Targets ``spectramr.models.losses.gradient_domain_consistency_loss``.
 Penalises divergence in gradient fields between prediction and target —
 forces a translation generator to preserve edge support across
 contrasts. Three gradient operators (``finite_diff``, ``sobel``,
@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.gradient_domain_consistency_loss import (
+from spectramr.models.losses.gradient_domain_consistency_loss import (
     GradientDomainConsistencyLoss,
     _finite_diff,
     _laplacian,
@@ -188,6 +188,6 @@ def test_gradient_flows_through_loss() -> None:
 
 def test_loss_registered() -> None:
     """``gradient_domain_consistency`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "gradient_domain_consistency" in list_available()

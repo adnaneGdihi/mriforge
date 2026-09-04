@@ -7,7 +7,7 @@ multi-scale fusion, adaptive fusion, residual fusion, and multimodal fusion.
 import pytest
 import torch
 
-from mriforge.models.blocks.fusion import (
+from spectramr.models.blocks.fusion import (
     AdaptiveFusionBlock,
     AttentionFusionBlock,
     FeatureFusionBlock,

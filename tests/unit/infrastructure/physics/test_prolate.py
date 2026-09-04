@@ -19,7 +19,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.prolate import (
+from spectramr.infrastructure.physics.prolate import (
     prolate_basis,
     prolate_eigis,
     prolate_kernel,

@@ -1,7 +1,7 @@
 """Regression tests for the Connes spectral-triple primitives.
 
 Covers the doc-contract fix on
-:func:`mriforge.infrastructure.physics.spectral_triple.intertwining_residual`:
+:func:`spectramr.infrastructure.physics.spectral_triple.intertwining_residual`:
 the helper computes a *Dirac-composition* residual
 ``||U psi - D_HF D_ULF psi||^2`` and **not** the Morita-intertwining defect
 ``||U D_ULF psi - D_HF U psi||^2`` that the original docstring claimed. The
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.spectral_triple import (
+from spectramr.infrastructure.physics.spectral_triple import (
     discrete_dirac_2d,
     intertwining_residual,
 )

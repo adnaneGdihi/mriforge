@@ -13,8 +13,8 @@ restoring ``os.environ`` between tests, so ambient state would leak.
 
 from __future__ import annotations
 
-from mriforge.core.topology import resolve_run_topology
-from mriforge.core.worker_policy import WorkerDecision, clamp_worker_count
+from spectramr.core.topology import resolve_run_topology
+from spectramr.core.worker_policy import WorkerDecision, clamp_worker_count
 
 
 def _probe(cores):

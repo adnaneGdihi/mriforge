@@ -11,9 +11,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.diffusion.blurring_diffusion import BlurringDiffusion
-from mriforge.models.diffusion.schedules.blurring_schedule import BlurringSchedule
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.diffusion.blurring_diffusion import BlurringDiffusion
+from spectramr.models.diffusion.schedules.blurring_schedule import BlurringSchedule
+from spectramr.models.registry import MODEL_REGISTRY
 from tests.unit.models._diffusion_base import (
     assert_amp_survives,
     assert_schedule_monotone_decreasing,

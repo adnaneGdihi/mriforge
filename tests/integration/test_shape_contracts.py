@@ -1,8 +1,8 @@
 import pytest
 import torch
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.data.collation.strategies import squeezing_collate
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.data.collation.strategies import squeezing_collate
 
 
 class TestShapeContracts:

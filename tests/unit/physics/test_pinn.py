@@ -1,4 +1,4 @@
-"""Unit tests for src/mriforge/infrastructure/physics/pinn.py.
+"""Unit tests for src/spectramr/infrastructure/physics/pinn.py.
 
 Focus: the ``get_pde`` factory dispatch contract.
 
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.physics.pinn import (
+from spectramr.infrastructure.physics.pinn import (
     BlochEquation,
     MaxwellRegularizer,
     WaveEquation,

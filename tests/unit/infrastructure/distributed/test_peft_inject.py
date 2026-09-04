@@ -5,8 +5,8 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.base import PEFTConfigSchema
-from mriforge.infrastructure.distributed.peft_inject import LoRAAdapter, inject_peft
+from spectramr.config.schemas.base import PEFTConfigSchema
+from spectramr.infrastructure.distributed.peft_inject import LoRAAdapter, inject_peft
 
 
 class _TwoLinears(nn.Module):

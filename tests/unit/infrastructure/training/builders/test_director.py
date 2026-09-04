@@ -11,9 +11,9 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.builders.context import BuilderContext
-from mriforge.infrastructure.training.builders.director import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.training.builders.director import (
     TrainingEnvironmentDirector,
 )
 

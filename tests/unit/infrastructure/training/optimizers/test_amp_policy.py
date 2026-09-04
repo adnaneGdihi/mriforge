@@ -21,13 +21,13 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.schemas.optimization import (  # noqa: E402
+from spectramr.config.schemas.optimization import (  # noqa: E402
     OptimizationConfigSchema,
 )
-from mriforge.infrastructure.training.mixed_precision import (  # noqa: E402
+from spectramr.infrastructure.training.mixed_precision import (  # noqa: E402
     resolve_amp_precision,
 )
-from mriforge.infrastructure.training.optimizers.amp_policy import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers.amp_policy import (  # noqa: E402
     AMPPolicy,
 )
 

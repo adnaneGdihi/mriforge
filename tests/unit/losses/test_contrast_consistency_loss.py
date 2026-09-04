@@ -5,12 +5,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.relaxation_priors import TissueClass
-from mriforge.models.losses.contrast_consistency_loss import (
+from spectramr.infrastructure.physics.relaxation_priors import TissueClass
+from spectramr.models.losses.contrast_consistency_loss import (
     DEFAULT_TISSUE_ORDER,
     ContrastConsistencyLoss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 B, H, W = 2, 16, 16
 K = len(DEFAULT_TISSUE_ORDER)  # 3 by default
@@ -83,7 +83,7 @@ class TestContrastConsistencyLoss:
 
     def test_property_t1_at_target_gives_low_loss(self):
         """If predicted T1 matches the Bottomley prior exactly, loss → 0."""
-        from mriforge.infrastructure.physics.relaxation_priors import bottomley_t1
+        from spectramr.infrastructure.physics.relaxation_priors import bottomley_t1
         loss_fn = ContrastConsistencyLoss()
         b0 = 3.0
         # Build t1 = mean of all tissue targets (close to each prior)

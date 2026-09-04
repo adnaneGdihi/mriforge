@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.ranking_guards import (
+from spectramr.core.metrics.meta_evaluation.ranking_guards import (
     DegenerateRankingError,
     assert_not_degenerate,
     distinct_fraction,

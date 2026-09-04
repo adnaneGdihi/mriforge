@@ -34,7 +34,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 # Substrings that identify a device-placement failure (as opposed to a metric
 # legitimately rejecting the probe input).

@@ -7,8 +7,8 @@ edge fidelity beyond what PSNR/SSIM can measure.
 import pytest
 import torch
 
-from mriforge.core.metrics.hfen import HFENMetric, _log_kernel
-from mriforge.core.metrics.registry import compute_metric, get_metric
+from spectramr.core.metrics.hfen import HFENMetric, _log_kernel
+from spectramr.core.metrics.registry import compute_metric, get_metric
 
 
 class TestLoGKernel:

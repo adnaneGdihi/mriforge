@@ -6,15 +6,15 @@ import math
 
 import torch
 
-from mriforge.application.use_cases.nr_validation.cards import TierResult
-from mriforge.application.use_cases.nr_validation.tier4_construct import (
+from spectramr.application.use_cases.nr_validation.cards import TierResult
+from spectramr.application.use_cases.nr_validation.tier4_construct import (
     icc_2_1,
     redundancy_gate,
     score_construct_validity,
     score_invariance,
     score_test_retest,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )

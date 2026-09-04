@@ -17,13 +17,13 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.calibration import (  # noqa: E402
+from spectramr.infrastructure.calibration import (  # noqa: E402
     CALIBRATION_SCORE_REGISTRY,
     list_calibration_scores,
     resolve_calibration_score,
     marker_basis_condition_number,
 )
-from mriforge.infrastructure.calibration.vf_residual_score import (  # noqa: E402
+from spectramr.infrastructure.calibration.vf_residual_score import (  # noqa: E402
     _projector_for_basis,
     vf_residual_score,
 )

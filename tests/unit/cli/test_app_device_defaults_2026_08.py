@@ -17,7 +17,7 @@ import argparse
 
 import pytest
 
-from mriforge.cli.app import build_parser
+from spectramr.cli.app import build_parser
 
 # Every verb that exposes ``--device``. The contract is uniform: the flag is a
 # CLI OVERRIDE, so its absence must be representable.
@@ -103,7 +103,7 @@ def test_ablation_does_not_reimpose_cuda_after_argparse():
     import inspect
     import textwrap
 
-    from mriforge.cli import app
+    from spectramr.cli import app
 
     tree = ast.parse(textwrap.dedent(inspect.getsource(app.ablation)))
     calls = [
@@ -126,7 +126,7 @@ def test_report_seed_reads_the_canonical_run_seed():
     run actually used."""
     import inspect
 
-    from mriforge.cli import app
+    from spectramr.cli import app
 
     src = inspect.getsource(app)
     assert 'getattr(settings, "seed", None)' not in src
@@ -152,14 +152,14 @@ class _Report:
 
 
 def _settings(**kw):
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(model={}, data={}, optimization={}, logging={}, **kw)
 
 
 def _capture_request(monkeypatch):
     """Spy on what the gate hands the 9b resolver."""
-    from mriforge.cli import app
+    from spectramr.cli import app
 
     seen = {}
 
@@ -185,7 +185,7 @@ def _capture_request(monkeypatch):
 def test_probe_gate_request_and_source(
     monkeypatch, kwargs, cli_device, expected_requested, expected_source
 ):
-    from mriforge.cli.app import _gate_probe_acceleration
+    from spectramr.cli.app import _gate_probe_acceleration
 
     seen = _capture_request(monkeypatch)
     args = argparse.Namespace(probe=True, device=cli_device)
@@ -199,7 +199,7 @@ def test_probe_gate_request_and_source(
 
 def test_probe_gate_labels_training_device_as_its_own_source(monkeypatch):
     """``training.device`` was reported as ``run.device`` -- a different knob."""
-    from mriforge.cli.app import _gate_probe_acceleration
+    from spectramr.cli.app import _gate_probe_acceleration
 
     seen = _capture_request(monkeypatch)
     config = argparse.Namespace(training=argparse.Namespace(device="cpu"))
@@ -217,7 +217,7 @@ def test_force_cpu_reaches_the_documented_degraded_probe_row(monkeypatch):
     """
     import torch
 
-    from mriforge.cli.app import _gate_probe_acceleration
+    from spectramr.cli.app import _gate_probe_acceleration
 
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
     monkeypatch.setenv("FORCE_CPU", "true")
@@ -236,7 +236,7 @@ def test_probe_gate_has_no_dead_top_level_device_leg():
     """The retired top-level spelling is not a field, so the leg was dead."""
     import inspect
 
-    from mriforge.cli.app import _gate_probe_acceleration
+    from spectramr.cli.app import _gate_probe_acceleration
 
     src = inspect.getsource(_gate_probe_acceleration)
     assert 'getattr(config, "device", None)' not in src

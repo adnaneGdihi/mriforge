@@ -1,6 +1,6 @@
 r"""Tests for the cross-site conformal aggregator.
 
-Targets ``mriforge.infrastructure.services.conformal_aggregator_service`` —
+Targets ``spectramr.infrastructure.services.conformal_aggregator_service`` —
 idea 8 §8.2 of ``TODO/integration_plan_ulf_cheap_fast_mri.md``.
 
 Categories:
@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.services.conformal_aggregator_service import (
+from spectramr.infrastructure.services.conformal_aggregator_service import (
     SiteCalibration,
     aggregate_site_quantiles,
 )

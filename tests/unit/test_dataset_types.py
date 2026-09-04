@@ -12,7 +12,7 @@ Following unit-test.md directives:
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     CANONICAL_DATASET_TYPES,
     DATASET_TYPE_ALIASES,
 )
@@ -21,7 +21,7 @@ given = hypothesis.given
 settings = hypothesis.settings
 st = pytest.importorskip("hypothesis.strategies", reason="hypothesis not installed")
 
-from mriforge.config.schemas.data import DataConfigSchema, DatasetSourceSchema
+from spectramr.config.schemas.data import DataConfigSchema, DatasetSourceSchema
 
 # =============================================================================
 # Phase I: Type Safety - Explicit Contract Testing
@@ -164,7 +164,7 @@ class TestDatasetFactoryIntegration:
 
     def test_kspace_type_creates_correct_handler(self) -> None:
         """kspace type should use FastMRI-style loader."""
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         config = DataConfigSchema(
             dataset_type="kspace",

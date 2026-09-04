@@ -1,7 +1,7 @@
 """Tier-1 gradcheck tests for FNOEPGSurrogate.
 
 ``FNOEPGSurrogate`` is a trained neural-operator surrogate for EPG simulation
-(``mriforge.infrastructure.physics.fno_epg``).  Its forward pass is a composition
+(``spectramr.infrastructure.physics.fno_epg``).  Its forward pass is a composition
 of differentiable nn.Module layers (SpectralConv1d + FiLM + GELU + Softplus)
 with no discrete ops, so gradcheck w.r.t. the *inputs* (rho, t1, t2, b1_plus)
 is well-defined once the network is constructed in fp64.
@@ -26,7 +26,7 @@ import pytest
 import torch
 from torch.autograd import gradcheck
 
-from mriforge.infrastructure.physics.fno_epg import FNOEPGSurrogate
+from spectramr.infrastructure.physics.fno_epg import FNOEPGSurrogate
 
 _EPS = 1e-6
 _ATOL = 1e-5

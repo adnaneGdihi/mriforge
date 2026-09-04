@@ -1,6 +1,6 @@
 """Tests for B₀ field mapping primitives.
 
-Targets ``mriforge.infrastructure.physics.b0_mapping``:
+Targets ``spectramr.infrastructure.physics.b0_mapping``:
 
 - ``phase_difference``: phase residual between unshifted/shifted images
   with global-phase median correction
@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.b0_mapping import (
+from spectramr.infrastructure.physics.b0_mapping import (
     estimate_b0_tikhonov,
     map_b0,
     phase_difference,

@@ -9,8 +9,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.config.schemas.physics import CoilProcessingConfig
-from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+from spectramr.config.schemas.physics import CoilProcessingConfig
+from spectramr.infrastructure.builders.directors.data_pipeline_director import (
     apply_coil_processing,
 )
 
@@ -96,8 +96,8 @@ def test_explicit_rss_combine_collapses_to_single_image() -> None:
 
 def test_director_coil_process_reads_config() -> None:
     """The director seam pulls physics.coil_processing from the frozen config."""
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.builders.directors.data_pipeline_director import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.builders.directors.data_pipeline_director import (
         DataPipelineDirector,
     )
 

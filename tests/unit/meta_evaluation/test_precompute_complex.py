@@ -13,8 +13,8 @@ import math
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.simulator import precompute_metric_values
-from mriforge.core.metrics.meta_evaluation.types import DegradationSample
+from spectramr.core.metrics.meta_evaluation.simulator import precompute_metric_values
+from spectramr.core.metrics.meta_evaluation.types import DegradationSample
 
 
 def _sample(clean: torch.Tensor, degraded: torch.Tensor) -> DegradationSample:

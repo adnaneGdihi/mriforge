@@ -11,7 +11,7 @@ Rationale (supersedes the 2026-05-14 CPU-canonical decision):
   image (not the FourierBridge's synthetic stand-ins), which adds real
   linear-algebra (SVD, SENSE combine) to the hot path.
 - ``--device`` defaults to ``auto`` (CUDA when available, else CPU) on every
-  CLI, resolved by ``mriforge.cli.app._resolve_device``. The pipeline stays
+  CLI, resolved by ``spectramr.cli.app._resolve_device``. The pipeline stays
   FP32 throughout (bf16 remains opt-in).
 - The SLURM templates request one GPU (``--gres=gpu:1``) and pass
   ``--device cuda``.
@@ -88,8 +88,8 @@ def test_resolve_device_prefers_cuda_and_refuses_to_guess_cpu() -> None:
     the line at the bottom — not by ``auto`` giving up.
     """
     torch = pytest.importorskip("torch")
-    from mriforge.cli.app import _resolve_device
-    from mriforge.core.compute_device import AcceleratorRequiredError
+    from spectramr.cli.app import _resolve_device
+    from spectramr.core.compute_device import AcceleratorRequiredError
 
     if torch.cuda.is_available():
         assert _resolve_device("auto").type == "cuda"
@@ -135,7 +135,7 @@ def test_meta_eval_sbatch_invokes_cli_with_device_cuda() -> None:
     active_lines = [ln for ln in raw.splitlines() if not ln.lstrip().startswith("#")]
     active = "\n".join(active_lines)
     assert re.search(r"--device\s+cuda(\s|\\|$)", active), (
-        "mata_eval.sbatch must invoke `python -m mriforge.cli meta-evaluate "
+        "mata_eval.sbatch must invoke `python -m spectramr.cli meta-evaluate "
         "--device cuda ...`."
     )
     assert not re.search(

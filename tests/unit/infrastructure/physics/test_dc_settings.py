@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.physics.dc_settings`.
+"""Unit tests for :mod:`spectramr.infrastructure.physics.dc_settings`.
 
 The module exists to be the ONE owner of "which physics.data_consistency key
 feeds which DC kwarg, and which dc_method actually reads it" (#1525). These
@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.physics.dc_settings import (
+from spectramr.infrastructure.physics.dc_settings import (
     DC_SSOT_KEYS,
     SUPPORTED_NOISE_TYPES,
     inert_dc_knobs,
@@ -46,7 +46,7 @@ def _config(dc=None, model_kwargs=None, with_physics=True):
 class TestSSOTKeyTable:
     def test_every_ssot_row_names_a_real_schema_field(self) -> None:
         """The table is what makes a schema field reachable; a typo silently unwires it."""
-        from mriforge.config.schemas.physics import DataConsistencyConfig
+        from spectramr.config.schemas.physics import DataConsistencyConfig
 
         fields = set(DataConsistencyConfig.model_fields)
         for kwarg, field in DC_SSOT_KEYS:
@@ -158,4 +158,35 @@ class TestInertKnobDetection:
 class TestSupportedNoiseTypes:
     def test_only_gaussian_is_implemented(self) -> None:
         """'rician' was advertised in the schema description and never implemented."""
-        assert SUPPORTED_NOISE_TYPES == frozenset({"gaussian"})
+        assert frozenset({"gaussian"}) == SUPPORTED_NOISE_TYPES
+
+
+class TestApplyAtPredictIsNotAGeneratorKwarg:
+    """``apply_at_predict`` is read by the inference strategies, so it must NOT be
+    forwarded to the generator through ``DC_SSOT_KEYS``. A row added here would
+    hand every DC-capable generator a kwarg none of them accepts."""
+
+    def test_the_field_exists_and_is_absent_from_the_forwarding_table(self) -> None:
+        from spectramr.config.schemas.physics import DataConsistencyConfig
+        from spectramr.infrastructure.physics.dc_settings import DC_SSOT_KEYS
+
+        assert "apply_at_predict" in DataConsistencyConfig.model_fields
+        assert "apply_at_predict" not in {field for _, field in DC_SSOT_KEYS}
+        assert "apply_at_predict" not in {kwarg for kwarg, _ in DC_SSOT_KEYS}
+
+    def test_it_is_not_reported_as_an_inert_knob(self) -> None:
+        """Inert-knob detection is per generator method; this knob has its own reader."""
+        from types import SimpleNamespace
+
+        from spectramr.config.schemas.physics import DataConsistencyConfig
+        from spectramr.infrastructure.physics.dc_settings import inert_dc_knobs
+
+        cfg = SimpleNamespace(
+            model=SimpleNamespace(model_kwargs={}),
+            physics=SimpleNamespace(
+                data_consistency=DataConsistencyConfig(
+                    enabled=True, method="hard", apply_at_predict=True
+                )
+            ),
+        )
+        assert inert_dc_knobs(cfg) == ()

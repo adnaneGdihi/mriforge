@@ -28,7 +28,7 @@ def test_train_dispatches_directly_without_sys_argv_rewrite(monkeypatch):
     ``sys.argv`` (the historical fake-argv round-trip)."""
     import sys
 
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     called = {}
 
@@ -37,7 +37,7 @@ def test_train_dispatches_directly_without_sys_argv_rewrite(monkeypatch):
 
     # main.py import-time side effects are real; patch the command symbol it
     # exposes so we don't actually train.
-    import mriforge.main as main_mod
+    import spectramr.main as main_mod
 
     monkeypatch.setattr(main_mod, "train_command", fake_train_command)
     monkeypatch.setattr(main_mod, "sanity_check_command", lambda a: None)
@@ -61,8 +61,8 @@ def test_train_dispatches_directly_without_sys_argv_rewrite(monkeypatch):
 
 
 def test_sanity_check_dispatches_to_sanity_command(monkeypatch):
-    import mriforge.cli.app as app
-    import mriforge.main as main_mod
+    import spectramr.cli.app as app
+    import spectramr.main as main_mod
 
     called = {}
     monkeypatch.setattr(main_mod, "sanity_check_command", lambda a: called.setdefault("hit", a))
@@ -80,7 +80,7 @@ def test_sanity_check_dispatches_to_sanity_command(monkeypatch):
 
 
 def test_parse_vary_specs_type_coercion_and_naming():
-    from mriforge.cli.app import _parse_vary_specs
+    from spectramr.cli.app import _parse_vary_specs
 
     specs = _parse_vary_specs([
         "model.model_kwargs.force_pure_kspace=false",
@@ -99,7 +99,7 @@ def test_parse_vary_specs_type_coercion_and_naming():
 
 
 def test_parse_vary_specs_rejects_malformed():
-    from mriforge.cli.app import _parse_vary_specs
+    from spectramr.cli.app import _parse_vary_specs
 
     with pytest.raises(ValueError, match="no '='"):
         _parse_vary_specs(["missing_equals"])
@@ -123,7 +123,7 @@ def _write_val_csv(path: Path) -> None:
 def test_train_and_score_reads_best_metrics_from_csv(monkeypatch, tmp_path):
     """The default evaluation_fn must train then summarise the CSV — pinning
     the exact metric keys so a silent-empty regression is caught."""
-    import mriforge.pipelines.ablation as abl
+    import spectramr.pipelines.ablation as abl
 
     log_dir = tmp_path / "logs"
     log_dir.mkdir()
@@ -139,8 +139,8 @@ def test_train_and_score_reads_best_metrics_from_csv(monkeypatch, tmp_path):
     )
 
     # Patch the training pipeline + summariser at their import site inside
-    # train_and_score (it imports them locally from mriforge.pipelines.train).
-    import mriforge.pipelines.train as train_mod
+    # train_and_score (it imports them locally from spectramr.pipelines.train).
+    import spectramr.pipelines.train as train_mod
 
     monkeypatch.setattr(
         train_mod, "run_training_pipeline",
@@ -155,8 +155,8 @@ def test_train_and_score_reads_best_metrics_from_csv(monkeypatch, tmp_path):
 
 
 def test_train_and_score_propagates_training_failure(monkeypatch, tmp_path):
-    import mriforge.pipelines.ablation as abl
-    import mriforge.pipelines.train as train_mod
+    import spectramr.pipelines.ablation as abl
+    import spectramr.pipelines.train as train_mod
 
     config = argparse.Namespace(
         logging=argparse.Namespace(log_dir=str(tmp_path))
@@ -176,8 +176,8 @@ def test_train_and_score_propagates_training_failure(monkeypatch, tmp_path):
 
 
 def test_infer_dispatches_to_infer_command(monkeypatch):
-    import mriforge.cli.app as app
-    import mriforge.main as main_mod
+    import spectramr.cli.app as app
+    import spectramr.main as main_mod
 
     hit = {}
     monkeypatch.setattr(main_mod, "infer_command", lambda a: hit.setdefault("a", a))
@@ -190,8 +190,8 @@ def test_infer_dispatches_to_infer_command(monkeypatch):
 
 
 def test_experiment_dispatches_to_experiment_command(monkeypatch):
-    import mriforge.cli.app as app
-    import mriforge.main as main_mod
+    import spectramr.cli.app as app
+    import spectramr.main as main_mod
 
     hit = {}
     monkeypatch.setattr(main_mod, "experiment_command", lambda a: hit.setdefault("a", a))
@@ -209,10 +209,10 @@ def test_experiment_dispatches_to_experiment_command(monkeypatch):
 
 
 def test_main_py_main_is_deprecated_shim(monkeypatch):
-    """``mriforge.main:main`` must warn and delegate to ``cli.app.main`` rather
+    """``spectramr.main:main`` must warn and delegate to ``cli.app.main`` rather
     than own a second parser."""
-    import mriforge.cli.app as app
-    import mriforge.main as main_mod
+    import spectramr.cli.app as app
+    import spectramr.main as main_mod
 
     monkeypatch.setattr(app, "main", lambda: 0)
     with pytest.warns(DeprecationWarning, match="deprecated"), pytest.raises(SystemExit) as ei:

@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import loss_decomposition
+from spectramr.infrastructure.reporting.plotters import loss_decomposition
 
 
 def _frame() -> pd.DataFrame:

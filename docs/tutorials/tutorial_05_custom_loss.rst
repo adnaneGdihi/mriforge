@@ -26,7 +26,7 @@ Prerequisites
 Overview
 ========
 
-The MRIForge loss registry enables any loss to be:
+The spectraMR loss registry enables any loss to be:
 
 1. **Registered** with a string key
 2. **Configured** via YAML ``kwargs``
@@ -54,7 +54,7 @@ with :math:`\gamma` controlling the high-frequency emphasis.
 Step 1 — Implement the Loss Module
 ====================================
 
-Create the file ``src/mriforge/models/losses/freq_weighted_loss.py``:
+Create the file ``src/spectramr/models/losses/freq_weighted_loss.py``:
 
 .. code-block:: python
 
@@ -145,25 +145,25 @@ Create the file ``src/mriforge/models/losses/freq_weighted_loss.py``:
 Step 2 — Register the Loss
 ===========================
 
-Open ``src/mriforge/models/losses/__init__.py`` and add the registration:
+Open ``src/spectramr/models/losses/__init__.py`` and add the registration:
 
 .. code-block:: python
 
-   # src/mriforge/models/losses/__init__.py
-   from mriforge.models.losses.freq_weighted_loss import FreqWeightedLoss
+   # src/spectramr/models/losses/__init__.py
+   from spectramr.models.losses.freq_weighted_loss import FreqWeightedLoss
 
    # Register with the loss registry
    # (Assuming LOSS_REGISTRY is a dict defined in registry.py)
-   from mriforge.models.losses.registry import LOSS_REGISTRY
+   from spectramr.models.losses.registry import LOSS_REGISTRY
 
    LOSS_REGISTRY["freq_weighted"] = FreqWeightedLoss
 
 Alternatively, use the ``@register_loss`` decorator pattern if your
-codebase uses it (check ``src/mriforge/models/losses/registry.py``):
+codebase uses it (check ``src/spectramr/models/losses/registry.py``):
 
 .. code-block:: python
 
-   from mriforge.models.losses.registry import register_loss
+   from spectramr.models.losses.registry import register_loss
 
    @register_loss("freq_weighted", aliases=["FreqWeightedLoss"])
    class FreqWeightedLoss(nn.Module):
@@ -183,7 +183,7 @@ Create ``tests/unit/losses/test_freq_weighted_loss.py``:
    import pytest
    import torch
 
-   from mriforge.models.losses.freq_weighted_loss import FreqWeightedLoss
+   from spectramr.models.losses.freq_weighted_loss import FreqWeightedLoss
 
 
    @pytest.fixture
@@ -349,8 +349,8 @@ our frequency-weighted version:
 .. code-block:: python
 
    import torch
-   from mriforge.core.metrics.hfen import HFENMetric
-   from mriforge.core.metrics.registry import compute_metric
+   from spectramr.core.metrics.hfen import HFENMetric
+   from spectramr.core.metrics.registry import compute_metric
 
    # Load predictions (B, 1, H, W)
    pred_baseline = torch.load("results/baseline_preds.pt")

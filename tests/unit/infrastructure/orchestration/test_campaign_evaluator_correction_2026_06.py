@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.core.metrics.statistical_tests import StatisticalTests
-from mriforge.infrastructure.orchestration import campaign_evaluator
+from spectramr.core.metrics.statistical_tests import StatisticalTests
+from spectramr.infrastructure.orchestration import campaign_evaluator
 
 
 def test_apply_correction_uses_the_ssot_dispatch():

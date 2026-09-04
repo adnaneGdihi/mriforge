@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.core.curriculum import (
+from spectramr.core.curriculum import (
     DEFAULT_MAX_ITERATIONS,
     SHORT_RUN_BYPASS_ITERATIONS,
     resolve_curriculum_state,

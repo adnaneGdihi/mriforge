@@ -1,6 +1,6 @@
 """Tests for ``LNCCLoss``.
 
-Targets ``mriforge.models.losses.cross_contrast_losses``. Localised
+Targets ``spectramr.models.losses.cross_contrast_losses``. Localised
 Normalised Cross-Correlation: ``-mean( cov(p, t)² / (var(p)·var(t)) )``.
 Useful for cross-contrast / cross-scanner alignment because it's
 invariant to local affine intensity shifts.
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.cross_contrast_losses import LNCCLoss
+from spectramr.models.losses.cross_contrast_losses import LNCCLoss
 
 
 # ---------------------------------------------------------------------------
@@ -150,6 +150,6 @@ def test_lncc_3d_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_lncc_registered() -> None:
     """``lncc`` is registered in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "lncc" in list_available()

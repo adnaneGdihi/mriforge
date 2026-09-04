@@ -18,8 +18,8 @@ The invariants checked here are the ones that make a DC block correct:
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.physics.virtual_coil_dc import VirtualCoilDataConsistency
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.physics.virtual_coil_dc import VirtualCoilDataConsistency
 
 
 def _to_stacked(complex_tensor: torch.Tensor) -> torch.Tensor:

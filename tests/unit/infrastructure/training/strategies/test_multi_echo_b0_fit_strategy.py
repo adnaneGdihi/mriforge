@@ -16,7 +16,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.multi_echo_b0_fit_strategy import (
+from spectramr.infrastructure.training.strategies.multi_echo_b0_fit_strategy import (
     MultiEchoB0FitStrategy,
 )
 
@@ -32,7 +32,7 @@ def _synth_two_echo(b0_true: torch.Tensor, t_shift: float) -> torch.Tensor:
 
 
 def _make_strategy(gen, *, t_shift=1e-3, lambda_field=1.0, lambda_echo=0.0):
-    from mriforge.core.metrics.b0_field_rmse import B0FieldRMSE
+    from spectramr.core.metrics.b0_field_rmse import B0FieldRMSE
 
     s = object.__new__(MultiEchoB0FitStrategy)
     s._t_shift = t_shift
@@ -102,7 +102,7 @@ def test_validation_reports_hz_rmse() -> None:
 
 
 def test_registered_in_strategy_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

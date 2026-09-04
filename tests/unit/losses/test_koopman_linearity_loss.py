@@ -10,9 +10,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.koopman_linearity_loss import KoopmanLinearityLoss
-from mriforge.models.losses.registry import LossRegistry, create_loss
-from mriforge.models.temporal.koopman_operator import KoopmanMotionFilter
+from spectramr.models.losses.koopman_linearity_loss import KoopmanLinearityLoss
+from spectramr.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.temporal.koopman_operator import KoopmanMotionFilter
 
 B, T, H, W = 2, 6, 8, 8
 

@@ -10,7 +10,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.vf_kspace_operators import (
+from spectramr.models.generators.vf_kspace_operators import (
     DifferentiableTrajectoryOptimizer,
 )
 

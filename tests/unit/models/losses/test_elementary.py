@@ -16,7 +16,7 @@ torch = pytest.importorskip("torch")
 
 import torch.nn.functional as F  # noqa: E402, N812
 
-from mriforge.models.losses.elementary import (  # noqa: E402
+from spectramr.models.losses.elementary import (  # noqa: E402
     resolve_elementary_loss,
     shared_loss,
 )
@@ -68,8 +68,8 @@ def test_shared_instances_are_stateless() -> None:
 
 
 def test_core_metrics_first_import_order_keeps_registry_complete() -> None:
-    """Regression (WS-6): importing ``mriforge.core.metrics`` BEFORE
-    ``mriforge.models.losses`` used to abort the losses-package init mid-list —
+    """Regression (WS-6): importing ``spectramr.core.metrics`` BEFORE
+    ``spectramr.models.losses`` used to abort the losses-package init mid-list —
     a metric module imported models.losses, whose init chain re-entered the
     still-partial core.metrics (``get_metric``) and died; the walk-discovery
     swallowed the error, leaving a silently half-populated loss registry
@@ -81,12 +81,12 @@ def test_core_metrics_first_import_order_keeps_registry_complete() -> None:
     import sys
 
     code = (
-        "import mriforge.core.metrics\n"
-        "from mriforge.models.losses.elementary import resolve_elementary_loss\n"
+        "import spectramr.core.metrics\n"
+        "from spectramr.models.losses.elementary import resolve_elementary_loss\n"
         "for name in ('l1', 'l2', 'huber'):\n"
         "    resolve_elementary_loss(name)\n"
     )
-    env = {**os.environ, "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1"}
+    env = {**os.environ, "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1"}
     proc = subprocess.run(
         [sys.executable, "-c", code], capture_output=True, text=True, env=env, timeout=300
     )

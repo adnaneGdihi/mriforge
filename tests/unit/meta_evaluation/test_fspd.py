@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.fspd import (
+from spectramr.core.metrics.meta_evaluation.rankers.fspd import (
     FSPDConfig,
     FSPDRanker,
     _build_response_matrix,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
     MetricSet,

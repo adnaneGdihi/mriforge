@@ -1,6 +1,6 @@
 """Tests for ``ConcomitantAwareMixin``.
 
-Targets ``mriforge.infrastructure.training.strategies.mixins.concomitant_aware_mixin``.
+Targets ``spectramr.infrastructure.training.strategies.mixins.concomitant_aware_mixin``.
 
 CAUR (idea 1) phase 2 — wires the previously-built
 ``ConcomitantPhaseOperator`` into a host training strategy via
@@ -22,7 +22,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.concomitant_aware_mixin import (
+from spectramr.infrastructure.training.strategies.mixins.concomitant_aware_mixin import (
     ConcomitantAwareMixin,
 )
 

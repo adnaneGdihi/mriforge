@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.services.checkpoint_service`.
+"""Unit tests for :mod:`spectramr.infrastructure.services.checkpoint_service`.
 
 Focus: the safetensors save/load round-trip must preserve ``counter_state``
 (the global-step / iteration counter). safetensors stores only tensors, so any
@@ -15,8 +15,8 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-from mriforge.infrastructure.services.checkpoint_service import (
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.infrastructure.services.checkpoint_service import (
     RNG_STATE_SAFE_GLOBALS,
     CheckpointService,
     _capture_rng_state,

@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.hyper_mamba_bridge import HyperMambaBridge, SSMParameters
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.generators.hyper_mamba_bridge import HyperMambaBridge, SSMParameters
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 class TestSSMParameters:

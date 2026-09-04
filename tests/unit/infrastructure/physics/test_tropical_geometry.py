@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.tropical_geometry import (
+from spectramr.infrastructure.physics.tropical_geometry import (
     TropicalRationalMap,
     active_cone_indices,
     log_sum_exp_tropical,

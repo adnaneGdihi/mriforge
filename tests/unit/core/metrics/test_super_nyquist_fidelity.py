@@ -13,8 +13,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.registry import get_metric, list_available  # noqa: E402
-from mriforge.core.metrics.super_nyquist_fidelity import (  # noqa: E402
+from spectramr.core.metrics.registry import get_metric, list_available  # noqa: E402
+from spectramr.core.metrics.super_nyquist_fidelity import (  # noqa: E402
     SuperNyquistFidelity,
 )
 

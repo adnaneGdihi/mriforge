@@ -1,10 +1,10 @@
 """Tests for the SToRM manifold-smoothness regulariser.
 
-The class lives in ``mriforge.models.losses.storm_loss`` after the Phase 5
+The class lives in ``spectramr.models.losses.storm_loss`` after the Phase 5
 canonical-home migration (CLAUDE.md pitfall #12: every
 ``@register_loss`` decorator must live under ``models/losses/``). Prior
 to the migration, ``SToRMRegularizer`` lived in
-``mriforge.models.geometric.storm`` and was decorated there, in
+``spectramr.models.geometric.storm`` and was decorated there, in
 violation of the rule. These tests pin both the new canonical location
 and the registry entry so a regression on either is caught at CI.
 """
@@ -16,16 +16,16 @@ import torch
 
 def test_storm_registered_under_canonical_name() -> None:
     """The ``storm`` key must resolve via the loss registry."""
-    import mriforge.models.losses  # trigger registration  # noqa: F401
-    from mriforge.models.losses.registry import list_available
+    import spectramr.models.losses  # trigger registration  # noqa: F401
+    from spectramr.models.losses.registry import list_available
 
     assert "storm" in list_available()
 
 
 def test_storm_aliases_resolve() -> None:
     """Both advertised aliases must resolve to the same class."""
-    import mriforge.models.losses  # noqa: F401
-    from mriforge.models.losses.registry import create_loss
+    import spectramr.models.losses  # noqa: F401
+    from spectramr.models.losses.registry import create_loss
 
     a = create_loss("storm", learn_laplacian=False, num_frames=4, nav_dim=8)
     b = create_loss(
@@ -44,20 +44,20 @@ def test_storm_canonical_home_is_models_losses() -> None:
     re-decorated copy (else there would be two registrations under the
     same key). The legacy module no longer defines the class.
     """
-    from mriforge.models.losses.storm_loss import SToRMRegularizer as Canonical
-    from mriforge.models.geometric import storm as legacy_module
+    from spectramr.models.losses.storm_loss import SToRMRegularizer as Canonical
+    from spectramr.models.geometric import storm as legacy_module
 
     assert not hasattr(legacy_module, "SToRMRegularizer"), (
         "models.geometric.storm must not define SToRMRegularizer after "
         "the Phase 5 migration -- the class lives in "
         "models.losses.storm_loss."
     )
-    assert Canonical.__module__ == "mriforge.models.losses.storm_loss"
+    assert Canonical.__module__ == "spectramr.models.losses.storm_loss"
 
 
 def test_storm_forward_shape_and_grad() -> None:
     """The penalty must be a scalar and propagate gradients."""
-    from mriforge.models.losses.storm_loss import SToRMRegularizer
+    from spectramr.models.losses.storm_loss import SToRMRegularizer
 
     reg = SToRMRegularizer(
         lambda_manifold=0.1, learn_laplacian=False, num_frames=4, nav_dim=8
@@ -71,7 +71,7 @@ def test_storm_forward_shape_and_grad() -> None:
 
 def test_storm_lambda_zero_produces_zero_loss() -> None:
     """``lambda_manifold=0`` is the no-op identity for the regulariser."""
-    from mriforge.models.losses.storm_loss import SToRMRegularizer
+    from spectramr.models.losses.storm_loss import SToRMRegularizer
 
     reg = SToRMRegularizer(
         lambda_manifold=0.0, learn_laplacian=False, num_frames=4, nav_dim=8

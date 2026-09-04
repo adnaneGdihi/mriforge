@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.mamba.diff_mamba import DiffSSM, DiffSSMDeriv
+from spectramr.models.mamba.diff_mamba import DiffSSM, DiffSSMDeriv
 
 
 def _reference_forward(module: DiffSSM, x: torch.Tensor) -> torch.Tensor:

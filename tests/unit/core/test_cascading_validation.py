@@ -17,7 +17,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.core.cascading_validation import (
+from spectramr.core.cascading_validation import (
     CASCADE_ID_COLUMNS,
     CASCADING_LEVELS,
     IDENTITY_ACCELERATION,
@@ -61,8 +61,8 @@ def test_only_one_module_defines_the_sweep() -> None:
     repo = pathlib.Path(__file__).resolve().parents[3]
     offenders = []
     for rel in (
-        "src/mriforge/pipelines/training_loop.py",
-        "src/mriforge/infrastructure/training/strategies/diffusion.py",
+        "src/spectramr/pipelines/training_loop.py",
+        "src/spectramr/infrastructure/training/strategies/diffusion.py",
     ):
         text = (repo / rel).read_text()
         for lit in ("[2, 8, 32]", "[2,8,32]"):
@@ -546,7 +546,7 @@ class TestResolveCascadeLevels:
     """
 
     def test_nothing_declared_yields_the_framework_default(self):
-        from mriforge.core.cascading_validation import resolve_cascade_levels
+        from spectramr.core.cascading_validation import resolve_cascade_levels
 
         assert resolve_cascade_levels(None) == CASCADING_LEVELS
         assert resolve_cascade_levels(SimpleNamespace()) == CASCADING_LEVELS
@@ -556,14 +556,14 @@ class TestResolveCascadeLevels:
         )
 
     def test_a_declared_ladder_replaces_the_default(self):
-        from mriforge.core.cascading_validation import resolve_cascade_levels
+        from spectramr.core.cascading_validation import resolve_cascade_levels
 
         cfg = SimpleNamespace(cascade=SimpleNamespace(levels=[2, 4, 6]))
         assert resolve_cascade_levels(cfg) == (2, 4, 6)
 
     def test_a_mapping_shaped_config_resolves_identically(self):
         """Duck-typed on purpose so `core/` needs no import from `config/`."""
-        from mriforge.core.cascading_validation import resolve_cascade_levels
+        from spectramr.core.cascading_validation import resolve_cascade_levels
 
         assert resolve_cascade_levels({"cascade": {"levels": [3, 9]}}) == (3, 9)
 
@@ -574,7 +574,7 @@ class TestResolveCascadeLevels:
         names up in `all_metrics` and do not raise on a miss — a float here
         would silently disconnect both gates while every run stayed green.
         """
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         levels = normalize_cascade_levels([2.0, 8.0, 32.0])
         assert [f"val_psnr_{a}x" for a in levels] == [
@@ -585,7 +585,7 @@ class TestResolveCascadeLevels:
         assert all(isinstance(a, int) for a in levels)
 
     def test_a_fractional_level_survives_as_a_float(self):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         assert normalize_cascade_levels([2, 4.5]) == (2, 4.5)
 
@@ -595,45 +595,45 @@ class TestResolveCascadeLevels:
         "First rung is the mildest" is an invariant of the consumers, not
         something a user's typing order should decide.
         """
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         assert normalize_cascade_levels([32, 2, 8, 2]) == (2, 8, 32)
 
     def test_an_empty_ladder_is_refused_not_defaulted(self):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="empty"):
             normalize_cascade_levels([])
 
     def test_a_sub_1x_level_is_refused(self):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="below 1x"):
             normalize_cascade_levels([2, 0.5])
 
     @pytest.mark.parametrize("bad", [["8"], ["abc"], [None], [object()]])
     def test_a_non_numeric_level_is_refused(self, bad):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="not a number"):
             normalize_cascade_levels(bad)
 
     def test_a_boolean_level_is_refused(self):
         """`bool` is an `int` subclass, so `True` would pass as R=1 unchecked."""
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="not a number"):
             normalize_cascade_levels([True])
 
     def test_a_non_finite_level_is_refused(self):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="not finite"):
             normalize_cascade_levels([float("inf")])
 
     @pytest.mark.parametrize("bad", [8, "2,8,32", None])
     def test_a_non_sequence_ladder_is_refused(self, bad):
-        from mriforge.core.cascading_validation import normalize_cascade_levels
+        from spectramr.core.cascading_validation import normalize_cascade_levels
 
         with pytest.raises(ValueError, match="must be a sequence"):
             normalize_cascade_levels(bad)

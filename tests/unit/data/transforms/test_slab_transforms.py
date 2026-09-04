@@ -1,6 +1,6 @@
 """Tests for ``SlabToChannel`` and ``SelectMiddleSlice``.
 
-Targets ``mriforge.data.transforms.slab_transforms``. Two TorchIO
+Targets ``spectramr.data.transforms.slab_transforms``. Two TorchIO
 transforms used for 2.5D slicing of 3D volumes.
 
 Categories:
@@ -20,7 +20,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.slab_transforms import (
+from spectramr.data.transforms.slab_transforms import (
     SelectMiddleSlice,
     SlabToChannel,
 )

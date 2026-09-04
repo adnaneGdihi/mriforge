@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.domain.entities.entities_3d import VolumeGenerationResponse
+from spectramr.domain.entities.entities_3d import VolumeGenerationResponse
 
 
 def test_get_recorded_metric_returns_value() -> None:

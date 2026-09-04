@@ -2,7 +2,7 @@
 
 The campaign orchestrator's ``generate_job_script`` emits sbatch for *live*
 cluster runs. WS-E consolidates its ``#SBATCH`` header onto the shared
-:class:`mriforge.infrastructure.execution.SlurmBackend` so the directive format
+:class:`spectramr.infrastructure.execution.SlurmBackend` so the directive format
 stops drifting from the launcher's. This test pins the generated script
 byte-for-byte against a snapshot captured BEFORE the refactor, so the
 consolidation cannot change what lands on the cluster.
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from mriforge.infrastructure.orchestration.slurm_backend import SLURMBackend
+from spectramr.infrastructure.orchestration.slurm_backend import SLURMBackend
 
 _GOLDEN = Path(__file__).parent / "fixtures" / "golden_campaign_sbatch.txt"
 
@@ -25,15 +25,15 @@ def test_generate_job_script_byte_identical_to_golden(monkeypatch):
     # account has no default and is now required, so pin it to a placeholder
     # rather than unsetting it; partition and mail-user stay unset so the
     # snapshot shows the no-optional-directives shape.
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.delenv("MRIFORGE_SLURM_PARTITION", raising=False)
-    monkeypatch.delenv("MRIFORGE_SLURM_MAIL_USER", raising=False)
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.delenv("SPECTRAMR_SLURM_PARTITION", raising=False)
+    monkeypatch.delenv("SPECTRAMR_SLURM_MAIL_USER", raising=False)
 
     out = SLURMBackend.generate_job_script(
         experiment_name="exp_demo",
         config_path="experiments/inprogress/x.yaml",
         output_dir="experiments/results/campaigns/demo/exp_demo",
-        base_dir="/scratch/myalloc/mriforge",
+        base_dir="/scratch/myalloc/spectramr",
         slurm_params={"gpus": 2, "mem": "64GB", "time": "120:00:00"},
         resume=True,
         test_manifest="data/manifests/test.txt",
@@ -49,7 +49,7 @@ def test_generate_job_script_byte_identical_to_golden(monkeypatch):
 def test_generate_job_script_emits_partition_when_env_set(monkeypatch):
     """M2: pin the WS-E env-conditional partition behavior as CONSCIOUS, not drift.
 
-    The byte-for-byte golden above is captured with ``MRIFORGE_SLURM_PARTITION``
+    The byte-for-byte golden above is captured with ``SPECTRAMR_SLURM_PARTITION``
     UNSET, so it only proves "the consolidation changes nothing" on a
     partition-less cluster (the M4Raw allocation, where the env is unset). When
     the env IS set, the consolidated generator's shared ``ResourceSpec``
@@ -58,13 +58,13 @@ def test_generate_job_script_emits_partition_when_env_set(monkeypatch):
     test pins that as an intentional, tested behavior so it can't silently drift
     onto a cluster.
     """
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.setenv("MRIFORGE_SLURM_PARTITION", "gpu-a100")
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.setenv("SPECTRAMR_SLURM_PARTITION", "gpu-a100")
     out = SLURMBackend.generate_job_script(
         experiment_name="exp_demo",
         config_path="experiments/inprogress/x.yaml",
         output_dir="experiments/results/campaigns/demo/exp_demo",
-        base_dir="/scratch/myalloc/mriforge",
+        base_dir="/scratch/myalloc/spectramr",
         slurm_params={"gpus": 2, "mem": "64GB", "time": "120:00:00"},
         resume=True,
         test_manifest="data/manifests/test.txt",
@@ -92,14 +92,14 @@ def test_golden_carries_no_site_identity(monkeypatch):
 
 def test_mail_user_directive_is_emitted_when_configured(monkeypatch):
     """Discrimination leg: the golden's missing line is 'unset', not 'dropped'."""
-    monkeypatch.setenv("MRIFORGE_SLURM_ACCOUNT", "test_alloc")
-    monkeypatch.delenv("MRIFORGE_SLURM_PARTITION", raising=False)
-    monkeypatch.setenv("MRIFORGE_SLURM_MAIL_USER", "me@example.org")
+    monkeypatch.setenv("SPECTRAMR_SLURM_ACCOUNT", "test_alloc")
+    monkeypatch.delenv("SPECTRAMR_SLURM_PARTITION", raising=False)
+    monkeypatch.setenv("SPECTRAMR_SLURM_MAIL_USER", "me@example.org")
     out = SLURMBackend.generate_job_script(
         experiment_name="exp_demo",
         config_path="experiments/inprogress/x.yaml",
         output_dir="experiments/results/campaigns/demo/exp_demo",
-        base_dir="/scratch/myalloc/mriforge",
+        base_dir="/scratch/myalloc/spectramr",
         slurm_params={"gpus": 2, "mem": "64GB", "time": "120:00:00"},
         resume=True,
         test_manifest="data/manifests/test.txt",

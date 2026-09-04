@@ -1,6 +1,6 @@
 """Tests for the standard registry-wrapped losses.
 
-Targets ``mriforge.models.losses.standard_losses``. PyTorch built-ins
+Targets ``spectramr.models.losses.standard_losses``. PyTorch built-ins
 (``L1``, ``L2``/``MSE``, ``SmoothL1`` / Huber, ``BCE``, ``BCEWithLogits``,
 ``CrossEntropy``, ``TotalVariation``) wrapped with the registry plus
 optional metrics-aware mixin.
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.standard_losses import (
+from spectramr.models.losses.standard_losses import (
     BCELoss,
     BCEWithLogitsLoss,
     CrossEntropyLoss,
@@ -183,7 +183,7 @@ def test_total_variation_grows_with_noise_amplitude() -> None:
 
 def test_standard_losses_registered() -> None:
     """All canonical names resolvable in the registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     names = list_available()
     for canonical in ["l1", "l2", "smooth_l1", "bce", "bce_with_logits", "cross_entropy", "tv"]:

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import types
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 def _cfg(strategy_class: str, has_diffusion_block: bool):

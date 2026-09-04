@@ -23,13 +23,13 @@ import logging
 
 import torch
 
-from mriforge.data.transforms.normalization import (
+from spectramr.data.transforms.normalization import (
     DECOMPRESS_MAGNITUDE_CEILING,
     compress_kspace_log,
     decompress_kspace_log,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.infrastructure.training.debug_snapshot import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.infrastructure.training.debug_snapshot import (
     _render_image_preview,
     save_debug_snapshot,
 )

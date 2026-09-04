@@ -30,8 +30,8 @@ import types
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies import reconstruction as recon_mod
-from mriforge.infrastructure.training.strategies.pnp_strategy import (
+from spectramr.infrastructure.training.strategies import reconstruction as recon_mod
+from spectramr.infrastructure.training.strategies.pnp_strategy import (
     _DEFAULT_LAMBDA_RED,
     PnPStrategy,
 )
@@ -152,7 +152,7 @@ class TestPnPRedObjective:
 
 import pytest
 
-from mriforge.models.wrappers import SpectralNormalizedDenoiser
+from spectramr.models.wrappers import SpectralNormalizedDenoiser
 
 
 def _pnp_strategy(generator, *, iters=2, rho=1.0, sn_iters=3, lip=1.0, in_ch=2):
@@ -253,7 +253,7 @@ class TestPnPADMMxUpdate:
     def test_unsampled_bin_scaling_is_one(self):
         """At unsampled k-space bins the x-update must equal the FREE prior
         F(z-u) (scale 1.0), not rho/(1+rho)*F(z-u) (pre-fix bug)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         torch.manual_seed(0)
 
@@ -291,7 +291,7 @@ class TestPnPADMMxUpdate:
         assert torch.allclose(ifft2c(kx), z, atol=1e-4)
 
     def test_sampled_bin_is_data_fidelity_prox(self):
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         torch.manual_seed(1)
         b, c, h, w = 1, 1, 4, 4

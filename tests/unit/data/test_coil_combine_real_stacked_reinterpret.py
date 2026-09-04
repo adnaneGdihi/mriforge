@@ -28,7 +28,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.kspace_coil_transforms import CoilCombineTransform
+from spectramr.data.transforms.kspace_coil_transforms import CoilCombineTransform
 
 
 def _subject(tensor: torch.Tensor) -> tio.Subject:

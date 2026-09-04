@@ -12,14 +12,14 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.data.datasets.axis_exposure import DATASET_TYPE_SIGNAL_DOMAINS
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.data.datasets.axis_exposure import DATASET_TYPE_SIGNAL_DOMAINS
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
     HealthCheckResult,
 )
-from mriforge.models.capabilities import ModelCapabilities
+from spectramr.models.capabilities import ModelCapabilities
 
 
 def _check(
@@ -49,7 +49,7 @@ def _check(
             input_type=None,
         ),
     )
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     caps = (
         ModelCapabilities(input_domain=input_domain)
@@ -194,8 +194,8 @@ def test_mrixfields_is_now_image_domain_for_channel_derivation() -> None:
 
 def _runnable_config():
     """A minimal real ``TrainingSettings`` that ``run_all_checks`` can walk."""
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings.settings_from_dict(
         {

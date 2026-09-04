@@ -2,15 +2,15 @@ from typing import Any
 
 import pytest
 
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.domain.interfaces.service_interfaces import (
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.domain.interfaces.service_interfaces import (
     ICheckpointService,
     IDeviceService,
     ILoggingService,
 )
-from mriforge.infrastructure.di.di_container import DIContainer
-from mriforge.infrastructure.di.service_audit import audit_services, verify_startup_services
-from mriforge.infrastructure.services import IMetricsService
+from spectramr.infrastructure.di.di_container import DIContainer
+from spectramr.infrastructure.di.service_audit import audit_services, verify_startup_services
+from spectramr.infrastructure.services import IMetricsService
 
 
 class MockDeviceService(IDeviceService):

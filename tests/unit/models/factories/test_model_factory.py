@@ -25,11 +25,11 @@ import warnings
 
 import pytest
 
-from mriforge.core.execution_ledger import (
+from spectramr.core.execution_ledger import (
     ExecutionLedger,
     SubstitutionClass,
 )
-from mriforge.models.factories.model_factory import _filter_kwargs_to_signature
+from spectramr.models.factories.model_factory import _filter_kwargs_to_signature
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ class TestFilterKwargsToSignatureRecording:
     def _filter(mapped, cls, **kw):
         import logging
 
-        from mriforge.models.factories.model_factory import (
+        from spectramr.models.factories.model_factory import (
             _filter_kwargs_to_signature,
         )
 
@@ -178,7 +178,7 @@ class TestFilterKwargsToSignatureRecording:
         )
 
     def test_named_param_class_drops_and_records_the_surplus(self):
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         class _Named:
             def __init__(self, alpha: float = 1.0):
@@ -197,7 +197,7 @@ class TestFilterKwargsToSignatureRecording:
 
     def test_var_kwargs_class_records_untyped_acceptance_instead_of_silence(self):
         """A **kwargs ctor drops nothing, so the old code recorded nothing."""
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         class _Swallows:
             def __init__(self, alpha: float = 1.0, **kwargs):
@@ -224,7 +224,7 @@ class TestFilterKwargsToSignatureRecording:
         Recording those would bury the author-declared `model_kwargs` entries
         that are the actual signal under one record per schema field per arm.
         """
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         class _Swallows:
             def __init__(self, alpha: float = 1.0, **kwargs):
@@ -245,7 +245,7 @@ class TestFilterKwargsToSignatureRecording:
 
     def test_declared_none_records_nothing_in_the_var_kwargs_branch(self):
         """Every pre-existing caller passes no `declared`; they stay silent."""
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         class _Swallows:
             def __init__(self, **kwargs):
@@ -281,7 +281,7 @@ class TestFilterKwargsToSignatureRecording:
 
 
 @pytest.mark.filterwarnings(
-    "ignore::DeprecationWarning:mriforge.models.factories.model_factory"
+    "ignore::DeprecationWarning:spectramr.models.factories.model_factory"
 )
 class TestCreateModelIsReachableAndFullConfigOnly:
     """``create_model`` was unreachable for its entire existence.
@@ -305,7 +305,7 @@ class TestCreateModelIsReachableAndFullConfigOnly:
 
     def test_module_defines_the_logger_its_functions_call(self) -> None:
         """Regression guard for the NameError. Cheap, and it never sleeps."""
-        import mriforge.models.factories.model_factory as mf
+        import spectramr.models.factories.model_factory as mf
 
         assert isinstance(getattr(mf, "logger", None), logging.Logger), (
             "model_factory has bare `logger.` call sites; without a "
@@ -320,8 +320,8 @@ class TestCreateModelIsReachableAndFullConfigOnly:
         no ``kspace_log_scaled``, no ``ModelConfigSchema`` sweep. Nothing warned;
         the model was simply built wrong.
         """
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.models.factories.model_factory import get_model_factory
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.models.factories.model_factory import get_model_factory
 
         factory = get_model_factory()
         with pytest.raises(TypeError) as excinfo:
@@ -339,8 +339,8 @@ class TestCreateModelIsReachableAndFullConfigOnly:
         On unfixed code this method raises ``NameError`` for every input, so a
         bare ``pytest.raises(Exception)`` would pass against the defect.
         """
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.models.factories.model_factory import get_model_factory
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.models.factories.model_factory import get_model_factory
 
         factory = get_model_factory()
         try:
@@ -359,7 +359,7 @@ class TestDeprecationSitsOnTheRetiredSurface:
     the builder to wrap its own import in ``catch_warnings`` and mute it, which
     is the failure mode this class pins against: a warning the correct path has
     to silence stops being a signal. It also made enforcement caller-dependent,
-    because ``pyproject.toml`` promotes ``error::DeprecationWarning:mriforge.*``
+    because ``pyproject.toml`` promotes ``error::DeprecationWarning:spectramr.*``
     while ``stacklevel=2`` attributes the warning to whoever called.
 
     Sensitivity pairs throughout: the retired surface must warn, and the
@@ -377,7 +377,7 @@ class TestDeprecationSitsOnTheRetiredSurface:
 
     def test_constructing_a_factory_does_not_warn(self) -> None:
         """``GeneratorBuilder.build()`` constructs one on every training run."""
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         assert self._deprecations(ModelFactory) == [], (
             "constructing a ModelFactory must not warn -- the canonical builder "
@@ -392,7 +392,7 @@ class TestDeprecationSitsOnTheRetiredSurface:
         composers must keep calling it -- ``check_layering.sh`` forbids
         ``models/ -> infrastructure/``, so they cannot route via a builder.
         """
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         factory = ModelFactory()
         assert (
@@ -406,8 +406,8 @@ class TestDeprecationSitsOnTheRetiredSurface:
 
     def test_create_model_warns(self) -> None:
         """The retired surface, and the only one that may warn."""
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.models.factories.model_factory import ModelFactory
 
         factory = ModelFactory()
         found = self._deprecations(
@@ -421,8 +421,8 @@ class TestDeprecationSitsOnTheRetiredSurface:
         CLAUDE.md's standing constraint on retirement is that something else
         must take responsibility; the message is where the caller learns what.
         """
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.models.factories.model_factory import ModelFactory
 
         factory = ModelFactory()
         (found,) = self._deprecations(
@@ -463,7 +463,7 @@ class TestCreateClassmethod:
         """
         import torch.nn as nn
 
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         class _Stub(nn.Module):
             def __init__(self, in_channels=1, out_channels=1, **kwargs):
@@ -482,7 +482,7 @@ class TestCreateClassmethod:
             MODEL_REGISTRY.pop("stub_for_create", None)
 
     def test_create_returns_a_model_instead_of_raising(self, registered) -> None:
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         model = ModelFactory.create(self._config())
         assert isinstance(model, registered)
@@ -490,7 +490,7 @@ class TestCreateClassmethod:
 
     def test_model_type_is_not_passed_twice(self, registered) -> None:
         """The exact failure: ``got multiple values for argument 'model_type'``."""
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         model = ModelFactory.create(self._config())
         assert "model_type" not in model.seen
@@ -498,7 +498,7 @@ class TestCreateClassmethod:
     def test_explicit_model_type_kwarg_overrides_the_config(self, registered) -> None:
         """Popped, not dropped: an override is honoured rather than discarded
         silently (non-negotiable 3)."""
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         config = self._config(model_type="not_registered_at_all")
         model = ModelFactory.create(config, model_type="stub_for_create")
@@ -506,7 +506,7 @@ class TestCreateClassmethod:
 
     def test_extra_kwargs_reach_the_constructor(self, registered) -> None:
         """Discrimination: the pop removes ``model_type`` and nothing else."""
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         model = ModelFactory.create(self._config(), base_channels=8)
         assert model.seen.get("base_channels") == 8
@@ -514,7 +514,7 @@ class TestCreateClassmethod:
     def test_missing_model_type_raises_a_named_error(self, registered) -> None:
         from types import SimpleNamespace
 
-        from mriforge.models.factories.model_factory import ModelFactory
+        from spectramr.models.factories.model_factory import ModelFactory
 
         config = SimpleNamespace(model=SimpleNamespace(in_channels=2, out_channels=2))
         with pytest.raises(TypeError, match="needs a model type"):

@@ -15,10 +15,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.frontdoor_criterion_loss import (
+from spectramr.models.losses.frontdoor_criterion_loss import (
     FrontdoorCriterionLoss,
 )
-from mriforge.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.registry import LossRegistry, create_loss
 
 
 def _img(mean: float, std: float, h: int = 16, w: int = 16) -> torch.Tensor:
@@ -95,7 +95,7 @@ class TestFrontdoorCriterion:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """frontdoor_adjusted_prediction from the primitive must be called."""
-        import mriforge.models.losses.frontdoor_criterion_loss as mod
+        import spectramr.models.losses.frontdoor_criterion_loss as mod
 
         calls = {"n": 0}
         real = mod.frontdoor_adjusted_prediction
@@ -112,7 +112,7 @@ class TestFrontdoorCriterion:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """donsker_varadhan_mi must be called to penalise mediator-scanner MI."""
-        import mriforge.models.losses.frontdoor_criterion_loss as mod
+        import spectramr.models.losses.frontdoor_criterion_loss as mod
 
         calls = {"n": 0}
         real = mod.donsker_varadhan_mi

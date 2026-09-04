@@ -12,12 +12,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.losses.pisco_self_consistency_loss import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.losses.pisco_self_consistency_loss import (
     PiscoSelfConsistencyLoss,
     pisco_self_consistency,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 
 def _pi_consistent_kspace(b=1, c=4, h=16, w=16):

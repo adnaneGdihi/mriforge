@@ -13,12 +13,12 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.campaign import (
+from spectramr.config.schemas.campaign import (
     CampaignConfigSchema,
     CampaignExperimentSchema,
     StageGroupSchema,
 )
-from mriforge.infrastructure.orchestration.campaign_orchestrator import CampaignOrchestrator
+from spectramr.infrastructure.orchestration.campaign_orchestrator import CampaignOrchestrator
 
 
 def _experiment(name: str, role: str = "variant", config: str = "x.yaml") -> dict:
@@ -154,7 +154,7 @@ def test_parallel_campaign_accepts_flat_experiments() -> None:
 
 
 def test_phase2_pipeline_to_campaign_dict_validates() -> None:
-    from mriforge.pipelines.ulf_phase2 import (
+    from spectramr.pipelines.ulf_phase2 import (
         GradientSteeringPipeline,
         KspaceGenSequenceTestPipeline,
         NoiseDominantPipeline,
@@ -182,7 +182,7 @@ def test_phase2_pipeline_to_campaign_dict_validates() -> None:
 def test_phase2_pipeline_with_parallel_arms_renders() -> None:
     """A stage with ``parallel_arms`` produces multiple experiments
     in the same stage group."""
-    from mriforge.pipelines.ulf_phase2 import NoiseDominantPipeline
+    from spectramr.pipelines.ulf_phase2 import NoiseDominantPipeline
 
     p = NoiseDominantPipeline()
     # Inject two parallel ablation arms into the second stage.
@@ -215,7 +215,7 @@ def test_phase2_pipeline_with_parallel_arms_renders() -> None:
 def test_checkpoint_from_chain_propagates_through_stages() -> None:
     """A stage with a single dependency emits a checkpoint_from pointing
     back at that dependency's primary experiment."""
-    from mriforge.pipelines.ulf_phase2 import OffGridAmorphousPipeline
+    from spectramr.pipelines.ulf_phase2 import OffGridAmorphousPipeline
 
     p = OffGridAmorphousPipeline()
     cfg = CampaignConfigSchema.model_validate(p.to_campaign_dict())

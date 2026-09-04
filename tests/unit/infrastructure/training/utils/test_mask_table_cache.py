@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.training.utils.mask_table_cache`.
+"""Unit tests for :mod:`spectramr.infrastructure.training.utils.mask_table_cache`.
 
 The cache exists to remove a blocking device-to-host copy from the validation
 mask path, so the tests that matter are the ones that would go red if it ever
@@ -12,7 +12,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.utils.mask_table_cache import MaskTableCache
+from spectramr.infrastructure.training.utils.mask_table_cache import MaskTableCache
 
 
 def _accelerator(seed: int | None = 42, enforce_nested: bool = False) -> SimpleNamespace:

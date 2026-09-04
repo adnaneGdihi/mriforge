@@ -10,7 +10,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.builders.temporal_sampler import (
+from spectramr.data.builders.temporal_sampler import (
     TemporalGridAggregator,
     TemporalGridSampler,
     TemporalUniformSampler,

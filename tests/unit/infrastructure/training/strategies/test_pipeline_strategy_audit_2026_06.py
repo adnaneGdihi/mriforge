@@ -1,7 +1,7 @@
 """Regression tests for the 2026-06 pipeline_strategy audit fixes.
 
 Covers the three BROKEN_STRATEGY_ONLY findings against
-``mriforge.infrastructure.training.strategies.pipeline_strategy``:
+``spectramr.infrastructure.training.strategies.pipeline_strategy``:
 
 1. [high]   Per-stage loss failures were silently swallowed by a
    ``try/except Exception: logger.warning(...)`` in ``_compute_stage_losses``,
@@ -32,7 +32,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.pipeline_strategy import (
+from spectramr.infrastructure.training.strategies.pipeline_strategy import (
     MultiTrainingStrategy,
 )
 
@@ -129,7 +129,7 @@ class TestNoItemSyncInStageStep:
         # ``stage_total.item()`` would now be invoked — trip a counter if so.
         import logging as _logging
 
-        from mriforge.infrastructure.training.strategies import (
+        from spectramr.infrastructure.training.strategies import (
             pipeline_strategy as _ps,
         )
 

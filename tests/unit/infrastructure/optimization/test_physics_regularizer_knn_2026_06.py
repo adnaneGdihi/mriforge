@@ -12,7 +12,7 @@ import inspect
 
 import torch
 
-from mriforge.infrastructure.optimization.regularizers.knn_graph import (
+from spectramr.infrastructure.optimization.regularizers.knn_graph import (
     KNNGraphRegularizer,
 )
 
@@ -26,7 +26,7 @@ def test_knn_regularizer_accepts_positions_attributes_kwargs():
 
 
 def test_physics_regularizer_callsite_uses_correct_kwargs():
-    from mriforge.infrastructure.optimization.tto import physics_regularizer
+    from spectramr.infrastructure.optimization.tto import physics_regularizer
 
     src = inspect.getsource(physics_regularizer)
     assert "positions=means_eval, attributes=params.features" in src

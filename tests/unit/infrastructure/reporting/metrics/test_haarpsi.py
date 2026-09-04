@@ -8,7 +8,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.infrastructure.reporting.metrics.haarpsi import (
+from spectramr.infrastructure.reporting.metrics.haarpsi import (
     _haar_filter_bank,
     haar_psi,
 )

@@ -3,7 +3,7 @@ import math
 import torch
 import torch.nn.functional as F
 
-from mriforge.data.transforms.benchmarking_degradations import (
+from spectramr.data.transforms.benchmarking_degradations import (
     B1TransmitInhomogeneity,
     KSpaceComplexGaussianNoise,
     KSpaceGhosting,

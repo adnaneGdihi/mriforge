@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.data.sources.sim2rank_source import (  # noqa: E402
+from spectramr.data.sources.sim2rank_source import (  # noqa: E402
     Sim2RankSlice,
     Sim2RankVolumeSource,
 )

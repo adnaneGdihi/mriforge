@@ -9,7 +9,7 @@ of selecting the ``robust_ei`` key with the nc-χ correction turned off
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 class _CS:
@@ -36,7 +36,7 @@ class _Training:
     def __init__(self, training_mode="equivariant_imaging", ei_block=True, robust_correction=False):
         self.training_mode = training_mode
         self.strategy_class = (
-            "mriforge.infrastructure.training.strategies."
+            "spectramr.infrastructure.training.strategies."
             "equivariant_imaging_strategy.EquivariantImagingStrategy"
         )
         self.equivariant_imaging = (

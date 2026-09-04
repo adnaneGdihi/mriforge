@@ -1,6 +1,6 @@
 """Tests for ``IDownstreamModelService``.
 
-Targets ``mriforge.domain.interfaces.i_downstream_model_service``. The
+Targets ``spectramr.domain.interfaces.i_downstream_model_service``. The
 ``runtime_checkable`` protocol introduced by ``CC-3`` of
 ``TODO/backlog_paradigm_expansion_roadmap.md``.
 
@@ -9,14 +9,14 @@ Categories:
 - A duck-typed adapter implementing all four members satisfies
   ``isinstance(..., IDownstreamModelService)``
 - A class missing one of the required members fails the check
-- The protocol re-exports from ``mriforge.domain.interfaces``
+- The protocol re-exports from ``spectramr.domain.interfaces``
 """
 
 from __future__ import annotations
 
 import torch
 
-from mriforge.domain.interfaces import IDownstreamModelService
+from spectramr.domain.interfaces import IDownstreamModelService
 
 
 # ---------------------------------------------------------------------------

@@ -15,8 +15,8 @@ import types
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.cyclegan_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.cyclegan_strategy import (
     CycleGANTrainingStrategy,
     compute_cyclegan_losses,
 )
@@ -136,10 +136,10 @@ def test_pure_helper_no_paired_supervision() -> None:
     (that would be paired supervision). Behavioural check: swapping real_B for a
     copy leaves cycle unchanged only through the generators, never a direct term."""
     torch.manual_seed(0)
-    from mriforge.models.discriminators.patchgan_discriminator import (
+    from spectramr.models.discriminators.patchgan_discriminator import (
         PatchGANDiscriminator,
     )
-    from mriforge.models.generators.cycle_gan import ResNetGenerator
+    from spectramr.models.generators.cycle_gan import ResNetGenerator
 
     gen_ab = ResNetGenerator(1, 1)
     gen_ba = ResNetGenerator(1, 1)
@@ -164,7 +164,7 @@ def test_pure_helper_no_paired_supervision() -> None:
 
 def test_strategy_registered_in_factory() -> None:
     """The ``cyclegan`` short-name resolves via the strategy factory."""
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

@@ -7,11 +7,11 @@ errors for Gibbs ringing correction and super-resolution.
 import pytest
 import torch
 
-from mriforge.models.losses.focal_frequency_loss import (
+from spectramr.models.losses.focal_frequency_loss import (
     FocalFrequencyLoss,
     _build_radial_weight,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 
 class TestBuildRadialWeight:

@@ -1,6 +1,6 @@
 r"""Tests for ``cramer_rao_optimal_fusion``.
 
-Targets ``mriforge.infrastructure.sensors.fusion`` — idea 9 §9.3.
+Targets ``spectramr.infrastructure.sensors.fusion`` — idea 9 §9.3.
 
 Plan acceptance criterion (§9.7):
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.sensors.fusion import (
+from spectramr.infrastructure.sensors.fusion import (
     FusedPose,
     PoseEstimate,
     cramer_rao_optimal_fusion,

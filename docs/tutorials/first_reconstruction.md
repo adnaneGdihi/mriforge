@@ -15,7 +15,7 @@ By the end you'll have:
 - A trained checkpoint plus a PSNR / SSIM curve.
 
 If you haven't done so yet, read [Quickstart](quickstart.md) first to
-confirm `pip install mriforge[mri]` worked.
+confirm `pip install spectramr[mri]` worked.
 
 ## What we're building
 
@@ -24,7 +24,7 @@ Forward model:
 $$y = M F x + n$$
 
 - $x$ is the ground-truth image (a synthetic phantom).
-- $F$ is the centred 2D FFT (`mriforge.infrastructure.physics.fft_ops.fft2c`).
+- $F$ is the centred 2D FFT (`spectramr.infrastructure.physics.fft_ops.fft2c`).
 - $M$ is a Cartesian undersampling mask at 4× acceleration.
 - $n$ is additive Gaussian noise.
 - $y$ is the observed undersampled k-space.
@@ -121,7 +121,7 @@ checkpoint:
 
 data:
   dataset_type: npy_slice
-  data_root: ${MRIFORGE_DATA_ROOT}/tutorial_phantom
+  data_root: ${SPECTRAMR_DATA_ROOT}/tutorial_phantom
   coil_processing_mode: rss
   patch_size: [64, 64, 1]
   batch_size: 8
@@ -165,7 +165,7 @@ optimization:
 
 training:
   training_mode: reconstruction
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   epochs: 20
   device: cpu                # change to 'cuda' if you have one
   seed: 42
@@ -181,8 +181,8 @@ physics: {}
 
 Two things to notice:
 
-- **`${MRIFORGE_DATA_ROOT}/tutorial_phantom`** — the audit's
-  [path-resolver](../CLUSTER_DATA_LAYOUT.md#resolving-paths-via-mriforge_data_root)
+- **`${SPECTRAMR_DATA_ROOT}/tutorial_phantom`** — the audit's
+  [path-resolver](../CLUSTER_DATA_LAYOUT.md#resolving-paths-via-spectramr_data_root)
   expands this against your local `databases/` (if the env var is
   unset, it defaults to `./databases`). The dataset lives at
   `databases/tutorial_phantom/` from Step 1.
@@ -196,7 +196,7 @@ Always run the audit first. It's ~100ms and catches the bugs that
 would otherwise eat a SLURM slot or a Lightning Studio session.
 
 ```bash
-mriforge audit experiments/inprogress/tutorials/first_reconstruction.yaml
+spectramr audit experiments/inprogress/tutorials/first_reconstruction.yaml
 ```
 
 You should see something like:
@@ -220,7 +220,7 @@ means.
 ## Step 4 — Train
 
 ```bash
-mriforge train --config experiments/inprogress/tutorials/first_reconstruction.yaml
+spectramr train --config experiments/inprogress/tutorials/first_reconstruction.yaml
 ```
 
 Expected runtime: ~3–5 min on CPU, ~30 sec on GPU.
@@ -279,8 +279,8 @@ step 120.
 import numpy as np
 import torch
 
-import mriforge  # noqa: F401  (warning + registry registration)
-from mriforge.models.registry import MODEL_REGISTRY
+import spectramr  # noqa: F401  (warning + registry registration)
+from spectramr.models.registry import MODEL_REGISTRY
 
 # 1. Build the same model topology as the YAML.
 entry = MODEL_REGISTRY["enhanced_deep_unet"]
@@ -302,8 +302,8 @@ x = x.unsqueeze(1)                              # [1, 1, 64, 64]
 
 # 4. Zero-filled inverse (the same operation the data pipeline applied
 #    during training).
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.sampling import KSpaceMaskGenerator, MaskType
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.sampling import KSpaceMaskGenerator, MaskType
 
 mask_gen = KSpaceMaskGenerator(
     mask_type=MaskType.CARTESIAN,
@@ -342,12 +342,12 @@ on the seed and your CPU's FP determinism, but the trend should hold.
 - **The framework's training loop is YAML-driven.** No Python script
   per experiment — one YAML, one command.
 - **The audit ladder is your friend.** A 100ms check before
-  `mriforge train` saves hours of cluster time.
+  `spectramr train` saves hours of cluster time.
 - **Registries decouple component declaration from use.** You picked
   `enhanced_deep_unet` and `l1` / `ssim` by name; their actual
   implementations are in
-  `src/mriforge/models/generators/` and
-  `src/mriforge/models/losses/`. You never imported either.
+  `src/spectramr/models/generators/` and
+  `src/spectramr/models/losses/`. You never imported either.
 - **The physics SSOT is the only place FFTs live.** `fft2c` /
   `ifft2c` handle centring + ortho normalisation; you never call
   `torch.fft.fft2` directly.
@@ -363,9 +363,9 @@ on the seed and your CPU's FP determinism, but the trend should hold.
 
 | Symptom | Likely cause |
 |---|---|
-| `Data root not found: tutorial_phantom` | Step 1 not run, or `MRIFORGE_DATA_ROOT` unset and CWD isn't repo root |
+| `Data root not found: tutorial_phantom` | Step 1 not run, or `SPECTRAMR_DATA_ROOT` unset and CWD isn't repo root |
 | `ValidationError: training.training_mode` | Typo in the YAML — must be exactly `reconstruction` |
-| `model_type='enhanced_deep_unet' not registered` | `import mriforge` not run before the registry lookup |
+| `model_type='enhanced_deep_unet' not registered` | `import spectramr` not run before the registry lookup |
 | `RuntimeError: CUDA out of memory` | Change `training.device: cpu` or reduce `data.batch_size` |
 | `val_psnr` stays at NaN | Numerical instability — check `losses.csv`, retry with `optimization.learning_rate: 1.0e-4` |
 | Training appears to hang at step 0 | Synthetic dataset loaded but worker spawn issue — set `data.num_workers: 0` in the YAML |

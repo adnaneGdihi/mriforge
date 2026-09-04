@@ -9,11 +9,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.init_registry import populate_model_registry
+from spectramr.models.init_registry import populate_model_registry
 
 populate_model_registry()
 
-from mriforge.models.generators.vf_reconstruction_generators import (
+from spectramr.models.generators.vf_reconstruction_generators import (
     DiffNUFFTGenerator,
     DirichletESPIRiTGenerator,
     HardDCForcingGenerator,
@@ -248,8 +248,8 @@ class TestVCCPhysics:
     """
 
     def test_conj_reflect_is_hermitian_identity_on_real_images(self) -> None:
-        from mriforge.infrastructure.physics.fft_ops import fft2c
-        from mriforge.models.generators.vf_reconstruction_generators import (
+        from spectramr.infrastructure.physics.fft_ops import fft2c
+        from spectramr.models.generators.vf_reconstruction_generators import (
             _conj_reflect_kspace,
         )
 

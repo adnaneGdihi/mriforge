@@ -11,7 +11,7 @@ the whole sub-tree. Verbatim, from CPython's ``pkgutil.walk_packages``::
         if onerror is not None:
             onerror(info.name)
 
-Measured 2026-08-28 against ``mriforge.core.metrics``: planting ``raise
+Measured 2026-08-28 against ``spectramr.core.metrics``: planting ``raise
 ImportError`` in the ``connectivity`` sub-package took the registry from 211
 metrics to 210, with no error, no warning, and exit 0. Nothing downstream could
 distinguish that from an empty sub-package.
@@ -37,7 +37,7 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 
 pytestmark = pytest.mark.architecture
 

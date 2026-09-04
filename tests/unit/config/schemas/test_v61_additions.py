@@ -1,7 +1,7 @@
 """Tests for the v6.1 schema bump.
 
-Targets ``mriforge.config.schemas.physics`` (new sub-schemas) and
-``mriforge.config.schemas.training.base`` (config_version validator).
+Targets ``spectramr.config.schemas.physics`` (new sub-schemas) and
+``spectramr.config.schemas.training.base`` (config_version validator).
 
 v6.1 is a strict additive superset of v6.0 — every v6.0 YAML loads
 unchanged. See ``TODO/integration_plan_ulf_cheap_fast_mri.md §0.1``.
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.physics import (
+from spectramr.config.schemas.physics import (
     ConcomitantFieldConfig,
     PhysicsConfigSchema,
     RelaxationPriorsConfig,
@@ -114,7 +114,7 @@ def test_the_6x_versions_are_now_rejected(version: str) -> None:
     canonical one and both 6.x versions now raise like any other unsupported
     value.
     """
-    from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+    from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
     with pytest.raises(ValueError, match="Unsupported config_version"):
         BaseTrainingConfigSchema.validate_config_version(version)
@@ -123,8 +123,8 @@ def test_the_6x_versions_are_now_rejected(version: str) -> None:
 def test_the_canonical_version_is_accepted() -> None:
     """Anti-vacuity for the test above: the validator is not rejecting
     everything."""
-    from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-    from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+    from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+    from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
     assert (
         BaseTrainingConfigSchema.validate_config_version(CANONICAL_CONFIG_VERSION)
@@ -134,7 +134,7 @@ def test_the_canonical_version_is_accepted() -> None:
 
 def test_v50_rejected() -> None:
     """``config_version: '5.0'`` raises."""
-    from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+    from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
     with pytest.raises(ValueError, match="Unsupported config_version"):
         BaseTrainingConfigSchema.validate_config_version("5.0")
@@ -142,7 +142,7 @@ def test_v50_rejected() -> None:
 
 def test_v70_rejected() -> None:
     """Future versions also rejected (forces an explicit bump)."""
-    from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+    from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
     with pytest.raises(ValueError, match="Unsupported config_version"):
         BaseTrainingConfigSchema.validate_config_version("7.0")

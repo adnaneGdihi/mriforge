@@ -18,7 +18,7 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.noise_simulation import NoiseSimulator
+from spectramr.infrastructure.physics.noise_simulation import NoiseSimulator
 
 
 def test_add_rician_noise_uses_sqrt2_split():

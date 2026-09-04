@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.realistic_degradations import (
+from spectramr.data.transforms.realistic_degradations import (
     ElasticDeformation3D,
     KSpaceUndersampling,
     MotionBlur3D,

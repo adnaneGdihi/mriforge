@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from mriforge.data.eda.catalog import (
+from spectramr.data.eda.catalog import (
     DatasetEntry,
     classify_modality,
     discover,
@@ -217,7 +217,7 @@ def test_discover_physical_descends_into_external_for_uncovered_data(tmp_path):
     kirby_kki_multimodal) was invisible: discover_physical skipped external/ wholesale. It must
     descend one level and surface uncovered data dirs as disk_<name> — while web-placeholder dirs
     (openneuro_hub: only openneuro.org) and manifest-covered dirs are NOT surfaced."""
-    from mriforge.data.eda.catalog import discover_physical
+    from spectramr.data.eda.catalog import discover_physical
 
     db = tmp_path / "databases"
     _write_h5(db / "external" / "kirby_kki" / "extracted" / "scan.h5")     # uncovered real data

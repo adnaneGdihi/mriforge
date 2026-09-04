@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.shared.utils.device_utils``.
+"""Tests for ``spectramr.shared.utils.device_utils``.
 
 Targets ``ensure_device_consistency``, ``safe_to_device``,
 ``validate_device_consistency``, ``create_device_aligned_tensor``,
@@ -10,7 +10,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.shared.utils.device_utils import (
+from spectramr.shared.utils.device_utils import (
     create_device_aligned_tensor,
     ensure_device_consistency,
     get_device,

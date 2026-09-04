@@ -21,14 +21,16 @@ from pathlib import Path
 
 import pytest
 
-import mriforge.config.schemas as _schemas
-from mriforge.config.schemas.validator_registry import (
+import spectramr.config.schemas as _schemas
+from spectramr.config.schemas.validator_registry import (
+    _KSPACE_GRADEABLE_METRICS,
     _validate_batch_size_positive,
+    _validate_kspace_model_config,
     _validate_learning_rate,
     _validate_loss_weights_positive,
     _validate_num_workers,
 )
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 # Anchored off the package, not the cwd, so the test runs from any directory.
 REFERENCE = Path(str(_schemas.__file__)).parent / "templates" / "v1.0_reference.yaml"
@@ -97,3 +99,92 @@ class TestLossWeightRangeReadsCanonicalLosses:
 
     def test_the_reference_config_is_clean(self, resolved_dump) -> None:
         assert _validate_loss_weights_positive(resolved_dump) == []
+
+
+def _kspace_arm(metrics: dict) -> dict:
+    """A k-space model (dataset_type kspace) with the given ``metrics`` block."""
+    return {
+        "model": {"model_type": "kspace_cold_diffusion"},
+        "data": {"dataset_type": "kspace"},
+        "metrics": metrics,
+    }
+
+
+@pytest.mark.unit
+class TestKspaceMetricDomainRule:
+    """`kspace_model_config` names the image-intensity metrics under a k-space domain.
+
+    Planted violations (non-negotiable 15): one per shape the declared metric set
+    can take -- the legacy ``compute_*`` flags and the ``compute`` list.
+    """
+
+    def test_ssim_flag_under_kspace_domain_warns_and_names_it(self):
+        msgs = _validate_kspace_model_config(
+            _kspace_arm({"domain": "kspace", "compute_ssim": True, "compute_kspace_error": True})
+        )
+        assert len(msgs) == 1 and "['ssim']" in msgs[0]
+
+    def test_compute_list_under_kspace_domain_warns_and_names_the_offenders(self):
+        msgs = _validate_kspace_model_config(
+            _kspace_arm({"domain": "kspace", "compute": ["lpips", "psnr", "ssim"]})
+        )
+        assert len(msgs) == 1 and "['lpips', 'ssim']" in msgs[0]
+
+    def test_kspace_native_flags_pass(self):
+        # The diffusion Fourier-bridge lineage's shape: k-space error terms only.
+        assert (
+            _validate_kspace_model_config(
+                _kspace_arm(
+                    {
+                        "domain": "kspace",
+                        "compute_kspace_error": True,
+                        "compute_phase_mse": True,
+                        "compute_psnr": False,
+                        "compute_ssim": False,
+                        "compute_advanced_metrics": True,
+                    }
+                )
+            )
+            == []
+        )
+
+    def test_kspace_native_compute_list_passes(self):
+        assert (
+            _validate_kspace_model_config(
+                _kspace_arm(
+                    {"domain": "kspace", "compute": ["kspace_error", "mae", "mse", "phase_mse"]}
+                )
+            )
+            == []
+        )
+
+    def test_compute_list_wins_over_flags(self):
+        # A non-empty list is the declaration; stale flags beside it select nothing.
+        assert (
+            _validate_kspace_model_config(
+                _kspace_arm({"domain": "kspace", "compute": ["kspace_error"], "compute_ssim": True})
+            )
+            == []
+        )
+
+    @pytest.mark.parametrize("domain", ["image", None])
+    def test_image_or_unspecified_domain_passes(self, domain):
+        assert (
+            _validate_kspace_model_config(_kspace_arm({"domain": domain, "compute_ssim": True}))
+            == []
+        )
+
+    def test_non_kspace_model_is_out_of_scope(self):
+        doc = {
+            "model": {"model_type": "unet"},
+            "data": {"dataset_type": "image"},
+            "metrics": {"domain": "kspace", "compute_ssim": True},
+        }
+        assert _validate_kspace_model_config(doc) == []
+
+    def test_gradeable_set_is_the_complex_aware_one(self):
+        assert {"psnr", "kspace_error", "phase_mse"} <= _KSPACE_GRADEABLE_METRICS
+        assert not {"ssim", "lpips", "hfen", "ms_ssim"} & _KSPACE_GRADEABLE_METRICS
+
+    def test_reference_template_passes(self, resolved_dump):
+        assert _validate_kspace_model_config(resolved_dump) == []

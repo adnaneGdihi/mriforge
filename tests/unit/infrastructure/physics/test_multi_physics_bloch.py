@@ -11,7 +11,7 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.multi_physics_bloch import MultiPhysicsBlochLayer
+from spectramr.infrastructure.physics.multi_physics_bloch import MultiPhysicsBlochLayer
 
 
 def _layer() -> MultiPhysicsBlochLayer:

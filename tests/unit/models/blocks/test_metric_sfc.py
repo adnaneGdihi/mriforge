@@ -15,7 +15,7 @@ torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
-from mriforge.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
+from spectramr.models.blocks.metric_sfc import MetricSFCLinearizer  # noqa: E402
 
 
 def _toy_data(D: int = 4, H: int = 8, W: int = 8, mask_radius: int = 2) -> tuple:

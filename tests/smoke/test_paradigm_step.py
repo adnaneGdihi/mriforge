@@ -208,7 +208,7 @@ def _make_training_env(
     strategy_key: str,
 ) -> MagicMock:
     """Return a MagicMock TrainingEnvironment suitable for strategy construction."""
-    from mriforge.infrastructure.training.builders.optimization_builder import (
+    from spectramr.infrastructure.training.builders.optimization_builder import (
         OptimizationBuilder,
     )
 
@@ -337,7 +337,7 @@ def test_paradigm_one_step(strategy_key: str) -> None:
 
     # --- load strategy class ---
     try:
-        from mriforge.infrastructure.training.strategy_factory import (  # noqa: PLC0415
+        from spectramr.infrastructure.training.strategy_factory import (  # noqa: PLC0415
             TrainingStrategyFactory,
         )
 
@@ -453,7 +453,7 @@ def _execution_census() -> dict[str, int]:
     costs this census one line, because a Mock satisfies no closed set. A floor
     drop is only a real regression once the mock supplies a legal value.
     """
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     factory = TrainingStrategyFactory()
     built = yielded = executed = 0
@@ -558,7 +558,7 @@ def test_the_cold_diffusion_family_constructs(
     either a new closed-set validation needs another line in `_execution_census`,
     or the class genuinely broke.
     """
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     class_path = TrainingStrategyFactory.STRATEGY_CLASS_PATHS.get(key)
     assert class_path is not None, f"{key!r} is no longer a registered training_mode"

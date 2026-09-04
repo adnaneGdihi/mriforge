@@ -16,14 +16,14 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.scas_strategy import SCASStrategy
+from spectramr.infrastructure.training.strategies.scas_strategy import SCASStrategy
 
 
 def _strategy(monkeypatch):
     """A SCASStrategy shell; the parent hook is stubbed to isolate the guard."""
     s = object.__new__(SCASStrategy)
     monkeypatch.setattr(
-        "mriforge.infrastructure.training.strategies.scas_strategy.LOUPEStrategy._prepare_generator_inputs",
+        "spectramr.infrastructure.training.strategies.scas_strategy.LOUPEStrategy._prepare_generator_inputs",
         lambda self, batch, *a, **k: {"sentinel": True},
         raising=False,
     )

@@ -12,14 +12,14 @@ import types
 import pytest
 import torch
 
-from mriforge.config.schemas.spectra import BackendAccelerationConfigSchema
-from mriforge.infrastructure.accelerator.spectra import (
+from spectramr.config.schemas.spectra import BackendAccelerationConfigSchema
+from spectramr.infrastructure.accelerator.spectra import (
     SpectraBackendAdapter,
     SpectraExecutor,
     SpectraLoweringError,
     get_spectra_executor,
 )
-from mriforge.infrastructure.accelerator.spectra.spectra_backend import (
+from spectramr.infrastructure.accelerator.spectra.spectra_backend import (
     LOWERABLE_OPS,
     ROCC_INSTRUCTION_CONTRACT,
     SPECTRA_BYOC_COMPILER_PATH,

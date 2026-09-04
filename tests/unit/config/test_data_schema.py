@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     CachingPolicy,
     DataConfigSchema,
     DatasetSourceSchema,
@@ -157,7 +157,7 @@ def test_loso_subject_is_distinct_from_the_site_based_loso() -> None:
     """The two spellings are different designs and the collision is dangerous:
     'loso' holds out a SITE and needs a site tag; 'loso_subject' holds out a
     SUBJECT, which is what a 10-subject cohort needs."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert (
         DataConfigSchema(
@@ -175,7 +175,7 @@ def test_loso_subject_is_distinct_from_the_site_based_loso() -> None:
 def test_loso_subject_requires_exactly_one_selector() -> None:
     """Both would disagree; neither leaves the held-out subject undefined and
     the run would silently validate on training subjects."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     with pytest.raises(ValidationError, match="EXACTLY ONE"):
         DataConfigSchema(dataset_type="nifti_paired", split_strategy="loso_subject")
@@ -190,7 +190,7 @@ def test_loso_subject_requires_exactly_one_selector() -> None:
 def test_loso_selectors_are_inert_without_the_strategy() -> None:
     """Declaring a fold without asking for the strategy must not silently
     change the split — the knob is read only under loso_subject."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     cfg = DataConfigSchema(dataset_type="nifti_paired", split={"loso_fold": 3})
     assert cfg.split.type == "auto" and cfg.split.loso_fold == 3
@@ -213,8 +213,8 @@ class TestDataSplitSubBlock:
         Reads the fold records rather than a hand-written list, so a record
         added later without a home is caught here instead of by an arm.
         """
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.renames import RENAMES
 
         moved = {
             legacy: rec.canonical
@@ -238,7 +238,7 @@ class TestDataSplitSubBlock:
             )
 
     def test_the_legacy_document_still_loads_into_the_new_home(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(
             dataset_type="nifti_paired",
@@ -257,7 +257,7 @@ class TestDataSplitSubBlock:
         assert cfg.split.max_train_subjects == 4
 
     def test_the_canonical_document_loads(self) -> None:
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         cfg = DataConfigSchema(
             dataset_type="nifti_paired",
@@ -273,7 +273,7 @@ class TestDataSplitSubBlock:
         These are the guards that stop a run silently validating on training
         subjects, so they matter more than the grouping does.
         """
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         for kwargs in (
             {"split_strategy": "loso"},  # legacy spelling
@@ -301,8 +301,8 @@ class TestDataSplitSubBlock:
         ``optimization.num_steps``. It stays flat and visibly odd until #665
         decides to wire or delete it.
         """
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.renames import RENAMES
 
         assert "test_split" in DataConfigSchema.model_fields
         assert "test_fraction" not in DataSplitConfigSchema.model_fields
@@ -313,7 +313,7 @@ class TestDataSplitSubBlock:
 
     def test_the_sub_block_forbids_unknown_keys(self) -> None:
         """Born strict. A typo inside `split:` must not be silently ignored."""
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         with pytest.raises(ValidationError):
             DataConfigSchema(

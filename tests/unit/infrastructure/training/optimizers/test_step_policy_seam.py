@@ -22,12 +22,12 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.infrastructure.training.optimizers import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers import (  # noqa: E402
     AMPPolicy,
     FSDPStepPolicy,
 )
-from mriforge.infrastructure.training.step_executor import StepExecutor  # noqa: E402
-from mriforge.infrastructure.training.strategy_interfaces import (  # noqa: E402
+from spectramr.infrastructure.training.step_executor import StepExecutor  # noqa: E402
+from spectramr.infrastructure.training.strategy_interfaces import (  # noqa: E402
     IStepPolicy,
 )
 

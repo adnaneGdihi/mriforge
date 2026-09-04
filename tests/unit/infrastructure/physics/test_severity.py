@@ -13,11 +13,11 @@ import itertools
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (
+from spectramr.infrastructure.physics.digital_twin_extensions import (
     DEGRADATION_REGISTRY,
     apply_degradation,
 )
-from mriforge.infrastructure.physics.severity import (
+from spectramr.infrastructure.physics.severity import (
     PhysicalParam,
     SeverityDirection,
     SeveritySpec,
@@ -89,7 +89,7 @@ class TestEveryDegradationDeclaresItsRange:
     """The coverage gate: no degradation may exist without a declared severity."""
 
     def test_all_registry_entries_have_a_severity_spec(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -106,7 +106,7 @@ class TestEveryDegradationDeclaresItsRange:
     def test_a_degradation_without_a_declared_severity_fails_at_import(self) -> None:
         """`_reg` raises rather than defaulting -- you cannot add a degradation
         without writing down what its severity means physically."""
-        from mriforge.infrastructure.physics.digital_twin_extensions import _reg
+        from spectramr.infrastructure.physics.digital_twin_extensions import _reg
 
         with pytest.raises(KeyError, match="no declared SeveritySpec"):
             _reg("D99", "not_a_real_degradation", "noise", lambda x: x, "bogus")
@@ -116,7 +116,7 @@ class TestEveryDegradationDeclaresItsRange:
 
         Mislabelling any of these silently inverts the reported range.
         """
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -142,7 +142,7 @@ class TestDeclarationMatchesTheDegrader:
     """
 
     def test_complex_gaussian_snr_matches_the_degrader_formula(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -154,7 +154,7 @@ class TestDeclarationMatchesTheDegrader:
             assert sev.physical_value(theta) == pytest.approx(expected)
 
     def test_cartesian_undersampling_r_matches_the_degrader_formula(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -164,7 +164,7 @@ class TestDeclarationMatchesTheDegrader:
             assert sev.physical_value(theta) == pytest.approx(1.0 + 7.0 * theta)
 
     def test_partial_fourier_fraction_matches_the_degrader_formula(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -176,7 +176,7 @@ class TestDeclarationMatchesTheDegrader:
             )
 
     def test_gibbs_truncation_matches_the_degrader_formula(self) -> None:
-        from mriforge.infrastructure.physics.digital_twin_extensions import (
+        from spectramr.infrastructure.physics.digital_twin_extensions import (
             DEGRADATION_REGISTRY,
         )
 
@@ -218,7 +218,7 @@ class TestDeclarationMatchesTheDegrader:
 _ALL_DEGRADERS = sorted(DEGRADATION_REGISTRY)
 
 #: Axes that do not move the magnitude at all. Not a waiver -- a standing bug report.
-#: See https://github.com/adnaneGdihi/mriforge/issues (inert severity axes).
+#: See https://github.com/adnaneGdihi/spectramr/issues (inert severity axes).
 _INERT_UNDER_MAGNITUDE = {
     "concomitant_phase": "pure image-domain phase; |x*exp(i.phi)| == |x|",
     "magic_angle": "T2 modulation (MSK-only); no effect on this phantom",
@@ -304,7 +304,7 @@ class TestShapeSeverityRatio:
         bit for some, silently moving a corrupted volume with nothing to attribute
         the change to. Asserted on the hex repr, not with ``approx``.
         """
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         for r in (0.0, 0.1, 1 / 3, 0.53, 0.9999, 1.0):
             assert shape_severity_ratio(r, "linear").hex() == float(r).hex()
@@ -315,7 +315,7 @@ class TestShapeSeverityRatio:
     def test_endpoints_are_anchored(self, schedule):
         """Whatever the shape, t=0 is clean and t=T is fully degraded. A schedule
         that moved the endpoints would silently rescale the declared range."""
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         assert shape_severity_ratio(0.0, schedule) == 0.0
         assert shape_severity_ratio(1.0, schedule) == 1.0
@@ -324,7 +324,7 @@ class TestShapeSeverityRatio:
         "schedule", ["linear", "polynomial", "power_law", "exponential", "step"]
     )
     def test_monotone_non_decreasing(self, schedule):
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         vals = [shape_severity_ratio(i / 20, schedule) for i in range(21)]
         assert all(a <= b + 1e-12 for a, b in itertools.pairwise(vals))
@@ -333,7 +333,7 @@ class TestShapeSeverityRatio:
         """Undersampling's own ramp handles 'power_law' and lets 'polynomial' fall
         through to linear, so a declared polynomial schedule is inert there. Both
         are ratio**power; this pins the honest reading rather than the drift."""
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         for r in (0.25, 0.5, 0.75):
             a = shape_severity_ratio(r, "power_law", 3.0)
@@ -344,7 +344,7 @@ class TestShapeSeverityRatio:
         """Undersampling's 'step' indexes an explicit acceleration_range LIST and
         falls back to base/max when none was declared. Severity has no list, only
         the (vmin, vmax) pair, so only that fallback carries over."""
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         assert shape_severity_ratio(0.49, "step") == 0.0
         assert shape_severity_ratio(0.5, "step") == 1.0
@@ -352,19 +352,19 @@ class TestShapeSeverityRatio:
     def test_out_of_range_is_clamped_not_extrapolated(self):
         """A caller passing t > T should not silently receive a severity ABOVE the
         declared maximum -- the range is a declaration, not a suggestion."""
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         assert shape_severity_ratio(1.4, "linear") == 1.0
         assert shape_severity_ratio(-0.2, "linear") == 0.0
 
     def test_unknown_schedule_raises(self):
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         with pytest.raises(ValueError, match="unknown severity schedule"):
             shape_severity_ratio(0.5, "cosine")
 
     def test_non_positive_power_raises(self):
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         with pytest.raises(ValueError, match="power must be"):
             shape_severity_ratio(0.5, "power_law", 0.0)
@@ -386,7 +386,7 @@ class TestAgreesWithTheUndersamplingRamp:
     T = 9
 
     def _undersampling_curve(self, schedule: str) -> list[float]:
-        from mriforge.infrastructure.physics.sampling import create_kspace_accelerator
+        from spectramr.infrastructure.physics.sampling import create_kspace_accelerator
 
         accel = create_kspace_accelerator(
             "random_cartesian",
@@ -403,7 +403,7 @@ class TestAgreesWithTheUndersamplingRamp:
 
     @pytest.mark.parametrize("schedule", ["linear", "polynomial", "power_law", "exponential"])
     def test_curves_match(self, schedule: str) -> None:
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         severity = [
             shape_severity_ratio(t / (self.T - 1), schedule, self.POWER) for t in range(self.T)
@@ -419,14 +419,14 @@ class TestAgreesWithTheUndersamplingRamp:
         ratio. Pinning this stops a future "consistency" cleanup from unifying
         them and silently re-indexing every step ladder in the corpus.
         """
-        from mriforge.infrastructure.physics.severity import shape_severity_ratio
+        from spectramr.infrastructure.physics.severity import shape_severity_ratio
 
         assert shape_severity_ratio(0.75, "step") == 1.0
         assert self._undersampling_curve("step")[6] == pytest.approx(0.75)
 
     def test_the_two_vocabularies_are_the_same_size(self) -> None:
         """Neither ramp may quietly grow a member the other does not implement."""
-        from mriforge.config.schemas.enums import AccelerationSchedule
-        from mriforge.infrastructure.physics.sampling import _SUPPORTED_SCHEDULES
+        from spectramr.config.schemas.enums import AccelerationSchedule
+        from spectramr.infrastructure.physics.sampling import _SUPPORTED_SCHEDULES
 
         assert {s.value for s in AccelerationSchedule} == _SUPPORTED_SCHEDULES

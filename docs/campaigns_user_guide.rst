@@ -32,17 +32,17 @@ The five things a campaign manifest does:
    the next arm.
 
 The orchestrator is the existing
-:class:`mriforge.infrastructure.orchestration.campaign_orchestrator.CampaignOrchestrator`,
+:class:`spectramr.infrastructure.orchestration.campaign_orchestrator.CampaignOrchestrator`,
 the schema is
-:class:`mriforge.config.schemas.campaign.CampaignConfigSchema`, and the
+:class:`spectramr.config.schemas.campaign.CampaignConfigSchema`, and the
 SLURM backend is
-:class:`mriforge.infrastructure.orchestration.slurm_backend.SLURMBackend`.
+:class:`spectramr.infrastructure.orchestration.slurm_backend.SLURMBackend`.
 
 .. note::
 
    The ``#SBATCH`` directive header of each per-arm job script is rendered by
-   the shared :class:`mriforge.infrastructure.execution.SlurmBackend` (the same
-   generator the unified ``mriforge launch`` uses), and both the launcher and the
+   the shared :class:`spectramr.infrastructure.execution.SlurmBackend` (the same
+   generator the unified ``spectramr launch`` uses), and both the launcher and the
    campaign submit through one ``sbatch`` primitive, so the directive format and
    submission mechanics live in one place. A golden-file test pins the generated
    script byte-for-byte. See :doc:`execution_modes`.
@@ -50,10 +50,10 @@ SLURM backend is
 Where arms run (``--where``)
 ----------------------------
 
-``mriforge campaign submit C.yaml --where {slurm,docker,apptainer}`` selects where
+``spectramr campaign submit C.yaml --where {slurm,docker,apptainer}`` selects where
 each arm executes. ``slurm`` (default) submits an sbatch job per arm with full
 status polling and ``afterok`` chaining. ``docker`` / ``apptainer`` instead run
-each arm in a container (``mriforge train --config <arm> -O training.output_dir=…``)
+each arm in a container (``spectramr train --config <arm> -O training.output_dir=…``)
 **synchronously** — arms run one at a time, so this suits a small parallel-mode
 campaign on a single host; sequential (stage-group) campaigns still require
 ``--where slurm``.
@@ -224,7 +224,7 @@ On submit the orchestrator:
    tasks run at once).
 3. Each array task resolves *its* config (manifest line =
    ``$SLURM_ARRAY_TASK_ID``) via
-   :mod:`mriforge.cli.manifest_dispatch`, runs the Tier-0/1 audit pre-flight,
+   :mod:`spectramr.cli.manifest_dispatch`, runs the Tier-0/1 audit pre-flight,
    then trains it as the real experiment (``--prod`` = full config
    ``max_iterations``), routing output into
    :file:`<campaign_dir>/<config-stem>` so ``_discover_results`` finds the
@@ -301,7 +301,7 @@ For HPO grids, declare ``ablation_axes`` on the campaign instead of
 hand-writing one trainer YAML per grid point. Each axis is a
 ``config_path`` + a list of ``values``; the cross-product is
 materialised into per-trial configs by
-:class:`mriforge.infrastructure.orchestration.ablation_config_generator.AblationConfigGenerator`.
+:class:`spectramr.infrastructure.orchestration.ablation_config_generator.AblationConfigGenerator`.
 
 .. code-block:: yaml
 
@@ -333,7 +333,7 @@ Evaluation protocol
 ===================
 
 The ``evaluation`` block configures the post-training comparison
-that runs when you call ``python -m mriforge.cli campaign evaluate``:
+that runs when you call ``python -m spectramr.cli campaign evaluate``:
 
 .. code-block:: yaml
 
@@ -353,41 +353,41 @@ The evaluator computes per-metric leaderboards with bootstrap
 confidence intervals, runs pairwise significance tests with the
 chosen correction, and (when ``generate_plots: true``) renders a
 small dashboard via
-:class:`mriforge.infrastructure.orchestration.campaign_report_generator.CampaignReportGenerator`.
+:class:`spectramr.infrastructure.orchestration.campaign_report_generator.CampaignReportGenerator`.
 
 Submitting and monitoring a campaign
 ====================================
 
-The CLI surface is :program:`python -m mriforge.cli campaign <action>`:
+The CLI surface is :program:`python -m spectramr.cli campaign <action>`:
 
 .. code-block:: bash
 
    source .venv/bin/activate
 
    # 1. Validate without submitting (recommended first step).
-   python -m mriforge.cli campaign submit \\
+   python -m spectramr.cli campaign submit \\
        experiments/campaigns/geomamba_ulf_super_resolution.yaml \\
        --dry-run
 
    # 2. Submit every arm in parallel.
-   python -m mriforge.cli campaign submit \\
+   python -m spectramr.cli campaign submit \\
        experiments/campaigns/geomamba_ulf_super_resolution.yaml
 
    # 3. Poll SLURM and update the per-arm status table.
-   python -m mriforge.cli campaign status \\
+   python -m spectramr.cli campaign status \\
        experiments/results/campaigns/geomamba_ulf_super_resolution
 
    # 4. Watch every 60 s until everything is in a terminal state,
    #    then auto-evaluate.
-   python -m mriforge.cli campaign watch \\
+   python -m spectramr.cli campaign watch \\
        experiments/results/campaigns/geomamba_ulf_super_resolution
 
    # 5. Manually trigger evaluation (idempotent).
-   python -m mriforge.cli campaign evaluate \\
+   python -m spectramr.cli campaign evaluate \\
        experiments/results/campaigns/geomamba_ulf_super_resolution
 
    # 6. Cancel every active SLURM job for the campaign.
-   python -m mriforge.cli campaign cancel \\
+   python -m spectramr.cli campaign cancel \\
        experiments/results/campaigns/geomamba_ulf_super_resolution
 
 The state file ``campaign_state.json`` lives at the campaign root
@@ -405,20 +405,20 @@ a subset without rewriting the manifest:
 .. code-block:: bash
 
    # Re-submit only one arm by name:
-   python -m mriforge.cli campaign submit campaign.yaml \\
+   python -m spectramr.cli campaign submit campaign.yaml \\
        --only baseline_swinir
 
    # Comma-separated list:
-   python -m mriforge.cli campaign submit campaign.yaml \\
+   python -m spectramr.cli campaign submit campaign.yaml \\
        --only geomamba_ulf_v0,geomamba_ulf_v0_multicontrast
 
    # Restrict by tag (all ablation arms with tag.arch=geo_mamba):
-   python -m mriforge.cli campaign submit campaign.yaml \\
+   python -m spectramr.cli campaign submit campaign.yaml \\
        --include role=ablation \\
        --include tag.arch=geo_mamba
 
    # Drop the most expensive arm:
-   python -m mriforge.cli campaign submit campaign.yaml \\
+   python -m spectramr.cli campaign submit campaign.yaml \\
        --exclude name=baseline_latent_diffusion_3d
 
 The selector grammar is ``key=value`` with three recognised keys:
@@ -512,7 +512,7 @@ Re-run a single ablation after fixing a bug
 
 .. code-block:: bash
 
-   python -m mriforge.cli campaign submit \\
+   python -m spectramr.cli campaign submit \\
        experiments/campaigns/geomamba_ulf_super_resolution.yaml \\
        --only abl_no_metric_sfc \\
        --resume
@@ -522,7 +522,7 @@ Skip the most expensive baselines while iterating
 
 .. code-block:: bash
 
-   python -m mriforge.cli campaign submit \\
+   python -m spectramr.cli campaign submit \\
        experiments/campaigns/geomamba_ulf_super_resolution.yaml \\
        --exclude name=baseline_latent_diffusion_3d \\
        --exclude name=baseline_swin_unetr_3d
@@ -532,7 +532,7 @@ Re-run only the partial-promotion arms of a sequential P3 campaign
 
 .. code-block:: bash
 
-   python -m mriforge.cli campaign submit \\
+   python -m spectramr.cli campaign submit \\
        experiments/campaigns/geomamba_ulf_p3_promotion.yaml \\
        --include role=variant \\
        --exclude name=geomamba_ulf_v1_p3
@@ -584,16 +584,16 @@ The repo ships five campaign manifests for the GeoMamba-ULF paradigm:
 
 Recommended order:
 
-1. Smoke-test one arm: ``python -m mriforge.cli train --config
+1. Smoke-test one arm: ``python -m spectramr.cli train --config
    experiments/inprogress/geomamba_ulf/geomamba_ulf_v0.yaml --dry_run``.
 2. ``--dry-run`` the full campaign:
-   ``python -m mriforge.cli campaign submit
+   ``python -m spectramr.cli campaign submit
    experiments/campaigns/geomamba_ulf_super_resolution.yaml --dry-run``.
 3. Submit a small subset to check the SLURM plumbing:
    ``--only geomamba_ulf_v0,baseline_unet_recon``.
 4. Submit the full campaign once those land cleanly.
 5. Watch and auto-evaluate:
-   ``python -m mriforge.cli campaign watch
+   ``python -m spectramr.cli campaign watch
    experiments/results/campaigns/geomamba_ulf_super_resolution``.
 
 Lightweight alternative: one SLURM array task per experiment
@@ -612,9 +612,9 @@ Two files under ``scripts/training/``:
   re-globbed directory) and submits ``sbatch --array=0-(N-1)%C``.
 * ``dispatch_experiments.sbatch`` — the array-task body: reads its
   config from line ``$SLURM_ARRAY_TASK_ID + 1`` of the manifest, runs
-  the strict Tier-0/1 ``mriforge audit`` pre-flight (skips training with
+  the strict Tier-0/1 ``spectramr audit`` pre-flight (skips training with
   exit 2 if the config is rejected — no wasted GPU), then
-  ``mriforge train``.
+  ``spectramr train``.
 
 Usage::
 
@@ -655,7 +655,7 @@ Usage::
 .. note::
 
    **The exclusion filter is the array analogue of**
-   ``mriforge audit <dir> --exclude PATTERN``, exposed two equivalent ways: the
+   ``spectramr audit <dir> --exclude PATTERN``, exposed two equivalent ways: the
    leading ``EXCLUDE=PATTERN`` env var and the ``--exclude PATTERN`` CLI flag
    (``--exclude=PATTERN`` also accepted, repeatable, and **unioned** with the
    env var — neither silently overrides the other). It filters the snapshotted
@@ -770,9 +770,9 @@ Known gaps and roadmap
 ======================
 
 * **Per-arm job entrypoint.** The orchestrator's generated SLURM
-  scripts call the canonical ``python -m mriforge.cli train`` (and
+  scripts call the canonical ``python -m spectramr.cli train`` (and
   ``predict`` for auto-inference). The pre-refactor ``python
-  src/main.py`` form was removed in the src→mriforge migration; any
+  src/main.py`` form was removed in the src→spectramr migration; any
   campaign YAML or fork still expecting it will not match.
 * **Stale shipped campaigns.** Some checked-in campaign manifests
   (e.g. ``experiments/campaigns/kspace_recon_shootout.yaml``) reference
@@ -783,7 +783,7 @@ Known gaps and roadmap
   ONNX / INT8 ``EdgeExporter`` but the cluster-side TensorRT
   custom-op path for Mamba is still external.
 * **Real WMH segmenter.** The current
-  :class:`mriforge.core.metrics.wmh_dice_evaluator.LazySegmenterAdapter`
+  :class:`spectramr.core.metrics.wmh_dice_evaluator.LazySegmenterAdapter`
   is a hyper-intensity threshold. Integrating LST-AI / SynthSeg-WMH
   is a one-evening job once the dependencies are in place.
 * **Multi-seed / replicate handling.** The schema does not yet

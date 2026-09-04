@@ -19,11 +19,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.degradation_generators import (
+from spectramr.infrastructure.physics.degradation_generators import (
     build_generators,
     list_generator_modes,
 )
-from mriforge.infrastructure.physics.magnus_exponential import (
+from spectramr.infrastructure.physics.magnus_exponential import (
     assemble_omega,
     dense_matrix,
     expm_multiply,

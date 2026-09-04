@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.bloch_field import BlochSynthConfig
+from spectramr.config.schemas.training.bloch_field import BlochSynthConfig
 
 
 def test_defaults() -> None:
@@ -42,6 +42,6 @@ def test_forbids_unknown_field() -> None:
 
 
 def test_mounted_on_training_schema() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "bloch_synth" in TrainingStrategyConfigSchema.model_fields

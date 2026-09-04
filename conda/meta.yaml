@@ -1,0 +1,121 @@
+# conda recipe for spectraMR.
+#
+# The package NAME is lower case because conda requires it -- `spectramr`, matching
+# the import namespace and the normalised PyPI name. `spectraMR` is the display
+# spelling and appears only in `about`.
+#
+# The VERSION is read out of the package __init__ rather than written here. Four
+# files already declare it and `scripts/release/build_dist.py` is the sole
+# comparator of the four; a fifth declaration this recipe owned would drift the
+# first time a release forgot it, and conda-build would happily ship the stale one.
+{% set data = load_file_regex(load_file="../src/spectramr/__init__.py",
+                              regex_pattern='__version__\s*=\s*[\'"]([^\'"]+)[\'"]') %}
+{% set version = data.group(1) %}
+
+package:
+  name: spectramr
+  version: {{ version }}
+
+source:
+  # Built from the checkout, not from a PyPI sdist: this recipe is run by
+  # .github/workflows/conda.yml against the tree being released, so a PyPI sdist
+  # URL would either lag the tree or fail before the sdist exists.
+  path: ..
+
+build:
+  # Pure Python: one artefact serves every platform and Python >=3.12. There is no
+  # compiled extension in this package -- the compiled kernels all live in torch,
+  # torchvision and (optionally) mamba-ssm, none of which this recipe ships.
+  noarch: python
+  number: 0
+  script: {{ PYTHON }} -m pip install . -vv --no-deps --no-build-isolation
+  entry_points:
+    - spectramr = spectramr.cli.app:main
+
+requirements:
+  host:
+    - python >=3.12
+    - pip
+    - hatchling
+  run:
+    - python >=3.12
+    - numpy >=2.0
+    - pydantic >=2.13
+    - pydantic-settings >=2.14
+    - pillow >=12
+    - pyyaml >=6
+    - h5py >=3.16
+    - tqdm >=4.67
+    - scipy >=1.17
+    - pandas >=2.3
+    - openpyxl >=3.1
+    - jaxtyping >=0.3
+    - rich >=15
+    - typer >=0.25
+    - einops >=0.8
+    - safetensors >=0.4
+    - psutil >=7.2
+
+  # DELIBERATELY NOT `run` dependencies, and this is a finding rather than an
+  # omission. torch, torchvision and torchmetrics are the accelerator stack, and a
+  # conda channel cannot express the constraint this project actually has:
+  # `pyproject.toml` pins them to the `pytorch-cu126` index because cu126 is the
+  # only lane still shipping `sm_70`, and the target clusters are V100s (compute
+  # capability 7.0). A conda-resolved `pytorch` satisfies the version range and
+  # then fails EVERY kernel launch on that hardware with
+  # `cudaErrorNoKernelImageForDevice` -- a package that installs cleanly and cannot
+  # run, which is worse than one that says what it needs. torchvision additionally
+  # pins its torch EXACTLY in its own metadata, so a mismatched pair raises
+  # `RuntimeError: operator torchvision::nms does not exist` inside
+  # populate_model_registry(); and torchmetrics depends on torch, so declaring it
+  # drags the same resolution in by the back door.
+  #
+  # `run_constrained` states the requirement without resolving it: if torch is
+  # present it must satisfy the floor, and if it is absent conda does not invent
+  # one. Install it from the pinned index, exactly as a pip install does.
+  run_constrained:
+    - pytorch >=2.8
+    - torchvision >=0.23
+    - torchmetrics >=1.9,<2.0
+
+test:
+  # Both of these are runnable in an env built from `run` alone, which is not
+  # obvious given that torch is deliberately absent from it -- so it was measured,
+  # not assumed (2026-09-03): `import spectramr` loads 88 modules and `spectramr
+  # --help` runs to completion, with torch, torchvision, torchmetrics, torchio and
+  # monai ALL absent from sys.modules afterwards. The package defers them through a
+  # PEP 562 module __getattr__. If that ever stops being true, conda build fails
+  # here rather than in a user's first command.
+  imports:
+    - spectramr
+  commands:
+    - spectramr --help
+
+about:
+  home: https://github.com/adnaneGdihi/spectraMR
+  license: Apache-2.0
+  license_family: Apache
+  license_file:
+    - ../LICENSE
+    - ../NOTICE
+  summary: A multi-paradigm research framework for MRI reconstruction, super-resolution, and generative modelling
+  description: |
+    spectraMR spans GAN, diffusion (including cold and latent diffusion),
+    VAE/VQ-VAE, MAE/SSL pretraining, reconstruction-only, domain-adaptation,
+    physics-driven, disentangled, sensitivity-estimation (PINN), cycle-Bloch,
+    flow, Mamba/SSM, MRF, fMRI and active-acquisition paradigms behind one
+    configuration schema.
+
+    NOT FOR CLINICAL USE. This is research software; it is not a medical device
+    and has not been evaluated by any regulatory authority.
+
+    The accelerator stack (torch, torchvision, torchmetrics) is intentionally not
+    a dependency of this package -- see the recipe comment. Install it from the
+    index the project pins, or the resulting environment will import but not run
+    on the hardware this framework targets.
+  doc_url: https://spectramr.readthedocs.io
+  dev_url: https://github.com/adnaneGdihi/spectraMR
+
+extra:
+  recipe-maintainers:
+    - adnaneGdihi

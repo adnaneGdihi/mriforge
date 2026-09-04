@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Rewrite retired config keys in experiment YAMLs, driven by the rename SSOT.
 
-Every rename lives in ``mriforge.config.schemas.renames.RENAMES``. This script is
+Every rename lives in ``spectramr.config.schemas.renames.RENAMES``. This script is
 the *fixer* for that table, and ``scripts/ci/check_no_legacy_config_keys.py`` is
 the *check* — which runs :func:`migrate_file` with ``apply=False`` rather than
 re-implementing the lookup, so the two cannot disagree about what a rename is,
@@ -38,8 +38,8 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(_REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(_REPO_ROOT / "src"))
 
-from mriforge.config.schemas.base import ACCEPTED_CONFIG_VERSIONS  # noqa: E402
-from mriforge.config.schemas.renames import RENAMES, RenameRecord  # noqa: E402
+from spectramr.config.schemas.base import ACCEPTED_CONFIG_VERSIONS  # noqa: E402
+from spectramr.config.schemas.renames import RENAMES, RenameRecord  # noqa: E402
 
 _VERSION = re.compile(r"^config_version:\s*['\"]?([0-9.]+)['\"]?", re.M)
 

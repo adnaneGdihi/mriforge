@@ -1,6 +1,6 @@
 """Unit tests for adjoint-sequence sequence-parameter optimisation.
 
-Covers :mod:`mriforge.infrastructure.physics.adjoint_sequence`, which is *not*
+Covers :mod:`spectramr.infrastructure.physics.adjoint_sequence`, which is *not*
 a linear-operator-adjoint module — it implements the Pontryagin /
 reverse-mode adjoint method for differentiable MRI **sequence-parameter**
 optimisation (Method VI of ``synthetic_marker_research_plan.md`` §4.6).
@@ -36,7 +36,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-adj_mod = pytest.importorskip("mriforge.infrastructure.physics.adjoint_sequence")
+adj_mod = pytest.importorskip("spectramr.infrastructure.physics.adjoint_sequence")
 SequenceOptResult = adj_mod.SequenceOptResult
 steady_state_se_signal = adj_mod.steady_state_se_signal
 steady_state_ir_se_signal = adj_mod.steady_state_ir_se_signal

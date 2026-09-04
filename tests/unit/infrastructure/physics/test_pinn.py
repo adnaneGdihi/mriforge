@@ -1,6 +1,6 @@
 r"""Tests for the physics-informed PDE primitives.
 
-Targets ``mriforge.infrastructure.physics.pinn``: ``WaveEquation``,
+Targets ``spectramr.infrastructure.physics.pinn``: ``WaveEquation``,
 ``BlochEquation``, ``MaxwellRegularizer``, ``PINNModule``, and the
 ``get_pde`` factory.
 
@@ -24,7 +24,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.pinn import (
+from spectramr.infrastructure.physics.pinn import (
     BlochEquation,
     MaxwellRegularizer,
     PINNModule,

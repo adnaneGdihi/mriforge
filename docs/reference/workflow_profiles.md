@@ -1,7 +1,7 @@
 # Workflow profiles
 
 The frozen facts backing each imaging regime live in
-`mriforge.domain.workflows.profiles.WORKFLOW_PROFILES`. Each entry is a
+`spectramr.domain.workflows.profiles.WORKFLOW_PROFILES`. Each entry is a
 `WorkflowProfile`: its maturity, the spatial ranks and non-spatial axes it
 needs, the physics forward operator that reconstructs it (a key into the
 `OperatorRegistry` — a profile naming an unregistered operator fails the
@@ -11,7 +11,7 @@ The table below is the authoritative source. For the conceptual model, see
 [Workflows — imaging regime × task](../explanation/workflows.md).
 
 ```{eval-rst}
-.. currentmodule:: mriforge.domain.workflows.profiles
+.. currentmodule:: spectramr.domain.workflows.profiles
 
 .. autoclass:: WorkflowProfile
    :members:

@@ -25,14 +25,14 @@ from tests.utils.data_config_stub import DataConfigStub  # noqa: E402
 
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.config.schemas.base import ParallelismConfigSchema  # noqa: E402
-from mriforge.infrastructure.distributed.deepspeed_backend import (  # noqa: E402
+from spectramr.config.schemas.base import ParallelismConfigSchema  # noqa: E402
+from spectramr.infrastructure.distributed.deepspeed_backend import (  # noqa: E402
     DERIVED_KEYS,
     DeepSpeedStepPolicy,
     build_deepspeed_config,
     deepspeed_available,
 )
-from mriforge.infrastructure.distributed.strategy_registry import (  # noqa: E402
+from spectramr.infrastructure.distributed.strategy_registry import (  # noqa: E402
     resolve_parallel_strategy,
 )
 
@@ -64,7 +64,7 @@ class TestTheDsConfigCannotDisagreeWithTheYaml:
     """The keys this generator owns are NOT declarable in the schema."""
 
     def test_no_config_path_field_exists(self) -> None:
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         assert not {"config_path", "ds_config_path", "config_file"} & set(
             DeepSpeedConfigSchema.model_fields
@@ -72,7 +72,7 @@ class TestTheDsConfigCannotDisagreeWithTheYaml:
 
     def test_derived_keys_are_not_also_schema_fields(self) -> None:
         """Two homes for one number is exactly how a ds_config drifts."""
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         assert not DERIVED_KEYS & set(DeepSpeedConfigSchema.model_fields)
 
@@ -158,7 +158,7 @@ class TestStepPolicyOwnership:
     def test_the_executor_honours_that_and_stops_dividing(self) -> None:
         """Both dividing gives 1/N^2 loss scaling and one real step per N^2
         micro-batches -- and it TRAINS, so every single-host test still passes."""
-        from mriforge.infrastructure.training.step_executor import StepExecutor
+        from spectramr.infrastructure.training.step_executor import StepExecutor
 
         executor = StepExecutor(
             SimpleNamespace(scaler=None),
@@ -214,8 +214,8 @@ class TestStrategyGuards:
     def test_schema_vocabulary_and_registry_now_match_exactly(self) -> None:
         from typing import get_args
 
-        from mriforge.config.schemas.base import ParallelStrategy
-        from mriforge.infrastructure.distributed.strategy_registry import (
+        from spectramr.config.schemas.base import ParallelStrategy
+        from spectramr.infrastructure.distributed.strategy_registry import (
             list_parallel_strategies,
         )
 
@@ -235,7 +235,7 @@ class TestStrategyGuards:
         """engine.step() issues collectives, so a GAN whose discriminator steps
         on a different cadence HANGS rather than erroring -- far more expensive
         to diagnose on a cluster than a refusal here."""
-        import mriforge.infrastructure.distributed.strategies as strategies_mod
+        import spectramr.infrastructure.distributed.strategies as strategies_mod
 
         monkeypatch.setattr(
             strategies_mod, "_require_process_group", lambda _name: None
@@ -263,7 +263,7 @@ class TestAvailability:
         )
 
     def test_the_audit_agrees_with_availability(self) -> None:
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -459,7 +459,7 @@ class TestEngineCompileIsActuallyCalled:
             self.compile_calls += 1
 
     def _initialize(self, monkeypatch, config, engine=None):
-        import mriforge.infrastructure.distributed.deepspeed_backend.runtime as rt
+        import spectramr.infrastructure.distributed.deepspeed_backend.runtime as rt
 
         engine = engine or self._FakeEngine()
         fake_ds = SimpleNamespace(
@@ -614,7 +614,7 @@ class TestImportFailureIsActionable:
         assert "/home/u/.triton/autotune" in str(exc)
 
     def test_the_description_keeps_the_path(self) -> None:
-        from mriforge.infrastructure.distributed.deepspeed_backend.runtime import (
+        from spectramr.infrastructure.distributed.deepspeed_backend.runtime import (
             _describe_import_failure,
         )
 
@@ -626,7 +626,7 @@ class TestImportFailureIsActionable:
 
     def test_a_filename_survives_even_without_a_message(self) -> None:
         """An OSError carrying only a filename still stringifies without it."""
-        from mriforge.infrastructure.distributed.deepspeed_backend.runtime import (
+        from spectramr.infrastructure.distributed.deepspeed_backend.runtime import (
             _describe_import_failure,
         )
 
@@ -635,7 +635,7 @@ class TestImportFailureIsActionable:
         assert "/scratch/torch_extensions/lock" in _describe_import_failure(exc)
 
     def test_a_plain_exception_still_renders(self) -> None:
-        from mriforge.infrastructure.distributed.deepspeed_backend.runtime import (
+        from spectramr.infrastructure.distributed.deepspeed_backend.runtime import (
             _describe_import_failure,
         )
 
@@ -646,7 +646,7 @@ class TestImportFailureIsActionable:
         self, monkeypatch
     ) -> None:
         """The advice must follow the diagnosis, not the strategy name."""
-        from mriforge.infrastructure.distributed.deepspeed_backend import runtime
+        from spectramr.infrastructure.distributed.deepspeed_backend import runtime
 
         monkeypatch.setattr(runtime, "deepspeed_available", lambda: True)
         monkeypatch.setitem(
@@ -666,7 +666,7 @@ class TestImportFailureIsActionable:
         self, monkeypatch
     ) -> None:
         """Anti-vacuity for the test above: the original message must survive."""
-        from mriforge.infrastructure.distributed.deepspeed_backend import runtime
+        from spectramr.infrastructure.distributed.deepspeed_backend import runtime
 
         monkeypatch.setattr(runtime, "deepspeed_available", lambda: False)
         monkeypatch.setitem(__import__("sys").modules, "deepspeed", None)

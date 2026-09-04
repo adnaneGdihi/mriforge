@@ -1,6 +1,6 @@
 """Unit tests for the optimal-transport velocity field network.
 
-Covers :class:`mriforge.models.ot.optimal_transport.VelocityFieldNetwork`:
+Covers :class:`spectramr.models.ot.optimal_transport.VelocityFieldNetwork`:
 - the supported forward path preserves the [B, C, H, W] shape;
 - the fragile silent-degradation branch (``layer(... else x)``) has been
   removed, so a channel misconfiguration surfaces as a natural PyTorch
@@ -17,7 +17,7 @@ import inspect
 import pytest
 import torch
 
-from mriforge.models.ot.optimal_transport import VelocityFieldNetwork
+from spectramr.models.ot.optimal_transport import VelocityFieldNetwork
 
 
 class TestVelocityFieldNetworkForward:
@@ -80,7 +80,7 @@ class TestEntropicGromovWasserstein:
     """
 
     def test_invalid_inputs_raise(self) -> None:
-        from mriforge.models.ot.optimal_transport import entropic_gromov_wasserstein
+        from spectramr.models.ot.optimal_transport import entropic_gromov_wasserstein
 
         with pytest.raises(ValueError):
             entropic_gromov_wasserstein(torch.zeros(3, 4), torch.zeros(4, 4))
@@ -88,7 +88,7 @@ class TestEntropicGromovWasserstein:
             entropic_gromov_wasserstein(torch.zeros(4, 4), torch.zeros(3, 4))
 
     def test_coupling_is_valid_plan(self) -> None:
-        from mriforge.models.ot.optimal_transport import entropic_gromov_wasserstein
+        from spectramr.models.ot.optimal_transport import entropic_gromov_wasserstein
 
         torch.manual_seed(0)
         c1 = torch.rand(8, 8)
@@ -104,7 +104,7 @@ class TestEntropicGromovWasserstein:
     def test_debiased_self_distance_is_zero(self) -> None:
         # The DEBIASED divergence is 0 for a structure matched to itself (the raw entropic value
         # is NOT — it has a large input-dependent floor, which is why debiasing is required).
-        from mriforge.models.ot.optimal_transport import gromov_wasserstein_feature_loss
+        from spectramr.models.ot.optimal_transport import gromov_wasserstein_feature_loss
 
         torch.manual_seed(0)
         feat = torch.randn(16, 2)
@@ -114,7 +114,7 @@ class TestEntropicGromovWasserstein:
     def test_permutation_invariance(self) -> None:
         # Relabeling (permuting) a descriptor set leaves the intra-domain structure unchanged,
         # so the divergence stays ~0 — GW measures relational structure, not labeling.
-        from mriforge.models.ot.optimal_transport import gromov_wasserstein_feature_loss
+        from spectramr.models.ot.optimal_transport import gromov_wasserstein_feature_loss
 
         torch.manual_seed(0)
         feat = torch.randn(16, 2)
@@ -125,7 +125,7 @@ class TestEntropicGromovWasserstein:
     def test_discriminates_distinct_structures(self) -> None:
         # Genuinely different intra-domain geometry (a line vs a circle) costs much more than a
         # self-match — the property GW IS good at (unpaired structure matching). + determinism>0.
-        from mriforge.models.ot.optimal_transport import gromov_wasserstein_feature_loss
+        from spectramr.models.ot.optimal_transport import gromov_wasserstein_feature_loss
 
         n = 16
         line = torch.stack([torch.linspace(0, 1, n), torch.zeros(n)], dim=1)
@@ -140,7 +140,7 @@ class TestEntropicGromovWasserstein:
         # GW's DEFINING property: invariance to isometries (here a translation) of the cloud.
         # A spatially DISPLACED structure scores ~0 — exactly why GW cannot penalise displaced
         # anatomy and is unsuitable for paired registered image translation (B-3.2 finding).
-        from mriforge.models.ot.optimal_transport import gromov_wasserstein_feature_loss
+        from spectramr.models.ot.optimal_transport import gromov_wasserstein_feature_loss
 
         torch.manual_seed(0)
         cloud = torch.randn(16, 2)
@@ -149,7 +149,7 @@ class TestEntropicGromovWasserstein:
         assert abs(float(div)) < 1e-2  # GW is blind to the displacement (by design)
 
     def test_differentiable_into_features(self) -> None:
-        from mriforge.models.ot.optimal_transport import gromov_wasserstein_feature_loss
+        from spectramr.models.ot.optimal_transport import gromov_wasserstein_feature_loss
 
         torch.manual_seed(0)
         feat_a = torch.randn(12, 2)

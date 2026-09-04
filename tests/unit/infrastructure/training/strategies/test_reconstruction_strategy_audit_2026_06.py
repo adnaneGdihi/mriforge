@@ -14,7 +14,7 @@ from __future__ import annotations
 import inspect
 import re
 
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 

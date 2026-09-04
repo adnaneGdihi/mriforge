@@ -11,16 +11,16 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.witness import (
+from spectramr.infrastructure.validation.witness import (
     Tier,
     WitnessSubject,
     get_witness_registry,
     run_witnesses,
 )
-from mriforge.infrastructure.validation.witness.checks.legacy_adapters import (
+from spectramr.infrastructure.validation.witness.checks.legacy_adapters import (
     verdict_to_health_result,
 )
-from mriforge.infrastructure.validation.witness.registry import (
+from spectramr.infrastructure.validation.witness.registry import (
     Severity,
     WitnessVerdict,
 )
@@ -39,7 +39,7 @@ T01 = frozenset({Tier.T0, Tier.T1})
 def _settings(extra=None):
     import copy
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     data = copy.deepcopy(BASE)
     if extra:
@@ -92,7 +92,7 @@ def test_validator_registry_adapter_reports_a_missing_training_mode():
     """
     import copy
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     data = copy.deepcopy(BASE)
     data["training"] = {"max_iterations": 10}  # no training_mode / strategy_class
@@ -180,12 +180,12 @@ def test_health_adapter_does_not_narrate_the_summary_twice(caplog):
     """
     import logging
 
-    from mriforge.infrastructure.validation.witness.checks.legacy_adapters import (
+    from spectramr.infrastructure.validation.witness.checks.legacy_adapters import (
         config_health_checker,
     )
 
     subject = WitnessSubject.for_audit(config_path=None, settings=_settings())
-    logger_name = "mriforge.infrastructure.validation.config_health_checker"
+    logger_name = "spectramr.infrastructure.validation.config_health_checker"
     with caplog.at_level(logging.INFO, logger=logger_name):
         verdicts = config_health_checker(subject)
 
@@ -198,11 +198,11 @@ def test_validate_config_health_still_logs_for_its_own_callers(caplog):
     """The pipeline's fail-fast gate keeps its summary line."""
     import logging
 
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         validate_config_health,
     )
 
-    logger_name = "mriforge.infrastructure.validation.config_health_checker"
+    logger_name = "spectramr.infrastructure.validation.config_health_checker"
     with caplog.at_level(logging.INFO, logger=logger_name):
         validate_config_health(_settings())
 

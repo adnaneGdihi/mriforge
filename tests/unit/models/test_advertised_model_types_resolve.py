@@ -2,17 +2,17 @@
 
 Audit finding H6 (2026-05-28): the ``latent_diffusion`` model package was
 never imported by the registry discovery scan in
-``mriforge.models.init_registry.populate_model_registry``. Its
+``spectramr.models.init_registry.populate_model_registry``. Its
 ``@register_model`` decorators therefore never fired, yet
 ``ldm_latent_discriminator`` (and its ``ldm_patch_latent_discriminator`` /
 ``ldm_multiscale_latent_discriminator`` siblings) are advertised as valid
 ``model_type`` values in
-``mriforge.config.validation_constants.VALID_MODEL_TYPES``. The framework
+``spectramr.config.validation_constants.VALID_MODEL_TYPES``. The framework
 dispatches models dynamically by name from YAML config, so an
 advertised-but-unregistered name is a latent ``KeyError`` at build time,
 not dead code.
 
-The fix wired ``mriforge.models.latent_diffusion`` into the
+The fix wired ``spectramr.models.latent_diffusion`` into the
 ``populate_model_registry`` scan list. This test is the regression guard:
 it triggers full registry population and asserts the three ``ldm_*`` names
 resolve in ``MODEL_REGISTRY``. It also asserts that every name resolvable
@@ -50,17 +50,17 @@ def populated_registry() -> dict:
     bootstrap drives) so the test exercises the real discovery scan chain
     rather than a hand-rolled import list.
     """
-    from mriforge.models.init_registry import populate_model_registry
+    from spectramr.models.init_registry import populate_model_registry
 
     populate_model_registry()
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     return MODEL_REGISTRY
 
 
 def test_ldm_latent_discriminator_is_advertised() -> None:
     """The H6 name must be in the advertised model_type set (precondition)."""
-    from mriforge.config.validation_constants import VALID_MODEL_TYPES
+    from spectramr.config.validation_constants import VALID_MODEL_TYPES
 
     assert "ldm_latent_discriminator" in VALID_MODEL_TYPES
 
@@ -68,7 +68,7 @@ def test_ldm_latent_discriminator_is_advertised() -> None:
 @pytest.mark.parametrize("name", LDM_ADVERTISED_NAMES)
 def test_ldm_name_is_advertised(name: str) -> None:
     """All three ldm_* discriminator names are advertised as model_types."""
-    from mriforge.config.validation_constants import VALID_MODEL_TYPES
+    from spectramr.config.validation_constants import VALID_MODEL_TYPES
 
     assert name in VALID_MODEL_TYPES, f"{name!r} should be advertised in VALID_MODEL_TYPES"
 
@@ -97,7 +97,7 @@ def test_ldm_latent_discriminator_resolves(populated_registry: dict) -> None:
 # Regression: v6.1 registration import must not abort on a duplicate-name collision
 # ==============================================================================
 
-# These names are defined in mriforge/models/_v6_1_registrations.py *after* the
+# These names are defined in spectramr/models/_v6_1_registrations.py *after* the
 # former ``latent_diffusion_residual_head`` placeholder. Because the registry
 # collision guard RAISES, that duplicate aborted the whole module import and
 # silently dropped every registration below it. Removing the placeholder (audit
@@ -145,7 +145,7 @@ def test_latent_diffusion_residual_head_resolves_to_real_impl(
 
 def test_create_latent_discriminator_resolves_advertised_types() -> None:
     """Each advertised discriminator_type returns its concrete class."""
-    from mriforge.models.latent_diffusion.latent_discriminator import (
+    from spectramr.models.latent_diffusion.latent_discriminator import (
         LatentDiscriminator,
         MultiScaleLatentDiscriminator,
         PatchLatentDiscriminator,
@@ -164,7 +164,7 @@ def test_create_latent_discriminator_resolves_advertised_types() -> None:
 def test_create_latent_discriminator_rejects_unknown_type() -> None:
     """An unknown discriminator_type must raise ValueError, not silently return
     the standard discriminator (pitfall #9: no silent fallback)."""
-    from mriforge.models.latent_diffusion.latent_discriminator import (
+    from spectramr.models.latent_diffusion.latent_discriminator import (
         create_latent_discriminator,
     )
 

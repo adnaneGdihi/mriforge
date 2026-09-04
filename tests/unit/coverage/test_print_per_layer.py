@@ -6,8 +6,8 @@ test-coverage`` locally and the SLURM array's aggregated report -- so a
 mislabelled row is a wrong answer that looks exactly like a right one.
 
 The regression these tests exist for: ``_layer_of`` used to strip ``parts[0]``
-unconditionally on the assumption that coverage emits ``mriforge/`` -prefixed
-filenames. With ``[tool.coverage.run] source = ["src/mriforge"]`` it does not,
+unconditionally on the assumption that coverage emits ``spectramr/`` -prefixed
+filenames. With ``[tool.coverage.run] source = ["src/spectramr"]`` it does not,
 so the strip ate a real layer -- ``infrastructure/training/strategies/x.py``
 was reported as ``training/strategies``, and ``core/metrics/*`` merged with
 ``models/metrics/*`` into one row describing neither.
@@ -62,7 +62,7 @@ def _write(tmp_path: Path, classes: list[tuple[str, list[int]]]) -> Path:
 @pytest.mark.parametrize(
     ("filename", "expected"),
     [
-        # Package-relative (what `source = ["src/mriforge"]` actually emits).
+        # Package-relative (what `source = ["src/spectramr"]` actually emits).
         ("infrastructure/training/strategies/gan.py", "infrastructure/training"),
         ("infrastructure/physics/fft_ops.py", "infrastructure/physics"),
         ("models/generators/unet.py", "models/generators"),
@@ -70,9 +70,9 @@ def _write(tmp_path: Path, classes: list[tuple[str, list[int]]]) -> Path:
         ("cli/app.py", "cli/app.py"),
         ("main.py", "main.py"),
         # Prefixed (what `source = ["src"]` would emit) must land identically.
-        ("mriforge/infrastructure/physics/fft_ops.py", "infrastructure/physics"),
-        ("mriforge/models/generators/unet.py", "models/generators"),
-        ("mriforge/main.py", "main.py"),
+        ("spectramr/infrastructure/physics/fft_ops.py", "infrastructure/physics"),
+        ("spectramr/models/generators/unet.py", "models/generators"),
+        ("spectramr/main.py", "main.py"),
     ],
 )
 def test_layer_label(filename: str, expected: str) -> None:
@@ -82,7 +82,7 @@ def test_layer_label(filename: str, expected: str) -> None:
 def test_prefixed_and_unprefixed_agree() -> None:
     """The two source= spellings must not produce two different taxonomies."""
     for tail in ("infrastructure/physics/x.py", "models/losses/y.py", "config/schemas/z.py"):
-        assert per_layer._layer_of(tail) == per_layer._layer_of(f"mriforge/{tail}")
+        assert per_layer._layer_of(tail) == per_layer._layer_of(f"spectramr/{tail}")
 
 
 def test_distinct_layers_sharing_a_leaf_name_do_not_merge(tmp_path: Path) -> None:

@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.infrastructure.training.strategies.mixins.kspace`.
+"""Tests for :mod:`spectramr.infrastructure.training.strategies.mixins.kspace`.
 
 Focused on :meth:`KspaceMixin._prepare_model_input` domain classification.
 
@@ -14,7 +14,7 @@ tests pin the passthrough so no double-FFT can recur.
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.kspace import KspaceMixin
+from spectramr.infrastructure.training.strategies.mixins.kspace import KspaceMixin
 
 
 class _StubConfigModel:
@@ -122,7 +122,7 @@ class _AccelHarness(KspaceMixin):
 
 
 def _exp11_acceleration():
-    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+    from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
     return AccelerationConfigSchema(
         acceleration_type="density_nested",

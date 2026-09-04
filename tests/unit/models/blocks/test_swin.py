@@ -14,8 +14,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.swin import SwinBlock, WindowAttention
-from mriforge.models.blocks.swin_windows import build_shifted_window_mask
+from spectramr.models.blocks.swin import SwinBlock, WindowAttention
+from spectramr.models.blocks.swin_windows import build_shifted_window_mask
 
 WINDOW = 8
 DIM = 32

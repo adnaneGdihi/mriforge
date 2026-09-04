@@ -11,8 +11,8 @@
 
 from __future__ import annotations
 
-from mriforge.infrastructure.services import metrics_tracker as mt_mod
-from mriforge.infrastructure.services.metrics_tracker import (
+from spectramr.infrastructure.services import metrics_tracker as mt_mod
+from spectramr.infrastructure.services.metrics_tracker import (
     MetricsTracker,
     _metric_higher_is_better,
 )

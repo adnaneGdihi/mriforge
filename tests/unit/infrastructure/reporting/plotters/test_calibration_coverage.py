@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import get
-from mriforge.infrastructure.reporting.plotters import calibration_coverage  # noqa: F401
+from spectramr.infrastructure.reporting.plotters import get
+from spectramr.infrastructure.reporting.plotters import calibration_coverage  # noqa: F401
 
 
 def test_calibration_coverage_renders(tmp_path):

@@ -15,10 +15,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.conformal_geomamba_ulf import (  # noqa: E402
+from spectramr.models.generators.conformal_geomamba_ulf import (  # noqa: E402
     ConformalGeoMambaULF,
 )
-from mriforge.models.registry import MODEL_REGISTRY  # noqa: E402
+from spectramr.models.registry import MODEL_REGISTRY  # noqa: E402
 
 
 def _model() -> ConformalGeoMambaULF:
@@ -66,7 +66,7 @@ def test_sfc_indices_shape_mismatch_raises() -> None:
 def test_strategy_kwarg_detection_sees_named_param() -> None:
     """The strategy gates the kwarg on signature inspection; the explicit
     ``sfc_indices`` parameter must be detectable."""
-    from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
         _callable_accepts_kwarg,
     )
 

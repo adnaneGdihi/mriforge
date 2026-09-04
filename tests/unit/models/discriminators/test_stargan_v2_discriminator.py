@@ -1,6 +1,6 @@
 """Unit tests for the StarGAN v2 multi-domain discriminator (Task 9).
 
-Covers :class:`~mriforge.models.discriminators.stargan_v2_discriminator.StarGANv2Discriminator`:
+Covers :class:`~spectramr.models.discriminators.stargan_v2_discriminator.StarGANv2Discriminator`:
 
 * Output shape: ``[B]`` (one real/fake logit per sample, from its own domain head).
 * Domain-head selection: different ``y`` values select different heads, so same-input
@@ -14,7 +14,7 @@ import torch
 
 pytestmark = pytest.mark.unit
 
-from mriforge.models.discriminators.stargan_v2_discriminator import StarGANv2Discriminator
+from spectramr.models.discriminators.stargan_v2_discriminator import StarGANv2Discriminator
 
 
 def test_discriminator_returns_per_domain_logit() -> None:
@@ -44,8 +44,8 @@ def test_out_of_range_domain_index_raises() -> None:
 
 
 def test_discriminator_registered_and_resolvable() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
     populate_model_registry()
     assert "stargan_v2_discriminator" in MODEL_REGISTRY

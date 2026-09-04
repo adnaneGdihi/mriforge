@@ -22,7 +22,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.equivariant.group_actnorm import (  # noqa: E402
+from spectramr.models.blocks.equivariant.group_actnorm import (  # noqa: E402
     GroupActNorm2d,
 )
 

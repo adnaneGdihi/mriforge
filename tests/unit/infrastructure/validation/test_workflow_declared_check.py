@@ -11,9 +11,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.enums import Regime, Task
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.enums import Regime, Task
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -42,7 +42,7 @@ def _an_unsupported_task(regime: Regime) -> Task:
     "unsupported task errors" case starts asserting on a supported one and
     passes for the wrong reason, silently.
     """
-    from mriforge.domain.workflows import WORKFLOW_PROFILES
+    from spectramr.domain.workflows import WORKFLOW_PROFILES
 
     supported = WORKFLOW_PROFILES[regime].supported_tasks
     for task in Task:

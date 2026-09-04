@@ -33,9 +33,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-import mriforge.data.adapters  # noqa: F401, E402  triggers @register_adapter
-from mriforge.data.adapters.registry import get_adapter, get_adapter_capabilities  # noqa: E402
-from mriforge.infrastructure.builders.leaf.adapter_builders import (  # noqa: E402
+import spectramr.data.adapters  # noqa: F401, E402  triggers @register_adapter
+from spectramr.data.adapters.registry import get_adapter, get_adapter_capabilities  # noqa: E402
+from spectramr.infrastructure.builders.leaf.adapter_builders import (  # noqa: E402
     AdapterChainBuilder,
     apply_chain,
 )

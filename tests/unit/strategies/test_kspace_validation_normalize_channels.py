@@ -40,7 +40,7 @@ import pytest
 import torch
 
 REPO = Path(__file__).resolve().parents[3]
-SOURCE = REPO / "src" / "mriforge" / "infrastructure" / "training" / "strategies" / "mixins" / "kspace.py"
+SOURCE = REPO / "src" / "spectramr" / "infrastructure" / "training" / "strategies" / "mixins" / "kspace.py"
 
 
 def _read() -> str:

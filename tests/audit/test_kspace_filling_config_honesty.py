@@ -44,8 +44,8 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.models.diffusion.kspace_process import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.models.diffusion.kspace_process import (
     KSpaceUndersamplingProcess,
     resolve_undersampling_kwargs,
 )

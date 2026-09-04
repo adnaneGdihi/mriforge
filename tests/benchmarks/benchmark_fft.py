@@ -12,7 +12,7 @@ import time
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import FFTTransformer
+from spectramr.infrastructure.physics.fft_ops import FFTTransformer
 
 
 @pytest.fixture

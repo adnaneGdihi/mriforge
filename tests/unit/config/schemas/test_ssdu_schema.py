@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.ssdu import SSDUTrainingConfigSchema
+from spectramr.config.schemas.training.ssdu import SSDUTrainingConfigSchema
 
 
 def test_accepts_valid_fields():
@@ -33,7 +33,7 @@ def test_rejects_out_of_range_fraction():
 
 
 def test_ssdu_mounts_on_training_schema():
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "ssdu" in TrainingStrategyConfigSchema.model_fields, (
         "training.ssdu sub-block not mounted on TrainingStrategyConfigSchema"
@@ -41,7 +41,7 @@ def test_ssdu_mounts_on_training_schema():
 
 
 def test_ssdu_keys_registered_and_resolvable():
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

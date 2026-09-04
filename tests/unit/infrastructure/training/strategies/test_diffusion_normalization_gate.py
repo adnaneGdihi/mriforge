@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 
@@ -222,7 +222,7 @@ class TestWhyTheSnapshotProvesItWasNeverCompressed:
 
     def test_log1p_compression_cannot_reach_the_snapshot_magnitude(self) -> None:
         """No float32 input compresses to 2406.9, so the batch was raw."""
-        from mriforge.data.transforms.normalization import compress_kspace_log
+        from spectramr.data.transforms.normalization import compress_kspace_log
 
         # ``ln(FLT_MAX)`` is the ceiling in exact arithmetic, but the magnitude
         # goes through ``sqrt(R^2 + I^2)``, so the largest input that survives
@@ -259,7 +259,7 @@ class TestWhyTheSnapshotProvesItWasNeverCompressed:
         """
         import inspect
 
-        from mriforge.data.transforms import normalization
+        from spectramr.data.transforms import normalization
 
         writer = inspect.getsource(normalization.KSpaceNormalizationTransform)
         reader = inspect.getsource(DiffusionTrainingStrategy._batch_is_already_normalized)
@@ -294,7 +294,7 @@ class TestTheVerdictDoesNotDependOnTheContainerType:
     @staticmethod
     def _as_batch(payload: dict):
         """The same payload, through the conversion the training loop performs."""
-        from mriforge.data.batch_types import BatchAdapter
+        from spectramr.data.batch_types import BatchAdapter
 
         tensor = torch.randn(1, 2, 8, 8)
         return BatchAdapter.from_dict({"input": tensor, "target": tensor.clone(), **payload})

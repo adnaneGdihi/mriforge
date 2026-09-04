@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.hjb_optimal_control import (
+from spectramr.infrastructure.physics.hjb_optimal_control import (
     ValueFunctionMLP,
     closed_loop_control,
     hjb_residual_loss,

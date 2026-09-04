@@ -35,7 +35,7 @@ present              **absent**         **kernel raises mid-forward**
 
 The third row is the CPU test cluster, and it cost job 8000966 **78 failures
 across 19 files** -- every one of them an opaque ``torch/_library`` dispatch
-traceback that says nothing about CUDA. ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` does
+traceback that says nothing about CUDA. ``SPECTRAMR_ALLOW_MAMBA_FALLBACK`` does
 NOT rescue it and is not meant to: that opt-in keys off the *ImportError* in row
 1, and is scoped by CLAUDE.md to "boxes without the mamba_ssm CUDA kernel". This
 box has the kernel. Reaching for it here would also swap a Gated-Conv+GRU in
@@ -73,7 +73,7 @@ def _official_mamba_importable() -> bool:
     """Whether ``MambaBlock`` will dispatch to the official CUDA kernel.
 
     Mirrors the two-step import in
-    ``mriforge.models.blocks.mamba_block.MambaBlock.__init__``; ``find_spec``
+    ``spectramr.models.blocks.mamba_block.MambaBlock.__init__``; ``find_spec``
     alone would answer ``True`` for an installed-but-broken kernel, which takes
     the ImportError path instead and needs no CUDA. So the spec check only
     guards the real import rather than replacing it.

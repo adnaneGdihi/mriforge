@@ -1,4 +1,4 @@
-"""Hypothesis strategies for property-based tests in MRIForge.
+"""Hypothesis strategies for property-based tests in spectraMR.
 
 This module requires the ``hypothesis`` library.  If it is not installed
 the import guard at the top of each public function raises a clear

@@ -1,6 +1,6 @@
 """Tests for the interactive figure builders.
 
-Targets ``mriforge.infrastructure.reporting.interactive.figures``: each ``*_div``
+Targets ``spectramr.infrastructure.reporting.interactive.figures``: each ``*_div``
 returns an inline plotly div on real data and ``None`` on empty input or when
 plotly is monkeypatched absent. Also asserts no global numpy RNG is touched.
 """
@@ -12,7 +12,7 @@ import importlib.util
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.interactive import figures as figs
+from spectramr.infrastructure.reporting.interactive import figures as figs
 
 _HAS_PLOTLY = importlib.util.find_spec("plotly") is not None
 

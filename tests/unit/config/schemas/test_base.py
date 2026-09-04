@@ -27,16 +27,18 @@ forgetting to make a gate honour it fails here rather than at a user's config.
 
 from __future__ import annotations
 
+import re
+
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     ACCEPTED_CONFIG_VERSIONS,
     CANONICAL_CONFIG_VERSION,
     LEGACY_CONFIG_VERSIONS,
 )
-from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
+from spectramr.config.settings import TrainingSettings
 
 #: A version no future release will take, and the one 39 *committed* YAMLs carry —
 #: all under ``experiments/ablation/`` and ``experiments/hpo/``, none under
@@ -189,7 +191,7 @@ _INJECTED = "6.2"
 
 
 def test_schema_gate_reads_the_constant_not_a_private_literal(monkeypatch) -> None:
-    import mriforge.config.schemas.training.base as training_base
+    import spectramr.config.schemas.training.base as training_base
 
     monkeypatch.setattr(
         training_base,
@@ -205,7 +207,7 @@ def test_schema_gate_reads_the_constant_not_a_private_literal(monkeypatch) -> No
 def test_settings_from_dict_reads_the_constant_not_a_private_literal(
     monkeypatch,
 ) -> None:
-    import mriforge.config.settings as settings_module
+    import spectramr.config.settings as settings_module
 
     monkeypatch.setattr(
         settings_module,
@@ -223,7 +225,7 @@ def test_from_yaml_reads_the_constant_not_a_private_literal(
 ) -> None:
     import yaml
 
-    import mriforge.config.settings as settings_module
+    import spectramr.config.settings as settings_module
 
     monkeypatch.setattr(
         settings_module,
@@ -281,7 +283,7 @@ class TestVersionRetirement:
 
     def test_the_fold_helper_is_gone(self) -> None:
         """A no-op fold left in place is a shim that reads as a contract."""
-        import mriforge.config.schemas.base as base_mod
+        import spectramr.config.schemas.base as base_mod
 
         assert not hasattr(base_mod, "fold_config_version")
         assert "fold_config_version" not in base_mod.__all__
@@ -341,13 +343,13 @@ class TestExpectedOutcome:
     """
 
     def test_absent_by_default(self) -> None:
-        from mriforge.config.schemas.base import ExperimentMetadataSchema
+        from spectramr.config.schemas.base import ExperimentMetadataSchema
 
         assert ExperimentMetadataSchema().expected_outcome is None
 
     @pytest.mark.parametrize("value", ["comparable", "floor", "ceiling"])
     def test_accepts_the_advertised_set(self, value: str) -> None:
-        from mriforge.config.schemas.base import ExperimentMetadataSchema
+        from spectramr.config.schemas.base import ExperimentMetadataSchema
 
         assert (
             ExperimentMetadataSchema(expected_outcome=value).expected_outcome == value
@@ -357,7 +359,7 @@ class TestExpectedOutcome:
         # Anti-#15: a free-text field would silently mean nothing to the reader.
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.base import ExperimentMetadataSchema
+        from spectramr.config.schemas.base import ExperimentMetadataSchema
 
         with pytest.raises(ValidationError):
             ExperimentMetadataSchema(expected_outcome="expected_to_fail")
@@ -380,26 +382,26 @@ class TestParallelStrategyVocabulary:
 
     @pytest.mark.parametrize("value", ["none", "dp", "ddp"])
     def test_accepts_the_strategies_needing_no_subblock(self, value: str) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         assert ParallelismConfigSchema(strategy=value).strategy == value
 
     def test_rejects_an_unknown_strategy_at_load_time(self) -> None:
         """Not at build time, on the cluster, after models+optimizers exist."""
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="none"):
             ParallelismConfigSchema(strategy="horovod")
 
     def test_rejects_an_unknown_backend(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError):
             ParallelismConfigSchema(backend="horovod")
 
     def test_default_is_single_process_and_constructs(self) -> None:
         """Every corpus config relies on this: no parallel block => plain training."""
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         cfg = ParallelismConfigSchema()
         assert cfg.strategy == "none"
@@ -412,27 +414,27 @@ class TestStrategyAndSubBlockAreOneDeclaration:
     """``strategy`` and the sub-block flag can no longer disagree."""
 
     def test_fsdp_requires_both_halves(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         cfg = ParallelismConfigSchema(strategy="fsdp", fsdp={"enabled": True})
         assert cfg.strategy == "fsdp" and cfg.fsdp.enabled
 
     def test_strategy_fsdp_without_the_flag_raises(self) -> None:
         """Previously: accepted here, then ValueError deep inside the build."""
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="disagrees"):
             ParallelismConfigSchema(strategy="fsdp")
 
     def test_flag_without_the_strategy_raises(self) -> None:
         """Previously: silently sharded while the config read 'no parallelism'."""
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="disagrees"):
             ParallelismConfigSchema(fsdp={"enabled": True})
 
     def test_deepspeed_requires_both_halves(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         cfg = ParallelismConfigSchema(
             strategy="deepspeed", deepspeed={"enabled": True, "zero_stage": 3}
@@ -448,7 +450,7 @@ class TestStrategyAndSubBlockAreOneDeclaration:
         ids=["strategy-only", "flag-only"],
     )
     def test_half_declared_deepspeed_raises(self, kwargs: dict) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="disagrees"):
             ParallelismConfigSchema(**kwargs)
@@ -459,7 +461,7 @@ class TestStrategyAndSubBlockAreOneDeclaration:
         The old code converted BN for BOTH dp and ddp, so a dp arm with
         sync_batch_norm built modules that could not run.
         """
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="sync_batch_norm"):
             ParallelismConfigSchema(strategy="dp", sync_batch_norm=True)
@@ -480,7 +482,7 @@ class TestFSDPTransformerWrapPolicyIsNoLongerAFacade:
     """
 
     def test_transformer_block_without_layer_classes_raises(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError, match="transformer_layer_cls"):
             ParallelismConfigSchema(
@@ -489,7 +491,7 @@ class TestFSDPTransformerWrapPolicyIsNoLongerAFacade:
             )
 
     def test_transformer_block_with_layer_classes_is_accepted(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         cfg = ParallelismConfigSchema(
             strategy="fsdp",
@@ -505,7 +507,7 @@ class TestFSDPTransformerWrapPolicyIsNoLongerAFacade:
         """v1.0_reference.yaml (then v6.1) advertised 'transformer_based'; code took
         'transformer_block'. The reachable spelling was the inert one and the
         documented spelling crashed."""
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         with pytest.raises(ValidationError):
             ParallelismConfigSchema(
@@ -514,7 +516,7 @@ class TestFSDPTransformerWrapPolicyIsNoLongerAFacade:
             )
 
     def test_layer_classes_are_not_required_by_other_policies(self) -> None:
-        from mriforge.config.schemas.base import ParallelismConfigSchema
+        from spectramr.config.schemas.base import ParallelismConfigSchema
 
         for policy in ("size_based", "none"):
             cfg = ParallelismConfigSchema(
@@ -532,7 +534,7 @@ class TestDeepSpeedConfigSchema:
         committed generator, and a divergence from the YAML would be SILENT
         (DeepSpeed accepts a micro-batch that contradicts data.batch_size).
         ``build_deepspeed_config`` is the generator; the dict is derived."""
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         fields = set(DeepSpeedConfigSchema.model_fields)
         assert not {"config_path", "ds_config_path", "config_file"} & fields
@@ -540,7 +542,7 @@ class TestDeepSpeedConfigSchema:
     def test_does_not_redeclare_keys_owned_by_other_ssots(self) -> None:
         """batch size / accumulation / clipping / precision come from their own
         blocks. Declaring them here is how a ds_config silently disagrees."""
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         fields = set(DeepSpeedConfigSchema.model_fields)
         forbidden = {
@@ -558,18 +560,18 @@ class TestDeepSpeedConfigSchema:
 
     @pytest.mark.parametrize("stage", [0, 1, 2, 3])
     def test_accepts_the_real_zero_stages(self, stage: int) -> None:
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         assert DeepSpeedConfigSchema(zero_stage=stage).zero_stage == stage
 
     def test_rejects_a_nonexistent_zero_stage(self) -> None:
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         with pytest.raises(ValidationError):
             DeepSpeedConfigSchema(zero_stage=4)
 
     def test_nvme_offload_requires_a_path(self) -> None:
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         with pytest.raises(ValidationError, match="nvme_path"):
             DeepSpeedConfigSchema(offload_optimizer="nvme")
@@ -581,12 +583,12 @@ class TestDeepSpeedConfigSchema:
     def test_multi_engine_is_off_by_default(self) -> None:
         """engine.step() issues collectives, so a GAN whose discriminator steps
         every k iterations DEADLOCKS rather than erroring. Opt-in only."""
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         assert DeepSpeedConfigSchema().allow_multi_engine is False
 
     def test_a_typo_is_rejected_not_swallowed(self) -> None:
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         with pytest.raises(ValidationError):
             DeepSpeedConfigSchema(zero_stge=3)
@@ -602,7 +604,7 @@ class TestDeepSpeedFeatureBlocks:
 
     @staticmethod
     def _ds(**kw):
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         return DeepSpeedConfigSchema(enabled=True, **kw)
 
@@ -724,7 +726,7 @@ class TestDisabledFeatureBlocksRejectDeclaredKnobs:
 
     @staticmethod
     def _ds(**kw):
-        from mriforge.config.schemas.base import DeepSpeedConfigSchema
+        from spectramr.config.schemas.base import DeepSpeedConfigSchema
 
         return DeepSpeedConfigSchema(enabled=True, zero_stage=3, **kw)
 
@@ -767,21 +769,21 @@ class TestParallelDocstringsNameModulesThatExist:
     is the SSOT pointer for "where does the ds_config come from", so following
     it gave ``ModuleNotFoundError`` on the one path a reader most needs.
 
-    Resolves every dotted ``mriforge.*`` path in these docstrings rather than
+    Resolves every dotted ``spectramr.*`` path in these docstrings rather than
     pinning the one that was wrong: a hardcoded expected string is a second
     copy of the very fact that drifted.
     """
 
     import re as _re
 
-    #: Matches ``mriforge.a.b.c`` inside prose/backticks. Trailing ``.name``
+    #: Matches ``spectramr.a.b.c`` inside prose/backticks. Trailing ``.name``
     #: segments that are attributes rather than modules are peeled off by the
     #: resolver below, so the pattern does not need to know the difference.
-    _PATH = _re.compile(r"mriforge(?:\.[a-z_][a-z0-9_]*)+")
+    _PATH = _re.compile(r"spectramr(?:\.[a-z_][a-z0-9_]*)+")
 
     @staticmethod
     def _schemas():
-        from mriforge.config.schemas.base import (
+        from spectramr.config.schemas.base import (
             DeepSpeedCompileConfigSchema,
             DeepSpeedConfigSchema,
             DeepSpeedZenFlowConfigSchema,
@@ -855,12 +857,99 @@ class TestParallelDocstringsNameModulesThatExist:
         back into the always-green form and nothing would notice.
         """
         assert self._resolve(
-            "mriforge.infrastructure.distributed.deepspeed.config_builder"
+            "spectramr.infrastructure.distributed.deepspeed.config_builder"
         )
         assert (
             self._resolve(
-                "mriforge.infrastructure.distributed.deepspeed_backend."
+                "spectramr.infrastructure.distributed.deepspeed_backend."
                 "config_builder.build_deepspeed_config"
             )
             is None
         )
+
+
+
+#: A config tier is a bare dotted numeric string: "1.0", "5.0", "6.1".
+_CONFIG_TIER_SHAPE = re.compile(r"\d+(?:\.\d+)+")
+
+
+def looks_like_a_config_tier(value: object) -> bool:
+    """Whether ``value`` is spelled the way a ``config_version`` is.
+
+    The predicate for "this free-form field is holding a schema version". Shape,
+    not membership: ``LEGACY_CONFIG_VERSIONS`` is empty since PR #891, so every
+    retired tier (``5.0``, ``6.0``, ``6.1``) belongs to no set the code still
+    holds, and a membership test goes green on exactly the values that motivated
+    it. Imported by ``test_defaults_provider.py``, which owns the same invariant
+    for the defaults provider — one definition, two call sites (non-negotiable 17).
+    """
+    return isinstance(value, str) and bool(_CONFIG_TIER_SHAPE.fullmatch(value))
+
+
+class TestExperimentMetadataVersionIsNotASchemaTier:
+    """``ExperimentMetadataSchema.version`` versions the ARM, not the SCHEMA.
+
+    The twin of the defect already pinned in
+    ``tests/unit/config/schemas/test_defaults_provider.py``. That file fixed the
+    *defaults provider*'s ``metadata: {"version": "6.0"}``; this schema declared
+    the same retired tier as its own field default, and nothing tied the two
+    together — exactly the "three independent literals, each agreeing with
+    itself" shape this module's docstring opens with.
+
+    Kept separate from the corpus drain deliberately. The production load path
+    types ``TrainingSettings.metadata`` as a raw ``dict[str, Any]``, so this
+    schema is a *latent* surface: it reached no arm, and a corpus that is clean
+    today says nothing about whether this default is. Only a test on the field
+    itself can fire while the defect is still latent.
+    """
+
+    def test_the_default_is_not_stated(self) -> None:
+        """``None`` == "the author did not say", like every free-form neighbour."""
+        from spectramr.config.schemas.base import ExperimentMetadataSchema
+
+        assert ExperimentMetadataSchema().version is None
+
+    def test_the_default_is_never_a_config_tier(self) -> None:
+        """The regression that matters, stated independently of the value above.
+
+        Membership is the wrong predicate here, and this was verified by planting
+        the exact historical value: with ``default="6.0"`` restored, an
+        ``assert version not in ACCEPTED | LEGACY`` **passes**. PR #891 emptied
+        the legacy set, so the retired tier this test exists to catch is no longer
+        a member of anything — the check would go green on the one input it was
+        written for, which is also why the old default read as harmless for so
+        long.
+
+        So this asserts the SHAPE instead: a config tier is a bare dotted numeric
+        string, which is what ``CANONICAL_CONFIG_VERSION`` looks like and what
+        every retired tier looked like. An author revision may still *contain*
+        digits (``"v2"``, ``"2026-08-rev3"``); it just must not be spelled the way
+        a tier is.
+        """
+        from spectramr.config.schemas.base import (
+            CANONICAL_CONFIG_VERSION,
+            ExperimentMetadataSchema,
+        )
+
+        version = ExperimentMetadataSchema().version
+        assert not looks_like_a_config_tier(version), (
+            f"the schema declares {version!r} as author metadata, and it is "
+            "spelled like a config tier; `metadata.version` is the author's "
+            "experiment revision, not a schema version"
+        )
+        # Stated separately: even the *current* tier is wrong here — it would make
+        # every arm claim an author revision it never wrote, and the next bump
+        # would silently rewrite it.
+        assert version != CANONICAL_CONFIG_VERSION
+
+    def test_an_author_revision_still_round_trips(self) -> None:
+        """Widening to ``str | None`` must not stop an author declaring one.
+
+        ``experiment_12_image_cold_diffusion_v2.yaml`` carries ``'2.0'`` and has
+        ``_v2`` in its filename — the corpus evidence that this field really is
+        an author revision. 84 ``inprogress/`` arms declare such a value and the
+        drain deliberately left every one of them alone.
+        """
+        from spectramr.config.schemas.base import ExperimentMetadataSchema
+
+        assert ExperimentMetadataSchema(version="2.0").version == "2.0"

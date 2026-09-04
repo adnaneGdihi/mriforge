@@ -10,7 +10,7 @@ Tests the _to_complex function to ensure correct handling of:
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.infrastructure.physics.fft_ops import (
     _to_complex,
     coil_combine_rss,
     fft2c,

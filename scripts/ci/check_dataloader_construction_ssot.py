@@ -1,9 +1,9 @@
 """Pre-commit / PR gate: a ``DataLoader`` is constructed in ONE place.
 
 Non-negotiable #7 (data SSOT): File->Dataset/DataLoader code lives under
-``src/mriforge/data/``; everything else consumes via ``DataPipelineDirector`` and
+``src/spectramr/data/``; everything else consumes via ``DataPipelineDirector`` and
 never calls ``DataLoader(...)`` itself. Before the 2026-08 data-layer audit
-(finding D22) there were four construction sites under ``src/mriforge/``, and they
+(finding D22) there were four construction sites under ``src/spectramr/``, and they
 had drifted apart in exactly the way duplicated construction always does: one read
 a plain ``dict`` instead of the frozen config, two omitted the per-worker
 ``worker_init_fn`` seeding, and three hardcoded ``prefetch_factor`` /
@@ -13,7 +13,7 @@ Usage:
     python scripts/ci/check_dataloader_construction_ssot.py
 
 Exit codes:
-    0 -- every loader construction under ``src/mriforge/`` is allow-listed.
+    0 -- every loader construction under ``src/spectramr/`` is allow-listed.
     1 -- a new construction site appeared, or an allow-list entry went stale.
 
 Why AST and not grep
@@ -109,13 +109,13 @@ def read_vocabulary(path: Path | None = None) -> set[str]:
 #: name where it does not -- the spelling :func:`_qualified_spans` produces. A bare
 #: method name here would sanction that name on EVERY class in the file (``D05#8``).
 _ALLOWED: dict[str, tuple[tuple[str, str], ...]] = {
-    "src/mriforge/infrastructure/builders/leaf/data_builders.py": (
+    "src/spectramr/infrastructure/builders/leaf/data_builders.py": (
         (
             "DataLoaderBuilder.build",
             "The single construction site for the live train / val / inference paths.",
         ),
     ),
-    "src/mriforge/data/builders/data_loader_builder.py": (
+    "src/spectramr/data/builders/data_loader_builder.py": (
         (
             "wrap_with_distributed_sampler",
             "DDP rewrap: PyTorch cannot swap a sampler onto a built loader, so the "
@@ -125,7 +125,7 @@ _ALLOWED: dict[str, tuple[tuple[str, str], ...]] = {
     # The four tio.SubjectsLoader sites this gate could not see before #1362.
     # Recorded, not forgiven -- each states WHY it is tolerable today, and the
     # one that is not says so.
-    "src/mriforge/data/builders/torchio_queue_builder.py": (
+    "src/spectramr/data/builders/torchio_queue_builder.py": (
         (
             "TorchIOQueueBuilder.build_train_queue",
             "SubjectsLoader over a tio.Queue with num_workers=0 hardcoded: the "
@@ -138,7 +138,7 @@ _ALLOWED: dict[str, tuple[tuple[str, str], ...]] = {
             "the dataset-backed call already passes worker_init_fn.",
         ),
     ),
-    "src/mriforge/data/datasets/preprocessed_dataset.py": (
+    "src/spectramr/data/datasets/preprocessed_dataset.py": (
         (
             "create_preprocessed_dataloader",
             "KNOWN DEBT (#1362): the one loader with caller-controlled num_workers "
@@ -192,7 +192,7 @@ def _qualified_spans(tree: ast.AST) -> list[tuple[int, int, str]]:
     *exempted* two -- a loader constructed in ``DatasetBuilder.build`` would have
     been accepted in silence.
 
-    Not a one-file quirk: **580 files under ``src/mriforge`` define a same-named
+    Not a one-file quirk: **580 files under ``src/spectramr`` define a same-named
     method on two or more classes**, so any future entry naming a common verb
     (``build``, ``forward``, ``__init__``) inherits the same widening.
 
@@ -280,7 +280,7 @@ def find_unsanctioned(
     violations: list[str] = []
     matched: set[tuple[str, str]] = set()
 
-    for path in sorted((root / "src" / "mriforge").rglob("*.py")):
+    for path in sorted((root / "src" / "spectramr").rglob("*.py")):
         rel = path.relative_to(root).as_posix()
         try:
             sites = find_construction_sites(path.read_text(encoding="utf-8"), vocabulary)

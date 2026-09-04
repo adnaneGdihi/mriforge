@@ -2,9 +2,9 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.core.metrics.computer import create_validation_metrics_computer
-from mriforge.core.metrics.evaluation_metrics import PSNR
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.computer import create_validation_metrics_computer
+from spectramr.core.metrics.evaluation_metrics import PSNR
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 class TestConfigurableDataRange:

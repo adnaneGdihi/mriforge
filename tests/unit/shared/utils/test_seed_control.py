@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.shared.utils.seed_control`.
+"""Unit tests for :mod:`spectramr.shared.utils.seed_control`.
 
 Covers :class:`SeedController` end-to-end and the module-level
 convenience facades. The module wires together
@@ -31,7 +31,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.shared.utils.seed_control import (
+from spectramr.shared.utils.seed_control import (
     SeedConfig,
     SeedController,
     get_diffusion_seed,
@@ -277,7 +277,7 @@ class TestModuleFacades:
     @pytest.fixture(autouse=True)
     def _reset_singleton(self) -> None:
         # Reset the singleton between tests so each starts clean.
-        import mriforge.shared.utils.seed_control as seed_mod
+        import spectramr.shared.utils.seed_control as seed_mod
 
         prior = seed_mod._global_seed_controller
         seed_mod._global_seed_controller = None
@@ -309,7 +309,7 @@ class TestModuleFacades:
             calls.append((seed, rank, deterministic))
             return seed
 
-        monkeypatch.setattr("mriforge.accelerator.seed_everything", _spy)
+        monkeypatch.setattr("spectramr.accelerator.seed_everything", _spy)
         out = set_global_seed(1234, deterministic=True)
         assert out == 1234
         assert calls == [(1234, 0, True)]
@@ -346,7 +346,7 @@ class TestSetGlobalSeedRankOffset:
             calls.append((seed, rank, deterministic))
             return seed + rank
 
-        monkeypatch.setattr("mriforge.accelerator.seed_everything", _spy)
+        monkeypatch.setattr("spectramr.accelerator.seed_everything", _spy)
         out = set_global_seed(1234, deterministic=True, rank=3)
 
         assert calls == [(1234, 3, True)]

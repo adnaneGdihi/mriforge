@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
 
 @pytest.fixture
@@ -127,7 +127,7 @@ def test_gan_pipeline_execution():
 
     # Patch loss computer or ensure defaults work
     with patch(
-        "mriforge.infrastructure.training.strategies.mixins.adversarial.UnifiedGANLossComputer"
+        "spectramr.infrastructure.training.strategies.mixins.adversarial.UnifiedGANLossComputer"
     ) as MockLoss:
         # Configure mock loss computer to return tensors
         mock_computer = MockLoss.return_value

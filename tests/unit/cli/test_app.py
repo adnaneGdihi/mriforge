@@ -1,4 +1,4 @@
-"""Tests for the top-level ``mriforge`` CLI parser (:mod:`mriforge.cli.app`).
+"""Tests for the top-level ``spectramr`` CLI parser (:mod:`spectramr.cli.app`).
 
 ``build_parser`` was extracted from ``main`` (PR #130 N1) so the full
 subcommand parser can be constructed and introspected WITHOUT executing a
@@ -14,11 +14,11 @@ import pytest
 import torch as _torch
 import yaml as _yaml
 
-from mriforge.cli.app import build_parser, main, predict
-from mriforge.config.overrides import apply_overrides
-from mriforge.config.settings import TrainingSettings
-from mriforge.core.execution_ledger import ExecutionLedger
-from mriforge.models.registry import register_model as _register_model
+from spectramr.cli.app import build_parser, main, predict
+from spectramr.config.overrides import apply_overrides
+from spectramr.config.settings import TrainingSettings
+from spectramr.core.execution_ledger import ExecutionLedger
+from spectramr.models.registry import register_model as _register_model
 from tests.unit.config.test_settings import _minimal_config
 
 
@@ -39,9 +39,7 @@ def _disarm():
 def test_build_parser_returns_a_parser_with_subcommands():
     parser = build_parser()
     subact = next(
-        a
-        for a in parser._actions
-        if getattr(a, "choices", None) and "train" in a.choices
+        a for a in parser._actions if getattr(a, "choices", None) and "train" in a.choices
     )
     # A representative spread of the registered subcommands is present.
     for verb in ("train", "audit", "campaign", "launch", "infer", "report"):
@@ -59,7 +57,7 @@ def test_main_dispatches_via_build_parser(monkeypatch):
     # resolved handler — patch the parser so no real command runs.
     import argparse
 
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     ns = argparse.Namespace(command="x", func=lambda a: 7, verbose=False)
     monkeypatch.setattr(app, "build_parser", lambda: _StubParser(ns))
@@ -96,15 +94,13 @@ from pathlib import Path as _Path  # noqa: E402
 def test_predict_without_config_fails_loud(monkeypatch, caplog):
     """Config-less predict must return a non-zero code and NOT touch the
     deprecated InferencePipeline (no silent fallback)."""
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     # If predict ever imports the deprecated pipeline again, blow up the test.
     def _boom(*a, **k):  # pragma: no cover - only fires on regression
         raise AssertionError("predict must not import the deprecated InferencePipeline")
 
-    monkeypatch.setattr(
-        "mriforge.pipelines.infer.run_inference_pipeline", _boom, raising=True
-    )
+    monkeypatch.setattr("spectramr.pipelines.infer.run_inference_pipeline", _boom, raising=True)
 
     ns = _argparse.Namespace(
         model=_Path("best.pt"),
@@ -116,6 +112,61 @@ def test_predict_without_config_fails_loud(monkeypatch, caplog):
     rc = app.predict(ns)
     assert rc == 2
     assert any("requires --config" in r.message for r in caplog.records)
+
+
+def test_predict_without_config_uses_the_artifact_beside_the_model(monkeypatch, tmp_path):
+    """No --config, but the run directory holds resolved_config.json: predict rebuilds
+    the settings from its declared block (#1379) and hands them to the pipeline."""
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.resolved_config_artifact import write_resolved_config
+
+    captured = {}
+
+    def _fake_pipeline(**kwargs):
+        captured.update(kwargs)
+        return {"status": "ok"}
+
+    monkeypatch.setattr(
+        "spectramr.pipelines.infer.run_inference_pipeline", _fake_pipeline, raising=True
+    )
+    run = tmp_path / "run"
+    run.mkdir()
+    write_resolved_config(run, TrainingSettings.from_yaml(str(_minimal_config_path())), run_id="t")
+    model = run / "best.pt"
+    model.write_bytes(b"")
+    ns = _argparse.Namespace(
+        model=model, input=_Path("data/"), output=_Path("out/"), config=None, device="cpu"
+    )
+    assert predict(ns) == 0
+    assert captured["config_path"] is None
+    assert captured["from_yaml"] is False
+    assert isinstance(captured["settings"], TrainingSettings)
+
+
+def test_predict_from_yaml_refuses_to_run_without_a_config(monkeypatch, tmp_path, caplog):
+    """--from-yaml with no --config fails loud even when the artifact exists."""
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.resolved_config_artifact import write_resolved_config
+
+    monkeypatch.setattr(
+        "spectramr.pipelines.infer.run_inference_pipeline",
+        lambda **k: (_ for _ in ()).throw(AssertionError("must not run")),
+        raising=True,
+    )
+    run = tmp_path / "run"
+    run.mkdir()
+    write_resolved_config(run, TrainingSettings.from_yaml(str(_minimal_config_path())), run_id="t")
+    model = run / "best.pt"
+    model.write_bytes(b"")
+    ns = _argparse.Namespace(
+        model=model,
+        input=_Path("data/"),
+        output=_Path("out/"),
+        config=None,
+        device="cpu",
+        from_yaml=True,
+    )
+    assert predict(ns) == 2
 
 
 def _minimal_config_path() -> _Path:
@@ -140,7 +191,7 @@ def test_predict_with_config_delegates_to_ssot(monkeypatch):
         return {"status": "ok"}
 
     monkeypatch.setattr(
-        "mriforge.pipelines.infer.run_inference_pipeline", _fake_pipeline, raising=True
+        "spectramr.pipelines.infer.run_inference_pipeline", _fake_pipeline, raising=True
     )
 
     cfg = _minimal_config_path()
@@ -181,7 +232,7 @@ def test_predict_runs_the_inference_preamble(monkeypatch):
         return {"status": "ok"}
 
     monkeypatch.setattr(
-        "mriforge.pipelines.infer.run_inference_pipeline", _fake_pipeline, raising=True
+        "spectramr.pipelines.infer.run_inference_pipeline", _fake_pipeline, raising=True
     )
 
     cfg = _minimal_config_path()
@@ -205,32 +256,18 @@ def test_predict_has_no_hardcoded_cuda_fallback():
     import ast
     from pathlib import Path
 
-    src = (
-        Path(__file__).resolve().parents[3]
-        / "src"
-        / "mriforge"
-        / "cli"
-        / "app.py"
-    ).read_text()
+    src = (Path(__file__).resolve().parents[3] / "src" / "spectramr" / "cli" / "app.py").read_text()
     tree = ast.parse(src)
-    fn = next(
-        n
-        for n in ast.walk(tree)
-        if isinstance(n, ast.FunctionDef) and n.name == "predict"
-    )
+    fn = next(n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == "predict")
     literals = {
-        n.value
-        for n in ast.walk(fn)
-        if isinstance(n, ast.Constant) and isinstance(n.value, str)
+        n.value for n in ast.walk(fn) if isinstance(n, ast.Constant) and isinstance(n.value, str)
     }
     assert "cuda" not in literals, (
         'predict still hardcodes a "cuda" device; resolution belongs to '
-        "mriforge.core.compute_device (non-negotiable 9b)"
+        "spectramr.core.compute_device (non-negotiable 9b)"
     )
     called = {
-        n.func.id
-        for n in ast.walk(fn)
-        if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+        n.func.id for n in ast.walk(fn) if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
     }
     assert "begin_inference_run" in called, (
         "predict must share infer's preamble, not re-implement a subset"
@@ -247,19 +284,19 @@ def test_predict_has_no_hardcoded_cuda_fallback():
 def test_export_onnx_branch_dispatches_through_onnxexporter(monkeypatch, tmp_path):
     import torch
 
-    import mriforge.cli.app as app
+    import spectramr.cli.app as app
 
     real_sample = torch.zeros(1, 1, 8, 8)
     model = torch.nn.Conv2d(1, 1, 3, padding=1)
 
     monkeypatch.setattr("torch.load", lambda *a, **k: {"model": model}, raising=True)
     monkeypatch.setattr(
-        "mriforge.config.settings.TrainingSettings.from_yaml",
+        "spectramr.config.settings.TrainingSettings.from_yaml",
         lambda *a, **k: object(),
         raising=True,
     )
     monkeypatch.setattr(
-        "mriforge.shared.utils.data_utils.get_sample_batch",
+        "spectramr.shared.utils.data_utils.get_sample_batch",
         lambda *a, **k: real_sample,
         raising=True,
     )
@@ -276,11 +313,9 @@ def test_export_onnx_branch_dispatches_through_onnxexporter(monkeypatch, tmp_pat
             calls["path"] = path
             return path
 
-    monkeypatch.setattr("mriforge.exports.onnx.ONNXExporter", _SpyExporter, raising=True)
+    monkeypatch.setattr("spectramr.exports.onnx.ONNXExporter", _SpyExporter, raising=True)
 
-    ns = _argparse.Namespace(
-        model=tmp_path / "best.pt", format="onnx", config=tmp_path / "c.yaml"
-    )
+    ns = _argparse.Namespace(model=tmp_path / "best.pt", format="onnx", config=tmp_path / "c.yaml")
     rc = app.export(ns)
 
     assert rc == 0
@@ -299,8 +334,8 @@ def test_load_clean_volumes_from_h5_populates_real_assets(monkeypatch, tmp_path)
     """
     import torch
 
-    import mriforge.cli.app as app
-    from mriforge.core.metrics.context import MetricContext
+    import spectramr.cli.app as app
+    from spectramr.core.metrics.context import MetricContext
 
     c, h, w = 4, 8, 8
     smaps = torch.ones(1, c, h, w, dtype=torch.complex64) / (c**0.5)
@@ -309,20 +344,18 @@ def test_load_clean_volumes_from_h5_populates_real_assets(monkeypatch, tmp_path)
     p99 = torch.tensor(1.0)
 
     monkeypatch.setattr(
-        "mriforge.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
+        "spectramr.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
         lambda *a, **k: [[_Path("2022091411_T201.h5")]],
         raising=True,
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
+        "spectramr.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
         lambda *a, **k: (coil_images, smaps, x_gt_mag, p99),
         raising=True,
     )
 
     assets: dict[str, object] = {}
-    volumes = app._load_clean_volumes_from_h5(
-        tmp_path, max_subjects=1, assets_out=assets
-    )
+    volumes = app._load_clean_volumes_from_h5(tmp_path, max_subjects=1, assets_out=assets)
 
     assert volumes and volumes[0][0] == "2022091411_T2"
     ctx = assets["2022091411_T2"]
@@ -361,11 +394,11 @@ logging: {}
         cfg = tmp_path / "arm.yaml"
         cfg.write_text(self.CONFIG + extra_yaml)
         # Inherit the environment (PYTHONPATH included) rather than replacing it:
-        # a stripped env makes mriforge unimportable in the child, and the test
+        # a stripped env makes spectramr unimportable in the child, and the test
         # would then "fail" for a reason unrelated to what it asserts.
-        env = {**os.environ, "MRIFORGE_SUPPRESS_CLINICAL_WARNING": "1"}
+        env = {**os.environ, "SPECTRAMR_SUPPRESS_CLINICAL_WARNING": "1"}
         return subprocess.run(
-            [sys.executable, "-m", "mriforge.cli", "audit", str(cfg), *args],
+            [sys.executable, "-m", "spectramr.cli", "audit", str(cfg), *args],
             capture_output=True,
             text=True,
             env=env,
@@ -412,9 +445,7 @@ logging: {}
         out = tmp_path / "out"
         self._run(tmp_path, args=("--write-resolved-config", str(out)))
         ledger = json.loads((out / "resolved_config.json").read_text())["_ledger"]
-        dropped = [
-            s for s in ledger["substitutions"] if s["class_id"] == "extra_ignore_dropped"
-        ]
+        dropped = [s for s in ledger["substitutions"] if s["class_id"] == "extra_ignore_dropped"]
         assert dropped == []
 
     def test_no_flag_means_no_artifact(self, tmp_path):
@@ -482,9 +513,9 @@ class TestExportBuildsTheModelTheConfigDeclares:
                 calls["model"] = m
                 return path
 
-        monkeypatch.setattr("mriforge.exports.onnx.ONNXExporter", _Spy, raising=True)
+        monkeypatch.setattr("spectramr.exports.onnx.ONNXExporter", _Spy, raising=True)
         monkeypatch.setattr(
-            "mriforge.shared.utils.data_utils.get_sample_batch",
+            "spectramr.shared.utils.data_utils.get_sample_batch",
             lambda *a, **k: _torch.zeros(1, 3, 16, 16),
             raising=True,
         )
@@ -492,7 +523,7 @@ class TestExportBuildsTheModelTheConfigDeclares:
     def _run(self, monkeypatch, tmp_path, payload):
         import argparse as _ap
 
-        import mriforge.cli.app as app
+        import spectramr.cli.app as app
 
         calls: dict = {}
         self._spy_exporter(monkeypatch, calls)
@@ -542,7 +573,7 @@ class TestExportBuildsTheModelTheConfigDeclares:
         """
         import logging
 
-        caplog.set_level(logging.ERROR, logger="mriforge.cli.app")
+        caplog.set_level(logging.ERROR, logger="spectramr.cli.app")
         ref = _ExportWitness(in_channels=3, out_channels=3)
         partial = {k: v for k, v in ref.state_dict().items() if "bias" not in k}
         rc, calls = self._run(monkeypatch, tmp_path, {"generator": partial})
@@ -560,7 +591,7 @@ class TestExportBuildsTheModelTheConfigDeclares:
         """Zero overlap raises in `resolve_state_dict` — no fifth reader guesses."""
         import logging
 
-        caplog.set_level(logging.ERROR, logger="mriforge.cli.app")
+        caplog.set_level(logging.ERROR, logger="spectramr.cli.app")
         rc, calls = self._run(monkeypatch, tmp_path, {"totally": {"unrelated": 1}})
 
         assert rc == 1
@@ -575,7 +606,7 @@ class TestExportBuildsTheModelTheConfigDeclares:
         """Branch order: older exports hold a module, and must not be rebuilt."""
         import argparse as _ap
 
-        import mriforge.cli.app as app
+        import spectramr.cli.app as app
 
         calls: dict = {}
         self._spy_exporter(monkeypatch, calls)
@@ -587,7 +618,7 @@ class TestExportBuildsTheModelTheConfigDeclares:
             raise AssertionError("a pickled module must not be rebuilt")
 
         monkeypatch.setattr(
-            "mriforge.infrastructure.training.builders.model_builder.ModelBuilder.__init__",
+            "spectramr.infrastructure.training.builders.model_builder.ModelBuilder.__init__",
             _no_build,
             raising=True,
         )
@@ -604,6 +635,8 @@ class TestExportBuildsTheModelTheConfigDeclares:
         # is that the exported module IS the checkpoint's, weights and all.
         assert type(calls["model"]) is _ExportWitness
         assert _torch.equal(calls["model"].conv.weight, pickled.conv.weight)
+
+
 # --------------------------------------------------------------------------
 # The ``-O`` examples printed by ``--help`` must be paths the config accepts.
 #
@@ -663,7 +696,9 @@ def test_every_override_example_in_cli_help_is_a_path_the_config_accepts():
             apply_overrides(base, [example])
         except Exception as exc:
             broken.append(f"{prog}: -O {example} -> {type(exc).__name__}: {exc!s:.140}")
-    assert not broken, "CLI --help advertises override paths the config rejects:\n" + "\n".join(broken)
+    assert not broken, "CLI --help advertises override paths the config rejects:\n" + "\n".join(
+        broken
+    )
 
 
 def test_the_override_example_walk_would_catch_a_bad_path():
@@ -675,3 +710,46 @@ def test_the_override_example_walk_would_catch_a_bad_path():
     base = TrainingSettings(**_minimal_config())
     with pytest.raises(Exception):  # noqa: B017 -- any refusal is the point
         apply_overrides(base, ["validation.val_interval=100"])
+
+
+def test_bulk_counts_use_the_reports_definition_of_a_warning() -> None:
+    """Planted violation: a passed advisory carrying severity "warning" is not a warning.
+
+    Counting severities made three ``vf_01`` arms ERROR(strict) in the bulk run
+    while the single-arm audit exited 0 (2026-09-03); the report owns the rule.
+    """
+    from types import SimpleNamespace
+
+    from spectramr.cli.app import _bulk_counts
+
+    failed_warning = SimpleNamespace(passed=False, severity="warning")
+    report = SimpleNamespace(errors=[], warnings=[failed_warning])
+    assert _bulk_counts(report) == (0, 1)
+    advisory_only = SimpleNamespace(errors=[], warnings=[])
+    assert _bulk_counts(advisory_only) == (0, 0)
+
+
+def test_bulk_audit_builds_the_same_report_as_the_single_arm_audit(tmp_path, monkeypatch) -> None:
+    """Planted violation: a bulk loop that calls validate_config_health directly
+    never reaches this spy. Both surfaces go through ``_audit_report`` (2026-09-03)."""
+    import argparse
+    from types import SimpleNamespace
+
+    from spectramr.cli import app
+
+    arm = tmp_path / "arm.yaml"
+    arm.write_text("config_version: '1.0'\n")
+    seen: list[str] = []
+
+    def _spy(config_path, config):
+        seen.append(config_path)
+        return SimpleNamespace(errors=[], warnings=[], results=[], passed=True)
+
+    monkeypatch.setattr(app, "_audit_report", _spy)
+    monkeypatch.setattr(
+        "spectramr.config.settings.TrainingSettings.from_yaml",
+        staticmethod(lambda p: SimpleNamespace()),
+    )
+    args = argparse.Namespace(config=tmp_path, json=False, strict=True, exclude=None, probe=False)
+    app._audit_bulk(args)
+    assert seen == [str(arm)]

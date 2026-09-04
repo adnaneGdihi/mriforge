@@ -1,4 +1,4 @@
-"""Regression tests for mriforge.models.reconstruction.zerorf.
+"""Regression tests for spectramr.models.reconstruction.zerorf.
 
 ZeroRFReconstructor advertises a 3D ``volume_shape`` (D, H, W), but its
 ``forward`` previously assumed ``D == 1`` and reshaped the reconstructed volume
@@ -12,7 +12,7 @@ are unchanged) and well-defined for ``D > 1``.
 
 import torch
 
-from mriforge.models.reconstruction.zerorf import ZeroRFReconstructor
+from spectramr.models.reconstruction.zerorf import ZeroRFReconstructor
 
 
 def _make_model(volume_shape):

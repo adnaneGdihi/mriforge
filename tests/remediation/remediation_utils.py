@@ -35,18 +35,18 @@ def setup_physics_mocks():
         setup_remediation()
 
     physics_modules = [
-        "mriforge.infrastructure.physics.fft_ops",
-        "mriforge.infrastructure.physics.data_consistency",
-        "mriforge.infrastructure.physics.bloch_simulation",
-        "mriforge.infrastructure.physics.epg",
-        "mriforge.infrastructure.physics.sense",
-        "mriforge.infrastructure.physics.motion_simulation",
-        "mriforge.infrastructure.physics.noise_simulation",
-        "mriforge.infrastructure.physics.sampling",
-        "mriforge.infrastructure.physics.nufft_ops",
-        "mriforge.infrastructure.physics.b0_mapping",
-        "mriforge.infrastructure.physics.qsm",
-        "mriforge.infrastructure.physics.coil_sensitivity",
+        "spectramr.infrastructure.physics.fft_ops",
+        "spectramr.infrastructure.physics.data_consistency",
+        "spectramr.infrastructure.physics.bloch_simulation",
+        "spectramr.infrastructure.physics.epg",
+        "spectramr.infrastructure.physics.sense",
+        "spectramr.infrastructure.physics.motion_simulation",
+        "spectramr.infrastructure.physics.noise_simulation",
+        "spectramr.infrastructure.physics.sampling",
+        "spectramr.infrastructure.physics.nufft_ops",
+        "spectramr.infrastructure.physics.b0_mapping",
+        "spectramr.infrastructure.physics.qsm",
+        "spectramr.infrastructure.physics.coil_sensitivity",
     ]
 
     for module_name in physics_modules:
@@ -70,15 +70,15 @@ def setup_diffusion_mocks():
         setup_remediation()
 
     diffusion_modules = [
-        "mriforge.models.diffusion.base_diffusion",
-        "mriforge.models.diffusion.cold_diffusion",
-        "mriforge.models.diffusion.rician_diffusion",
-        "mriforge.models.diffusion.chi_square_diffusion",
-        "mriforge.models.diffusion.laplace_diffusion",
-        "mriforge.models.diffusion.rectified_flow",
-        "mriforge.models.diffusion.score_sde",
-        "mriforge.models.diffusion.ddim_sampler",
-        "mriforge.models.diffusion.noise_schedules",
+        "spectramr.models.diffusion.base_diffusion",
+        "spectramr.models.diffusion.cold_diffusion",
+        "spectramr.models.diffusion.rician_diffusion",
+        "spectramr.models.diffusion.chi_square_diffusion",
+        "spectramr.models.diffusion.laplace_diffusion",
+        "spectramr.models.diffusion.rectified_flow",
+        "spectramr.models.diffusion.score_sde",
+        "spectramr.models.diffusion.ddim_sampler",
+        "spectramr.models.diffusion.noise_schedules",
     ]
 
     for module_name in diffusion_modules:
@@ -101,12 +101,12 @@ def setup_time_series_mocks():
         setup_remediation()
 
     temporal_modules = [
-        "mriforge.models.recurrent.lstm_mri",
-        "mriforge.models.recurrent.vrnn",
-        "mriforge.models.recurrent.temporal_coherence",
-        "mriforge.models.recurrent.recurrent_diffusion",
-        "mriforge.models.motion.temporal_motion",
-        "mriforge.models.reconstruction.temporal_reconstruction",
+        "spectramr.models.recurrent.lstm_mri",
+        "spectramr.models.recurrent.vrnn",
+        "spectramr.models.recurrent.temporal_coherence",
+        "spectramr.models.recurrent.recurrent_diffusion",
+        "spectramr.models.motion.temporal_motion",
+        "spectramr.models.reconstruction.temporal_reconstruction",
     ]
 
     for module_name in temporal_modules:

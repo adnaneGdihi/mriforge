@@ -18,13 +18,13 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.builders.inference_tiling import (
+from spectramr.data.builders.inference_tiling import (
     GridInferenceHandle,
     _auto_overlap,
     _validate_overlap,
     build_grid_inference_handle,
 )
-from mriforge.data.builders.inference_tiling_audit import (
+from spectramr.data.builders.inference_tiling_audit import (
     check_grid_tiling_supported,
     list_grid_tiling_compatible_strategies,
 )
@@ -281,25 +281,25 @@ def test_real_strategies_opt_in_correctly() -> None:
     """Pin which inference strategies opt in to grid tiling — flipping
     these requires a deliberate decision (and an implementation, if
     flipping a False to True)."""
-    from mriforge.infrastructure.inference.gan_inference_strategy import (
+    from spectramr.infrastructure.inference.gan_inference_strategy import (
         GANInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.reconstruction_inference_strategy import (
+    from spectramr.infrastructure.inference.reconstruction_inference_strategy import (
         ReconstructionInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.vae_inference_strategy import (
+    from spectramr.infrastructure.inference.vae_inference_strategy import (
         VAEInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.domain_adaptation_inference_strategy import (
+    from spectramr.infrastructure.inference.domain_adaptation_inference_strategy import (
         DomainAdaptationInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.latent_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.latent_diffusion_inference_strategy import (
         LatentDiffusionInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
         ColdDiffusionInferenceStrategy,
     )
-    from mriforge.infrastructure.inference.mae_inference_strategy import (
+    from spectramr.infrastructure.inference.mae_inference_strategy import (
         MAEInferenceStrategy,
     )
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.conformal_geometry import (
+from spectramr.infrastructure.physics.conformal_geometry import (
     LinearBeltramiSolver,
     conformal_modulus_quadrilateral,
     disk_to_disk,

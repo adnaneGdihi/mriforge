@@ -1,4 +1,4 @@
-"""Tests for ``src/mriforge/data/adapters/spatial.py``.
+"""Tests for ``src/spectramr/data/adapters/spatial.py``.
 
 Covers the spatial-rank adapter trio:
 
@@ -13,9 +13,9 @@ import pytest
 import torch
 
 # Force adapter registration.
-import mriforge.data.adapters  # noqa: F401
-from mriforge.data.adapters.registry import ADAPTER_REGISTRY
-from mriforge.data.adapters.spatial import (
+import spectramr.data.adapters  # noqa: F401
+from spectramr.data.adapters.registry import ADAPTER_REGISTRY
+from spectramr.data.adapters.spatial import (
     FlattenSpatialTo1D,
     Gather2Dto3D,
     Slice3Dto2D,

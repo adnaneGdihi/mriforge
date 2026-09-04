@@ -1,6 +1,6 @@
 r"""Unit tests for the Gromov-Wasserstein cross-field alignment loss (GW-CFA).
 
-Targets ``mriforge.models.losses.gw_cross_field_loss``.
+Targets ``spectramr.models.losses.gw_cross_field_loss``.
 
 GW-CFA aligns ultra-low-field and high-field representations with *no*
 correspondence, exploiting the physical premise that the *relative* geometric
@@ -30,7 +30,7 @@ def _random_orthogonal(d: int, seed: int) -> torch.Tensor:
 
 
 def test_gw_value_lower_for_isometric_copy_than_random() -> None:
-    from mriforge.models.losses.gw_cross_field_loss import (
+    from spectramr.models.losses.gw_cross_field_loss import (
         GromovWassersteinCrossFieldLoss,
     )
 
@@ -47,7 +47,7 @@ def test_gw_value_lower_for_isometric_copy_than_random() -> None:
 
 
 def test_gw_value_is_differentiable() -> None:
-    from mriforge.models.losses.gw_cross_field_loss import (
+    from spectramr.models.losses.gw_cross_field_loss import (
         GromovWassersteinCrossFieldLoss,
     )
 
@@ -60,7 +60,7 @@ def test_gw_value_is_differentiable() -> None:
 
 
 def test_recovers_correspondence_on_relabeled_copy() -> None:
-    from mriforge.models.losses.gw_cross_field_loss import (
+    from spectramr.models.losses.gw_cross_field_loss import (
         GromovWassersteinCrossFieldLoss,
     )
 
@@ -81,8 +81,8 @@ def test_recovers_correspondence_on_relabeled_copy() -> None:
 
 
 def test_loss_is_registered() -> None:
-    from mriforge.models.losses import create_loss
-    from mriforge.models.losses.gw_cross_field_loss import (
+    from spectramr.models.losses import create_loss
+    from spectramr.models.losses.gw_cross_field_loss import (
         GromovWassersteinCrossFieldLoss,
     )
 

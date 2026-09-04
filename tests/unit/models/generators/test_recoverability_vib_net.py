@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.recoverability_vib_net import RecoverabilityVIBNet
+from spectramr.models.generators.recoverability_vib_net import RecoverabilityVIBNet
 
 
 def _net(**kw) -> RecoverabilityVIBNet:
@@ -56,8 +56,8 @@ def test_rejects_invalid_construction() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "recoverability_vib_net" in MODEL_REGISTRY

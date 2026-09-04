@@ -14,17 +14,17 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.loop_state import LoopState
-from mriforge.infrastructure.training.strategies.field_cocycle_strategy import (
+from spectramr.infrastructure.training.loop_state import LoopState
+from spectramr.infrastructure.training.strategies.field_cocycle_strategy import (
     FieldCocycleTranslationStrategy,
     _disc_adv_loss,
     _gen_adv_loss,
 )
-from mriforge.models.discriminators.conditional_patchgan_discriminator import (
+from spectramr.models.discriminators.conditional_patchgan_discriminator import (
     ConditionalPatchGANDiscriminator,
 )
-from mriforge.models.generators.field_cocycle_generator import FieldCocycleGenerator
-from mriforge.models.losses.cross_field_losses import (
+from spectramr.models.generators.field_cocycle_generator import FieldCocycleGenerator
+from spectramr.models.losses.cross_field_losses import (
     CocycleConsistencyLoss,
     FieldIdentityLoss,
     LatentCycleLoss,
@@ -61,8 +61,8 @@ def test_disc_hinge_prefers_real_high_fake_low() -> None:
 
 
 def test_registered_in_factory_and_valid_modes() -> None:
-    from mriforge.config.validation_constants import VALID_TRAINING_MODES
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.validation_constants import VALID_TRAINING_MODES
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_cocycle" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "field_cocycle" in VALID_TRAINING_MODES
@@ -210,7 +210,7 @@ def test_train_step_captures_non_dict_get_able_batch() -> None:
 
 def test_r1_interval_positive_raises() -> None:
     # field_cocycle does not implement R1; an r1_interval>0 knob must fail loud (#15).
-    from mriforge.infrastructure.training.strategies import field_cocycle_strategy as m
+    from spectramr.infrastructure.training.strategies import field_cocycle_strategy as m
 
     # exercise the guard logic directly (the strategy raises in _setup on r1_interval>0)
     assert m._SUPPORTED_GAN_LOSSES  # sanity: module imports
@@ -264,11 +264,11 @@ def test_validation_forward_raises_without_a_target_field() -> None:
 def test_inline_terms_are_declared_so_the_fold_skips_them() -> None:
     """Declaring them on image_losses is what makes the curriculum resolvable; the
     skip-set is what stops that declaration double-counting."""
-    from mriforge.infrastructure.training.strategies.loss_folding import (
-        inline_managed_with,
+    from spectramr.infrastructure.training.strategies.loss_folding import (
+        declared_inline_losses,
     )
 
-    extra = FieldCocycleTranslationStrategy._INLINE_MANAGED_EXTRA
-    assert "cocycle_consistency" in extra
-    skip = inline_managed_with(*extra)
-    assert {"l1", "l2", "cocycle_consistency", "field_identity", "latent_cycle"} <= skip
+    skip = declared_inline_losses(FieldCocycleTranslationStrategy)
+    assert skip is not None and "cocycle_consistency" in skip
+    assert {"l1", "cocycle_consistency", "field_identity", "latent_cycle"} <= skip
+    assert FieldCocycleTranslationStrategy.folds_image_losses is True

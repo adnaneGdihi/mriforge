@@ -11,8 +11,8 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.spectral.fourier_kan import FourierKANLayer
-from mriforge.models.spectral.fourier_kan_swin import FourierKANSwin, SwinKANBlock
+from spectramr.models.spectral.fourier_kan import FourierKANLayer
+from spectramr.models.spectral.fourier_kan_swin import FourierKANSwin, SwinKANBlock
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.cycle_bloch_strategy import (
+from spectramr.infrastructure.training.strategies.cycle_bloch_strategy import (
     CycleBlochStrategy,
     ParameterEstimator,
 )
@@ -59,7 +59,7 @@ def mock_env():
 @pytest.fixture
 def strategy(mock_env):
     """Instantiate CycleBlochStrategy (NEW API - env only)."""
-    with patch("mriforge.infrastructure.di.di_container.resolve_service") as mock_resolve:
+    with patch("spectramr.infrastructure.di.di_container.resolve_service") as mock_resolve:
         mock_resolve.return_value = MagicMock()
         return CycleBlochStrategy(env=mock_env)
 
@@ -99,7 +99,7 @@ def test_train_step(strategy, mock_env):
     ) as mock_est:
         # Mock BlochSimulator
         with patch(
-            "mriforge.infrastructure.training.strategies.cycle_bloch_strategy.BlochSimulator.spin_echo"
+            "spectramr.infrastructure.training.strategies.cycle_bloch_strategy.BlochSimulator.spin_echo"
         ) as mock_bloch:
             mock_bloch.return_value = torch.randn(
                 2, 1, 64, 64, requires_grad=True

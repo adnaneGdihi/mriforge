@@ -4,16 +4,16 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.losses.flow_losses import (
+from spectramr.models.losses.flow_losses import (
     PhaseContrastVelocityLoss,
     ThroughPlaneFluxConservationLoss,
     VelocityUnwrapConsistencyLoss,
 )
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 
 
 def test_flow_losses_registered_and_tagged() -> None:
-    from mriforge.config.schemas.enums import Regime
+    from spectramr.config.schemas.enums import Regime
 
     meta = LossRegistry._loss_domains
     for name in (

@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.core.verification.property_testing``.
+"""Tests for ``spectramr.core.verification.property_testing``.
 
 WS-2 Core closes the ``core/verification/`` 0-test gap called out in the
 campaign plan (``TODO/createadetailedplancachedcascade.md`` §WS-2). The module
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.verification.property_testing import (
+from spectramr.core.verification.property_testing import (
     FloatStrategy,
     IntegerStrategy,
     SearchStrategy,

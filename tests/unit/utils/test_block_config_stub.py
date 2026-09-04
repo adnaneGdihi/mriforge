@@ -33,8 +33,8 @@ class TestCoverageIsDerivedNotListed:
     @pytest.mark.parametrize(
         ("stub", "schema_path"),
         [
-            (ValidationConfigStub, "mriforge.config.schemas.validation:ValidationConfigSchema"),
-            (LoggingConfigStub, "mriforge.config.schemas.logging:LoggingConfigSchema"),
+            (ValidationConfigStub, "spectramr.config.schemas.validation:ValidationConfigSchema"),
+            (LoggingConfigStub, "spectramr.config.schemas.logging:LoggingConfigSchema"),
         ],
     )
     def test_every_schema_sub_block_is_present(self, stub, schema_path):
@@ -56,7 +56,7 @@ class TestCoverageIsDerivedNotListed:
 
     def test_blocks_carry_real_schema_defaults_not_restated_ones(self):
         """Restating a default is how ``max_resident_volumes`` reached int(None)."""
-        from mriforge.config.schemas.logging import LoggingSnapshotsConfigSchema
+        from spectramr.config.schemas.logging import LoggingSnapshotsConfigSchema
 
         assert (
             LoggingConfigStub().snapshots.max_calls
@@ -84,7 +84,7 @@ class TestOverridesGoThroughTheRealSchema:
             ValidationConfigStub(scoring={"not_a_real_leaf": 1})
 
     def test_sub_blocks_accepts_a_constructed_block(self):
-        from mriforge.config.schemas.validation import ValidationScoringConfigSchema
+        from spectramr.config.schemas.validation import ValidationScoringConfigSchema
 
         block = ValidationScoringConfigSchema(compute=["psnr"])
         assert sub_blocks(

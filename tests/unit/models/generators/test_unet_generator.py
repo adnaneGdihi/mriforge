@@ -14,8 +14,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.generators.unet_generator import AttentionUNetGenerator
-from mriforge.models.reconstruction.unet import AttentionType
+from spectramr.models.generators.unet_generator import AttentionUNetGenerator
+from spectramr.models.reconstruction.unet import AttentionType
 
 
 def test_unknown_attention_type_raises() -> None:

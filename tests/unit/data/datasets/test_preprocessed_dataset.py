@@ -1,4 +1,4 @@
-"""Tests for :class:`mriforge.data.datasets.preprocessed_dataset.PreprocessedMRIDataset`.
+"""Tests for :class:`spectramr.data.datasets.preprocessed_dataset.PreprocessedMRIDataset`.
 
 Regression coverage for DC-2: ``_apply_split`` used to return the *full*
 sample list for any split string that was neither ``'train'`` nor ``'val'``
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
+from spectramr.data.datasets.preprocessed_dataset import PreprocessedMRIDataset
 
 
 def _apply_split(split: str):
@@ -60,7 +60,7 @@ def test_apply_split_delegates_to_the_ssot() -> None:
     the non-empty clamp. Comparing against ``split_index`` itself is what makes
     a re-divergence impossible.
     """
-    from mriforge.data.split_utils import split_index
+    from spectramr.data.split_utils import split_index
 
     samples = [f"s{i}" for i in range(10)]
     expected_train, expected_val = split_index(samples, 0.2)
@@ -75,7 +75,7 @@ def test_rounding_matches_the_ssot_not_truncation() -> None:
     0.15 is one of the two commonest validation fractions in the corpus, so
     this was not a corner case.
     """
-    from mriforge.data.split_utils import split_index
+    from spectramr.data.split_utils import split_index
 
     samples = [f"s{i}" for i in range(10)]
     inst = PreprocessedMRIDataset.__new__(PreprocessedMRIDataset)
@@ -113,7 +113,7 @@ def test_single_sample_corpus_raises_instead_of_emptying_a_split() -> None:
 def test_image_to_graph_2d_grid_node_count() -> None:
     """A 2-D (C, H, W) image maps to H*W grid nodes."""
     torch = pytest.importorskip("torch")
-    from mriforge.data.datasets.preprocessed_dataset import (
+    from spectramr.data.datasets.preprocessed_dataset import (
         GraphRepresentation,
         image_to_graph,
     )
@@ -126,7 +126,7 @@ def test_image_to_graph_2d_grid_node_count() -> None:
 def test_image_to_graph_volume_covers_all_slices() -> None:
     """A (C, H, W, D) volume yields D*H*W nodes — every slice, not the center."""
     torch = pytest.importorskip("torch")
-    from mriforge.data.datasets.preprocessed_dataset import (
+    from spectramr.data.datasets.preprocessed_dataset import (
         GraphRepresentation,
         image_to_graph,
     )
@@ -142,7 +142,7 @@ def test_image_to_graph_volume_covers_all_slices() -> None:
 def test_image_to_graph_volume_edges_stay_within_each_slice() -> None:
     """Per-slice grids are disjoint: no edge crosses the slice boundary."""
     torch = pytest.importorskip("torch")
-    from mriforge.data.datasets.preprocessed_dataset import (
+    from spectramr.data.datasets.preprocessed_dataset import (
         GraphRepresentation,
         image_to_graph,
     )

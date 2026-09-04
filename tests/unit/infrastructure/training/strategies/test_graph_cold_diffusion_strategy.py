@@ -24,7 +24,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.graph_cold_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.graph_cold_diffusion_strategy import (
     GraphColdDiffusionStrategy as S,
 )
 
@@ -94,7 +94,7 @@ class TestTheScheduleThatJustifiesTheRefusal:
 
     @staticmethod
     def _fractions(pattern: str, timesteps=(0, 100, 200, 400, 999)):
-        from mriforge.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
+        from spectramr.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
 
         g = KSpaceMaskGenerator(num_timesteps=1000)
         return [

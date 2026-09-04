@@ -1,9 +1,9 @@
 Out-of-Tree Plugins
 ===================
 
-Because MRIForge is ``pip``-installable, you can define custom **models**,
+Because spectraMR is ``pip``-installable, you can define custom **models**,
 **losses**, **metrics**, and **strategies** in your *own* package or a
-standalone script — outside the ``mriforge`` source tree — and have them resolve
+standalone script — outside the ``spectramr`` source tree — and have them resolve
 by name from a config or the :doc:`scripting_api`.
 
 How registration works
@@ -18,7 +18,7 @@ of the three discovery layers below to be imported.
 Strategies are different: they are resolved from a dotted-path map, not a
 decorator registry. A plugin strategy is named either by a full dotted
 ``training.strategy_class`` (which already resolves with no extra wiring) or via
-a short name declared in the ``mriforge.strategies`` entry-point group.
+a short name declared in the ``spectramr.strategies`` entry-point group.
 
 The three discovery layers
 --------------------------
@@ -31,26 +31,26 @@ fail loudly, while installed third-party plugins fail soft.
 
    .. code-block:: toml
 
-      [project.entry-points."mriforge.models"]
+      [project.entry-points."spectramr.models"]
       my_unet = "my_pkg.models.my_unet"        # imported → fires @register_model
 
-      [project.entry-points."mriforge.losses"]
+      [project.entry-points."spectramr.losses"]
       my_loss = "my_pkg.losses:MyLoss"
 
-      [project.entry-points."mriforge.strategies"]
+      [project.entry-points."spectramr.strategies"]
       my_paradigm = "my_pkg.strategies.MyStrategy"   # short-name → dotted path
 
    A broken third-party plugin is **warned about, not fatal** — it must not
    crash an unrelated training run.
 
-2. **``MRIFORGE_PLUGINS`` environment variable** — dotted module paths,
+2. **``SPECTRAMR_PLUGINS`` environment variable** — dotted module paths,
    separated by the OS path separator or whitespace. Best for a scratch script
    or a quick override:
 
    .. code-block:: bash
 
-      export MRIFORGE_PLUGINS="my_pkg.models.my_unet my_pkg.losses.my_loss"
-      mriforge train --config experiment.yaml
+      export SPECTRAMR_PLUGINS="my_pkg.models.my_unet my_pkg.losses.my_loss"
+      spectramr train --config experiment.yaml
 
    An unimportable token **raises** at startup (a user-declared knob must not
    silently no-op — pitfall #15). The resolved list is stamped into the run's
@@ -81,7 +81,7 @@ error, not a silent override (spec §6.1, pitfall #9). The in-tree registry is
 populated **first**, so the duplicate ``@register_*`` raises when the plugin is
 imported:
 
-* a ``MRIFORGE_PLUGINS`` or ``config.plugins.paths`` collision **raises**
+* a ``SPECTRAMR_PLUGINS`` or ``config.plugins.paths`` collision **raises**
   (``PluginImportError``) — these are explicit, user-declared dependencies;
 * an entry-point collision is **warned** about and the in-tree component wins —
   a third-party package must never silently replace a framework component.
@@ -96,7 +96,7 @@ Minimal example
 .. code-block:: python
 
    import torch.nn as nn
-   from mriforge import register_model     # or: from mriforge.api import register_model
+   from spectramr import register_model     # or: from spectramr.api import register_model
 
    @register_model("my_unet", "reconstruction")
    class MyUNet(nn.Module):
@@ -104,7 +104,7 @@ Minimal example
            super().__init__()
            ...
 
-Then either set ``MRIFORGE_PLUGINS=my_pkg.models.my_unet``, add it to
+Then either set ``SPECTRAMR_PLUGINS=my_pkg.models.my_unet``, add it to
 ``plugins.paths``, or declare the entry-point — and use ``model_type: my_unet``
 in any config, or build it directly via :doc:`scripting_api`.
 

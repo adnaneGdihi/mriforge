@@ -32,8 +32,8 @@ import typing
 import pytest
 from pydantic import BaseModel
 
-from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
+from spectramr.config.settings import TrainingSettings
 
 #: The blocks that were duplicated. Re-adding any of them re-creates the second
 #: root, so the test below names them rather than checking a count.

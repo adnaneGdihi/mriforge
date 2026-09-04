@@ -1,4 +1,4 @@
-# UNVERIFIED: validate via mriforge audit on cluster
+# UNVERIFIED: validate via spectramr audit on cluster
 # Minimal settings fixture for the physics_driven family.
 # Covers strategy keys: physics_driven
 # Based on experiments/active/experiment_41_physics_informed_motion_networks_pimn.yaml
@@ -16,12 +16,12 @@ metadata:
     - physics_driven
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.physics_driven_strategy.PhysicsDrivenTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.physics_driven_strategy.PhysicsDrivenTrainingStrategy
   epochs: 1
   max_iterations: 2
   device: cpu
   task: reconstruction
-  output_dir: /tmp/mriforge_test/physics_driven
+  output_dir: /tmp/spectramr_test/physics_driven
   enable_mixed_precision: false
   enable_gradient_checkpointing: false
   physics_informed: true

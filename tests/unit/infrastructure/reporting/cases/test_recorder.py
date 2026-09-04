@@ -1,8 +1,9 @@
 import json
 
 import numpy as np
+import pytest
 
-from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
 
 
 def test_recorder_keeps_best_median_worst_and_writes(tmp_path):
@@ -183,3 +184,102 @@ def test_eviction_removes_exactly_one_case_by_identity():
             domain={},
         )
     assert len(rec._cases) == 3, "eviction removed more than the single victim"
+
+
+# ---------------------------------------------------------------------------
+# #1685 -- the artifacts must never be visible half-written
+# ---------------------------------------------------------------------------
+#
+# ``np.savez_compressed`` streams a zip straight to its destination. On the
+# four-rank cluster run that motivated this, three ranks raced on the same
+# ``case_*.npz`` and the report hook died reading ``Bad CRC-32``. The rank guard
+# in ``pipelines/train.py`` removes the racing writers; write-then-rename
+# removes the truncated-file window that a reader can still hit.
+
+
+def _recorder_with_one_case():
+    rec = ReportCaseRecorder(
+        n_cases=1,
+        selection="best_median_worst",
+        primary_metric="psnr",
+        higher_is_better=True,
+    )
+    rec.observe(
+        case_id="s0",
+        arrays={"prediction": np.zeros((4, 4), dtype=np.float32)},
+        metrics={"psnr": 1.0},
+        domain={"acceleration": 4},
+    )
+    return rec
+
+
+def test_a_crash_mid_write_leaves_no_case_npz_at_the_final_path(tmp_path, monkeypatch):
+    """The exact #1685 shape: a partial archive must not claim the real name."""
+    import spectramr.infrastructure.reporting.cases.recorder as mod
+
+    real = mod.np.savez_compressed
+
+    def _truncating(path, **arrays):
+        real(path, **arrays)  # a complete file, but at the tmp name
+        raise OSError("disk full")
+
+    monkeypatch.setattr(mod.np, "savez_compressed", _truncating)
+    with pytest.raises(OSError):
+        _recorder_with_one_case().write(tmp_path)
+
+    out = tmp_path / "report_cases"
+    assert not (out / "case_0.npz").exists()
+    assert not (out / "cases_index.json").exists()
+
+
+def test_the_temp_name_keeps_the_npz_extension(tmp_path, monkeypatch):
+    """``savez`` APPENDS ``.npz`` to any name lacking it.
+
+    So ``case_0.npz.tmp`` lands on disk as ``case_0.npz.tmp.npz`` and the
+    rename misses it -- a rename that fails while the final path stays empty.
+    The suffix must sit before the extension. Pinned on the path numpy is
+    actually handed, because that is the value the trap acts on.
+    """
+    import spectramr.infrastructure.reporting.cases.recorder as mod
+
+    seen = []
+    real = mod.np.savez_compressed
+
+    def _spy(path, **arrays):
+        seen.append(str(path))
+        return real(path, **arrays)
+
+    monkeypatch.setattr(mod.np, "savez_compressed", _spy)
+    _recorder_with_one_case().write(tmp_path)
+
+    assert seen and all(p.endswith(".npz") for p in seen), seen
+    assert all(p != str(tmp_path / "report_cases" / "case_0.npz") for p in seen), seen
+    assert (tmp_path / "report_cases" / "case_0.npz").exists()
+
+
+def test_no_temp_artifacts_survive_a_successful_write(tmp_path):
+    out = _recorder_with_one_case().write(tmp_path)
+    leftovers = [p.name for p in out.iterdir() if ".tmp" in p.name]
+    assert leftovers == []
+    assert (out / "cases_index.json").exists()
+
+
+def test_the_index_is_renamed_into_place_too(tmp_path, monkeypatch):
+    """A half-written ``cases_index.json`` is unparseable JSON, not a short read.
+
+    The npz got the treatment first and the index is the smaller file, which is
+    exactly the reasoning that leaves the second write unprotected.
+    """
+    import spectramr.infrastructure.reporting.cases.recorder as mod
+
+    replaced = []
+    real_replace = mod.os.replace
+
+    def _spy(src, dst):
+        replaced.append((str(src), str(dst)))
+        return real_replace(src, dst)
+
+    monkeypatch.setattr(mod.os, "replace", _spy)
+    out = _recorder_with_one_case().write(tmp_path)
+
+    assert (str(out / "cases_index.tmp.json"), str(out / "cases_index.json")) in replaced

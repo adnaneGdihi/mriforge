@@ -1,0 +1,263 @@
+# Experiment SSDU: Self-Supervised learning via Data Undersampling
+# Target: M4Raw 0.3T multi-coil reconstruction (T1/T2/FLAIR)
+#
+# Reference-free accelerated reconstruction (Yaman et al., MRM 2020): the
+# acquired k-space sample is split into a network-input partition Lambda and a
+# held-out loss partition Theta; training scores the Theta residual via the
+# registered `ssdu` k-space loss. No fully-sampled target is required, which
+# suits the M4Raw 0.3T regime where fully-sampled references are unavailable.
+#
+# 2026-06-01 — rewritten from a non-canonical draft into the v6.x nested schema.
+# The earlier draft used flat `training.*` knobs (silently dropped under the
+# training schema's extra="allow"), a top-level `experiment_name`/`objectives`,
+# and no `optimization`/`logging` blocks (required) — it failed to load. This
+# version mirrors the proven `experiment_115_cascade_residual.yaml` M4Raw layout.
+config_version: '1.0'
+# mri_structural. Every arm indexes M4Raw 0.3T brain
+# (data/manifests/m4raw_train.json + m4raw_multicoil_val.json, 16/16) and none
+# carries an fMRI / fingerprinting / diffusion-weighted / perfusion signal.
+#
+# task: DELIBERATELY OMITTED. The regime is uniform across this cohort; the task
+# is not -- experiment_55 is continuous super-resolution and experiment_69 is
+# fetal motion reconstruction, so a cohort-wide 'reconstruction' would be wrong
+# for at least two arms. An absent task is advisory, a wrong one is a hard error.
+workflow:
+  regime: mri_structural
+  # reconstruction review 2026-09-03: 'reconstruction' is this arm's own reporting.task; the
+  # six check_workflow_* checks pass reconstruction, super_resolution and denoising alike on
+  # it, so the declaration follows the arm, not the checker.
+  task: reconstruction
+
+model:
+  model_type: unrolled_reconstruction        # MoDL-style; input_domain=kspace, output_domain=image
+  in_channels: 2                             # real/imag interleaved (expects_real_imag_interleaved)
+  out_channels: 2
+  model_kwargs:
+    num_unrolls: 5
+    features: 64
+    # M4Raw 0.3T is 4-coil. The coil dimension is handled by the model's
+    # MultiCoilForwardOperator (num_coils), NOT folded into in_channels — SSDU
+    # scores the residual on the original *multi-coil* k-space, so coils are kept
+    # (physics.coil_processing.combine = none below).
+    num_coils: 4
+    img_size: [256, 256]
+
+training:
+  input_domain: kspace
+  output_domain: image
+  batch_size: 4
+  max_iterations: 100000
+  epochs: 80
+  output_dir: experiments/results/ssdu_selfsup_m4raw
+  device: cuda
+  strategy_class: spectramr.infrastructure.training.strategies.ssdu_strategy.SSDUReconstructionStrategy
+  # SSDU self-supervised k-space split (read by SSDUReconstructionStrategy).
+  ssdu:
+    theta_fraction: 0.4                      # fraction of acquired points held out into Theta
+    num_masks: 1                             # >1 → multi_mask_ssdu robust averaging
+    split_seed: 0
+
+data:
+  # The declared undersampling block reached no route: the subject builder sets
+  # input = full k-space and nothing masked it (cohort review 2026-09-02, T0.6).
+  # A Cartesian trajectory routes the block through the loader's masking.
+  trajectory: cartesian
+  dataset_type: kspace
+  caching:
+    strategy: none
+  datasets:
+  - name: m4raw_multicoil
+    path: databases/m4raw/data/multicoil_train
+  augmentation:
+    enabled: false
+    probability: 0.5
+    enable_rotation: false
+    enable_flip: false
+    enable_elastic_deformation: false
+    enable_noise: false
+    enable_brightness: false
+    enable_contrast: false
+    enable_gamma: false
+
+  loader:
+    batch_size: 4
+    num_workers: 8
+  split:
+    type: auto
+    validation_fraction: 0.15
+  domain:
+    target_channels: 1
+  processing:
+    enable_kspace_normalization: false
+    enable_image_normalization: false
+  sampling:
+    patch_size:
+    - 256
+    - 256
+    - 1
+    samples_per_volume: 4
+    queue_length: 100
+  source:
+    root: databases/m4raw/data/multicoil_train
+    index_path: data/manifests/m4raw_train.json
+    validation_index_path: data/manifests/m4raw_multicoil_val.json
+optimization:
+  lr_scheduler_strategy: cosine
+
+  optimizer:
+    type: adamw
+    learning_rate: 2.0e-4
+    weight_decay: 1.0e-5
+  gradient:
+    clip:
+      enabled: true
+      value: 1.0
+  precision:
+    enabled: true
+  compile:
+    enabled: false
+physics:
+  # SSDU operates on the original multi-coil k-space, so DO NOT combine coils at
+  # data-load (combine: none keeps them); the residual loss needs the full y.
+  coil_processing:
+    compression: {method: none}
+    combine: {method: none}
+    output: {domain: kspace, channels: real_interleaved}
+  data_consistency:
+    enabled: true
+    weight: 1.0
+    interval: 1
+  kspace:
+    enable_kspace_recon: false
+    enforce_hermitian_symmetry: false
+    zero_pad_reconstruction: false
+
+validation:
+  enabled: true
+
+  schedule:
+    interval_steps: 2
+    on_epoch: false
+    interval_epochs: 1
+  loader:
+    batch_size: 2
+  scoring:
+    domain: image
+  visualization:
+    enabled: true
+    interval: 2000
+checkpoint:
+  save_interval: 1000
+  enabled: true
+  checkpoint_dir: ./checkpoints/ssdu_selfsup_m4raw
+  save_on_epoch: true
+  keep_last_n: 5
+  keep_best_n: 3
+
+logging:
+  progress_bar_enabled: true
+
+  identity:
+    experiment: ssdu_selfsup_m4raw
+  sinks:
+    level: warning
+    silent: false
+    to_console: true
+    to_file: true
+    dir: ./logs/ssdu_selfsup_m4raw
+  intervals:
+    log: 50
+  tracking:
+    enabled: true
+    service: tensorboard
+    enable_tensorboard: true
+early_stopping:
+  patience: 15
+  min_delta: 0.0
+  enabled: true
+  metric: val_ssim
+  mode: max
+  restore_best_weights: true
+
+metadata:
+  name: SSDU self-supervised reconstruction (M4Raw 0.3T)
+  primary_metric: val_ssim  # the arm's own selection metric (reconstruction review 2026-09-03)
+  baseline: baseline_m4raw_unet_4x  # the cohort's plain U-Net on the same M4Raw manifests and 4x Cartesian route (reconstruction review 2026-09-03)
+  description: >-
+    Reference-free accelerated reconstruction via self-supervised k-space
+    splitting (Yaman et al., MRM 2020). Lambda/Theta partition scored by the
+    registered ssdu k-space loss; no fully-sampled target required.
+    Hypothesis: SSDU self-supervised k-space splitting recovers diagnostic-quality
+    4x-accelerated M4Raw 0.3T reconstructions WITHOUT any fully-sampled target.
+    Primary metric: val_ssim (image domain; no metric transform runs -- the arm
+    declared ifft_mag_combine, which no branch ever dispatched, and it was
+    removed in #937).
+    Scope note: this is a standalone reference-free experiment, NOT a member of the
+    supervised architecture survey in this cohort. Training strategy, loss domain,
+    supervision signal, and coil handling all co-vary with the supervised arms, so a
+    cross-arm PSNR/SSIM ranking cannot attribute any delta to architecture. Compare
+    SSDU only against a supervised reconstruction of the SAME unrolled backbone or a
+    zero-filled baseline, never against the heterogeneous survey. No baseline arm
+    exists in this cohort for this comparison; the controlled baseline must be added
+    explicitly before any attribution claim.
+  tags:
+  - ssdu
+  - self_supervised
+  - reconstruction
+  - m4raw
+  - reference_free
+
+metrics:
+  enable_tracking: true
+  compute: [hfen, mae, mse, psnr, ssim]  # was 5 compute_* flags
+  metric_interval: 100
+  best_metric_name: val_ssim
+  best_metric_mode: max
+  domain: image
+  eval_on_epoch: false
+
+adapters:
+  pre_loss_pred:
+  - name: fft_image_to_kspace
+losses:
+  image_losses: []
+  kspace_losses:
+  - name: ssdu
+    weight: 1.0
+    enabled: true
+  complex_losses: []
+
+  policy:
+    output_domain: image
+undersampling:
+  base_acceleration: 4.0
+  center_fraction: 0.08
+
+reporting:
+  enabled: true
+  task: reconstruction
+  method_name: ssdu_selfsup_m4raw
+  out_subdir: report
+  figures:
+  - fig_1_2_learning_curves
+  - fig_1_3_loss_decomposition
+  - fig_1_5_predicted_vs_true
+  - fig_1_11_stratified_performance
+  - fig_1_12_failure_gallery
+  - mri_a7_kspace_recon
+  - mri_a11_cohort_table
+  tables:
+  - tab_2_1_main_results
+  - tab_2_4_dataset_descriptor
+  metrics:
+  - psnr
+  - ssim
+  - lpips
+  - vif
+  - fsim
+  - rmse
+  - nmse
+  - hfen
+  fail_on_error: false
+run:
+  seed: 42

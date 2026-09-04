@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.kan_data_consistency import KANAdaptiveDataConsistency
+from spectramr.infrastructure.physics.kan_data_consistency import KANAdaptiveDataConsistency
 
 
 @pytest.fixture

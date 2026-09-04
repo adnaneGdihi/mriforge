@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.toeplitz_attention import ToeplitzSpectralAttention
+from spectramr.models.blocks.toeplitz_attention import ToeplitzSpectralAttention
 
 
 def test_forward_shape_preserved() -> None:

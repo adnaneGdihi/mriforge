@@ -26,7 +26,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.privileged_learning_strategy import (
+from spectramr.infrastructure.training.strategies.privileged_learning_strategy import (
     DomainDiscriminator,
     PrivilegedLearningStrategy,
 )

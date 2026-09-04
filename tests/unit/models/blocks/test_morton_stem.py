@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.morton_stem import (
+from spectramr.models.blocks.morton_stem import (
     MortonLocalityStem,
     QuadScanFusion,
     _expand_bits_2d,

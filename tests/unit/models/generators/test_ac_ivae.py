@@ -1,6 +1,6 @@
 r"""Unit tests for the Acquisition-Conditioned identifiable VAE (AC-iVAE).
 
-Targets ``mriforge.models.generators.ac_ivae``.
+Targets ``spectramr.models.generators.ac_ivae``.
 
 AC-iVAE uses the continuous acquisition vector :math:`\mathbf u=\boldsymbol
 \varphi` as the iVAE auxiliary variable, with a conditionally-factorial
@@ -23,7 +23,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_variability_rank_full_under_distinct_acquisitions() -> None:
-    from mriforge.models.generators.ac_ivae import (
+    from spectramr.models.generators.ac_ivae import (
         ACIVAEPrior,
         acquisition_variability_rank,
     )
@@ -39,7 +39,7 @@ def test_variability_rank_full_under_distinct_acquisitions() -> None:
 
 def test_variability_rank_collapses_under_single_acquisition() -> None:
     """Constant u (single field/protocol) -> rank deficient -> unidentifiable (CALAMITI)."""
-    from mriforge.models.generators.ac_ivae import (
+    from spectramr.models.generators.ac_ivae import (
         ACIVAEPrior,
         acquisition_variability_rank,
     )
@@ -52,7 +52,7 @@ def test_variability_rank_collapses_under_single_acquisition() -> None:
 
 
 def test_forward_reconstructs_and_splits_latent() -> None:
-    from mriforge.models.generators.ac_ivae import ACIVAE
+    from spectramr.models.generators.ac_ivae import ACIVAE
 
     torch.manual_seed(2)
     model = ACIVAE(in_channels=1, anatomy_dim=4, contrast_dim=2, u_dim=5)
@@ -65,8 +65,8 @@ def test_forward_reconstructs_and_splits_latent() -> None:
 
 
 def test_model_is_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "ac_ivae" in MODEL_REGISTRY

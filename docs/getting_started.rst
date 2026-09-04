@@ -4,7 +4,7 @@
 Getting Started
 ===============
 
-Welcome to the MRIForge framework! This guide will help you set up your environment and run your first MRI reconstruction experiment.
+Welcome to the spectraMR framework! This guide will help you set up your environment and run your first MRI reconstruction experiment.
 
 .. contents:: Table of Contents
    :local:
@@ -46,8 +46,8 @@ Step 1: Clone the Repository
 
 .. code-block:: bash
 
-   git clone https://github.com/adnaneGdihi/mriforge.git
-   cd mriforge
+   git clone https://github.com/adnaneGdihi/spectramr.git
+   cd spectramr
 
 Step 2: Create Python Environment
 ----------------------------------
@@ -57,8 +57,8 @@ Using **conda** (recommended):
 .. code-block:: bash
 
    # Create environment
-   conda create -n mriforge python=3.11
-   conda activate mriforge
+   conda create -n spectramr python=3.11
+   conda activate spectramr
 
 Using **venv**:
 
@@ -83,15 +83,17 @@ Step 3: Install Dependencies
 
    pip install -e ".[mri]"
 
-**With Development Tools** (lint, type-check, tests, plus the full ``all``
-feature set below):
+**With Development Tools** (everything in ``all`` below, plus the
+config-migration toolchain):
 
 .. code-block:: bash
 
    pip install -e ".[dev]"
 
-**Complete Installation** (every feature that resolves in one ``pip install`` —
-mri, viz, hpo, iqa, eval, quality, topology, docs, test):
+**Complete Installation** (everything that resolves in one ``pip install`` —
+every feature group *and* every role group, so ``docs``, ``test``, ``qa`` and
+``profile`` come along too). Only ``mamba``, ``attention`` and ``radiomics`` are
+excluded, each because it cannot build under isolation:
 
 .. code-block:: bash
 
@@ -124,13 +126,13 @@ Step 4: Verify Installation
    python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA Available: {torch.cuda.is_available()}')"
 
    # Check framework installation
-   python -c "from mriforge.config.settings import TrainingSettings; print('MRIForge installed successfully!')"
+   python -c "from spectramr.config.settings import TrainingSettings; print('spectraMR installed successfully!')"
 
 Expected output::
 
    PyTorch: 2.1.0+cu118
    CUDA Available: True
-   MRIForge installed successfully!
+   spectraMR installed successfully!
 
 Dataset Setup
 =============
@@ -209,7 +211,7 @@ phantom dataset from scratch in about twenty lines.
    # Exercise a config end to end without any dataset at all: the Tier-2
    # probe synthesises its own batch, builds the model, and runs a forward
    # and backward pass through it.
-   mriforge audit experiments/templates/comprehensive_config_template.yaml --probe
+   spectramr audit experiments/templates/comprehensive_config_template.yaml --probe
 
 Your First Experiment
 ======================
@@ -234,7 +236,7 @@ Experiments are defined using YAML configuration files. Let's examine a simple c
      task: reconstruction
      input_domain: image
      output_domain: image
-     strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
      max_iterations: 10000
      epochs: 10
      device: cuda
@@ -271,10 +273,10 @@ Step 2: Run Your First Training
 .. code-block:: bash
 
    # Activate environment
-   conda activate mriforge
+   conda activate spectramr
 
    # Train the model
-   python -m mriforge.cli train --config experiments/templates/comprehensive_config_template.yaml
+   python -m spectramr.cli train --config experiments/templates/comprehensive_config_template.yaml
 
 **What to expect:**
 
@@ -310,7 +312,7 @@ If you have W&B enabled in your config (``logging.enable_wandb: true``):
 
       wandb login
 
-3. View training at: ``https://wandb.ai/<your-username>/mriforge_research``
+3. View training at: ``https://wandb.ai/<your-username>/spectramr_research``
 
 **Option B: TensorBoard**
 
@@ -332,7 +334,7 @@ Once training completes, run inference on test data:
 
 .. code-block:: bash
 
-   python -m mriforge.cli infer \\
+   python -m spectramr.cli infer \\
        --config experiments/templates/comprehensive_config_template.yaml \\
        --checkpoint experiments/results/comprehensive_experiment_template/checkpoints/best.pt \\
        --input databases/fastmri/datasets/multicoil_brain_val \\
@@ -343,7 +345,7 @@ Step 5: Evaluate Results
 
 .. code-block:: bash
 
-   mriforge report --exp-dir experiments/results/comprehensive_experiment_template
+   spectramr report --exp-dir experiments/results/comprehensive_experiment_template
 
 **Expected output:**
 
@@ -503,12 +505,12 @@ Config Validation (--dry-run)
 
 Before committing a long GPU run, validate your YAML configuration in
 seconds using the ``--dry-run`` flag. This runs the full
-:class:`~mriforge.infrastructure.validation.config_health_checker.ConfigHealthChecker`
+:class:`~spectramr.infrastructure.validation.config_health_checker.ConfigHealthChecker`
 pipeline without instantiating models or loading data:
 
 .. code-block:: bash
 
-   python -m mriforge.cli train --config <your-arm>.yaml --dry-run
+   python -m spectramr.cli train --config <your-arm>.yaml --dry-run
 
 **Example output:**
 
@@ -575,7 +577,7 @@ Additional Resources
 
 - **User guide**: :doc:`user_guide`
 - **API reference**: :doc:`scripting_api`
-- **GitHub Issues**: `Report bugs <https://github.com/adnaneGdihi/mriforge/issues>`_
+- **GitHub Issues**: `Report bugs <https://github.com/adnaneGdihi/spectramr/issues>`_
 
 Quick Reference Commands
 =========================
@@ -583,19 +585,19 @@ Quick Reference Commands
 .. code-block:: bash
 
    # Training
-   python -m mriforge.cli train --config <path-to-yaml>
+   python -m spectramr.cli train --config <path-to-yaml>
 
    # Inference
-   python -m mriforge.cli infer --config <config> --checkpoint <checkpoint> --input <dir> --output <dir>
+   python -m spectramr.cli infer --config <config> --checkpoint <checkpoint> --input <dir> --output <dir>
 
    # Evaluation
-   mriforge report --exp-dir <experiment-output-dir>
+   spectramr report --exp-dir <experiment-output-dir>
 
    # Hyperparameter optimization
-   python -m mriforge.tools.tune --config <config> --trials 50
+   python -m spectramr.tools.tune --config <config> --trials 50
 
    # Dry run (config validation)
-   python -m mriforge.cli train --config <config> --dry-run
+   python -m spectramr.cli train --config <config> --dry-run
 
    # View logs
    tensorboard --logdir experiments/<experiment-name>/logs
@@ -631,4 +633,4 @@ You're ready to explore! Here are suggested learning paths:
 2. Tutorial: :doc:`tutorials/tutorial_04_physics_constraints`
 3. Experiment: ``experiments/active/experiment_41_physics_informed_motion_networks_pimn.yaml``
 
-Welcome to MRIForge! 🚀
+Welcome to spectraMR! 🚀

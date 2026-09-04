@@ -53,34 +53,34 @@ class TestSSOTCompliance:
 
     # Directories to scan for violations
     PRODUCTION_DIRS = [
-        "src/mriforge/infrastructure/training/strategies/",
-        "src/mriforge/pipelines/",
-        "src/mriforge/models/",
-        "src/mriforge/data/",
+        "src/spectramr/infrastructure/training/strategies/",
+        "src/spectramr/pipelines/",
+        "src/spectramr/models/",
+        "src/spectramr/data/",
     ]
 
     # Files known to be FIXED (no violations allowed)
     FIXED_FILES = [
-        "src/mriforge/infrastructure/training/strategies/disentangled_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py",
-        "src/mriforge/infrastructure/training/strategies/diffusion.py",
+        "src/spectramr/infrastructure/training/strategies/disentangled_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py",
+        "src/spectramr/infrastructure/training/strategies/diffusion.py",
     ]
 
     # Known remaining violations (to be fixed in Phase 2.5-2.7)
     # This list should shrink to zero as we fix files
     KNOWN_REMAINING_VIOLATIONS = {
-        "src/mriforge/infrastructure/training/strategies/vae.py": 10,
-        "src/mriforge/infrastructure/training/strategies/base.py": 9,
-        "src/mriforge/infrastructure/training/strategies/reconstruction.py": 6,
-        "src/mriforge/infrastructure/training/strategies/gan.py": 5,
-        "src/mriforge/infrastructure/training/strategies/vision_mamba_strategy.py": 4,
-        "src/mriforge/infrastructure/training/strategies/mixins/adversarial_mixin.py": 4,
-        "src/mriforge/infrastructure/training/strategies/domain_adaptation.py": 4,
-        "src/mriforge/infrastructure/training/strategies/vqvae.py": 3,
-        "src/mriforge/infrastructure/training/strategies/pretraining.py": 2,
-        "src/mriforge/infrastructure/training/strategies/physics_driven_strategy.py": 2,
-        "src/mriforge/infrastructure/training/strategies/mixins/eda_mixin.py": 2,
-        "src/mriforge/infrastructure/training/strategies/mixins/visualization_mixin.py": 1,
+        "src/spectramr/infrastructure/training/strategies/vae.py": 10,
+        "src/spectramr/infrastructure/training/strategies/base.py": 9,
+        "src/spectramr/infrastructure/training/strategies/reconstruction.py": 6,
+        "src/spectramr/infrastructure/training/strategies/gan.py": 5,
+        "src/spectramr/infrastructure/training/strategies/vision_mamba_strategy.py": 4,
+        "src/spectramr/infrastructure/training/strategies/mixins/adversarial_mixin.py": 4,
+        "src/spectramr/infrastructure/training/strategies/domain_adaptation.py": 4,
+        "src/spectramr/infrastructure/training/strategies/vqvae.py": 3,
+        "src/spectramr/infrastructure/training/strategies/pretraining.py": 2,
+        "src/spectramr/infrastructure/training/strategies/physics_driven_strategy.py": 2,
+        "src/spectramr/infrastructure/training/strategies/mixins/eda_mixin.py": 2,
+        "src/spectramr/infrastructure/training/strategies/mixins/visualization_mixin.py": 1,
     }
 
     @staticmethod
@@ -324,7 +324,7 @@ class TestSSOTCompliance:
 
         This is a meta-test that verifies schema completeness.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         # Get all field names from TrainingSettings
         fields = TrainingSettings.model_fields
@@ -385,7 +385,7 @@ class TestConfigDefaultsInSchemas:
 
         violations = []
 
-        for strategy_file in Path("src/mriforge/infrastructure/training/strategies/").rglob("*.py"):
+        for strategy_file in Path("src/spectramr/infrastructure/training/strategies/").rglob("*.py"):
             if "__pycache__" in str(strategy_file):
                 continue
 
@@ -447,7 +447,7 @@ class TestPreventCommonAntiPatterns:
         """
         violations = []
 
-        for strategy_file in Path("src/mriforge/infrastructure/training/strategies/").rglob("*.py"):
+        for strategy_file in Path("src/spectramr/infrastructure/training/strategies/").rglob("*.py"):
             if "__pycache__" in str(strategy_file):
                 continue
 
@@ -513,7 +513,7 @@ class TestPreventCommonAntiPatterns:
         BUG FOUND: max_grad_norm used in code, but schema has gradient_clip_value
         This test prevents similar bugs.
         """
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         # Known schema field names
         optimization_fields = set(OptimizationConfigSchema.model_fields.keys())
@@ -528,7 +528,7 @@ class TestPreventCommonAntiPatterns:
 
         violations = []
 
-        for strategy_file in Path("src/mriforge/infrastructure/training/strategies/").rglob("*.py"):
+        for strategy_file in Path("src/spectramr/infrastructure/training/strategies/").rglob("*.py"):
             if "__pycache__" in str(strategy_file):
                 continue
 

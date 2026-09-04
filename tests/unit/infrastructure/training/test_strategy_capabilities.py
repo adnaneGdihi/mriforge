@@ -7,9 +7,9 @@ reconstruction short-name aliases share one contract), retrieved via
 
 from __future__ import annotations
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
-from mriforge.models.capabilities import StrategyCapabilities
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.models.capabilities import StrategyCapabilities
 
 
 def test_base_has_default_empty_contract() -> None:

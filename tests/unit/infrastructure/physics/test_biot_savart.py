@@ -1,6 +1,6 @@
 """Tests for ``compute_b1_minus_biot_savart``.
 
-Targets ``mriforge.infrastructure.physics.biot_savart``. The Biot-Savart
+Targets ``spectramr.infrastructure.physics.biot_savart``. The Biot-Savart
 helper synthesises analytical B1- receive sensitivity maps for a
 cylindrical coil array — used by the digital twin and as a synthetic
 ground truth in coil-sensitivity-estimation tests.
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
+from spectramr.infrastructure.physics.biot_savart import compute_b1_minus_biot_savart
 
 
 def test_returns_complex_tensor_with_expected_shape() -> None:

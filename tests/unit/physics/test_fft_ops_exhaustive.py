@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import (
+from spectramr.infrastructure.physics.fft_ops import (
     FFTTransformer,
     _to_complex,
     coil_combine_rss,

@@ -1,6 +1,6 @@
 """Tests for the config-layer override utilities (``config/overrides.py``).
 
-These moved out of ``mriforge.main`` (the CLI/entry layer) so ``pipelines/`` can
+These moved out of ``spectramr.main`` (the CLI/entry layer) so ``pipelines/`` can
 import them rightward instead of leftward (CLAUDE.md #13). Behavioural coverage
 of ``apply_overrides`` against a real ``TrainingSettings`` lives in
 ``tests/unit/config/test_settings.py``; here we pin the pure ``_parse_value``
@@ -13,7 +13,7 @@ from contextlib import suppress
 
 import pytest
 
-from mriforge.config.overrides import (
+from spectramr.config.overrides import (
     _parse_value,
     applied_override_paths,
     apply_overrides,
@@ -52,8 +52,8 @@ def test_parse_value_int_before_float():
 
 
 def test_main_reexports_same_objects():
-    """``mriforge.main`` must re-export the SAME callables (backward compat)."""
-    from mriforge import main
+    """``spectramr.main`` must re-export the SAME callables (backward compat)."""
+    from spectramr import main
 
     assert main.apply_overrides is apply_overrides
     assert main._parse_value is _parse_value
@@ -86,13 +86,13 @@ def test_override_preserves_model_fields_set():
     ``lambda_content`` = 0.0, both canonicalising to ``perceptual``) look like
     conflicting author declarations and raised ConfigurationError at build time.
 
-    Net effect: ``mriforge audit`` passed (no override) and ``mriforge train
+    Net effect: ``spectramr audit`` passed (no override) and ``spectramr train
     --override ...`` died — and SMOKE mode always injects an iteration cap, so
     three ldm_two_stage_ulf_to_hf arms failed on 2026-07-25 (SLURM 7796517).
     Same disease as the 2026-05-29 ``model_domain`` round-trip break, which was
     worked around per-field; this fixes the mechanism.
     """
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     cfg = _minimal_config()
     # Mirror the production shape: ONE authored lambda, the rest defaulted.
@@ -118,7 +118,7 @@ def test_override_preserves_model_fields_set():
 
 def test_override_marks_only_the_overridden_path_as_authored():
     """A nested override marks that field authored without touching siblings."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings(**_minimal_config())
     before = set(settings.optimization.model_fields_set)
@@ -136,7 +136,7 @@ def test_override_marks_only_the_overridden_path_as_authored():
 
 def test_override_preserves_previously_authored_fields():
     """Fields the AUTHOR set (or a migration set) survive the round-trip."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     cfg = _minimal_config()
     cfg["optimization"] = {"learning_rate": 3e-4}  # the FLAT spelling, folded
@@ -183,7 +183,7 @@ class TestDeepSpeedRoundTrip:
         return cfg
 
     def test_override_round_trips_a_deepspeed_arm(self):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**self._deepspeed_config())
         # Precondition: the arm declares NEITHER sub-block. Without it the test
@@ -207,7 +207,7 @@ class TestDeepSpeedRoundTrip:
         write ``topk_ratio``, under ``zenflow.enabled: false``, so it really
         does reach nothing -- and must fail loud (pitfall #9), not silently.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**self._deepspeed_config())
         with pytest.raises(ValueError, match="topk_ratio"):
@@ -222,7 +222,7 @@ def test_override_does_not_promote_defaults_to_declarations():
     it wholesale. Assert on the root model, where the blast radius was widest:
     an unrelated override must not mark every top-level section as declared.
     """
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     settings = TrainingSettings(**_minimal_config())
     before = set(settings.model_fields_set)
@@ -262,7 +262,7 @@ class TestLegacySpellingOverrides:
     # so the test passes with the translation removed and proves nothing.
 
     def test_legacy_flat_override_lands_on_the_canonical_field(self):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**_minimal_config())
         assert (
@@ -273,7 +273,7 @@ class TestLegacySpellingOverrides:
 
     def test_canonical_override_still_works(self):
         """Both spellings resolve to the same field -- neither shadows the other."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**_minimal_config())
         legacy = apply_overrides(settings, ["optimization.learning_rate=2e-4"])
@@ -291,7 +291,7 @@ class TestLegacySpellingOverrides:
         declaration from a default; crediting the legacy leaf would leave the
         real field looking undeclared.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**_minimal_config())
         updated = apply_overrides(settings, ["optimization.learning_rate=7e-4"])
@@ -300,7 +300,7 @@ class TestLegacySpellingOverrides:
 
     def test_data_block_legacy_override_lands(self):
         """The same break existed in ``data:`` after phase 9a."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         settings = TrainingSettings(**_minimal_config())
         assert settings.data.loader.batch_size == 2, "fixture drifted"
@@ -315,7 +315,7 @@ class TestLegacySpellingOverrides:
         config language is. Asserting per-record keeps new folds honest without
         anyone remembering to extend this file.
         """
-        from mriforge.config.schemas.renames import RENAMES, canonical_override_path
+        from spectramr.config.schemas.renames import RENAMES, canonical_override_path
 
         folds = [r for r in RENAMES.values() if r.posture == "fold"]
         assert folds, "no fold records -- this test needs a new anchor"
@@ -332,7 +332,7 @@ class TestLegacySpellingOverrides:
         reject validator produces the message that names the replacement --
         silently rewriting it would hide the fact that the key is gone.
         """
-        from mriforge.config.schemas.renames import RENAMES, canonical_override_path
+        from spectramr.config.schemas.renames import RENAMES, canonical_override_path
 
         retired = [r for r in RENAMES.values() if r.posture == "raise"]
         assert retired, "no raise records left -- this test needs a new anchor"
@@ -343,7 +343,7 @@ class TestLegacySpellingOverrides:
 def _settings():
     """A validated ``TrainingSettings`` — ``apply_overrides`` takes the object,
     not the dict ``_minimal_config`` returns."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings(**_minimal_config())
 
@@ -358,7 +358,7 @@ class TestOverrideEcho:
 
     def test_applied_overrides_are_echoed_at_info(self, caplog):
         config = _settings()
-        with caplog.at_level("INFO", logger="mriforge.config.overrides"):
+        with caplog.at_level("INFO", logger="spectramr.config.overrides"):
             apply_overrides(config, ["training.max_iterations=40"])
         info = [r.getMessage() for r in caplog.records if r.levelname == "INFO"]
         assert any("Overrides applied (1)" in m for m in info)
@@ -367,7 +367,7 @@ class TestOverrideEcho:
     def test_echo_names_the_canonical_destination_after_a_fold(self, caplog):
         """A legacy spelling lands somewhere else; the echo has to say where,
         or it confirms a write to a path that was never written."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         folded = [r for r in RENAMES.values() if r.posture == "fold"]
         assert folded, "no fold records left -- this test needs a new anchor"
@@ -375,7 +375,7 @@ class TestOverrideEcho:
         config = _settings()
         # The echo precedes re-validation, so a value that does not validate for
         # this particular key still exercises the path under test.
-        with caplog.at_level("INFO", logger="mriforge.config.overrides"), suppress(
+        with caplog.at_level("INFO", logger="spectramr.config.overrides"), suppress(
             ValueError
         ):
             apply_overrides(config, [f"{rec.legacy}=1"])
@@ -384,7 +384,7 @@ class TestOverrideEcho:
 
     def test_no_echo_when_no_overrides_are_passed(self, caplog):
         config = _settings()
-        with caplog.at_level("INFO", logger="mriforge.config.overrides"):
+        with caplog.at_level("INFO", logger="spectramr.config.overrides"):
             apply_overrides(config, [])
         assert not [r for r in caplog.records if "Overrides applied" in r.getMessage()]
 
@@ -420,7 +420,7 @@ class TestOverrideProvenance:
         """A fold moves the key. Recording the spelling the caller TYPED would
         make the banner miss an override that did land, because every consumer
         asks about the canonical path."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         folded = [
             r

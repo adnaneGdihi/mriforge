@@ -1,6 +1,6 @@
 r"""Unit tests for the Neural-Operator Signal Equation (NOSE).
 
-Targets ``mriforge.models.generators.nose_operator`` and the ``physics_anchor`` loss.
+Targets ``spectramr.models.generators.nose_operator`` and the ``physics_anchor`` loss.
 
 NOSE casts contrast formation as a discretization-invariant neural operator
 :math:`\mathcal G_\theta:(\boldsymbol\xi(\cdot),\boldsymbol\varphi)\mapsto
@@ -31,7 +31,7 @@ def _params(h: int, w: int) -> torch.Tensor:
 
 
 def test_operator_runs_and_is_discretization_invariant() -> None:
-    from mriforge.models.generators.nose_operator import NeuralOperatorSignalEquation
+    from spectramr.models.generators.nose_operator import NeuralOperatorSignalEquation
 
     torch.manual_seed(0)
     op = NeuralOperatorSignalEquation(param_channels=3, acq_dim=5, width=8, modes=4)
@@ -42,18 +42,18 @@ def test_operator_runs_and_is_discretization_invariant() -> None:
 
 
 def test_operator_is_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "nose_operator" in MODEL_REGISTRY
 
 
 def test_physics_anchor_zero_when_prediction_is_analytic_render() -> None:
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     params = _params(8, 8)
     layer = MultiPhysicsBlochLayer(learnable_flip_angle=False)
@@ -70,7 +70,7 @@ def test_physics_anchor_zero_when_prediction_is_analytic_render() -> None:
 
 
 def test_physics_anchor_positive_when_prediction_wrong() -> None:
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     params = _params(8, 8)
     pred = torch.zeros(1, 1, 8, 8)
@@ -83,7 +83,7 @@ def test_physics_anchor_positive_when_prediction_wrong() -> None:
 
 
 def test_physics_anchor_is_registered() -> None:
-    from mriforge.models.losses import create_loss
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses import create_loss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     assert isinstance(create_loss("physics_anchor"), PhysicsAnchorLoss)

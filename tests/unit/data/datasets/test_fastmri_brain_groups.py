@@ -14,7 +14,7 @@ import h5py
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.fastmri_brain_groups import (
+from spectramr.data.datasets.fastmri_brain_groups import (
     BrainContrastGrid,
     brain_contrast_of,
     discover_brain_contrast_groups,

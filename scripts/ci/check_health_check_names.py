@@ -47,7 +47,7 @@ import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SOURCE = REPO_ROOT / "src/mriforge/infrastructure/validation/config_health_checker.py"
+SOURCE = REPO_ROOT / "src/spectramr/infrastructure/validation/config_health_checker.py"
 LEDGER = Path(__file__).resolve().parent / "health_check_names.txt"
 
 CHECKER_CLASS = "ConfigHealthChecker"

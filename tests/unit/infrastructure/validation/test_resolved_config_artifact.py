@@ -9,11 +9,12 @@ identical, not merely similar.
 from __future__ import annotations
 
 import json
+import pathlib
 
 import pytest
 
-from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
-from mriforge.infrastructure.validation.resolved_config_artifact import (
+from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
+from spectramr.infrastructure.validation.resolved_config_artifact import (
     FAILURE_SENTINEL_NAME,
     RESOLVED_CONFIG_NAME,
     build_resolved_config_payload,
@@ -41,7 +42,7 @@ def _disarm():
 def _settings(extra=None):
     import copy
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     data = copy.deepcopy(BASE)
     if extra:
@@ -150,9 +151,9 @@ def test_failure_sentinel_preserves_the_records_collected_so_far(tmp_path):
 
 def test_strict_mode_turns_a_write_failure_into_an_abort(tmp_path, monkeypatch):
     """ "A run without a ledger did not happen" — for CI and cluster audits."""
-    monkeypatch.setenv("MRIFORGE_LEDGER_STRICT", "1")
+    monkeypatch.setenv("SPECTRAMR_LEDGER_STRICT", "1")
     ExecutionLedger.begin_run(source="t")
-    with pytest.raises(RuntimeError, match="MRIFORGE_LEDGER_STRICT"):
+    with pytest.raises(RuntimeError, match="SPECTRAMR_LEDGER_STRICT"):
         write_ledger_failure_sentinel(tmp_path, RuntimeError("boom"))
 
 
@@ -185,9 +186,7 @@ def test_the_ledger_block_labels_what_its_schema_version_versions():
 def test_the_declared_schema_tier_reaches_the_ledger_block():
     """Sensitivity pair, half 1: a config that states its tier is reported."""
     ExecutionLedger.begin_run(source="t")
-    payload = build_resolved_config_payload(
-        _settings({"config_version": "1.0"}), run_id="r1"
-    )
+    payload = build_resolved_config_payload(_settings({"config_version": "1.0"}), run_id="r1")
     assert payload["_ledger"]["config_version"] == "1.0"
     # And it is the config's own value, not a constant: same key, same answer.
     assert payload["run"]["config_version"] == "1.0"
@@ -209,7 +208,7 @@ def test_an_undeclared_schema_tier_is_none_rather_than_invented():
 def test_the_tier_reader_does_not_guess_at_a_foreign_payload():
     """`_declared_config_version` is fail-soft by design: the artifact writer must
     not crash a run over a payload shape it did not expect."""
-    from mriforge.infrastructure.validation.resolved_config_artifact import (
+    from spectramr.infrastructure.validation.resolved_config_artifact import (
         _declared_config_version,
     )
 
@@ -289,3 +288,88 @@ def test_relaunching_into_one_directory_keeps_every_runs_config(tmp_path):
     assert run_c["training"]["max_iterations"] == 40
     assert run_b["_ledger"]["run_id"] == "run-B"
     assert run_c["_ledger"]["run_id"] == "run-C"
+
+
+# ---- the declared block, and rebuilding settings from the artifact (2026-09-03, #1379) ----
+
+
+def _reference_settings():
+    import spectramr.config.schemas as _schemas
+    from spectramr.config.settings import TrainingSettings
+
+    return TrainingSettings.from_yaml(
+        str(pathlib.Path(_schemas.__file__).parent / "templates" / "v1.0_reference.yaml")
+    )
+
+
+def test_payload_carries_a_declared_block_that_revalidates_to_the_resolved_settings():
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.resolved_config_artifact import (
+        DECLARED_KEY,
+        build_resolved_config_payload,
+    )
+
+    settings = _reference_settings()
+    payload = build_resolved_config_payload(settings, run_id="t")
+    declared = payload[DECLARED_KEY]
+    assert declared and set(declared) < set(payload)
+    rebuilt = TrainingSettings.model_validate(declared)
+    resolved = {k: v for k, v in payload.items() if k not in ("_ledger", DECLARED_KEY)}
+    assert rebuilt.model_dump(mode="json") == resolved
+
+
+def test_settings_from_resolved_config_rebuilds_the_run(tmp_path):
+    from spectramr.infrastructure.validation.resolved_config_artifact import (
+        settings_from_resolved_config,
+        write_resolved_config,
+    )
+
+    settings = _reference_settings()
+    path = write_resolved_config(tmp_path, settings, run_id="t")
+    rebuilt = settings_from_resolved_config(path)
+    assert rebuilt.model_dump(mode="json") == settings.model_dump(mode="json")
+
+
+def test_an_artifact_without_the_declared_block_is_refused_with_guidance(tmp_path):
+    from spectramr.infrastructure.validation.resolved_config_artifact import (
+        settings_from_resolved_config,
+    )
+
+    old = tmp_path / "resolved_config.json"
+    old.write_text(json.dumps({"model": {"model_type": "unet"}, "_ledger": {}}))
+    with pytest.raises(ValueError, match="--from-yaml"):
+        settings_from_resolved_config(old)
+
+
+def test_resolved_config_beside_looks_in_the_checkpoint_dir_then_its_parent(tmp_path):
+    from spectramr.infrastructure.validation.resolved_config_artifact import resolved_config_beside
+
+    run = tmp_path / "run"
+    (run / "checkpoints").mkdir(parents=True)
+    ckpt = run / "checkpoints" / "best.pt"
+    ckpt.write_bytes(b"")
+    assert resolved_config_beside(ckpt) is None
+    (run / "resolved_config.json").write_text("{}")
+    assert resolved_config_beside(ckpt) == run / "resolved_config.json"
+    (run / "checkpoints" / "resolved_config.json").write_text("{}")
+    assert resolved_config_beside(ckpt) == run / "checkpoints" / "resolved_config.json"
+    assert resolved_config_beside(None) is None
+
+
+def test_has_declared_block_reads_the_artifact_without_rebuilding(tmp_path):
+    from spectramr.infrastructure.validation.resolved_config_artifact import (
+        has_declared_block,
+        write_resolved_config,
+    )
+
+    old = tmp_path / "resolved_config.json"
+    old.write_text(json.dumps({"model": {}, "_ledger": {}}))
+    assert has_declared_block(old) is False
+    assert has_declared_block(tmp_path / "missing.json") is False
+    (tmp_path / "run").mkdir()
+    assert (
+        has_declared_block(
+            write_resolved_config(tmp_path / "run", _reference_settings(), run_id="t")
+        )
+        is True
+    )

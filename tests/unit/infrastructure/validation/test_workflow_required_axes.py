@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -173,7 +173,7 @@ def test_any_of_semantics_matches_the_message_the_check_prints() -> None:
     none of them" (any-of). The two agreed only while every profile declared 0
     or 1 axis -- true of all 14 until ``mri_quantitative`` needed both spellings.
     """
-    from mriforge.domain.workflows import WORKFLOW_PROFILES
+    from spectramr.domain.workflows import WORKFLOW_PROFILES
 
     required = WORKFLOW_PROFILES[Regime.QUANTITATIVE].required_axes
     assert len(required) == 2, "precondition: the only multi-axis profile"
@@ -184,7 +184,7 @@ def test_any_of_semantics_matches_the_message_the_check_prints() -> None:
 
 def test_the_declaration_is_what_answers_not_the_type_table() -> None:
     """``bart_kspace`` is unannotated, so a pass can only have come from the map."""
-    from mriforge.data.datasets.axis_exposure import exposed_axes_for
+    from spectramr.data.datasets.axis_exposure import exposed_axes_for
 
     assert exposed_axes_for("bart_kspace") is None
     assert _check_bart(Regime.QUANTITATIVE, _ECHO_ARM_DIM_MAP).passed

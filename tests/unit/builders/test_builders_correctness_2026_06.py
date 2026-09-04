@@ -17,11 +17,11 @@ import inspect
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.builders import infrastructure_builder as ib_mod
-from mriforge.infrastructure.training.builders import loss_builder as lb_mod
-from mriforge.infrastructure.training.builders import model_builder as mb_mod
+from spectramr.config.settings import TrainingSettings
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.builders import infrastructure_builder as ib_mod
+from spectramr.infrastructure.training.builders import loss_builder as lb_mod
+from spectramr.infrastructure.training.builders import model_builder as mb_mod
 
 
 def _config():

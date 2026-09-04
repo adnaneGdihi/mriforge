@@ -1,7 +1,7 @@
 """Unit tests for the Glow multi-scale normalizing flow.
 
 Covers the flow blocks (ActNorm, invertible 1x1 conv, affine coupling,
-squeeze/split) and the :class:`mriforge.models.generative.glow.Glow` model:
+squeeze/split) and the :class:`spectramr.models.generative.glow.Glow` model:
 registry resolution, default constructibility, forward shape, the
 invertibility round-trip (< 1e-4), log-prob finiteness and gradient flow.
 
@@ -13,12 +13,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.flow.actnorm import ActNorm2d
-from mriforge.models.blocks.flow.affine_coupling import AffineCoupling
-from mriforge.models.blocks.flow.invertible_1x1_conv import InvertibleConv1x1LU
-from mriforge.models.blocks.flow.squeeze import Split, Squeeze2x
-from mriforge.models.generative.glow import Glow
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.blocks.flow.actnorm import ActNorm2d
+from spectramr.models.blocks.flow.affine_coupling import AffineCoupling
+from spectramr.models.blocks.flow.invertible_1x1_conv import InvertibleConv1x1LU
+from spectramr.models.blocks.flow.squeeze import Split, Squeeze2x
+from spectramr.models.generative.glow import Glow
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 from tests.unit.models._flow_base import (
     assert_gradient_flows,
     assert_log_prob_finite,

@@ -15,9 +15,9 @@ from __future__ import annotations
 import pytest
 import torch.nn as nn
 
-from mriforge.core.metrics.registry import MetricsRegistry, register_metric
-from mriforge.models.losses.registry import LossRegistry, register_loss
-from mriforge.models.registry import MODEL_REGISTRY, register_model
+from spectramr.core.metrics.registry import MetricsRegistry, register_metric
+from spectramr.models.losses.registry import LossRegistry, register_loss
+from spectramr.models.registry import MODEL_REGISTRY, register_model
 
 
 # ---------------------------------------------------------------------------

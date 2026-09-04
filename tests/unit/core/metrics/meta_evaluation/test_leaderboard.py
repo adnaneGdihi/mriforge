@@ -6,14 +6,14 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.meta_evaluation.leaderboard import (  # noqa: E402
+from spectramr.core.metrics.meta_evaluation.leaderboard import (  # noqa: E402
     DEFAULT_MIN_SAMPLES,
     CellKey,
     LeaderboardCell,
     LeaderboardCube,
     build_cell,
 )
-from mriforge.core.metrics.meta_evaluation.types import RankingResult  # noqa: E402
+from spectramr.core.metrics.meta_evaluation.types import RankingResult  # noqa: E402
 
 
 def _results(scores: dict[str, float], method: str = "cdscr") -> list[RankingResult]:

@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.data.collation.strategies import ImageCollateStrategy
+from spectramr.data.collation.strategies import ImageCollateStrategy
 
 
 class TestImageCollateStrategy:

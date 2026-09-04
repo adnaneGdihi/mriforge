@@ -16,8 +16,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.core.metrics.tissue_segmentation import (
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.tissue_segmentation import (
     MIN_FOREGROUND_FRACTION,
     N_TISSUE_CLASSES,
     OtsuTissueSegmenter,

@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generative.beta_vae_gan import BetaVAEGAN  # noqa: E402
+from spectramr.models.generative.beta_vae_gan import BetaVAEGAN  # noqa: E402
 
 
 def _model() -> BetaVAEGAN:

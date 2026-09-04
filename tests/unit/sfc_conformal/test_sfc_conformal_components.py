@@ -14,15 +14,15 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 # Force-populate registries.
-import mriforge.models.generators  # noqa: F401
-import mriforge.models.diffusion  # noqa: F401
-import mriforge.models.losses  # noqa: F401
+import spectramr.models.generators  # noqa: F401
+import spectramr.models.diffusion  # noqa: F401
+import spectramr.models.losses  # noqa: F401
 
 
 def test_conformal_geomamba_ulf_registered_and_runs() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
     assert "conformal_geomamba_ulf" in MODEL_REGISTRY
-    from mriforge.models.generators.conformal_geomamba_ulf import ConformalGeoMambaULF
+    from spectramr.models.generators.conformal_geomamba_ulf import ConformalGeoMambaULF
     model = ConformalGeoMambaULF(
         in_channels=1, out_channels=1, base_width=8, scales=2, grid_size=16
     )
@@ -31,14 +31,14 @@ def test_conformal_geomamba_ulf_registered_and_runs() -> None:
 
 
 def test_three_conformal_losses_registered() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
     names = set(LossRegistry.list_available()) | set(LossRegistry._custom_losses)
     for n in ("conformal_modulus", "beltrami_motion_residual", "teichmuller_geodesic"):
         assert n in names, f"loss {n!r} not registered"
 
 
 def test_beltrami_sfc_block_returns_valid_permutation() -> None:
-    from mriforge.models.blocks.space_filling_curves import BeltramiSFCBlock
+    from spectramr.models.blocks.space_filling_curves import BeltramiSFCBlock
     blk = BeltramiSFCBlock(grid_size=8, in_channels=1)
     out = blk(torch.randn(2, 1, 8, 8))
     assert out["indices"].shape == (2, 64)
@@ -56,7 +56,7 @@ def test_beltrami_sfc_block_zero_mu_is_hilbert() -> None:
     unchanged. This is the consistency claim the module docstring makes — the
     old ``φ.angle()`` sort did NOT satisfy it (it collapsed 2-D locality even at
     μ=0), and no test ever pinned it (F3)."""
-    from mriforge.models.blocks.space_filling_curves import BeltramiSFCBlock
+    from spectramr.models.blocks.space_filling_curves import BeltramiSFCBlock
 
     gs = 16
     blk = BeltramiSFCBlock(grid_size=gs, in_channels=1)
@@ -72,7 +72,7 @@ def test_beltrami_sfc_block_zero_mu_is_hilbert() -> None:
 def test_beltrami_sfc_block_is_locality_preserving() -> None:
     """The warped adaptive curve keeps a bounded max L1 step between consecutive
     tokens — unlike the old global-angle sort (max step ≈ 13 on a 16×16 grid)."""
-    from mriforge.models.blocks.space_filling_curves import BeltramiSFCBlock
+    from spectramr.models.blocks.space_filling_curves import BeltramiSFCBlock
 
     gs = 16
     torch.manual_seed(0)
@@ -84,7 +84,7 @@ def test_beltrami_sfc_block_is_locality_preserving() -> None:
 
 
 def test_conformal_data_consistency_acts_as_dc_when_jac_one() -> None:
-    from mriforge.infrastructure.physics.data_consistency import ConformalDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import ConformalDataConsistency
     dc = ConformalDataConsistency(alpha=1.0)
     x = torch.randn(2, 2, 16, 16)
     y = torch.randn(2, 2, 16, 16)
@@ -95,7 +95,7 @@ def test_conformal_data_consistency_acts_as_dc_when_jac_one() -> None:
 
 
 def test_teichmuller_schedule_head_in_unit_interval() -> None:
-    from mriforge.models.diffusion.teichmuller_schedule import TeichmullerScheduleHead
+    from spectramr.models.diffusion.teichmuller_schedule import TeichmullerScheduleHead
     head = TeichmullerScheduleHead(hidden=8, r_max=0.95)
     r = head(torch.linspace(0, 1, 16))
     assert r.shape == (16,)
@@ -104,7 +104,7 @@ def test_teichmuller_schedule_head_in_unit_interval() -> None:
 
 
 def test_four_sfc_conformal_strategies_registered() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
     sm = TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     for n in (
         "adaptive_sfc_hssc",
@@ -143,13 +143,13 @@ class _ConstantModel(nn.Module):
 
 
 def test_adaptive_sfc_hssc_strategy_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
         AdaptiveSFCHSSCStrategy,
     )
     strat = _patched(AdaptiveSFCHSSCStrategy, generator=_ConstantModel())
     AdaptiveSFCHSSCStrategy.__init__.__wrapped__ if False else None  # noqa
     # Manually mirror init side-effects we need.
-    from mriforge.models.blocks.space_filling_curves import BeltramiSFCBlock
+    from spectramr.models.blocks.space_filling_curves import BeltramiSFCBlock
     strat.sfc = BeltramiSFCBlock(grid_size=16, in_channels=1)
     strat.lambda_mu = 0.01
     strat.lambda_traj = 0.01
@@ -160,10 +160,10 @@ def test_adaptive_sfc_hssc_strategy_smoke() -> None:
 
 
 def test_conformal_diffusion_recon_strategy_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+    from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
         ConformalDiffusionReconStrategy,
     )
-    from mriforge.infrastructure.physics.data_consistency import ConformalDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import ConformalDataConsistency
     strat = _patched(ConformalDiffusionReconStrategy, generator=_ConstantModel())
     strat.sigma_min = 0.01
     strat.sigma_max = 0.5
@@ -185,8 +185,8 @@ def test_conformal_diffusion_recon_strategy_raises_without_keys() -> None:
     silently run a vanilla denoising MSE (pitfall #16)."""
     import pytest
 
-    from mriforge.infrastructure.physics.data_consistency import ConformalDataConsistency
-    from mriforge.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
+    from spectramr.infrastructure.physics.data_consistency import ConformalDataConsistency
+    from spectramr.infrastructure.training.strategies.sfc_conformal_kspace_strategies import (
         ConformalDiffusionReconStrategy,
     )
 
@@ -200,10 +200,10 @@ def test_conformal_diffusion_recon_strategy_raises_without_keys() -> None:
 
 
 def test_beltrami_motion_correction_strategy_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.beltrami_motion_cortical_strategies import (
+    from spectramr.infrastructure.training.strategies.beltrami_motion_cortical_strategies import (
         BeltramiMotionCorrectionStrategy,
     )
-    from mriforge.infrastructure.physics.conformal_geometry import LinearBeltramiSolver
+    from spectramr.infrastructure.physics.conformal_geometry import LinearBeltramiSolver
     strat = _patched(BeltramiMotionCorrectionStrategy, generator=_ConstantModel())
     strat.grid_size = 16
     strat.k_max = 0.9
@@ -218,7 +218,7 @@ def test_beltrami_motion_correction_strategy_smoke() -> None:
 
 
 def test_cortical_conformal_recon_strategy_smoke() -> None:
-    from mriforge.infrastructure.training.strategies.beltrami_motion_cortical_strategies import (
+    from spectramr.infrastructure.training.strategies.beltrami_motion_cortical_strategies import (
         CorticalConformalReconStrategy,
     )
     strat = _patched(CorticalConformalReconStrategy, generator=_ConstantModel())

@@ -17,7 +17,7 @@ import torch
 @pytest.mark.unit
 def test_optimizable_parameters_canary():
     """Basic container holds tensors and returns correct list."""
-    from mriforge.infrastructure.optimization.tto.parameter_extractor import (
+    from spectramr.infrastructure.optimization.tto.parameter_extractor import (
         OptimizableParameters,
     )
 
@@ -55,7 +55,7 @@ def test_optimizable_parameters_canary():
 )
 def test_to_list_length(kwargs, expected_len):
     """to_list length matches number of non-None fields."""
-    from mriforge.infrastructure.optimization.tto.parameter_extractor import (
+    from spectramr.infrastructure.optimization.tto.parameter_extractor import (
         OptimizableParameters,
     )
 
@@ -71,7 +71,7 @@ def test_to_list_length(kwargs, expected_len):
 @pytest.mark.unit
 def test_is_valid_without_means_returns_false():
     """Container without means is considered invalid."""
-    from mriforge.infrastructure.optimization.tto.parameter_extractor import (
+    from spectramr.infrastructure.optimization.tto.parameter_extractor import (
         OptimizableParameters,
     )
 
@@ -82,7 +82,7 @@ def test_is_valid_without_means_returns_false():
 @pytest.mark.unit
 def test_parameter_extractor_with_direct_attrs():
     """ParameterExtractor handles an object with .means attribute."""
-    from mriforge.infrastructure.optimization.tto.parameter_extractor import (
+    from spectramr.infrastructure.optimization.tto.parameter_extractor import (
         ParameterExtractor,
     )
 
@@ -108,7 +108,7 @@ def test_parameter_extractor_with_direct_attrs():
 @pytest.mark.unit
 def test_parameter_extractor_non_tensor_ignored():
     """Non-tensor attributes are silently ignored (not raised)."""
-    from mriforge.infrastructure.optimization.tto.parameter_extractor import (
+    from spectramr.infrastructure.optimization.tto.parameter_extractor import (
         ParameterExtractor,
     )
 

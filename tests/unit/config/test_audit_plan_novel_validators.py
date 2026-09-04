@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.audit_plan_novel_validators import (
+from spectramr.config.schemas.audit_plan_novel_validators import (
     _validate_acquisition_params_for_score_field,
     _validate_bloch_eq_atlas_coverage,
     _validate_hermitian_model_output_domain,
@@ -214,10 +214,10 @@ def test_ksd_disabled_always_passes() -> None:
 
 
 def test_register_audit_plan_novel_validators_idempotent() -> None:
-    from mriforge.config.schemas.audit_plan_novel_validators import (
+    from spectramr.config.schemas.audit_plan_novel_validators import (
         register_audit_plan_novel_validators,
     )
-    from mriforge.config.schemas.validator_registry import (
+    from spectramr.config.schemas.validator_registry import (
         ValidatorRegistry,
         get_validator_registry,
     )
@@ -256,7 +256,7 @@ class TestExposeFlagsFollowTheDrain:
         return cfg
 
     def test_the_canonical_spelling_satisfies_the_check(self) -> None:
-        from mriforge.config.schemas.audit_plan_novel_validators import (
+        from spectramr.config.schemas.audit_plan_novel_validators import (
             _validate_acquisition_params_for_score_field,
         )
 
@@ -264,7 +264,7 @@ class TestExposeFlagsFollowTheDrain:
         assert _validate_acquisition_params_for_score_field(cfg) == []
 
     def test_the_legacy_spelling_still_satisfies_it(self) -> None:
-        from mriforge.config.schemas.audit_plan_novel_validators import (
+        from spectramr.config.schemas.audit_plan_novel_validators import (
             _validate_acquisition_params_for_score_field,
         )
 
@@ -274,7 +274,7 @@ class TestExposeFlagsFollowTheDrain:
     def test_neither_spelling_still_reports(self) -> None:
         """Anti-vacuity. A reader that returned True unconditionally would
         satisfy both tests above and silence the check for everyone."""
-        from mriforge.config.schemas.audit_plan_novel_validators import (
+        from spectramr.config.schemas.audit_plan_novel_validators import (
             _validate_acquisition_params_for_score_field,
         )
 
@@ -284,7 +284,7 @@ class TestExposeFlagsFollowTheDrain:
     def test_the_remedy_names_a_spelling_that_loads(self) -> None:
         """The message told the author to set `data.expose_acquisition_params`,
         which now raises. A remedy that cannot be followed is worse than none."""
-        from mriforge.config.schemas.audit_plan_novel_validators import (
+        from spectramr.config.schemas.audit_plan_novel_validators import (
             _validate_acquisition_params_for_score_field,
         )
 

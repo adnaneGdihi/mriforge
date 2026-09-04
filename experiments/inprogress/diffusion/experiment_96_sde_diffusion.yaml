@@ -1,0 +1,209 @@
+config_version: '1.0'
+
+workflow:
+  # M4Raw multicoil brain (data.datasets[0].name), RSS-combined to magnitude
+  # image (physics.coil_processing.combine=rss, output.channels=magnitude) —
+  # structural, not a parametric/functional acquisition.
+  regime: mri_structural
+  # R=4 with data consistency enabled and best_metric=val_psnr: an accelerated
+  # inverse problem, matching training.task and reporting.task below.
+  task: reconstruction
+
+metadata:
+  name: Stochastic Differential Equation Diffusion Models
+  primary_metric: val_psnr  # diffusion review 2026-09-03: the arm's selector
+  description: SDE-based diffusion with learnable variance schedules
+  tags:
+  - sde
+  - stochastic_differential_equation
+  - variance_schedule
+  - diffusion
+model:
+  model_type: score_based_diffusion
+  in_channels: 1
+  out_channels: 1
+  model_kwargs:
+    features:
+    - 32
+    - 64
+    - 128
+    - 256
+    - 512
+    feature_dim: 64
+    num_layers: 2
+    # F-VE-VP-ALIGN — catalog purpose is VE-SDE (variance-exploding), but this knob
+    # was set to vpsde (the opposite). Aligned to vesde to match the documented
+    # hypothesis. NOTE: sde_type is still inert (swallowed by ScoreBasedDiffusionGenerator
+    # **kwargs) — see deferred finding sde-type-inert; the value must be wired before
+    # VE-vs-VP can actually be measured.
+    sde_type: vesde
+    learnable_variance: true
+  denoising_model:
+    model_type: standard_unet
+    in_channels: 1
+    out_channels: 1
+    base_channels: 64
+    channel_multipliers:
+    - 1
+    - 2
+    - 4
+    - 8
+    num_res_blocks: 2
+    attention_resolutions:
+    - 16
+    dropout: 0.1
+training:
+  input_domain: image
+  output_domain: image
+  strategy_class: spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy
+  enable_gradient_checkpointing: true
+  batch_size: 2
+  max_iterations: 100000
+  epochs: 100
+  output_dir: experiments/results/experiment_96_sde_diffusion
+  device: cuda
+  task: reconstruction
+  diffusion:
+    timesteps: 1000
+    noise_schedule: linear
+data:
+  dataset_type: kspace
+  datasets:
+  - name: m4raw_multicoil
+    path: databases/m4raw/data/multicoil_train
+  loader:
+    batch_size: 2
+    num_workers: 4
+  coils:
+    processing_mode: rss_image
+  split:
+    type: auto
+    validation_fraction: 0.15
+  domain:
+    target_channels: 1
+  processing:
+    enable_kspace_normalization: false
+    enable_image_normalization: false
+  sampling:
+    patch_size:
+    - 256
+    - 256
+    - 1
+    samples_per_volume: 4
+    queue_length: 100
+  source:
+    root: databases/m4raw/data/multicoil_train
+    index_path: data/manifests/m4raw_train.json
+    validation_index_path: data/manifests/m4raw_multicoil_val.json
+optimization:
+  scheduler:
+    type: cosine
+  optimizer:
+    type: adamw
+    learning_rate: 0.0001
+    weight_decay: 1.0e-05
+  gradient:
+    accumulation_steps: 4
+    clip:
+      # F-GRADEXPLODE-HINT / 2026-05-20 — was bare ``gradient_clip_norm`` (schema=``extra='ignore'`` silently drops).
+      enabled: true
+      value: 1.0
+  precision:
+    enabled: false
+physics:
+  # Coil-SSOT Phase 2: explicit 4-axis data-load block derived from
+  # legacy coil_processing_mode=rss_image (docs/coil_processing.rst).
+  coil_processing:
+    compression: {method: none}
+    combine: {method: rss}
+    output: {domain: image, channels: magnitude}
+  data_consistency:
+    enabled: true
+    weight: 1.0
+validation:
+  enabled: true
+  schedule:
+    interval_steps: 1000
+    on_epoch: false
+  loader:
+    batch_size: 2
+  scoring:
+    domain: image
+  visualization:
+    enabled: true
+checkpoint:
+  enabled: true
+  save_interval: 1000
+  checkpoint_dir: ./checkpoints/experiment_96_sde_diffusion
+logging:
+  log_validation_graphs: true
+  save_images_per_epoch: 8
+  intervals:
+    log: 10
+    validation_images: 10
+  images:
+    log_input: true
+    log_validation: true
+    log_difference: true
+    save_validation: true
+    max_per_batch: 8
+  tracking:
+    enabled: true
+    service: tensorboard
+    enable_tensorboard: true
+metrics:
+  enable_tracking: true
+  compute: [mae, mse, psnr, ssim]  # was 2 compute_* flags
+  best_metric_name: val_psnr
+  best_metric_mode: max
+  domain: image
+losses:
+  image_losses:
+  - name: mse
+    weight: 1.0
+    enabled: true
+  kspace_losses: []
+  complex_losses: []
+  policy:
+    output_domain: image
+undersampling:
+  # F-RECON-ACCEL — task=reconstruction with best_metric=val_psnr requires real
+  # undersampling; R=1 degenerated to identity/unconditional and made PSNR meaningless.
+  # Set R=4 so val_psnr measures accelerated-MRI reconstruction (data_consistency
+  # already enabled under physics).
+  base_acceleration: 4.0
+  center_fraction: 0.08
+  schedule_steps: 1000
+reporting:
+  enabled: true
+  task: reconstruction
+  method_name: 96_sde_diffusion
+  out_subdir: report
+  figures:
+  - fig_1_2_learning_curves
+  - fig_1_3_loss_decomposition
+  - fig_1_5_predicted_vs_true
+  - fig_1_4_residual_diagnostics
+  - fig_1_11_stratified_performance
+  - fig_1_12_failure_gallery
+  - fig_1_15_computational_profile
+  - mri_a7_kspace_recon
+  - mri_a11_cohort_table
+  tables:
+  - tab_2_1_main_results
+  - tab_2_4_dataset_descriptor
+  metrics:
+  - psnr
+  - ssim
+  - ms_ssim
+  - lpips
+  - vif
+  - fsim
+  - haarpsi
+  - gmsd
+  - rmse
+  - nmse
+  - hfen
+  fail_on_error: false
+run:
+  seed: 42

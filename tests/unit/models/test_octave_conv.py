@@ -1,9 +1,9 @@
 """Unit tests for the octave-convolution block and OctaveUNet generator.
 
 Covers:
-* :class:`mriforge.models.blocks.octave_conv.OctaveConv2d` four-pathway
+* :class:`spectramr.models.blocks.octave_conv.OctaveConv2d` four-pathway
   shapes and gradient flow through all of W_hh / W_hl / W_lh / W_ll.
-* :class:`mriforge.models.generators.octave_unet.OctaveUNet` forward shape
+* :class:`spectramr.models.generators.octave_unet.OctaveUNet` forward shape
   and registration as ``octave_conv``.
 
 These tests are written but not executed here (torch may be a MagicMock
@@ -13,9 +13,9 @@ shim in CI); they run on the cluster.
 import pytest
 import torch
 
-from mriforge.models.blocks.octave_conv import OctaveConv2d, _split_channels
-from mriforge.models.generators.octave_unet import OctaveUNet
-from mriforge.models.registry import MODEL_REGISTRY, get_model_class
+from spectramr.models.blocks.octave_conv import OctaveConv2d, _split_channels
+from spectramr.models.generators.octave_unet import OctaveUNet
+from spectramr.models.registry import MODEL_REGISTRY, get_model_class
 
 
 class TestOctaveConv2d:

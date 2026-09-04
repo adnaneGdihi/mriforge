@@ -14,8 +14,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-import mriforge.infrastructure.physics.m4_operator as m4
-from mriforge.infrastructure.physics.m4_operator import (
+import spectramr.infrastructure.physics.m4_operator as m4
+from spectramr.infrastructure.physics.m4_operator import (
     Operator_A_m4,
     apply_rigid_transform,
 )

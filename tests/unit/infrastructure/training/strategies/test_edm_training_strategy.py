@@ -22,7 +22,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.training.strategies.edm_training_strategy import (
+from spectramr.infrastructure.training.strategies.edm_training_strategy import (
     EDMTrainingStrategy,
 )
 

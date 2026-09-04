@@ -1,7 +1,7 @@
 """Unit tests for D2MambaBlock domain dispatch (pitfall #9 contract).
 
 Regression coverage for the silent-fallback fix in
-``mriforge.models.mamba.d2_mamba``: an unknown ``domain`` value must raise a
+``spectramr.models.mamba.d2_mamba``: an unknown ``domain`` value must raise a
 clear ``ValueError`` naming the offending option instead of silently being
 swept into the ``dual`` branch.
 """
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.mamba.d2_mamba import D2MambaBlock
+from spectramr.models.mamba.d2_mamba import D2MambaBlock
 from tests.utils.optional_backends import requires_cuda_for_mamba
 
 

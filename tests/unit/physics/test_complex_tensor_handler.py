@@ -2,7 +2,7 @@ import math
 
 import torch
 
-from mriforge.infrastructure.training.utils.transform_ops import ComplexTensorHandler
+from spectramr.infrastructure.training.utils.transform_ops import ComplexTensorHandler
 
 
 def test_real_imag_to_complex():

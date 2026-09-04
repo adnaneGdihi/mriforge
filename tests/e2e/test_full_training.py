@@ -14,7 +14,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
 

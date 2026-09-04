@@ -5,10 +5,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.primary_ideal_membership_loss import (
+from spectramr.models.losses.primary_ideal_membership_loss import (
     PrimaryIdealMembershipLoss,
 )
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 
 
 def test_registered_and_domain():
@@ -38,7 +38,7 @@ def test_lower_when_prediction_lies_on_component_structure():
 
 
 def test_primitive_is_exercised(monkeypatch):
-    import mriforge.models.losses.primary_ideal_membership_loss as mod
+    import spectramr.models.losses.primary_ideal_membership_loss as mod
 
     called = {"n": 0}
     real = mod.vanishing_ideal_residual

@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import get
-from mriforge.infrastructure.reporting.plotters.mri_specific import (  # noqa: F401
+from spectramr.infrastructure.reporting.plotters import get
+from spectramr.infrastructure.reporting.plotters.mri_specific import (  # noqa: F401
     acceleration_sweep,
 )
 

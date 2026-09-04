@@ -39,7 +39,7 @@ pytestmark = pytest.mark.architecture
 
 def test_training_settings_schema_is_frozen() -> None:
     """TrainingSettings.model_config must declare frozen=True."""
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     cfg = TrainingSettings.model_config
     assert cfg.get("frozen") is True, (
@@ -57,7 +57,7 @@ def test_training_settings_mutation_raises() -> None:
     """Assigning to a field of a constructed TrainingSettings must raise."""
     import pydantic
 
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     # NOTE: no ``config_version`` here. The loader validates it and then DELETES
     # it (``TrainingSettings.from_yaml``), so the model itself forbids the key
@@ -105,14 +105,14 @@ def test_training_settings_mutation_raises() -> None:
 
 
 _SUB_SCHEMA_IMPORTS: list[tuple[str, str]] = [
-    ("mriforge.config.schemas.model", "ModelConfigSchema"),
-    ("mriforge.config.schemas.data", "DataConfigSchema"),
-    ("mriforge.config.schemas.optimization", "OptimizationConfigSchema"),
-    ("mriforge.config.schemas.training.base", "TrainingStrategyConfigSchema"),
-    ("mriforge.config.schemas.early_stopping", "EarlyStoppingConfigSchema"),
-    ("mriforge.config.schemas.ema", "EMAConfigSchema"),
-    ("mriforge.config.schemas.logging", "LoggingConfigSchema"),
-    ("mriforge.config.schemas.acceleration", "AccelerationConfigSchema"),
+    ("spectramr.config.schemas.model", "ModelConfigSchema"),
+    ("spectramr.config.schemas.data", "DataConfigSchema"),
+    ("spectramr.config.schemas.optimization", "OptimizationConfigSchema"),
+    ("spectramr.config.schemas.training.base", "TrainingStrategyConfigSchema"),
+    ("spectramr.config.schemas.early_stopping", "EarlyStoppingConfigSchema"),
+    ("spectramr.config.schemas.ema", "EMAConfigSchema"),
+    ("spectramr.config.schemas.logging", "LoggingConfigSchema"),
+    ("spectramr.config.schemas.acceleration", "AccelerationConfigSchema"),
 ]
 
 

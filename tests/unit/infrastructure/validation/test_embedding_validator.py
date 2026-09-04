@@ -1,4 +1,4 @@
-"""Unit tests for ``mriforge.infrastructure.validation.embedding_validator``.
+"""Unit tests for ``spectramr.infrastructure.validation.embedding_validator``.
 
 These tests pin down the public contract of
 :class:`EmbeddingDimensionValidator`:
@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.embedding_validator import (
+from spectramr.infrastructure.validation.embedding_validator import (
     EmbeddingDimensionValidator,
 )
 

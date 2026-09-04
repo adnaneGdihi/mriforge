@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.models.losses.mrf_losses import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.models.losses.mrf_losses import (
     MRFDictionaryMatchLoss,
     soft_dictionary_match,
 )
@@ -181,7 +181,7 @@ class TestMRFDictionaryMatchLoss:
 
 def test_registered_and_tagged_for_fingerprinting() -> None:
     """It backs mri_fingerprinting's LIVE claim; a lost tag must fail here."""
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     meta = LossRegistry._loss_domains["mrf_dictionary_match"]
     assert meta["workflows"] == frozenset({Regime.FINGERPRINTING})
@@ -194,7 +194,7 @@ def test_selectable_from_yaml_via_the_loss_weight_ssot() -> None:
     default, so without `lambda_mrf_dictionary_match` the loss could be
     registered and tagged yet impossible to actually request.
     """
-    from mriforge.models.losses.weights import _schema_defaults
+    from spectramr.models.losses.weights import _schema_defaults
 
     defaults = _schema_defaults()
     assert "mrf_dictionary_match" in defaults

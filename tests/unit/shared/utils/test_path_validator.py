@@ -1,6 +1,6 @@
 """Tests for ``PathValidator``.
 
-Targets ``mriforge.shared.utils.path_validator``. Verifies the security-
+Targets ``spectramr.shared.utils.path_validator``. Verifies the security-
 oriented path sanitiser rejects directory-traversal attacks, validates
 file/directory existence, and respects the allowed-extensions whitelist.
 
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.shared.utils.path_validator import PathValidator
+from spectramr.shared.utils.path_validator import PathValidator
 
 
 # ---------------------------------------------------------------------------

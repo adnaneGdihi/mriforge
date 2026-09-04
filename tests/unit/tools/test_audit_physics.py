@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mriforge.tools.audit_physics import (
+from spectramr.tools.audit_physics import (
     TIER_1_GREEN,
     TIER_2_YELLOW,
     TIER_3_RED,

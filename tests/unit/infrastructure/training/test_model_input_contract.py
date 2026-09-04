@@ -18,7 +18,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.model_input_contract import (
+from spectramr.infrastructure.training.model_input_contract import (
     STATUS_MATCH,
     STATUS_MISMATCH,
     STATUS_UNRESOLVED,
@@ -140,6 +140,127 @@ def test_a_nonsense_in_channels_does_not_win() -> None:
             self.head = nn.Conv2d(6, 4, 1)
 
     assert resolve_model_in_channels(_Net()) == (6, "first Conv2d")
+
+
+def test_a_bool_in_channels_does_not_win() -> None:
+    """``bool`` is a subclass of ``int``, so ``in_channels = True`` used to
+    resolve as a one-channel backbone and report a mismatch against every real
+    tensor. A width of 1 is indistinguishable in the artifact from a genuine
+    single-channel model, which is the reading that makes it worth excluding."""
+
+    class _Net(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.in_channels = True
+            self.head = nn.Conv2d(6, 4, 1)
+
+    assert resolve_model_in_channels(_Net()) == (6, "first Conv2d")
+
+
+# ── Wrapper backbones: the width the SNAPSHOT is compared against ──────────
+#
+# The shapes below are the ones the resolver was blind to. A module that adapts
+# channels before delegating holds two different true answers, and the tiers
+# above return the one that does not describe the tensor under test.
+
+
+def test_backbone_in_channels_outranks_a_wrappers_own_in_channels() -> None:
+    """The planted shape (CLAUDE.md #15).
+
+    ``KSpaceColdDiffusionGenerator`` sets ``in_channels = 8`` -- the bare
+    measurement its ``forward`` concat gate keys on -- while building its
+    backbone at 16 for the ``[noisy_kspace || smaps]`` stack the training path
+    feeds it. Both numbers are true; only the second is what ``model_input``
+    must match.
+    """
+
+    class _Wrapper(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.in_channels = 8
+            self.backbone_in_channels = 16
+            self.backbone = nn.Conv2d(16, 4, 1)
+
+    assert resolve_model_in_channels(_Wrapper()) == (16, "module.backbone_in_channels")
+
+
+def test_a_conditioned_wrapper_stops_reporting_a_false_mismatch() -> None:
+    """End to end, the regression this tier closes.
+
+    Pre-fix this emitted "carries 16 channels ... but the backbone takes 8" on
+    every smaps-conditioned cold-diffusion arm -- most of the cohort. A
+    diagnostic that cries wolf across a whole paradigm gets muted, not read.
+    """
+
+    class _Wrapper(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.in_channels = 8
+            self.backbone_in_channels = 16
+            self.backbone = nn.Conv2d(16, 4, 1)
+
+    channels, source = resolve_model_in_channels(_Wrapper())
+    verdict = verify_model_input(
+        tensors={"model_input": torch.zeros(1, 16, 8, 8)},
+        model_input_key="model_input",
+        in_channels=channels,
+        in_channels_source=source,
+    )
+    assert verdict.status == STATUS_MATCH
+
+
+def test_the_new_tier_does_not_blind_the_check() -> None:
+    """The other half of #15: a detector that stops firing is not a fix.
+
+    A wrapper publishing 16 must still report a genuinely wrong width, or this
+    tier would have traded a false positive for a false negative.
+    """
+
+    class _Wrapper(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.in_channels = 8
+            self.backbone_in_channels = 16
+            self.backbone = nn.Conv2d(16, 4, 1)
+
+    channels, source = resolve_model_in_channels(_Wrapper())
+    verdict = verify_model_input(
+        tensors={"model_input": torch.zeros(1, 5, 8, 8)},
+        model_input_key="model_input",
+        in_channels=channels,
+        in_channels_source=source,
+    )
+    assert verdict.status == STATUS_MISMATCH
+    assert "backbone_in_channels" in verdict.in_channels_source
+
+
+def test_a_nonsense_backbone_in_channels_falls_through() -> None:
+    """Same fail-open reasoning as ``in_channels``: a Mock's auto-attribute
+    must not become a width, or every mock-fed strategy test reports a
+    mismatch from the most-preferred tier."""
+
+    class _Net(nn.Module):
+        def __init__(self) -> None:
+            super().__init__()
+            self.backbone_in_channels = "sixteen"
+            self.in_channels = 6
+            self.head = nn.Conv2d(3, 4, 1)
+
+    assert resolve_model_in_channels(_Net()) == (6, "module.in_channels")
+
+
+def test_a_plain_backbone_without_the_attribute_is_unaffected() -> None:
+    """The tier is opt-in: a model that never adapts channels keeps answering
+    from ``in_channels`` exactly as before."""
+
+    class _Net(nn.Module):
+        in_channels = 12
+
+        def __init__(self) -> None:
+            super().__init__()
+            self.head = nn.Conv2d(12, 4, 1)
+
+    assert resolve_model_in_channels(_Net()) == (12, "module.in_channels")
 
 
 # ── The comparison ─────────────────────────────────────────────────────────

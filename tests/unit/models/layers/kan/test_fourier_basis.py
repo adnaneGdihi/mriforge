@@ -17,7 +17,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.layers.kan.fourier_basis import FourierBasis
+from spectramr.models.layers.kan.fourier_basis import FourierBasis
 
 
 def _reference_forward(module: FourierBasis, x: torch.Tensor) -> torch.Tensor:

@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.losses.complex_losses import ComplexL1Loss, WeightedKSpaceL1Loss
+from spectramr.models.losses.complex_losses import ComplexL1Loss, WeightedKSpaceL1Loss
 
 
 class TestComplexLossesAMPSafety:

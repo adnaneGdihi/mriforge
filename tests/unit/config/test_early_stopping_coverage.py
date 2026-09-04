@@ -11,8 +11,8 @@ import inspect
 
 import pytest
 
-from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-from mriforge.infrastructure.services.early_stopping import EarlyStoppingService
+from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+from spectramr.infrastructure.services.early_stopping import EarlyStoppingService
 
 
 class TestEarlyStoppingSchemaCoverage:

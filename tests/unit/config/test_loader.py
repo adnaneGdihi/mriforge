@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from mriforge.config.schemas.loader import (
+from spectramr.config.schemas.loader import (
     Config,
     ConfigFactory,
     JSONConfigLoader,

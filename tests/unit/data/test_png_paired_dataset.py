@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.png_paired_dataset import (
+from spectramr.data.datasets.png_paired_dataset import (
     PngPairedDataset,
     build_png_paired_index,
 )
@@ -96,7 +96,7 @@ def test_dataset_carries_lesion_labelmap(tmp_path):
 # ── schema (data.png_paired) ──────────────────────────────────────────────────
 
 def test_schema_defaults_disabled():
-    from mriforge.config.schemas.data import DataConfigSchema, PngPairedConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema, PngPairedConfigSchema
 
     assert PngPairedConfigSchema().enabled is False
     assert DataConfigSchema().png_paired.enabled is False
@@ -105,7 +105,7 @@ def test_schema_defaults_disabled():
 def test_schema_same_dir_raises():
     from pydantic import ValidationError
 
-    from mriforge.config.schemas.data import PngPairedConfigSchema
+    from spectramr.config.schemas.data import PngPairedConfigSchema
 
     with pytest.raises(ValidationError, match="differ"):
         PngPairedConfigSchema(enabled=True, lr_dir="x", hr_dir="x")
@@ -120,7 +120,7 @@ def test_dry_iter_returns_length_correct_stub_subjects() -> None:
     """
     import torchio as tio
 
-    from mriforge.data.datasets.png_paired_dataset import PngPairedDataset
+    from spectramr.data.datasets.png_paired_dataset import PngPairedDataset
 
     ds = PngPairedDataset.__new__(PngPairedDataset)
     ds.index = [{}, {}, {}]

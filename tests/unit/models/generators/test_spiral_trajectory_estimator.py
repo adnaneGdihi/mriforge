@@ -13,10 +13,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.spiral_trajectory_estimator import (
+from spectramr.models.generators.spiral_trajectory_estimator import (
     SpiralTrajectoryEstimator,
 )
-from mriforge.models.registry import get_model_capabilities
+from spectramr.models.registry import get_model_capabilities
 
 
 def test_registered_with_spiral_parametrization():

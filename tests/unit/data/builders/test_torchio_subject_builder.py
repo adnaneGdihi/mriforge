@@ -20,7 +20,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.builders.torchio_subject_builder import (
+from spectramr.data.builders.torchio_subject_builder import (
     FastMRISubjectBuilder,
     PreprocessedSubjectBuilder,
     SubjectBuilder,
@@ -212,7 +212,7 @@ class TestFastMRISubjectBuilder(TestCase):
 
         import nibabel as nib
 
-        from mriforge.data.transforms.dwi_metadata import LoadDWIMetadata
+        from spectramr.data.transforms.dwi_metadata import LoadDWIMetadata
 
         tmp = Path(tempfile.mkdtemp())
         img = tmp / "sub-01_dwi.nii.gz"
@@ -630,7 +630,7 @@ class TestLogScalingNormalization(TestCase):
 
     @staticmethod
     def _normalize(k, *, log_scaling):
-        from mriforge.data.transforms.normalization import normalize_kspace_robust
+        from spectramr.data.transforms.normalization import normalize_kspace_robust
 
         return normalize_kspace_robust(
             k, percentile=0.95, log_scaling=log_scaling, channel_dim=0
@@ -658,7 +658,7 @@ class TestLogScalingNormalization(TestCase):
         under-restores, and the validation image is a DC-blob / edge-enhanced
         render.
         """
-        from mriforge.data.transforms.normalization import decompress_kspace_log
+        from spectramr.data.transforms.normalization import decompress_kspace_log
 
         k = self._dc_dominated_kspace()
         norm, scale = self._normalize(k.clone(), log_scaling=True)
@@ -732,7 +732,7 @@ class TestBuilderDoesNotNormalize:
     def _builder(self, **kw):
         from unittest.mock import MagicMock
 
-        from mriforge.data.builders.torchio_subject_builder import FastMRISubjectBuilder
+        from spectramr.data.builders.torchio_subject_builder import FastMRISubjectBuilder
 
         return FastMRISubjectBuilder(primary_io=MagicMock(), **kw)
 

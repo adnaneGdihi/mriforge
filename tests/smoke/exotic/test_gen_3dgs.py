@@ -10,7 +10,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.volumetric.gen_3dgs import Gen3DGS
+from spectramr.models.volumetric.gen_3dgs import Gen3DGS
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

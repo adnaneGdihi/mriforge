@@ -3,14 +3,14 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.vae import VQVAETrainingStrategy
+from spectramr.infrastructure.training.strategies.vae import VQVAETrainingStrategy
 
 
 class TestVQVAETrainingStrategy:
     @pytest.fixture
     def mock_precision_manager(self):
         with patch(
-            "mriforge.infrastructure.training.strategies.vae.VQVAEPrecisionManager"
+            "spectramr.infrastructure.training.strategies.vae.VQVAEPrecisionManager"
         ) as mock:
             manager = mock.return_value
             # Setup default behavior for validate_vq_loss_precision
@@ -20,7 +20,7 @@ class TestVQVAETrainingStrategy:
     @pytest.fixture
     def mock_loss_computer(self):
         with patch(
-            "mriforge.infrastructure.training.strategies.vae.UnifiedVQVAELossComputer"
+            "spectramr.infrastructure.training.strategies.vae.UnifiedVQVAELossComputer"
         ) as mock:
             mock_output = MagicMock()
             mock_output.total = torch.tensor(1.0)

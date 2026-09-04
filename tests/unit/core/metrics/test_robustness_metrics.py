@@ -23,8 +23,8 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.core.metrics.registry import MetricsRegistry, get_metric
-from mriforge.core.metrics.robustness_metrics import (
+from spectramr.core.metrics.registry import MetricsRegistry, get_metric
+from spectramr.core.metrics.robustness_metrics import (
     AdversarialPSNRDropMetric,
     InputDependenceSpreadMetric,
     OODAccelerationShiftMetric,

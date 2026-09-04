@@ -23,7 +23,7 @@ class TestDiffusionConfigLeak:
         3. Let KSpaceMaskGenerator handle unsupported patterns (with error)
         """
         with open(
-            "src/mriforge/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
+            "src/spectramr/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
         ) as f:
             source = f.read()
 
@@ -57,7 +57,7 @@ class TestDiffusionConfigLeak:
         a code comment. Check that the strategy reads pattern from config.
         """
         with open(
-            "src/mriforge/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
+            "src/spectramr/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
         ) as f:
             source = f.read()
 
@@ -69,7 +69,7 @@ class TestDiffusionConfigLeak:
     def test_no_hardcoded_pattern_in_compute_losses(self):
         """Verify _compute_losses_impl uses None or config-derived pattern."""
         with open(
-            "src/mriforge/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
+            "src/spectramr/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
         ) as f:
             source = f.read()
 
@@ -92,7 +92,7 @@ class TestDiffusionConfigLeak:
     def test_passes_accelerator_kwargs_from_config(self):
         """Verify accelerator kwargs are extracted from config."""
         with open(
-            "src/mriforge/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
+            "src/spectramr/infrastructure/training/strategies/diffusion.py", encoding="utf-8"
         ) as f:
             source = f.read()
 

@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fno_epg import FNOEPGSurrogate, SpectralConv1d
+from spectramr.infrastructure.physics.fno_epg import FNOEPGSurrogate, SpectralConv1d
 
 
 class TestSpectralConv1d:

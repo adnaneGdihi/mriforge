@@ -16,8 +16,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins import utils as u
-from mriforge.infrastructure.training.strategies.mixins.utils import (
+from spectramr.infrastructure.training.strategies.mixins import utils as u
+from spectramr.infrastructure.training.strategies.mixins.utils import (
     _callable_accepts_kwarg,
     pick_present,
 )

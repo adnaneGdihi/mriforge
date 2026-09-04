@@ -7,12 +7,12 @@
 split, a constant declared in this module but omitted from *its* ``__all__``
 never reaches ``env`` at all -- so that test cannot see it and passes vacuously.
 The same scan has to run against the registry itself, or the split would have
-quietly disabled the guard that caught ``MRIFORGE_GPU_MEMORY_FRACTION``.
+quietly disabled the guard that caught ``SPECTRAMR_GPU_MEMORY_FRACTION``.
 """
 
 from __future__ import annotations
 
-from mriforge.core import env, env_names
+from spectramr.core import env, env_names
 
 
 def _declared(module: object) -> set[str]:

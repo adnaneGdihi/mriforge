@@ -12,7 +12,7 @@ moved with the code); this module pins the properties the *decision* path needs.
 
 from __future__ import annotations
 
-from mriforge.core import resources as res
+from spectramr.core import resources as res
 
 
 def test_env_int_parses_slurms_heterogeneous_form():

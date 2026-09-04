@@ -21,8 +21,8 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import ifft2c
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.physics.fft_ops import ifft2c
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 from tests.utils.data_config_stub import DataConfigStub
 
 

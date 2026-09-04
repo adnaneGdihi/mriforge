@@ -12,12 +12,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.topology_linearizer import (
+from spectramr.models.blocks.topology_linearizer import (
     ImageTopologyLinearizer,
     _hilbert_3d_indices,
     _hilbert_3d_matrix,
 )
-from mriforge.models.generators.hilbert_mamba_generators import (
+from spectramr.models.generators.hilbert_mamba_generators import (
     CRMMamba,
     CTMamba,
     FEMamba,
@@ -343,7 +343,7 @@ class TestHilbertMambaRegistry:
 
     @pytest.fixture(autouse=True)
     def _populate_registry(self):
-        from mriforge.models.init_registry import populate_model_registry
+        from spectramr.models.init_registry import populate_model_registry
 
         populate_model_registry()
 
@@ -363,7 +363,7 @@ class TestHilbertMambaRegistry:
         ],
     )
     def test_model_registered(self, name):
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         assert name in MODEL_REGISTRY, f"{name} not found in MODEL_REGISTRY"
 

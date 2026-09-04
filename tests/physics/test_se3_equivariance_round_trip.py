@@ -12,7 +12,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
+from spectramr.models.blocks.se3_lie_algebra_mamba import SE3LieAlgebraMambaBlock
 from tests.utils.optional_backends import requires_cuda_for_mamba
 
 TOL = 1e-4

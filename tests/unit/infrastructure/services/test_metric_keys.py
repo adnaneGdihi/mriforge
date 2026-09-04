@@ -1,6 +1,6 @@
 """Tests for the shared validation-metric key resolver.
 
-Targets ``mriforge.infrastructure.services.metric_keys`` -- the single SSOT for
+Targets ``spectramr.infrastructure.services.metric_keys`` -- the single SSOT for
 ``val_*``-vs-bare / loss-alias / cascade-suffix resolution used by BOTH early
 stopping (``pipelines/train.py``) and the loss-schedule controller. The full
 alias matrix is exercised by ``tests/unit/pipelines/test_train_light_seams.py``
@@ -10,7 +10,7 @@ layer-correct import location.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.services.metric_keys import (
+from spectramr.infrastructure.services.metric_keys import (
     early_stop_monitor_candidates,
     resolve_metric_key,
 )
@@ -39,7 +39,7 @@ def test_resolve_returns_none_when_absent() -> None:
 
 def test_train_reexport_is_same_object() -> None:
     # Back-compat: pipelines.train must re-export the canonical helper.
-    from mriforge.pipelines.train import (
+    from spectramr.pipelines.train import (
         early_stop_monitor_candidates as reexported,
     )
 

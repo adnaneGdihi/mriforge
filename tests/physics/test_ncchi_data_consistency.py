@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.ncchi_data_consistency import (  # noqa: E402
+from spectramr.infrastructure.physics.ncchi_data_consistency import (  # noqa: E402
     bessel_ratio_i,
     ncchi_dc_residual,
     ncchi_ml_magnitude,

@@ -2,7 +2,7 @@
 # Violation: data.index_path starts with the forbidden cluster prefix
 # '/project/johnsson/' — a hardcoded absolute path that embeds another
 # user's account directory and will break portability.
-# The check fires with severity="error" unless MRIFORGE_DATA_ROOT or
+# The check fires with severity="error" unless SPECTRAMR_DATA_ROOT or
 # PROJECT_ROOT is set to cover this path (which it won't be in CI/test).
 # check_name: hardcoded_cluster_paths
 
@@ -14,7 +14,7 @@ metadata:
   name: Failing — hardcoded_cluster_paths (index_path under /project/johnsson)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   epochs: 1
   device: cuda
   task: reconstruction
@@ -23,7 +23,7 @@ training:
 data:
   coil_processing_mode: rss
   dataset_type: kspace
-  index_path: /project/johnsson/otheruser/mriforge/data/manifests/m4raw_train.json  # VIOLATION
+  index_path: /project/johnsson/otheruser/spectramr/data/manifests/m4raw_train.json  # VIOLATION
   patch_size: [32, 32, 1]
   batch_size: 4
   num_workers: 0

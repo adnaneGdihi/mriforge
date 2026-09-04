@@ -6,7 +6,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.physics.acquisition_params import (
+from spectramr.infrastructure.physics.acquisition_params import (
     AcquisitionParams,
     MissingAcquisitionParameter,
     predicted_snr_delta_db,

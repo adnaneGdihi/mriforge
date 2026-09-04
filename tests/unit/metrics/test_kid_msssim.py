@@ -22,7 +22,7 @@ import torch
 @requires_torch_fidelity
 def test_kid_default_subset_size():
     """Verify KID default subset_size was lowered to 8 (not 50)."""
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(device="cpu")
     assert kid.subset_size == 8
@@ -31,7 +31,7 @@ def test_kid_default_subset_size():
 @requires_torch_fidelity
 def test_kid_compute_metric_returns_zero_during_accumulation():
     """KID.compute_metric() returns 0.0; actual value comes from compute()."""
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(subset_size=4, device="cpu")
     preds = torch.rand(4, 1, 32, 32)
@@ -43,7 +43,7 @@ def test_kid_compute_metric_returns_zero_during_accumulation():
 @requires_torch_fidelity
 def test_kid_summarize_flag():
     """KID instance must have summarize=True (instance attr set in __init__)."""
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(device="cpu")
     # BaseMetric.__init__ sets self.summarize=False; KID.__init__ must override it
@@ -56,7 +56,7 @@ def test_kid_summarize_flag():
 def test_kid_compute_after_accumulation():
     """KID.compute() returns a finite float after accumulating batches."""
     pytest.importorskip("torchmetrics", exc_type=ImportError)
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     kid = KID(subset_size=4, device="cpu")
     # Accumulate 3 batches of 4 samples = 12 samples total (≥ subset_size=4 ×2 real+fake)
@@ -73,7 +73,7 @@ def test_kid_compute_after_accumulation():
 def test_kid_returns_zero_on_insufficient_samples():
     """KID returns 0.0 (not an exception) when not enough samples are accumulated."""
     pytest.importorskip("torchmetrics", exc_type=ImportError)
-    from mriforge.core.metrics.evaluation_metrics import KID
+    from spectramr.core.metrics.evaluation_metrics import KID
 
     # subset_size=50 with only 2 samples — should not raise
     kid = KID(subset_size=50, device="cpu")
@@ -93,7 +93,7 @@ def test_kid_returns_zero_on_insufficient_samples():
 def test_msssim_identical_images():
     """MS-SSIM of identical images should be close to 1.0."""
     pytest.importorskip("torchmetrics", exc_type=ImportError)
-    from mriforge.core.metrics.evaluation_metrics import MSSSIM
+    from spectramr.core.metrics.evaluation_metrics import MSSSIM
 
     metric = MSSSIM(device="cpu")
     # MS-SSIM with 5-level pyramid and kernel_size=11 requires image > 160px
@@ -106,7 +106,7 @@ def test_msssim_identical_images():
 def test_msssim_noise_sensitivity():
     """MS-SSIM decreases when noise is added."""
     pytest.importorskip("torchmetrics", exc_type=ImportError)
-    from mriforge.core.metrics.evaluation_metrics import MSSSIM
+    from spectramr.core.metrics.evaluation_metrics import MSSSIM
 
     metric = MSSSIM(device="cpu")
     # MS-SSIM with 5-level pyramid requires image > 160px
@@ -122,7 +122,7 @@ def test_msssim_noise_sensitivity():
 
 def test_msssim_registered_in_registry():
     """MS-SSIM is accessible through MetricsRegistry under 'ms_ssim'."""
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     metric = MetricsRegistry.get("ms_ssim", device="cpu")
     assert metric is not None
@@ -175,7 +175,7 @@ def _make_full_config(**metric_flags):
 class _ConcreteMetricsMixin:
     """Minimal concrete class using MetricsMixin for testing."""
 
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
 
     # Bring methods in without full strategy hierarchy
     _get_training_metrics_computer = MetricsMixin._get_training_metrics_computer
@@ -252,7 +252,7 @@ def test_training_computer_fallback_when_no_flags():
 @requires_torch_fidelity
 def test_validation_metrics_config_from_list_includes_kid():
     """ValidationMetricsConfig.from_list(['kid']) creates enabled KID spec."""
-    from mriforge.core.metrics.types import ValidationMetricsConfig
+    from spectramr.core.metrics.types import ValidationMetricsConfig
 
     cfg = ValidationMetricsConfig.from_list(["psnr", "kid", "hfen"])
     names = [s.name for s in cfg.metrics if s.enabled]
@@ -262,7 +262,7 @@ def test_validation_metrics_config_from_list_includes_kid():
 @requires_torch_fidelity
 def test_create_validation_metrics_computer_with_kid():
     """create_validation_metrics_computer handles 'kid' in list config."""
-    from mriforge.core.metrics.computer import create_validation_metrics_computer
+    from spectramr.core.metrics.computer import create_validation_metrics_computer
 
     computer = create_validation_metrics_computer(config=["psnr", "kid"], device="cpu")
     assert "kid" in computer.get_metric_names()

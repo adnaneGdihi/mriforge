@@ -1,6 +1,6 @@
 """Unit tests for optimization utility dataclasses.
 
-Targets ``mriforge.infrastructure.training.optimization_utils``:
+Targets ``spectramr.infrastructure.training.optimization_utils``:
 - ``GradientBuffer``: store/retrieve/evict/hit-rate
 - ``AsyncMetricsReporter``: report_async / flush / aggregate
 - ``OptimizationMetrics``: record_timing / get_stats / reset
@@ -25,7 +25,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_canary_gradient_buffer_store_retrieve() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer(capacity=10)
     t = torch.randn(4, 4)
@@ -36,7 +36,7 @@ def test_canary_gradient_buffer_store_retrieve() -> None:
 
 @pytest.mark.parametrize("n_items,capacity", [(5, 10), (10, 10), (15, 10)])
 def test_gradient_buffer_capacity_eviction(n_items: int, capacity: int) -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer(capacity=capacity)
     tensors = []
@@ -49,14 +49,14 @@ def test_gradient_buffer_capacity_eviction(n_items: int, capacity: int) -> None:
 
 
 def test_gradient_buffer_miss_returns_none() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer()
     assert buf.retrieve("__nonexistent__") is None
 
 
 def test_gradient_buffer_hit_rate_all_hits() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer()
     t = torch.ones(2)
@@ -67,7 +67,7 @@ def test_gradient_buffer_hit_rate_all_hits() -> None:
 
 
 def test_gradient_buffer_hit_rate_all_misses() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer()
     buf.retrieve("__x__")
@@ -76,7 +76,7 @@ def test_gradient_buffer_hit_rate_all_misses() -> None:
 
 
 def test_gradient_buffer_clear_resets_stats() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer()
     t = torch.ones(2)
@@ -94,7 +94,7 @@ def test_gradient_buffer_clear_resets_stats() -> None:
 
 
 def test_async_reporter_report_and_flush() -> None:
-    from mriforge.infrastructure.training.optimization_utils import AsyncMetricsReporter
+    from spectramr.infrastructure.training.optimization_utils import AsyncMetricsReporter
 
     collected: list = []
     reporter = AsyncMetricsReporter(batch_size=1)
@@ -106,7 +106,7 @@ def test_async_reporter_report_and_flush() -> None:
 
 
 def test_async_reporter_aggregate_averages() -> None:
-    from mriforge.infrastructure.training.optimization_utils import AsyncMetricsReporter
+    from spectramr.infrastructure.training.optimization_utils import AsyncMetricsReporter
 
     reporter = AsyncMetricsReporter(batch_size=3)
     batch = [{"a": 1.0}, {"a": 3.0}, {"a": 5.0}]
@@ -115,7 +115,7 @@ def test_async_reporter_aggregate_averages() -> None:
 
 
 def test_async_reporter_aggregate_empty_returns_empty() -> None:
-    from mriforge.infrastructure.training.optimization_utils import AsyncMetricsReporter
+    from spectramr.infrastructure.training.optimization_utils import AsyncMetricsReporter
 
     reporter = AsyncMetricsReporter()
     assert reporter._aggregate_metrics([]) == {}
@@ -127,7 +127,7 @@ def test_async_reporter_aggregate_empty_returns_empty() -> None:
 
 
 def test_optimization_metrics_record_and_stats() -> None:
-    from mriforge.infrastructure.training.optimization_utils import OptimizationMetrics
+    from spectramr.infrastructure.training.optimization_utils import OptimizationMetrics
 
     metrics = OptimizationMetrics(name="test")
     for v in [10.0, 20.0, 30.0]:
@@ -140,14 +140,14 @@ def test_optimization_metrics_record_and_stats() -> None:
 
 
 def test_optimization_metrics_empty_component_returns_empty_dict() -> None:
-    from mriforge.infrastructure.training.optimization_utils import OptimizationMetrics
+    from spectramr.infrastructure.training.optimization_utils import OptimizationMetrics
 
     metrics = OptimizationMetrics()
     assert metrics.get_stats("__nonexistent__") == {}
 
 
 def test_optimization_metrics_reset_clears_timings() -> None:
-    from mriforge.infrastructure.training.optimization_utils import OptimizationMetrics
+    from spectramr.infrastructure.training.optimization_utils import OptimizationMetrics
 
     metrics = OptimizationMetrics()
     metrics.record_timing("backward_pass", 5.0)
@@ -161,7 +161,7 @@ def test_optimization_metrics_reset_clears_timings() -> None:
 
 
 def test_performance_context_manager_records_timing() -> None:
-    from mriforge.infrastructure.training.optimization_utils import (
+    from spectramr.infrastructure.training.optimization_utils import (
         OptimizationMetrics,
         PerformanceContextManager,
     )
@@ -182,7 +182,7 @@ def test_performance_context_manager_records_timing() -> None:
 
 
 def test_gradient_buffer_edge_zero_queries_hit_rate() -> None:
-    from mriforge.infrastructure.training.optimization_utils import GradientBuffer
+    from spectramr.infrastructure.training.optimization_utils import GradientBuffer
 
     buf = GradientBuffer()
     # No stores, no retrieves → hit_rate defaults to 0.0

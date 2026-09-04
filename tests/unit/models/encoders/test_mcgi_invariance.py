@@ -1,6 +1,6 @@
 r"""Unit tests for the MCGI encoder (monotone-contrast-group invariance).
 
-Targets ``mriforge.models.encoders.mcgi_encoder``.
+Targets ``spectramr.models.encoders.mcgi_encoder``.
 
 MCGI = :math:`\Psi \circ R` (a backbone behind the rank transform), optionally
 :math:`\sigma`-symmetrized so the invariance group is :math:`G_+ \rtimes
@@ -23,7 +23,7 @@ pytestmark = pytest.mark.unit
 
 
 def _encoder(**kw):
-    from mriforge.models.encoders.mcgi_encoder import MCGIEncoder
+    from spectramr.models.encoders.mcgi_encoder import MCGIEncoder
 
     torch.manual_seed(0)
     enc = MCGIEncoder(in_channels=1, hidden_channels=8, out_channels=4, depth=2, **kw)
@@ -62,8 +62,8 @@ def test_forward_output_shape() -> None:
 
 
 def test_model_is_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "mcgi_encoder" in MODEL_REGISTRY

@@ -1,6 +1,6 @@
 """Tests for the normalization SSOT.
 
-Targets ``mriforge.data.transforms.normalization``. The module is the single
+Targets ``spectramr.data.transforms.normalization``. The module is the single
 source of truth for normalization across datasets, training strategies,
 and TorchIO transforms — every consumer must delegate here, so the
 tests verify the documented contracts:
@@ -22,7 +22,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.normalization import (
+from spectramr.data.transforms.normalization import (
     DECOMPRESS_MAGNITUDE_CEILING,
     NormalizationConfig,
     NormalizationStrategy,
@@ -83,9 +83,7 @@ class TestLogKspaceCompression:
         comp = compress_kspace_log(z)
         # Where magnitude is non-trivial, the phase angle must be unchanged.
         mask = z.abs() > 1e-3
-        assert torch.allclose(
-            torch.angle(comp)[mask], torch.angle(z)[mask], atol=1e-4
-        )
+        assert torch.allclose(torch.angle(comp)[mask], torch.angle(z)[mask], atol=1e-4)
 
     def test_odd_channel_count_raises(self):
         with pytest.raises(ValueError, match="even channel count"):
@@ -114,9 +112,7 @@ class TestLogKspaceCompression:
         above = torch.full((1, 1, 2, 2), 500.0, dtype=torch.complex64)
         out_below = decompress_kspace_log(below).abs()
         out_above = decompress_kspace_log(above).abs()
-        assert torch.allclose(
-            out_below, torch.tensor(math.expm1(ceiling - 5.0)), rtol=1e-3
-        )
+        assert torch.allclose(out_below, torch.tensor(math.expm1(ceiling - 5.0)), rtol=1e-3)
         assert torch.allclose(out_above, torch.tensor(math.expm1(ceiling)), rtol=1e-3)
         assert torch.isfinite(out_above).all()
 
@@ -136,7 +132,7 @@ class TestSSOTRobustKspaceNormalization:
 
     @pytest.mark.parametrize("log_scaling", [False, True])
     def test_round_trip_complex(self, log_scaling):
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             denormalize_kspace_robust,
             normalize_kspace_robust,
         )
@@ -148,7 +144,7 @@ class TestSSOTRobustKspaceNormalization:
 
     @pytest.mark.parametrize("log_scaling", [False, True])
     def test_round_trip_real_stacked(self, log_scaling):
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             denormalize_kspace_robust,
             normalize_kspace_robust,
         )
@@ -158,13 +154,11 @@ class TestSSOTRobustKspaceNormalization:
         norm, scale = normalize_kspace_robust(
             stk, percentile=0.95, log_scaling=log_scaling, channel_dim=1
         )
-        back = denormalize_kspace_robust(
-            norm, scale, log_scaling=log_scaling, channel_dim=1
-        )
+        back = denormalize_kspace_robust(norm, scale, log_scaling=log_scaling, channel_dim=1)
         assert torch.allclose(back, stk, atol=1e-2, rtol=1e-2)
 
     def test_log_scaling_compresses_dynamic_range(self):
-        from mriforge.data.transforms.normalization import normalize_kspace_robust
+        from spectramr.data.transforms.normalization import normalize_kspace_robust
 
         z = self._ksp()
         lin, _ = normalize_kspace_robust(z, percentile=0.95, log_scaling=False)
@@ -172,7 +166,7 @@ class TestSSOTRobustKspaceNormalization:
         assert log.abs().max() < lin.abs().max() / 3
 
     def test_precomputed_scale_is_used(self):
-        from mriforge.data.transforms.normalization import normalize_kspace_robust
+        from spectramr.data.transforms.normalization import normalize_kspace_robust
 
         z = self._ksp()
         fixed = torch.tensor(4.0)
@@ -195,8 +189,7 @@ def test_strategy_from_string_case_insensitive() -> None:
 def test_strategy_robust_percentile_alias() -> None:
     """The legacy ``robust_percentile`` alias maps to ``PERCENTILE``."""
     assert (
-        NormalizationStrategy.from_string("robust_percentile")
-        == NormalizationStrategy.PERCENTILE
+        NormalizationStrategy.from_string("robust_percentile") == NormalizationStrategy.PERCENTILE
     )
 
 
@@ -247,9 +240,7 @@ def test_percentile_normalize_round_trip() -> None:
     """
     torch.manual_seed(0)
     x = torch.randn(1, 1, 16, 16) * 10.0
-    norm, scale = normalize_percentile(
-        x, percentile=0.99, clamp=False, out_range=(0.0, 1.0)
-    )
+    norm, scale = normalize_percentile(x, percentile=0.99, clamp=False, out_range=(0.0, 1.0))
     recon = denormalize_percentile(norm, scale)
     assert torch.allclose(recon, x, atol=1e-4)
 
@@ -273,9 +264,7 @@ def test_percentile_normalize_clamps_to_out_range() -> None:
     """``clamp=True`` enforces output range."""
     torch.manual_seed(0)
     x = torch.randn(1, 1, 16, 16) * 100.0
-    norm, _ = normalize_percentile(
-        x, percentile=0.5, clamp=True, out_range=(0.0, 1.0)
-    )
+    norm, _ = normalize_percentile(x, percentile=0.5, clamp=True, out_range=(0.0, 1.0))
     assert norm.min().item() >= 0.0
     assert norm.max().item() <= 1.0
 
@@ -369,7 +358,8 @@ def test_dispatcher_minmax_routes_correctly() -> None:
 
 
 @pytest.mark.parametrize(
-    "shape", [(1, 1, 8, 8), (2, 2, 16, 16), (1, 4, 32, 32)],
+    "shape",
+    [(1, 1, 8, 8), (2, 2, 16, 16), (1, 4, 32, 32)],
     ids=lambda s: "x".join(map(str, s)),
 )
 def test_percentile_shape_matrix(shape: tuple[int, ...]) -> None:
@@ -392,14 +382,14 @@ class TestKSpaceImageDomainScale:
     """The scale is measured on the image-domain coil RSS, not on |k|."""
 
     @staticmethod
-    def _kspace_of(img: "torch.Tensor") -> "torch.Tensor":
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+    def _kspace_of(img: torch.Tensor) -> torch.Tensor:
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         return fft2c(img)
 
     def test_matches_the_image_rss_quantile(self) -> None:
         """It equals the quantile of |RSS(ifft2c(k))| — the definition."""
-        from mriforge.data.transforms.normalization import kspace_image_domain_scale
+        from spectramr.data.transforms.normalization import kspace_image_domain_scale
 
         torch.manual_seed(0)
         img = torch.randn(3, 16, 16, dtype=torch.complex64)  # (coils, H, W)
@@ -417,7 +407,7 @@ class TestKSpaceImageDomainScale:
         Guards the migration: swapping the domains silently would change what
         the network is trained on.
         """
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             compute_magnitude,
             kspace_image_domain_scale,
         )
@@ -427,14 +417,12 @@ class TestKSpaceImageDomainScale:
         k = self._kspace_of(img)
 
         image_scale = kspace_image_domain_scale(k, percentile=0.95)
-        kspace_scale = torch.quantile(
-            compute_magnitude(k).flatten().float(), 0.95
-        )
+        kspace_scale = torch.quantile(compute_magnitude(k).flatten().float(), 0.95)
         assert not torch.isclose(image_scale, kspace_scale, rtol=0.05)
 
     def test_accepts_real_interleaved_layout(self) -> None:
         """Real/imag interleaved along the channel axis gives the same scale."""
-        from mriforge.data.transforms.normalization import kspace_image_domain_scale
+        from spectramr.data.transforms.normalization import kspace_image_domain_scale
 
         torch.manual_seed(1)
         img = torch.randn(2, 16, 16, dtype=torch.complex64)
@@ -452,16 +440,14 @@ class TestKSpaceImageDomainScale:
 
     def test_odd_channel_count_falls_back_to_kspace_magnitude(self) -> None:
         """An odd channel count is not a real/imag stack — do not invent phase."""
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             compute_magnitude,
             kspace_image_domain_scale,
         )
 
         x = torch.rand(3, 8, 8)  # cannot be real/imag interleaved
         expected = torch.quantile(compute_magnitude(x).flatten().float(), 0.9)
-        assert torch.allclose(
-            kspace_image_domain_scale(x, percentile=0.9), expected, rtol=1e-4
-        )
+        assert torch.allclose(kspace_image_domain_scale(x, percentile=0.9), expected, rtol=1e-4)
 
 
 class TestKSpaceNormalizationScaleDomain:
@@ -469,7 +455,7 @@ class TestKSpaceNormalizationScaleDomain:
 
     def test_unknown_scale_domain_raises(self) -> None:
         """No silent fallback to a default domain (pitfall #9)."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationTransform
+        from spectramr.data.transforms.normalization import KSpaceNormalizationTransform
 
         with pytest.raises(ValueError, match="Unknown scale_domain"):
             KSpaceNormalizationTransform(scale_domain="parseval")
@@ -478,11 +464,11 @@ class TestKSpaceNormalizationScaleDomain:
         """The published kspace_scale is the one actually divided by."""
         import torchio as tio
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             KSpaceNormalizationTransform,
             kspace_image_domain_scale,
         )
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         torch.manual_seed(2)
         img = torch.randn(1, 16, 16, dtype=torch.complex64)
@@ -498,9 +484,7 @@ class TestKSpaceNormalizationScaleDomain:
 
         expected = kspace_image_domain_scale(stacked, percentile=0.95)
         assert torch.allclose(out["kspace_scale"], expected, rtol=1e-4)
-        assert torch.allclose(
-            out["kspace"].data, stacked / expected, rtol=1e-4, atol=1e-6
-        )
+        assert torch.allclose(out["kspace"].data, stacked / expected, rtol=1e-4, atol=1e-6)
 
 
 class TestImageDomainScaleAxes:
@@ -518,7 +502,7 @@ class TestImageDomainScaleAxes:
 
     @staticmethod
     def _phantom(slices, coils, h, w):
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         torch.manual_seed(0)
         img = torch.zeros(slices, coils, h, w, dtype=torch.complex64)
@@ -539,7 +523,7 @@ class TestImageDomainScaleAxes:
     )
     def test_torchio_layout_c_h_w_d(self, slices, coils, h, w):
         """TorchIO ``(2C, H, W, D)`` with channel_dim=0."""
-        from mriforge.data.transforms.normalization import kspace_image_domain_scale
+        from spectramr.data.transforms.normalization import kspace_image_domain_scale
 
         img, k = self._phantom(slices, coils, h, w)
         stacked = torch.empty(coils * 2, h, w, slices)
@@ -551,7 +535,7 @@ class TestImageDomainScaleAxes:
 
     def test_batched_layout_b_c_h_w(self):
         """Inference ``(B, 2C, H, W)`` with channel_dim=1."""
-        from mriforge.data.transforms.normalization import kspace_image_domain_scale
+        from spectramr.data.transforms.normalization import kspace_image_domain_scale
 
         img, k = self._phantom(2, 3, 32, 32)  # slices axis reused as batch
         stacked = torch.empty(2, 6, 32, 32)
@@ -563,7 +547,7 @@ class TestImageDomainScaleAxes:
 
     def test_too_few_spatial_axes_raises(self):
         """A tensor with no (H, W) after the channel axis cannot form an image."""
-        from mriforge.data.transforms.normalization import kspace_image_domain_scale
+        from spectramr.data.transforms.normalization import kspace_image_domain_scale
 
         with pytest.raises(ValueError, match="two spatial axes"):
             kspace_image_domain_scale(torch.randn(4, 8), channel_dim=0)
@@ -582,7 +566,7 @@ class TestKSpaceNormalizationSpec:
 
     def test_from_dict_and_from_object_agree(self):
         """Inference passes a dict, training a pydantic model."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         class _Obj:
             normalize_kspace = True
@@ -596,11 +580,9 @@ class TestKSpaceNormalizationSpec:
 
     def test_disabled_spec_is_a_no_op_with_unit_scale(self):
         """Callers never branch on ``enabled`` themselves."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
-        spec = KSpaceNormalizationSpec.from_data_config(
-            dict(self.CFG, normalize_kspace=False)
-        )
+        spec = KSpaceNormalizationSpec.from_data_config(dict(self.CFG, normalize_kspace=False))
         x = torch.randn(1, 4, 8, 8)
         out, scale = spec.normalize(x)
         assert out is x and float(scale) == 1.0
@@ -609,8 +591,8 @@ class TestKSpaceNormalizationSpec:
     @pytest.mark.parametrize("domain", ["kspace", "image"])
     @pytest.mark.parametrize("log_scaling", [False, True])
     def test_round_trip(self, domain, log_scaling):
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         spec = KSpaceNormalizationSpec.from_data_config(
             dict(self.CFG, kspace_scale_domain=domain, log_scaling=log_scaling)
@@ -627,7 +609,7 @@ class TestKSpaceNormalizationSpec:
         assert torch.allclose(restored, x, rtol=1e-3, atol=1e-4 * x.abs().max())
 
     def test_unknown_scale_domain_raises(self):
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         with pytest.raises(ValueError, match="scale_domain"):
             KSpaceNormalizationSpec(scale_domain="parseval")
@@ -675,7 +657,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
         """A ``data``-shaped holder carrying the real processing schema block."""
         from types import SimpleNamespace
 
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
         return SimpleNamespace(
             processing=DataProcessingConfigSchema(
@@ -685,7 +667,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
 
     def test_reads_the_declared_nested_values(self):
         """The regression: this resolved to every default before the fix."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         spec = KSpaceNormalizationSpec.from_data_config(self._data())
 
@@ -696,20 +678,18 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
 
     def test_center_fraction_comes_from_the_block(self):
         """Parity with the transform, which is handed the same 0.25 default."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         assert KSpaceNormalizationSpec.from_data_config(self._data()).center_fraction == 0.25
-        spec = KSpaceNormalizationSpec.from_data_config(
-            self._data(log_scaling_center_fraction=0.1)
-        )
+        spec = KSpaceNormalizationSpec.from_data_config(self._data(log_scaling_center_fraction=0.1))
         assert spec.center_fraction == 0.1
 
     def test_nested_block_wins_over_stale_flat_names(self):
         """A leftover flat key must not override the block that supersedes it."""
         from types import SimpleNamespace
 
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         data = SimpleNamespace(
             processing=DataProcessingConfigSchema(**self.ARM),
@@ -725,7 +705,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
         """Nothing declared anywhere: a standalone strategy, a dataless paradigm."""
         from types import SimpleNamespace
 
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         for empty in ({}, SimpleNamespace()):
             spec = KSpaceNormalizationSpec.from_data_config(empty)
@@ -741,7 +721,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
         """
         from types import SimpleNamespace
 
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         partial = SimpleNamespace(
             enable_kspace_normalization=True,
@@ -754,23 +734,28 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
 
         with pytest.raises(AttributeError, match="enable_log_scaling"):
             KSpaceNormalizationSpec.from_data_config(
-                {"processing": {k: v for k, v in self.ARM.items() if k != "enable_log_scaling"}
-                 | {"log_scaling_center_fraction": 0.25}}
+                {
+                    "processing": {k: v for k, v in self.ARM.items() if k != "enable_log_scaling"}
+                    | {"log_scaling_center_fraction": 0.25}
+                }
             )
 
     def test_explicit_none_raises_for_a_non_nullable_knob(self):
         """An explicit None must not read as the schema default."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         with pytest.raises(ValueError, match="kspace_percentile"):
             KSpaceNormalizationSpec.from_data_config(
-                {"processing": dict(self.ARM, kspace_percentile=None,
-                                    log_scaling_center_fraction=0.25)}
+                {
+                    "processing": dict(
+                        self.ARM, kspace_percentile=None, log_scaling_center_fraction=0.25
+                    )
+                }
             )
 
     def test_nullable_center_fraction_may_be_none(self):
         """The one knob with a real null meaning: 'use the full magnitude'."""
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         spec = KSpaceNormalizationSpec.from_data_config(
             {"processing": dict(self.ARM, log_scaling_center_fraction=None)}
@@ -781,7 +766,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
         """A checkpoint's stored `data` dict predates the block; honour it, loudly."""
         import logging
 
-        from mriforge.data.transforms.normalization import KSpaceNormalizationSpec
+        from spectramr.data.transforms.normalization import KSpaceNormalizationSpec
 
         flat = {
             "normalize_kspace": True,
@@ -803,7 +788,7 @@ class TestKSpaceNormalizationSpecReadsTheNestedBlock:
         to ``KSpaceNormalizationTransform``. If the two resolvers disagree, the
         fallback silently trains on a different distribution than the chain.
         """
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             KSpaceNormalizationSpec,
             KSpaceNormalizationTransform,
         )
@@ -826,12 +811,12 @@ class TestImageNormalizationSpecResolution:
 
     @staticmethod
     def _spec(nt, dt=None, **kw):
-        from mriforge.data.transforms.normalization import ImageNormalizationSpec
+        from spectramr.data.transforms.normalization import ImageNormalizationSpec
 
         return ImageNormalizationSpec.from_declared(nt, dt, kw or None)
 
     def test_declared_type_wins(self) -> None:
-        from mriforge.data.transforms.normalization import NormalizationStrategy
+        from spectramr.data.transforms.normalization import NormalizationStrategy
 
         spec = self._spec("percentile", "nifti_paired")
         assert spec.source == "declared"
@@ -844,7 +829,7 @@ class TestImageNormalizationSpecResolution:
         on the dataset's internal pass. Resolving them to "none" would have
         trained those arms on unnormalized intensities — the single most
         dangerous way this port could have gone wrong."""
-        from mriforge.data.transforms.normalization import NormalizationStrategy
+        from spectramr.data.transforms.normalization import NormalizationStrategy
 
         for dtype in ("contrast_aware_paired", "nifti_paired"):
             spec = self._spec("none", dtype)
@@ -863,16 +848,13 @@ class TestImageNormalizationSpecResolution:
         """The schema Literal and the strategy enum were named independently:
         the config says ``robust_percentile`` / ``standard`` where the enum says
         PERCENTILE / ZSCORE. 270 corpus arms use ``robust_percentile``."""
-        from mriforge.data.transforms.normalization import NormalizationStrategy
+        from spectramr.data.transforms.normalization import NormalizationStrategy
 
         assert (
             self._spec("robust_percentile", "nifti").config.strategy
             is NormalizationStrategy.PERCENTILE
         )
-        assert (
-            self._spec("standard", "nifti").config.strategy
-            is NormalizationStrategy.ZSCORE
-        )
+        assert self._spec("standard", "nifti").config.strategy is NormalizationStrategy.ZSCORE
 
     def test_unknown_type_raises_rather_than_degrading(self) -> None:
         # The resolver reports in CONFIG vocabulary ("normalization_type"), not
@@ -888,6 +870,107 @@ class TestImageNormalizationSpecResolution:
         assert spec.config.percentile == pytest.approx(0.995)
 
 
+class TestResolveImageNormalization:
+    """One owner for the three-part decision the builder and predict used to copy.
+
+    ``resolve_image_normalization`` decides (1) whether k-space normalization
+    takes precedence, (2) the vocabulary fold, (3) the spec. Before it, the
+    train chain, the val chain and ``pipelines/infer.py`` each carried a copy;
+    a drifted copy surfaces as a differently scaled tensor, not an error.
+    """
+
+    @staticmethod
+    def _resolve(**overrides):
+        from spectramr.data.transforms.normalization import resolve_image_normalization
+
+        kwargs = {
+            "normalization_type": "percentile",
+            "dataset_type": "nifti",
+            "normalization_kwargs": None,
+            "kspace_normalization_enabled": False,
+        }
+        kwargs.update(overrides)
+        return resolve_image_normalization(**kwargs)
+
+    def test_kspace_normalization_takes_precedence_and_says_so(self, caplog) -> None:
+        """An arm that normalizes k-space gets NO image normalization."""
+        with caplog.at_level("INFO", logger="spectramr.data.transforms.normalization"):
+            spec = self._resolve(
+                normalization_type="robust_percentile", kspace_normalization_enabled=True
+            )
+        assert spec is None
+        assert "Image normalization 'robust_percentile' SKIPPED" in caplog.text
+        assert "normalize_kspace=True" in caplog.text
+
+    def test_precedence_over_none_is_silent(self, caplog) -> None:
+        """Nothing was declared, so there is nothing to report as skipped."""
+        with caplog.at_level("INFO", logger="spectramr.data.transforms.normalization"):
+            spec = self._resolve(normalization_type="none", kspace_normalization_enabled=True)
+        assert spec is None
+        assert "SKIPPED" not in caplog.text
+
+    def test_precedence_wins_even_over_an_unknown_type(self) -> None:
+        """The value is never dispatched behind the gate, so it cannot raise."""
+        assert self._resolve(normalization_type="scalar", kspace_normalization_enabled=True) is None
+
+    def test_robust_percentile_folds_through_the_enum_alias_table(self) -> None:
+        """The fold has one owner: ``NormalizationStrategy.from_string``.
+
+        The resolver does not fold beforehand; it hands the declared spelling
+        to ``from_declared`` and gets PERCENTILE back, identical to what the
+        canonical spelling resolves to.
+        """
+        from spectramr.data.transforms.normalization import NormalizationStrategy
+
+        folded = self._resolve(normalization_type="robust_percentile")
+        canonical = self._resolve(normalization_type="percentile")
+        assert folded is not None and canonical is not None
+        assert folded.config.strategy is NormalizationStrategy.PERCENTILE
+        assert folded == canonical
+
+    def test_unknown_type_raises_when_the_gate_is_open(self) -> None:
+        with pytest.raises(ValueError, match="Unknown normalization_type"):
+            self._resolve(normalization_type="scalar")
+
+    def test_none_resolves_to_a_disabled_spec_not_to_none(self) -> None:
+        """``None`` means "k-space won"; a declared 'none' is a spec that is off.
+
+        The two are different provenance and the callers treat them the same
+        way (append nothing), so the distinction must survive in the return
+        value or a log reader cannot tell why nothing was applied.
+        """
+        spec = self._resolve(normalization_type="none")
+        assert spec is not None
+        assert not spec.enabled
+        assert spec.source == "disabled"
+
+    def test_none_on_a_contrast_aware_dataset_inherits_the_legacy_default(self) -> None:
+        spec = self._resolve(normalization_type="none", dataset_type="contrast_aware_paired")
+        assert spec is not None and spec.enabled
+        assert spec.source == "contrast_aware_legacy_default"
+
+    def test_the_resolved_spec_is_logged_once_with_its_source(self, caplog) -> None:
+        with caplog.at_level("INFO", logger="spectramr.data.transforms.normalization"):
+            self._resolve(normalization_type="percentile", normalization_kwargs={"clamp": False})
+        lines = [
+            r.getMessage()
+            for r in caplog.records
+            if "[NORMALIZATION] Image percentile" in r.getMessage()
+        ]
+        assert len(lines) == 1
+        assert "clamp=False" in lines[0] and "source=declared" in lines[0]
+
+    def test_kwargs_reach_the_spec_unchanged(self) -> None:
+        spec = self._resolve(
+            normalization_type="percentile",
+            normalization_kwargs={"percentile": 99.5, "clamp": False, "min_scale": 0.1},
+        )
+        assert spec is not None
+        assert spec.config.percentile == pytest.approx(0.995)
+        assert spec.config.clamp is False
+        assert spec.config.min_scale == pytest.approx(0.1)
+
+
 class TestTheLegacyDefaultIsTheDATASETsDEFAULT:
     """Port fidelity, asserted against the thing it was ported FROM.
 
@@ -900,8 +983,8 @@ class TestTheLegacyDefaultIsTheDATASETsDEFAULT:
     """
 
     def test_it_matches_what_the_subject_builder_used_to_build(self) -> None:
-        from mriforge.data.datasets.contrast_aware import ContrastConfig
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.datasets.contrast_aware import ContrastConfig
+        from spectramr.data.transforms.normalization import (
             _CONTRAST_AWARE_LEGACY_DEFAULT,
             NormalizationConfig,
             NormalizationStrategy,
@@ -922,7 +1005,7 @@ class TestTheLegacyDefaultIsTheDATASETsDEFAULT:
         """``min_scale`` is the one parameter torchio's RescaleIntensity had no
         equivalent for. Losing it means amplifying background noise on a
         low-signal ULF volume."""
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             _CONTRAST_AWARE_LEGACY_DEFAULT,
         )
 
@@ -944,7 +1027,7 @@ class TestImageNormalizationTransformAppliesOnce:
     def test_output_equals_a_single_ssot_application(self) -> None:
         import torch
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
             normalize_tensor,
@@ -965,16 +1048,14 @@ class TestImageNormalizationTransformAppliesOnce:
         normalizer. Percentile+clamp is NOT idempotent here, so it can."""
         import torch
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
 
         torch.manual_seed(0)
         data = torch.rand(1, 8, 8, 1) * 100.0
-        spec = ImageNormalizationSpec.from_declared(
-            "percentile", "nifti", {"percentile": 0.5}
-        )
+        spec = ImageNormalizationSpec.from_declared("percentile", "nifti", {"percentile": 0.5})
         tf = ImageNormalizationTransform(spec)
         once = tf(self._subject(data))["input"].data
         twice = tf(self._subject(once))["input"].data
@@ -985,7 +1066,7 @@ class TestImageNormalizationTransformAppliesOnce:
         import torch
         import torchio as tio
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
@@ -1001,7 +1082,7 @@ class TestImageNormalizationTransformAppliesOnce:
         move between two arms that look identically configured."""
         import torch
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
@@ -1023,7 +1104,7 @@ class TestPercentileDividesRatherThanClips:
     def test_values_above_the_percentile_are_not_flattened(self) -> None:
         import torch
 
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             ImageNormalizationSpec,
             ImageNormalizationTransform,
         )
@@ -1056,7 +1137,7 @@ class TestUnknownTypeRaisesInTheConfigVocabulary:
 
     @staticmethod
     def _resolve(value):
-        from mriforge.data.transforms.normalization import ImageNormalizationSpec
+        from spectramr.data.transforms.normalization import ImageNormalizationSpec
 
         return ImageNormalizationSpec.from_declared(value, None, None)
 
@@ -1071,7 +1152,7 @@ class TestUnknownTypeRaisesInTheConfigVocabulary:
 
     def test_message_quotes_the_config_spellings_not_the_enum_members(self) -> None:
         """``standard`` must appear; ``zscore`` is not writable in YAML."""
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             IMPLEMENTED_NORMALIZATION_TYPES,
         )
 
@@ -1091,8 +1172,8 @@ class TestUnknownTypeRaisesInTheConfigVocabulary:
 
     def test_the_builder_re_exports_the_same_object(self) -> None:
         """One definition. A copy in the builder is how the two sets drift."""
-        from mriforge.data.builders import torchio_transform_builder
-        from mriforge.data.transforms import normalization
+        from spectramr.data.builders import torchio_transform_builder
+        from spectramr.data.transforms import normalization
 
         assert (
             torchio_transform_builder.IMPLEMENTED_NORMALIZATION_TYPES
@@ -1101,7 +1182,7 @@ class TestUnknownTypeRaisesInTheConfigVocabulary:
 
     def test_robust_percentile_is_not_in_the_set_but_still_resolves(self) -> None:
         """The one licensed gap: folded upstream, accepted here, not advertised."""
-        from mriforge.data.transforms.normalization import (
+        from spectramr.data.transforms.normalization import (
             IMPLEMENTED_NORMALIZATION_TYPES,
             NormalizationStrategy,
         )
@@ -1137,7 +1218,7 @@ class TestKSpaceNormalizationSurvivesPatchExtraction:
         return tio.Subject(input=tio.ScalarImage(tensor=k))
 
     def _normalized(self) -> tio.Subject:
-        from mriforge.data.transforms.normalization import KSpaceNormalizationTransform
+        from spectramr.data.transforms.normalization import KSpaceNormalizationTransform
 
         return KSpaceNormalizationTransform(percentile=0.95, log_scaling=True)(self._subject())
 
@@ -1171,8 +1252,8 @@ class TestKSpaceNormalizationSurvivesPatchExtraction:
         A ``log1p``-compressed float32 magnitude cannot exceed ~44, so a patch
         anywhere near the input's 2500 proves the compression was discarded.
         """
-        from mriforge.data.transforms.geometric import EnsureSpatialConsistency
-        from mriforge.data.transforms.normalization import KSpaceNormalizationTransform
+        from spectramr.data.transforms.geometric import EnsureSpatialConsistency
+        from spectramr.data.transforms.normalization import KSpaceNormalizationTransform
 
         chain = tio.Compose(
             [

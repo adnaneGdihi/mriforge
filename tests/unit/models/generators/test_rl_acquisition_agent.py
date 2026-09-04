@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.rl_acquisition_agent import RLAcquisitionAgent
+from spectramr.models.generators.rl_acquisition_agent import RLAcquisitionAgent
 
 
 class TestRLAcquisitionAgent:

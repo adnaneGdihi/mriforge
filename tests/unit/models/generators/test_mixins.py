@@ -17,7 +17,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.models.generators.mixins import DiffusionMixin, LatentMixin, PhysicsMixin
+from spectramr.models.generators.mixins import DiffusionMixin, LatentMixin, PhysicsMixin
 
 
 # ===========================================================================

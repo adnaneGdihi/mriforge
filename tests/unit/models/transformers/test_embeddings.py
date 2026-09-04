@@ -6,7 +6,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.blocks.embeddings import (
+from spectramr.models.blocks.embeddings import (
     AdvancedKANPositionalEmbedding,
     FourierKANPositionalEmbedding,
     HybridFourierKANEmbedding,
@@ -260,8 +260,8 @@ class TestAdvancedKANPositionalEmbedding:
     def test_initialization_kan_available(self):
         """Test initialization when KAN is available."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             dim = 128
             embed = AdvancedKANPositionalEmbedding(dim)
@@ -276,18 +276,18 @@ class TestAdvancedKANPositionalEmbedding:
 
     def test_initialization_kan_unavailable(self):
         """Test initialization when KAN is unavailable."""
-        with patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", False):
+        with patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", False):
             with pytest.raises(ImportError, match="KAN layers not available"):
                 AdvancedKANPositionalEmbedding(128)
 
     def test_initialization_different_kan_types(self):
         """Test initialization with different KAN types."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True),
-            patch("mriforge.models.blocks.embeddings.ChebyKANLayer", create=True),
-            patch("mriforge.models.blocks.embeddings.WavKANLayer", create=True),
-            patch("mriforge.models.blocks.embeddings.KANLayer", create=True),
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True),
+            patch("spectramr.models.blocks.embeddings.ChebyKANLayer", create=True),
+            patch("spectramr.models.blocks.embeddings.WavKANLayer", create=True),
+            patch("spectramr.models.blocks.embeddings.KANLayer", create=True),
         ):
             for kan_type in ["fast", "chebyshev", "wavelet", "standard"]:
                 embed = AdvancedKANPositionalEmbedding(dim=64, kan_type=kan_type)
@@ -296,8 +296,8 @@ class TestAdvancedKANPositionalEmbedding:
     def test_forward_pass_single_sequence(self):
         """Test forward pass with single sequence."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             # Setup mock return value
             mock_instance = MockFastKAN.return_value
@@ -320,8 +320,8 @@ class TestAdvancedKANPositionalEmbedding:
     def test_forward_pass_batch_sequences(self):
         """Test forward pass with batch of sequences."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             # Setup mock
             mock_instance = MockFastKAN.return_value
@@ -340,8 +340,8 @@ class TestAdvancedKANPositionalEmbedding:
     def test_forward_pass_gradient_flow(self):
         """Test that gradients flow through advanced KAN embedding."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             # Setup mock to allow gradient flow
             mock_instance = MockFastKAN.return_value
@@ -369,8 +369,8 @@ class TestHybridFourierKANEmbedding:
     def test_initialization_kan_available(self):
         """Test initialization when KAN is available."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True),
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True),
         ):
             dim = 128
             embed = HybridFourierKANEmbedding(dim)
@@ -382,15 +382,15 @@ class TestHybridFourierKANEmbedding:
 
     def test_initialization_kan_unavailable(self):
         """Test initialization when KAN is unavailable."""
-        with patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", False):
+        with patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", False):
             with pytest.raises(ImportError, match="KAN layers not available"):
                 HybridFourierKANEmbedding(128)
 
     def test_forward_pass_single_sequence(self):
         """Test forward pass with single sequence."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             mock_instance = MockFastKAN.return_value
 
@@ -408,8 +408,8 @@ class TestHybridFourierKANEmbedding:
     def test_forward_pass_batch_sequences(self):
         """Test forward pass with batch of sequences."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             mock_instance = MockFastKAN.return_value
 
@@ -427,8 +427,8 @@ class TestHybridFourierKANEmbedding:
     def test_forward_pass_gradient_flow(self):
         """Test that gradients flow through hybrid embedding."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True) as MockFastKAN,
         ):
             mock_instance = MockFastKAN.return_value
 
@@ -453,8 +453,8 @@ class TestKANTimeEmbedding:
     def test_initialization_kan_available(self):
         """Test initialization when KAN is available."""
         with (
-            patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", True),
-            patch("mriforge.models.blocks.embeddings.FastKAN", create=True),
+            patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", True),
+            patch("spectramr.models.blocks.embeddings.FastKAN", create=True),
         ):
             dim = 128
             embed = KANTimeEmbedding(dim)
@@ -464,7 +464,7 @@ class TestKANTimeEmbedding:
 
     def test_initialization_kan_unavailable(self):
         """Test initialization when KAN is unavailable (fallback)."""
-        with patch("mriforge.models.blocks.embeddings.KAN_AVAILABLE", False):
+        with patch("spectramr.models.blocks.embeddings.KAN_AVAILABLE", False):
             dim = 128
             embed = KANTimeEmbedding(dim)
 

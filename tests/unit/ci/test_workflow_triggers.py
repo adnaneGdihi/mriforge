@@ -56,7 +56,9 @@ _ALLOWED_NON_PR_EVENTS: dict[str, dict[str, str]] = {
         "push": "tag-only: fires on `git push origin vX.Y.Z`, the publish step",
     },
     "test-release.yml": {
-        "push": "tag-only: verifies the artifact the tag publishes",
+        # NOT the artefact: this lane does `pip install -e .` and `make test-release`,
+        # so it exercises the checkout. release.yml is what verifies what is published.
+        "push": "tag-only: runs the full test lane against the tagged source tree",
         "release": "fires when a maintainer publishes the GitHub Release",
     },
     "claude.yml": {

@@ -1,6 +1,6 @@
 """Tests for ``ContrastiveLoss``.
 
-Targets ``mriforge.models.losses.contrastive_losses``. InfoNCE-style
+Targets ``spectramr.models.losses.contrastive_losses``. InfoNCE-style
 contrastive loss with temperature scaling and supervised-contrastive
 masking. ``CAContrastiveLoss`` (anatomy-disentanglement variant) is
 covered in the integration tier — it requires multi-view fixtures.
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.contrastive_losses import ContrastiveLoss
+from spectramr.models.losses.contrastive_losses import ContrastiveLoss
 
 
 # ---------------------------------------------------------------------------
@@ -133,6 +133,6 @@ def test_loss_shape_matrix(batch_size: int, feature_dim: int) -> None:
 
 def test_contrastive_registered() -> None:
     """``contrastive`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "contrastive" in list_available()

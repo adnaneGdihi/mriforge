@@ -22,7 +22,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.registry import MetricsRegistry
 
 
 def _disk(h=64, w=64):
@@ -87,7 +87,7 @@ def test_normalized_gradient_squared_higher_for_sharper():
 def test_clinical_ssim_default_data_range_finite_no_typeerror():
     """A default-constructed ClinicalSSIM (data_range=None) must not raise
     TypeError and must return a finite scalar in [-1, 1]."""
-    from mriforge.core.metrics.evaluation_metrics import ClinicalSSIM
+    from spectramr.core.metrics.evaluation_metrics import ClinicalSSIM
 
     torch.manual_seed(0)
     pred = torch.rand(2, 1, 32, 32)
@@ -120,7 +120,7 @@ def test_clinical_ssim_default_data_range_via_registry():
 def test_clinical_ssim_default_data_range_identical_is_one():
     """SSIM of an image against itself must be ~1.0 even when data_range is
     auto-detected (the masked-mean of an all-ones SSIM map)."""
-    from mriforge.core.metrics.evaluation_metrics import ClinicalSSIM
+    from spectramr.core.metrics.evaluation_metrics import ClinicalSSIM
 
     torch.manual_seed(1)
     img = torch.rand(1, 1, 32, 32)
@@ -146,7 +146,7 @@ def test_clinical_ssim_default_data_range_identical_is_one():
 
 def test_compute_ssim_map_fp16_offscale_finite_and_float32():
     """fp16 off-scale inputs must yield a finite float32 SSIM map."""
-    from mriforge.core.metrics.evaluation_metrics import (
+    from spectramr.core.metrics.evaluation_metrics import (
         compute_ssim_map,
         gaussian_kernel,
     )
@@ -166,7 +166,7 @@ def test_compute_ssim_map_fp16_offscale_finite_and_float32():
 def test_compute_ssim_map_genuine_nan_input_still_propagates():
     """The fp32 upcast must not mask a real NaN in the model output — a NaN
     input must still yield a non-finite map (honest failure, not pitfall #9)."""
-    from mriforge.core.metrics.evaluation_metrics import (
+    from spectramr.core.metrics.evaluation_metrics import (
         compute_ssim_map,
         gaussian_kernel,
     )
@@ -189,7 +189,7 @@ def test_nrmse_normalizes_by_measured_target_range() -> None:
     score came out 2x too small. Here a constant 0.1 error against a target of
     range 0.5 must give NRMSE = 0.1 / 0.5 = 0.2, not 0.1.
     """
-    from mriforge.core.metrics.evaluation_metrics import NRMSE
+    from spectramr.core.metrics.evaluation_metrics import NRMSE
 
     target = torch.linspace(0.0, 0.5, steps=64).reshape(1, 1, 8, 8)
     pred = target + 0.1  # RMSE = 0.1 exactly
@@ -230,7 +230,7 @@ class _FakeBackbone(torch.nn.Module):
 def test_torchmetrics_backbone_built_once_and_cached(
     cls_name, backbone_attr, monkeypatch
 ) -> None:
-    import mriforge.core.metrics.evaluation_metrics as em
+    import spectramr.core.metrics.evaluation_metrics as em
 
     _FakeBackbone.n_constructed = 0
     monkeypatch.setattr(em, "TORCHMETRICS_AVAILABLE", True)
@@ -269,7 +269,7 @@ class TestUnequalSampleCountOptOut:
     def _metric(**attrs):
         import torch
 
-        from mriforge.core.metrics.evaluation_metrics import BaseMetric
+        from spectramr.core.metrics.evaluation_metrics import BaseMetric
 
         class _Probe(BaseMetric):
             def compute_metric(self, preds, target, **_):
@@ -304,7 +304,7 @@ class TestUnequalSampleCountOptOut:
             m(torch.rand(4, 1, 8, 8), torch.rand(4, 1, 16, 16))
 
     def test_base_default_is_off(self):
-        from mriforge.core.metrics.evaluation_metrics import BaseMetric
+        from spectramr.core.metrics.evaluation_metrics import BaseMetric
 
         assert BaseMetric.ALLOWS_UNEQUAL_SAMPLE_COUNT is False
         assert BaseMetric.REQUIRES_MATCHING_SHAPES is True
@@ -321,7 +321,7 @@ class TestZipperDetectionIsReferenceFree:
     """
 
     def test_registry_declares_it_reference_free(self):
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.requires_reference("zipper_detection") is False
 
@@ -329,7 +329,7 @@ class TestZipperDetectionIsReferenceFree:
         """The behavioural claim behind the flag -- not just the flag itself."""
         import torch
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         metric = MetricsRegistry.get("zipper_detection")
         preds = torch.rand(1, 1, 32, 32, generator=torch.Generator().manual_seed(0))
@@ -342,7 +342,7 @@ class TestZipperDetectionIsReferenceFree:
         """A zipper is anisotropic: striping one axis must beat isotropic noise."""
         import torch
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         metric = MetricsRegistry.get("zipper_detection")
         gen = torch.Generator().manual_seed(0)
@@ -388,7 +388,7 @@ class TestDataRangeResolution:
         A fix that silently restated every PSNR in the corpus would be worse than
         the bug, so [0,1] must still resolve 1.0 and [-1,1] must still resolve 2.0.
         """
-        from mriforge.core.metrics.evaluation_metrics import resolve_image_data_range
+        from spectramr.core.metrics.evaluation_metrics import resolve_image_data_range
 
         assert resolve_image_data_range(
             self._with_peak(1.0), None, metric_name="psnr"
@@ -403,7 +403,7 @@ class TestDataRangeResolution:
         A user who states the scale is not second-guessed — declaring it is the
         documented escape hatch the not-applicable message points at.
         """
-        from mriforge.core.metrics.evaluation_metrics import resolve_image_data_range
+        from spectramr.core.metrics.evaluation_metrics import resolve_image_data_range
 
         assert resolve_image_data_range(
             self._with_peak(2479.0), 2479.0, metric_name="psnr"
@@ -411,8 +411,8 @@ class TestDataRangeResolution:
 
     def test_contract_tolerance_boundary_is_exact(self):
         """2.0 (== 6 dB of PSNR bias) is the documented cut, and it is closed."""
-        from mriforge.core.metrics.evaluation_metrics import resolve_image_data_range
-        from mriforge.core.metrics.outcome import MetricNotApplicableError
+        from spectramr.core.metrics.evaluation_metrics import resolve_image_data_range
+        from spectramr.core.metrics.outcome import MetricNotApplicableError
 
         assert (
             resolve_image_data_range(self._with_peak(2.0), None, metric_name="psnr")
@@ -423,8 +423,8 @@ class TestDataRangeResolution:
 
     def test_unresolvable_range_carries_a_machine_readable_reason(self):
         """NOT_APPLICABLE + a declared reason, never a fabricated number."""
-        from mriforge.core.metrics.evaluation_metrics import resolve_image_data_range
-        from mriforge.core.metrics.outcome import (
+        from spectramr.core.metrics.evaluation_metrics import resolve_image_data_range
+        from spectramr.core.metrics.outcome import (
             MetricNotApplicableError,
             NotApplicableReason,
         )
@@ -450,7 +450,7 @@ class TestUnnormalizedInputIsNotScored:
     @pytest.mark.parametrize("name", ["psnr", "ssim", "clinical_ssim"])
     def test_range_sensitive_metrics_report_not_applicable(self, name):
         """Pre-fix these returned -30.0 (clamp floor) and ~-653 (out of codomain)."""
-        from mriforge.core.metrics.outcome import MetricNotApplicableError
+        from spectramr.core.metrics.outcome import MetricNotApplicableError
 
         metric = MetricsRegistry.get(name)
         pred, target = self._mno_like()
@@ -465,7 +465,7 @@ class TestUnnormalizedInputIsNotScored:
         best-checkpoint selection silently degrades to a tie-break. Refusing to
         score is what makes that visible.
         """
-        from mriforge.core.metrics.outcome import MetricNotApplicableError
+        from spectramr.core.metrics.outcome import MetricNotApplicableError
 
         psnr = MetricsRegistry.get("psnr")
         pred, target = self._mno_like()
@@ -481,7 +481,7 @@ class TestDataRangeEscapeHatchesStillWork:
 
     def test_kspace_domain_uses_its_own_peak(self):
         """k-space has no [0,1] contract to verify — its scale IS the acquisition's."""
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         gen = torch.Generator().manual_seed(0)
         target = torch.rand(1, 1, 16, 16, generator=gen) * 5000.0
@@ -492,7 +492,7 @@ class TestDataRangeEscapeHatchesStillWork:
 
     def test_use_target_max_opt_in_is_untouched(self):
         """An explicit per-image range is a caller decision, not a guess."""
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         gen = torch.Generator().manual_seed(0)
         target = torch.rand(1, 1, 16, 16, generator=gen) * 900.0
@@ -511,20 +511,20 @@ class TestSSIMCodomainGuard:
         `resolve_image_data_range` closes the route #180 found. This keeps a
         different route from quietly writing -653 into a CSV again.
         """
-        from mriforge.core.metrics.evaluation_metrics import _guard_ssim_codomain
+        from spectramr.core.metrics.evaluation_metrics import _guard_ssim_codomain
 
         with pytest.raises(ValueError, match="codomain"):
             _guard_ssim_codomain(torch.tensor(-653.8), metric_name="ssim")
 
     def test_in_codomain_value_passes_through_unchanged(self):
-        from mriforge.core.metrics.evaluation_metrics import _guard_ssim_codomain
+        from spectramr.core.metrics.evaluation_metrics import _guard_ssim_codomain
 
         v = torch.tensor(0.87)
         assert _guard_ssim_codomain(v, metric_name="ssim") is v
 
     def test_nonfinite_value_is_also_refused(self):
         """NaN is not a score either — it is 'the metric did not measure'."""
-        from mriforge.core.metrics.evaluation_metrics import _guard_ssim_codomain
+        from spectramr.core.metrics.evaluation_metrics import _guard_ssim_codomain
 
         with pytest.raises(ValueError):
             _guard_ssim_codomain(torch.tensor(float("nan")), metric_name="ssim")
@@ -728,7 +728,7 @@ class TestImportWritesNoEnvironment:
     """
 
     #: Every variable the deleted block touched, plus the resolver tier it fed.
-    FORBIDDEN = ("TMPDIR", "TORCH_CUDA_EAGER_CACHE_MANAGER", "MRIFORGE_CACHE_ROOT")
+    FORBIDDEN = ("TMPDIR", "TORCH_CUDA_EAGER_CACHE_MANAGER", "SPECTRAMR_CACHE_ROOT")
 
     def _import_in_clean_subprocess(self) -> set[str]:
         """Import the module with the forbidden vars unset; report which appear."""
@@ -737,12 +737,12 @@ class TestImportWritesNoEnvironment:
         import subprocess
         import sys
 
-        import mriforge
+        import spectramr
 
         # Point the child at the SAME tree this test imported from. In a git
         # worktree an inherited PYTHONPATH otherwise resolves to the main
         # checkout, and the child would import a different file than the parent.
-        src_root = str(pathlib.Path(mriforge.__file__).resolve().parent.parent)
+        src_root = str(pathlib.Path(spectramr.__file__).resolve().parent.parent)
 
         env = {k: v for k, v in os.environ.items() if k not in self.FORBIDDEN}
         env["PYTHONPATH"] = src_root
@@ -750,7 +750,7 @@ class TestImportWritesNoEnvironment:
         code = (
             "import os, json, sys\n"
             f"forbidden = {list(self.FORBIDDEN)!r}\n"
-            "import mriforge.core.metrics.evaluation_metrics  # noqa: F401\n"
+            "import spectramr.core.metrics.evaluation_metrics  # noqa: F401\n"
             "json.dump([v for v in forbidden if v in os.environ], sys.stdout)\n"
         )
         proc = subprocess.run(
@@ -766,7 +766,7 @@ class TestImportWritesNoEnvironment:
     def test_import_sets_no_cache_environment_variables(self) -> None:
         written = self._import_in_clean_subprocess()
         assert written == set(), (
-            f"importing mriforge.core.metrics.evaluation_metrics set "
+            f"importing spectramr.core.metrics.evaluation_metrics set "
             f"{sorted(written)}. main.py owns this bootstrap -- it calls "
             "configure_cache_environment() above `import torch`, and every "
             "entry point reaches it. A write here is both import-order-"
@@ -789,7 +789,7 @@ class TestImportWritesNoEnvironment:
         import ast
         import inspect
 
-        from mriforge.core.metrics import evaluation_metrics
+        from spectramr.core.metrics import evaluation_metrics
 
         tree = ast.parse(inspect.getsource(evaluation_metrics))
 
@@ -875,7 +875,7 @@ class TestPSNRIsGradedPerSample:
         Bit-identical predictions, eight groupings, one number. At the parent
         commit the same loop spans ~14 dB.
         """
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         preds, target = _heterogeneous_pair()
         metric = PSNR(data_range=1.0)
@@ -888,7 +888,7 @@ class TestPSNRIsGradedPerSample:
 
     def test_a_batch_score_is_the_mean_of_its_per_image_scores(self):
         """Jensen, pinned directly: no batch-level MSE reduction survives."""
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         preds, target = _heterogeneous_pair()
         metric = PSNR(data_range=1.0)
@@ -905,7 +905,7 @@ class TestPSNRIsGradedPerSample:
         """
         import torch.nn.functional as F
 
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         preds, target = _heterogeneous_pair(n=1)
         mse = F.mse_loss(preds, target, reduction="mean")
@@ -921,7 +921,7 @@ class TestPSNRIsGradedPerSample:
         not, so a direct caller passing an unbatched image is exactly where the
         fix could re-create the defect one layer down.
         """
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         metric = PSNR(data_range=1.0)
         g = torch.Generator().manual_seed(3)
@@ -939,7 +939,7 @@ class TestPSNRIsGradedPerSample:
         other one -- the same batch-composition dependence, arriving through the
         range instead of the reduction.
         """
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         metric = PSNR(domain="kspace")
         g = torch.Generator().manual_seed(5)
@@ -952,7 +952,7 @@ class TestPSNRIsGradedPerSample:
 
     def test_use_target_max_range_is_resolved_per_sample(self):
         """``use_target_max`` is documented as a per-IMAGE range. Make it one."""
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         metric = PSNR(use_target_max=True)
         g = torch.Generator().manual_seed(6)
@@ -971,7 +971,7 @@ class TestPSNRIsGradedPerSample:
         accident: sample 0 is all-positive, sample 1 is signed, and both must be
         graded at DR = 2.
         """
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         metric = PSNR()
         g = torch.Generator().manual_seed(7)
@@ -990,7 +990,7 @@ class TestPSNRIsGradedPerSample:
 
     def test_an_all_zero_kspace_sample_stays_finite(self):
         """The empty-spectrum fallback survives the vectorised range."""
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         target = torch.cat([torch.zeros(1, 1, 8, 8), torch.rand(1, 1, 8, 8)])
         preds = target + 0.01
@@ -1007,7 +1007,7 @@ class TestPSNRIsGradedPerSample:
         import inspect
         import textwrap
 
-        from mriforge.core.metrics.evaluation_metrics import PSNR
+        from spectramr.core.metrics.evaluation_metrics import PSNR
 
         tree = ast.parse(textwrap.dedent(inspect.getsource(PSNR.compute_metric)))
         syncs = [

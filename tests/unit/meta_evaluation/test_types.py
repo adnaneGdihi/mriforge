@@ -11,7 +11,7 @@ import math
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     AggregateRankingResult,
     RankingResult,
 )

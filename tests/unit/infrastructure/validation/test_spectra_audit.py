@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import types
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 from tests.utils.config_block_stub import block_stub
 from tests.utils.data_config_stub import DataConfigStub
 

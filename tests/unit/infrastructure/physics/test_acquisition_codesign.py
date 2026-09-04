@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.acquisition_codesign import (
+from spectramr.infrastructure.physics.acquisition_codesign import (
     LearnableSamplingMask,
     codesign_sampling,
 )

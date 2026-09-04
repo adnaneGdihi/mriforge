@@ -5,7 +5,7 @@ Unit tests for Universal MRI Foundation Model (UMR-FM).
 import pytest
 import torch
 
-from mriforge.models.foundation.umr_fm import (
+from spectramr.models.foundation.umr_fm import (
     KSpaceMIMLoss,
     UniversalFoundationModel,
     create_umr_fm,

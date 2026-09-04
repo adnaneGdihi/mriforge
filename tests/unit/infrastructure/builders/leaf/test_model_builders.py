@@ -17,7 +17,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mriforge.infrastructure.builders.leaf.model_builders import GeneratorBuilder
+from spectramr.infrastructure.builders.leaf.model_builders import GeneratorBuilder
 
 
 def _config(**model_fields):
@@ -55,7 +55,7 @@ def captured_call():
     factory = MagicMock()
     factory.create_generator.side_effect = _create_generator
     with patch(
-        "mriforge.models.factories.model_factory.ModelFactory", return_value=factory
+        "spectramr.models.factories.model_factory.ModelFactory", return_value=factory
     ):
         yield seen
 

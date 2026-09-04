@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.core.metrics.sample_aggregation` (issue #1347).
+"""Tests for :mod:`spectramr.core.metrics.sample_aggregation` (issue #1347).
 
 The module owns one invariant -- a published metric is a mean over *samples* --
 in two pieces: the sample-axis rule a per-sample reduction needs, and the
@@ -11,7 +11,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.sample_aggregation import (
+from spectramr.core.metrics.sample_aggregation import (
     PSNR_REDUCTION,
     SAMPLE_AXIS_MIN_NDIM,
     VALIDATION_EPOCH_WEIGHTING,

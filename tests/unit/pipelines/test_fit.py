@@ -1,4 +1,4 @@
-"""Tests for the scripting entry point :func:`mriforge.pipelines.fit.fit`.
+"""Tests for the scripting entry point :func:`spectramr.pipelines.fit.fit`.
 
 ``fit`` assembles a :class:`TrainingEnvironment` from hand-supplied objects and
 drives the SAME ``run_training_pipeline`` the config path uses. These tests
@@ -14,9 +14,9 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
 
-import mriforge.pipelines.fit as fit_mod
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
-from mriforge.pipelines.fit import Trainer, fit
+import spectramr.pipelines.fit as fit_mod
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
+from spectramr.pipelines.fit import Trainer, fit
 
 
 def _loader() -> DataLoader:
@@ -186,7 +186,7 @@ def test_fit_gan_honours_the_two_timescale_update_rule(monkeypatch):
     ``optimization.optimizer.discriminator_learning_rate`` is read by the config-driven
     builder via ``role="discriminator"``. The leaf builder had no role seam, so
     ``fit(paradigm='gan')`` built D at G's LR -- TTUR silently off, and the same
-    YAML trained a different objective under ``mriforge train``.
+    YAML trained a different objective under ``spectramr train``.
     """
     cap = _capture(monkeypatch)
     fit(
@@ -344,7 +344,7 @@ def test_build_discriminator_reraises_when_configured_but_build_fails(monkeypatc
     — no need to round-trip a full pydantic config."""
     from types import SimpleNamespace
 
-    import mriforge.infrastructure.training.builders.model_builder as mb_mod
+    import spectramr.infrastructure.training.builders.model_builder as mb_mod
 
     monkeypatch.setattr(mb_mod, "ModelBuilder", _BoomBuilder)
     settings = SimpleNamespace(
@@ -358,7 +358,7 @@ def test_build_discriminator_returns_none_when_unconfigured(monkeypatch):
     """No discriminator_component → genuinely absent → None (not a raise)."""
     from types import SimpleNamespace
 
-    import mriforge.infrastructure.training.builders.model_builder as mb_mod
+    import spectramr.infrastructure.training.builders.model_builder as mb_mod
 
     monkeypatch.setattr(mb_mod, "ModelBuilder", _BoomBuilder)
     settings = SimpleNamespace(model=SimpleNamespace(discriminator_component=None))
@@ -429,7 +429,7 @@ def test_trainer_predict_delegates_to_inference_pipeline(monkeypatch):
     layer). It wraps the four path args in ``Path`` and forwards device/batch."""
     from pathlib import Path
 
-    import mriforge.pipelines.infer as infer_mod
+    import spectramr.pipelines.infer as infer_mod
 
     captured: dict = {}
 
@@ -469,3 +469,99 @@ def test_trainer_predict_delegates_to_inference_pipeline(monkeypatch):
     assert captured["output_path"] == Path("out_dir/")
     assert captured["device"] == "cpu"
     assert captured["batch_size"] == 4
+
+
+# ---------------------------------------------------------------------------
+# fit() must not report failure only in a return value.
+#
+# ``run_training_pipeline`` returns ``{"success": False, "error": ...}`` because
+# the CLI turns that into an exit code. A script has no exit code to read, so a
+# caller who forgets ``if result["success"]`` carries on with an UNTRAINED model
+# that looks entirely normal.
+# ---------------------------------------------------------------------------
+
+
+def test_fit_raises_by_default_when_the_run_fails(monkeypatch):
+    """The regression guard: a failed run must not return quietly."""
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader, Dataset
+
+    import spectramr.pipelines.fit as fit_mod
+
+    class _DS(Dataset):
+        def __len__(self):
+            return 2
+
+        def __getitem__(self, i):
+            return {"input": torch.randn(1, 8, 8), "target": torch.randn(1, 8, 8)}
+
+    monkeypatch.setattr(
+        fit_mod,
+        "run_training_pipeline",
+        lambda *a, **k: {"success": False, "error": "boom"},
+    )
+    with pytest.raises(fit_mod.TrainingFailedError, match="boom"):
+        fit_mod.fit(nn.Conv2d(1, 1, 3, padding=1), DataLoader(_DS(), batch_size=1), device="cpu")
+
+
+def test_fit_returns_the_dict_when_opted_out(monkeypatch):
+    """``raise_on_failure=False`` preserves the inspect-it-yourself path."""
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader, Dataset
+
+    import spectramr.pipelines.fit as fit_mod
+
+    class _DS(Dataset):
+        def __len__(self):
+            return 2
+
+        def __getitem__(self, i):
+            return {"input": torch.randn(1, 8, 8), "target": torch.randn(1, 8, 8)}
+
+    monkeypatch.setattr(
+        fit_mod,
+        "run_training_pipeline",
+        lambda *a, **k: {"success": False, "error": "boom"},
+    )
+    result = fit_mod.fit(
+        nn.Conv2d(1, 1, 3, padding=1),
+        DataLoader(_DS(), batch_size=1),
+        device="cpu",
+        raise_on_failure=False,
+    )
+    assert result["success"] is False and result["error"] == "boom"
+
+
+def test_fit_does_not_raise_on_success(monkeypatch):
+    """A successful run is untouched -- the guard must not fire on the happy path."""
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader, Dataset
+
+    import spectramr.pipelines.fit as fit_mod
+
+    class _DS(Dataset):
+        def __len__(self):
+            return 2
+
+        def __getitem__(self, i):
+            return {"input": torch.randn(1, 8, 8), "target": torch.randn(1, 8, 8)}
+
+    monkeypatch.setattr(
+        fit_mod, "run_training_pipeline", lambda *a, **k: {"success": True, "best_metrics": {}}
+    )
+    result = fit_mod.fit(
+        nn.Conv2d(1, 1, 3, padding=1), DataLoader(_DS(), batch_size=1), device="cpu"
+    )
+    assert result["success"] is True
+
+
+def test_trainer_threads_raise_on_failure():
+    """``Trainer`` must carry the option, or the fluent form silently opts out."""
+    import inspect
+
+    from spectramr.pipelines.fit import Trainer
+
+    assert "raise_on_failure" in inspect.signature(Trainer.__init__).parameters

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.steerable_field_unet import SteerableFieldUNet
+from spectramr.models.generators.steerable_field_unet import SteerableFieldUNet
 
 
 def _net(use_equivariance: bool = True, use_field_conditioning: bool = True) -> SteerableFieldUNet:
@@ -104,8 +104,8 @@ def test_synthetic_forward_probe_passes_for_both_arms() -> None:
     # PASS for both b14 arms. A `= None` default on field_strength made the probe skip
     # filling it -> a healthy model failed the --probe promotion gate. field_strength is now
     # required so the probe injects it.
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.forward_probe import synthetic_forward_probe
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.forward_probe import synthetic_forward_probe
 
     for arm in ("b14_steerable_equivariant_7t", "b14_ablate_equivariance"):
         cfg = TrainingSettings.from_yaml(
@@ -126,8 +126,8 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "steerable_field_unet" in MODEL_REGISTRY

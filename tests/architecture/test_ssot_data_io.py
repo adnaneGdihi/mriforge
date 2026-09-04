@@ -4,10 +4,10 @@ TASK III.2 – Data-IO SSOT fitness function.
 Enforces CLAUDE.md pitfall #11:
 
     No ``torch.load``, ``h5py.File``, ``nib.load`` / ``nibabel.load``, or
-    ``pickle.load`` outside ``mriforge/data/``.
+    ``pickle.load`` outside ``spectramr/data/``.
 
 All file-to-tensor loading must go through the DataPipelineDirector and live
-under src/mriforge/data/.  Higher layers consume datasets via the director;
+under src/spectramr/data/.  Higher layers consume datasets via the director;
 they never open files directly.
 
 Gate test (fast, always runs):
@@ -30,10 +30,10 @@ import pytest
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 
-DATA_SSOT_PREFIX = "mriforge/data/"
+DATA_SSOT_PREFIX = "spectramr/data/"
 
 #: ``(module, attribute) -> reported call name``. The key is the name **bound in
 #: the scanned module**, so both ``import nibabel`` and ``import nibabel as nib``
@@ -131,11 +131,11 @@ def find_io_calls(source: str) -> set[str]:
     * ``core/module_utils.py:199`` says *"payload: Whatever ``torch.load``
       returned."* — unbaselined, so it **failed the gate outright**.
 
-    Five of the 44 text matches across ``src/mriforge/`` were of this kind.
+    Five of the 44 text matches across ``src/spectramr/`` were of this kind.
 
     Module aliases are followed too (``import torch as th; th.load(p)``). That
     hole was free to close: the only nonstandard aliases of the four guarded
-    modules anywhere in ``src/mriforge/`` are two ``import torch as _torch``
+    modules anywhere in ``src/spectramr/`` are two ``import torch as _torch``
     (``meta_evaluation/figures.py:895``, ``mixins/metrics_mixin.py:101``), and
     neither reaches ``.load`` — so it adds 0 baseline entries today and shuts
     the door before the first one does.
@@ -177,7 +177,7 @@ def find_io_calls(source: str) -> set[str]:
 
 
 def _scan_violations() -> list[dict[str, str]]:
-    """Return files outside mriforge/data/ that make raw IO calls."""
+    """Return files outside spectramr/data/ that make raw IO calls."""
     violations: list[dict[str, str]] = []
     for py_file in sorted(SRC_ROOT.rglob("*.py")):
         if "__pycache__" in str(py_file):
@@ -217,12 +217,12 @@ def _new_only(found: list[dict], known: list[dict]) -> list[dict]:
 
 @pytest.mark.architecture
 def test_no_new_data_io_outside_data_layer() -> None:
-    """Gate: fail if any NEW raw IO call appears outside mriforge/data/.
+    """Gate: fail if any NEW raw IO call appears outside spectramr/data/.
 
     Pre-existing violations are tracked in
     ``tests/architecture/_known_violations.json["data_io"]``.  New code
     that needs to open a file must either:
-      (a) add a Dataset class under ``mriforge/data/datasets/`` and route
+      (a) add a Dataset class under ``spectramr/data/datasets/`` and route
           through DataPipelineDirector, or
       (b) if it is truly infrastructure-level IO (checkpoints, adapters),
           add it to the allowlist with a justification comment.
@@ -232,11 +232,11 @@ def test_no_new_data_io_outside_data_layer() -> None:
     new = _new_only(found, known)
     if new:
         msg = (
-            "NEW raw IO calls outside mriforge/data/ "
+            "NEW raw IO calls outside spectramr/data/ "
             '(not in _known_violations.json["data_io"]):\n'
             + "\n".join(f"  {v['file']}  uses  {v['call']}" for v in new)
             + "\n\nRoute file loading through DataPipelineDirector "
-            "(mriforge.infrastructure.builders.directors.data_pipeline_director)."
+            "(spectramr.infrastructure.builders.directors.data_pipeline_director)."
         )
         pytest.fail(msg)
 
@@ -378,7 +378,7 @@ class TestScanWalksAndExcludesDataLayer:
 
     @staticmethod
     def _plant(tmp_path, monkeypatch) -> list[dict[str, str]]:
-        src = tmp_path / "src" / "mriforge"
+        src = tmp_path / "src" / "spectramr"
         (src / "pipelines").mkdir(parents=True)
         (src / "data" / "datasets").mkdir(parents=True)
         (src / "pipelines" / "planted.py").write_text("import torch\ntorch.load('x')\n")
@@ -389,7 +389,7 @@ class TestScanWalksAndExcludesDataLayer:
 
     def test_plant_outside_data_layer_is_reported(self, tmp_path, monkeypatch) -> None:
         found = self._plant(tmp_path, monkeypatch)
-        assert {"file": "mriforge/pipelines/planted.py", "call": "torch.load"} in found
+        assert {"file": "spectramr/pipelines/planted.py", "call": "torch.load"} in found
 
     def test_plant_inside_data_layer_is_exempt(self, tmp_path, monkeypatch) -> None:
         found = self._plant(tmp_path, monkeypatch)

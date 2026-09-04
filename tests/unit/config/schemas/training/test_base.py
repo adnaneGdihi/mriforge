@@ -20,12 +20,12 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.training.base import (
+from spectramr.config.schemas.training.base import (
     BaseTrainingConfigSchema,
     LatentTrainingConfigSchema,
     TrainingStrategyConfigSchema,
 )
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 REPO = Path(__file__).resolve().parents[5]
 
@@ -42,9 +42,7 @@ class TestTrainingVaeIsDeclared:
     """`training.vae` must validate into a model, never fall through to a dict."""
 
     def test_vae_block_is_not_a_raw_dict(self):
-        training = TrainingStrategyConfigSchema(
-            training_mode="vae", vae=dict(_YAML_SPELLING)
-        )
+        training = TrainingStrategyConfigSchema(training_mode="vae", vae=dict(_YAML_SPELLING))
         assert isinstance(training.vae, LatentTrainingConfigSchema)
         # The pre-fix shape: a dict, against which getattr silently yields None.
         assert not isinstance(training.vae, dict)
@@ -73,7 +71,7 @@ class TestTrainingQualityMatchingIsDeclared:
     """
 
     def test_quality_matching_block_is_not_a_raw_dict(self):
-        from mriforge.config.schemas.training.quality_matching import (
+        from spectramr.config.schemas.training.quality_matching import (
             QualityMatchingConfig,
         )
 
@@ -156,12 +154,12 @@ class TestCriticalInfrastructureValidatorIsSatisfiable:
     """
 
     def test_the_schema_constructs_at_all(self):
-        from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+        from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
         assert BaseTrainingConfigSchema().config_version
 
     def test_the_validator_only_demands_fields_the_class_declares(self):
-        from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+        from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
         demanded = {
             "logging",
@@ -183,7 +181,7 @@ class TestCriticalInfrastructureValidatorIsSatisfiable:
     def test_a_declared_infrastructure_field_is_still_enforced(self):
         """The check must stay real for what remains -- ``services`` is declared,
         so the validator is narrowed, not neutered."""
-        from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+        from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
         assert "services" in BaseTrainingConfigSchema.model_fields
         assert hasattr(BaseTrainingConfigSchema(), "services")
@@ -242,15 +240,10 @@ class TestOutputDirIsAuthoritative:
         """
         import yaml
 
-        arm = (
-            REPO
-            / "experiments/inprogress/workflow_baselines/b1_structural_recon_m4raw.yaml"
-        )
+        arm = REPO / "experiments/inprogress/workflow_baselines/b1_structural_recon_m4raw.yaml"
         if not arm.is_file():
             pytest.skip(f"{arm} not present")
-        declared = (yaml.safe_load(arm.read_text()).get("training") or {}).get(
-            "output_dir"
-        )
+        declared = (yaml.safe_load(arm.read_text()).get("training") or {}).get("output_dir")
         if declared is None:
             pytest.skip("arm does not declare training.output_dir")
         settings = TrainingSettings.from_yaml(str(arm))
@@ -269,7 +262,7 @@ class TestDiffusionBetaFieldsAreDeclared:
     """
 
     def test_beta_pair_is_readable_without_being_declared(self) -> None:
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         config = DiffusionTrainingConfigSchema()
 
@@ -277,7 +270,7 @@ class TestDiffusionBetaFieldsAreDeclared:
         assert config.beta_end == 0.02
 
     def test_declared_values_survive(self) -> None:
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
 
         config = DiffusionTrainingConfigSchema(beta_start=1.0e-6, beta_end=0.01)
 
@@ -286,8 +279,8 @@ class TestDiffusionBetaFieldsAreDeclared:
 
     def test_defaults_match_the_schema_that_always_carried_them(self) -> None:
         """A second set of defaults is a second resolver -- pin them equal."""
-        from mriforge.config.schemas.training.base import DiffusionTrainingConfigSchema
-        from mriforge.config.schemas.training.diffusion import TrainingConfigDiffusion
+        from spectramr.config.schemas.training.base import DiffusionTrainingConfigSchema
+        from spectramr.config.schemas.training.diffusion import TrainingConfigDiffusion
 
         for field in ("beta_start", "beta_end"):
             assert (
@@ -323,7 +316,7 @@ class TestShapeContractReadsTheCanonicalPatchSize:
         """
         import pytest
 
-        from mriforge.config.schemas.training.meta_learning import (
+        from spectramr.config.schemas.training.meta_learning import (
             MetaLearningModelConfig,
             TrainingConfigMetaLearning,
         )
@@ -335,7 +328,7 @@ class TestShapeContractReadsTheCanonicalPatchSize:
             )
 
     def test_a_consistent_2d_pair_constructs_and_reads_the_canonical_leaf(self):
-        from mriforge.config.schemas.training.meta_learning import (
+        from spectramr.config.schemas.training.meta_learning import (
             MetaLearningModelConfig,
             TrainingConfigMetaLearning,
         )
@@ -345,6 +338,7 @@ class TestShapeContractReadsTheCanonicalPatchSize:
             model=MetaLearningModelConfig(),
         )
         assert cfg.data.sampling.patch_size == (64, 64, 1)
+
 
 class TestUniversalTrainingKeysAreDeclared:
     """The three universal `training:` keys that are READ are now fields.
@@ -361,7 +355,10 @@ class TestUniversalTrainingKeysAreDeclared:
     #: forbids, and it would silence the audit for 20 arms running at a batch
     #: size they never asked for and 84 at an AMP setting they never asked for.
     #: Their fix is a fold onto the canonical path, which changes what those
-    #: arms compute — issue #887.
+    #: arms compute — issue #887. `enable_mixed_precision` stays absent here
+    #: after the 2026-09-03 `inprogress/` drain: the `no_dead_precision_flag`
+    #: witness reports the spelling until the other trees drain and a `raise`
+    #: rename record can retire it.
     UNREAD_AND_DELIBERATELY_ABSENT = (
         "batch_size",
         "num_workers",
@@ -371,7 +368,7 @@ class TestUniversalTrainingKeysAreDeclared:
     )
 
     def test_the_read_keys_are_declared_fields(self) -> None:
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 
@@ -382,7 +379,7 @@ class TestUniversalTrainingKeysAreDeclared:
 
     def test_the_unread_keys_stay_undeclared(self) -> None:
         """A field for a knob nothing reads advertises a lie (#8, #887)."""
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 
@@ -400,7 +397,7 @@ class TestUniversalTrainingKeysAreDeclared:
     def test_output_domain_feature_is_accepted(self) -> None:
         """`SignalDomain` has no `feature` member but 471 corpus arms declare
         it, so this field must NOT be typed as that enum."""
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 
@@ -408,13 +405,11 @@ class TestUniversalTrainingKeysAreDeclared:
         assert cfg.output_domain == "feature"
 
     def test_declaring_them_does_not_change_what_readers_see(self) -> None:
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 
-        cfg = TrainingStrategyConfigSchema(
-            training_mode="diffusion", input_domain="kspace"
-        )
+        cfg = TrainingStrategyConfigSchema(training_mode="diffusion", input_domain="kspace")
         assert cfg.training_mode == "diffusion"
         assert cfg.input_domain == "kspace"
         assert cfg.output_domain is None

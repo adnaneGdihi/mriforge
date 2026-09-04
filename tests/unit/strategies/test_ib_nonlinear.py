@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.ib_active_acquisition_nonlinear import (
+from spectramr.infrastructure.training.strategies.ib_active_acquisition_nonlinear import (
     hutchinson_fisher_trace,
     ib_score_nonlinear,
     posterior_covariance_woodbury_update,
@@ -60,7 +60,7 @@ def test_ib_score_nonlinear_shape() -> None:
 
 
 def test_select_next_line_dispatches_modes() -> None:
-    from mriforge.infrastructure.training.strategies.ib_active_acquisition_strategy import (
+    from spectramr.infrastructure.training.strategies.ib_active_acquisition_strategy import (
         IBActiveAcquisitionStrategy,
     )
 
@@ -84,7 +84,7 @@ def test_select_next_line_dispatches_modes() -> None:
 
 
 def test_select_next_line_nonlinear_requires_score_fn() -> None:
-    from mriforge.infrastructure.training.strategies.ib_active_acquisition_strategy import (
+    from spectramr.infrastructure.training.strategies.ib_active_acquisition_strategy import (
         IBActiveAcquisitionStrategy,
     )
 

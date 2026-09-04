@@ -2,7 +2,7 @@
 
 The 2026-05-10 smoke run flagged ``baseline_swin_unetr_3d`` with
 ``ValueError: too many values to unpack (expected 4)`` at
-:py:meth:`mriforge.models.generators.reconstruction_variants.MonaiSwinUNETR.forward`
+:py:meth:`spectramr.models.generators.reconstruction_variants.MonaiSwinUNETR.forward`
 because the forward did ``B, C, H, W = x.shape`` on TorchIO's 5-D
 ``[B, C, H, W, D]`` layout. The fix added two paths:
 
@@ -24,8 +24,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-import mriforge.models.generators  # noqa: F401, E402  triggers @register_model
-from mriforge.models.generators.reconstruction_variants import MonaiSwinUNETR  # noqa: E402
+import spectramr.models.generators  # noqa: F401, E402  triggers @register_model
+from spectramr.models.generators.reconstruction_variants import MonaiSwinUNETR  # noqa: E402
 
 
 def _tiny_model() -> MonaiSwinUNETR:

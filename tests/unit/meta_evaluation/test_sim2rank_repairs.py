@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import (
+from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import (
     _midranks,
     _minmax_normalise,
     _normalise,
@@ -82,7 +82,7 @@ def test_rank_normaliser_is_outlier_robust() -> None:
 
 
 def test_minmax_collapses_under_outlier() -> None:
-    from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import _minmax_normalise
+    from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import _minmax_normalise
 
     g = _minmax_normalise([1.0, 2.0, 1000.0])
     # Min-max collapses the 1-vs-2 gap toward zero (range dominated by outlier).

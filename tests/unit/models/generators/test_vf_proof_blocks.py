@@ -9,11 +9,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.init_registry import populate_model_registry
+from spectramr.models.init_registry import populate_model_registry
 
 populate_model_registry()
 
-from mriforge.models.generators.vf_proof_blocks import (
+from spectramr.models.generators.vf_proof_blocks import (
     DIPUNet,
     EddyPredictor1D,
     FourierShiftOperator,

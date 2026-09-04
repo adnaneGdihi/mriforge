@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.training.strategies.progressive_gan_strategy import (
+from spectramr.infrastructure.training.strategies.progressive_gan_strategy import (
     ProgressiveGANStrategy,
 )
 

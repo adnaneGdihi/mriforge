@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 
-from mriforge.infrastructure.physics.sampling import (
+from spectramr.infrastructure.physics.sampling import (
     MaskGenerator,
     MaskType,
     VDCartesian1DAccelerator,

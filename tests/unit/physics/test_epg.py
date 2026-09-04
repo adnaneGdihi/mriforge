@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.epg import (
+from spectramr.infrastructure.physics.epg import (
     simulate_differentiable_epg_fse,
     simulate_full_epg_fse,
 )

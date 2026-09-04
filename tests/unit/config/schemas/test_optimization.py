@@ -1,6 +1,6 @@
 """Tests for ``OptimizationConfigSchema``.
 
-Targets ``mriforge.config.schemas.optimization``. v6.0 nested optimisation
+Targets ``spectramr.config.schemas.optimization``. v6.0 nested optimisation
 config: learning rates, optimiser kwargs, AMP, gradient clipping,
 scheduler, torch.compile knobs.
 
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.optimization import OptimizationConfigSchema
+from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -186,7 +186,7 @@ def test_flat_scheduler_knobs_reach_the_resolver() -> None:
     the optimization-block top level gets the schedule it asked for instead of
     ``CosineAnnealingLR(T_max=100)``.
     """
-    from mriforge.infrastructure.training.scheduler_resolution import (
+    from spectramr.infrastructure.training.scheduler_resolution import (
         resolve_scheduler_spec,
     )
 
@@ -200,7 +200,7 @@ def test_flat_scheduler_knobs_reach_the_resolver() -> None:
 
 
 def test_scheduler_none_means_no_scheduler() -> None:
-    from mriforge.infrastructure.training.scheduler_resolution import (
+    from spectramr.infrastructure.training.scheduler_resolution import (
         resolve_scheduler_spec,
     )
 
@@ -255,7 +255,7 @@ class TestOptimizerTypeVocabulary:
     def test_the_enum_and_the_field_agree(self) -> None:
         """Every enum member must be an accepted field value — otherwise the
         advertised vocabulary and the validated one have re-forked."""
-        from mriforge.config.schemas.enums import OptimizerType
+        from spectramr.config.schemas.enums import OptimizerType
 
         for member in OptimizerType:
             assert (
@@ -359,7 +359,7 @@ class TestPreviouslyUntypedOptimizerKnobs:
     def test_lookahead_is_a_wrapper_sub_block_not_an_optimizer_name(self) -> None:
         """A Lookahead with no inner optimizer is meaningless, so it cannot be an
         ``optimizer_type`` value."""
-        from mriforge.config.schemas.enums import OPTIMIZER_NAMES
+        from spectramr.config.schemas.enums import OPTIMIZER_NAMES
 
         assert "lookahead" not in OPTIMIZER_NAMES
         cfg = OptimizationConfigSchema(
@@ -381,7 +381,7 @@ class TestPreviouslyUntypedOptimizerKnobs:
         a field named ``k`` sits in the ratchet permanently as a false positive no
         matter how thoroughly it is wired. Naming is load-bearing here.
         """
-        from mriforge.config.schemas.optimization import LookaheadConfigSchema
+        from spectramr.config.schemas.optimization import LookaheadConfigSchema
 
         fields = set(LookaheadConfigSchema.model_fields)
         assert "k" not in fields
@@ -426,7 +426,7 @@ def test_no_docstring_still_names_the_phantom_optimizer_setup_mixin() -> None:
     in this repo, and ``betas`` was in fact read by nothing while 27 experiment
     YAMLs set it. A docstring naming a nonexistent consumer is worse than none:
     it makes an unwired knob look wired."""
-    from mriforge.config.schemas.optimization import OptimizerConfigSchema
+    from spectramr.config.schemas.optimization import OptimizerConfigSchema
 
     fields = OptimizerConfigSchema.model_fields
     for name in ("betas", "eps", "momentum", "param_groups"):

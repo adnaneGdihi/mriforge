@@ -39,7 +39,7 @@ class TestSchedulerRegistryCoverage:
     """Every entry in SCHEDULER_REGISTRY must produce a valid LR scheduler."""
 
     def test_all_registered_schedulers_are_callable(self, dummy_optimizer):
-        from mriforge.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
+        from spectramr.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
 
         assert SCHEDULER_REGISTRY, "SCHEDULER_REGISTRY is empty!"
 
@@ -71,7 +71,7 @@ class TestSchedulerRegistryCoverage:
     )
     def test_known_scheduler_is_registered(self, scheduler_name: str):
         """Core scheduler types must be present in the registry."""
-        from mriforge.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
+        from spectramr.infrastructure.training.scheduler_system import SCHEDULER_REGISTRY
 
         assert scheduler_name in SCHEDULER_REGISTRY, (
             f"Expected '{scheduler_name}' in SCHEDULER_REGISTRY but it's missing.\n"
@@ -80,7 +80,7 @@ class TestSchedulerRegistryCoverage:
 
     def test_scheduler_factory_create_scheduler_works(self, dummy_optimizer):
         """SchedulerFactory.create_scheduler() high-level API must produce a valid scheduler."""
-        from mriforge.infrastructure.training.scheduler_system import SchedulerFactory
+        from spectramr.infrastructure.training.scheduler_system import SchedulerFactory
 
         scheduler = SchedulerFactory.create_scheduler(
             optimizer=dummy_optimizer,
@@ -111,7 +111,7 @@ class TestLrSchedulerStrategyGhostField:
 
     def test_lr_scheduler_strategy_field_exists_in_schema(self):
         """The schema declares lr_scheduler_strategy — it's a real YAML key."""
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         assert "lr_scheduler_strategy" in OptimizationConfigSchema.model_fields, (
             "lr_scheduler_strategy was removed from OptimizationConfigSchema.\n"
@@ -125,8 +125,8 @@ class TestLrSchedulerStrategyGhostField:
         than by grepping the builder's source, which said nothing about whether
         the value reached torch.
         """
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.infrastructure.training.scheduler_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.infrastructure.training.scheduler_resolution import (
             resolve_scheduler_spec,
         )
 
@@ -140,9 +140,9 @@ class TestLrSchedulerStrategyGhostField:
 
     def test_lr_scheduler_strategy_is_not_silently_ignored_when_unknown(self):
         """An unknown family raises rather than degrading to cosine (pitfall #9)."""
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.domain.exceptions import ConfigurationError
-        from mriforge.infrastructure.training.scheduler_resolution import (
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.domain.exceptions import ConfigurationError
+        from spectramr.infrastructure.training.scheduler_resolution import (
             resolve_scheduler_spec,
         )
 
@@ -152,7 +152,7 @@ class TestLrSchedulerStrategyGhostField:
 
     def test_lr_scheduler_strategy_default_is_cosine(self):
         """The schema default is 'cosine' — verify it matches what users expect."""
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         config = OptimizationConfigSchema()
         assert config.lr_scheduler_strategy == "cosine", (
@@ -179,12 +179,12 @@ class TestBuildSchedulersWithDict:
     }
 
     def _make_settings_with_scheduler(self, scheduler_type: str, params: dict):
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.logging import LoggingConfigSchema
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.logging import LoggingConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings(
             model=ModelConfigSchema(),
@@ -199,7 +199,7 @@ class TestBuildSchedulersWithDict:
         """optimizer.scheduler dict config flows to an actual scheduler object."""
         import torch.nn as nn
 
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -225,8 +225,8 @@ class TestBuildSchedulersWithDict:
         """
         import torch.nn as nn
 
-        from mriforge.domain.exceptions import ConfigurationError
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.domain.exceptions import ConfigurationError
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 

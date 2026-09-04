@@ -1,6 +1,6 @@
 """Tests for ``MultiCoilForwardOperator`` and helpers.
 
-Targets ``mriforge.infrastructure.physics.forward_operator``. The forward
+Targets ``spectramr.infrastructure.physics.forward_operator``. The forward
 operator implements ``y = M F S x`` — coil sensitivity, FFT, then
 undersampling — and its adjoint. It's the load-bearing physics primitive
 that PA-PCFM, unrolled networks, and DC layers all depend on.
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.forward_operator import (
+from spectramr.infrastructure.physics.forward_operator import (
     DataConsistencyLayer,
     MultiCoilForwardOperator,
     NullSpaceProjection,
@@ -111,12 +111,10 @@ def test_undersampling_mask_zeroes_unmeasured_locations() -> None:
     """Where mask = 0, output k-space is exactly zero."""
     h, w = 8, 8
     mask = torch.zeros(1, 1, h, w)
-    mask[..., :h // 2, :] = 1.0  # only top half measured
-    op = MultiCoilForwardOperator(
-        coil_sensitivities=_identity_coils(2, h, w), mask=mask
-    )
+    mask[..., : h // 2, :] = 1.0  # only top half measured
+    op = MultiCoilForwardOperator(coil_sensitivities=_identity_coils(2, h, w), mask=mask)
     y = op.forward(torch.complex(torch.randn(1, 1, h, w), torch.randn(1, 1, h, w)))
-    assert torch.allclose(y[..., h // 2:, :].abs(), torch.zeros_like(y[..., h // 2:, :].abs()))
+    assert torch.allclose(y[..., h // 2 :, :].abs(), torch.zeros_like(y[..., h // 2 :, :].abs()))
 
 
 # ---------------------------------------------------------------------------
@@ -168,9 +166,7 @@ def test_b0_static_phase_preserves_magnitude() -> None:
     x = torch.complex(torch.ones(1, 1, h, w), torch.zeros(1, 1, h, w))
     y = op.forward(x)
     # |y| sum should equal |FFT of phased x| sum, which equals |FFT of x| sum.
-    y_no_b0 = MultiCoilForwardOperator(
-        coil_sensitivities=coils, mask=_full_mask(h, w)
-    ).forward(x)
+    y_no_b0 = MultiCoilForwardOperator(coil_sensitivities=coils, mask=_full_mask(h, w)).forward(x)
     assert torch.allclose(y.abs().sum(), y_no_b0.abs().sum(), atol=1e-4)
 
 
@@ -211,7 +207,7 @@ def test_data_consistency_hard_replaces_kspace_at_mask() -> None:
     """Hard DC: at measured locations, output k-space matches ``y``."""
     h, w = 8, 8
     mask = torch.zeros(1, 1, h, w)
-    mask[..., :h // 2, :] = 1.0
+    mask[..., : h // 2, :] = 1.0
     coils = _identity_coils(1, h, w)
     fwd = MultiCoilForwardOperator(coil_sensitivities=coils, mask=mask)
     dc = DataConsistencyLayer(fwd, mode="hard")
@@ -345,8 +341,43 @@ def test_radial_mask_uses_radial_golden_angle() -> None:
     correct = _radial_mask_with_angle(
         h, w, n, torch.pi * (torch.sqrt(torch.tensor(5.0)) - 1.0) / 2.0
     )
-    phyllotaxis = _radial_mask_with_angle(
-        h, w, n, torch.pi * (3.0 - torch.sqrt(torch.tensor(5.0)))
-    )
+    phyllotaxis = _radial_mask_with_angle(h, w, n, torch.pi * (3.0 - torch.sqrt(torch.tensor(5.0))))
     assert torch.equal(mask, correct)
     assert not torch.equal(mask, phyllotaxis)
+
+
+# ---- non-negotiable 2: the operator spells no raw torch.fft call (2026-09-03) ----
+
+_RAW_FFT = "torch.fft."
+
+
+def _raw_fft_lines(source: str) -> list[str]:
+    """Lines of ``source`` that call ``torch.fft`` directly, comments excluded."""
+    return [line for line in source.splitlines() if _RAW_FFT in line.split("#", 1)[0]]
+
+
+def test_forward_operator_source_has_no_raw_torch_fft_call() -> None:
+    import inspect
+
+    import spectramr.infrastructure.physics.forward_operator as mod
+
+    assert _raw_fft_lines(inspect.getsource(mod)) == []
+
+
+def test_raw_fft_detector_sees_the_planted_shapes() -> None:
+    # Planted: a top-of-file call and an indented one both count; a comment does not.
+    planted = "k = torch.fft.fft2(x)\n    y = torch.fft.ifftshift(k, dim=-1)\n# torch.fft.fft2 in a comment\n"
+    assert len(_raw_fft_lines(planted)) == 2
+
+
+def test_readout_transform_pairs_round_trip_on_an_odd_axis() -> None:
+    from spectramr.infrastructure.physics.fft_ops import (
+        fft1_uncentered,
+        fft1c,
+        ifft1_uncentered,
+        ifft1c,
+    )
+
+    k = torch.randn(1, 2, 8, 17, dtype=torch.complex64)
+    assert torch.allclose(fft1c(ifft1c(k, dim=-1), dim=-1), k, atol=1e-5)
+    assert torch.allclose(fft1_uncentered(ifft1_uncentered(k, dim=-1), dim=-1), k, atol=1e-5)

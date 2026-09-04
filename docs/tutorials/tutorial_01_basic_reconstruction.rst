@@ -32,7 +32,7 @@ Create a new configuration file for your experiment:
 
 .. code-block:: bash
 
-   cd /home/<user>/work/mriforge
+   cd /home/<user>/work/spectramr
    mkdir -p experiments/tutorials
    nano experiments/tutorials/tutorial_01_basic_unet.yaml
 
@@ -63,7 +63,7 @@ Configuration File
      task: reconstruction
      input_domain: image
      output_domain: image
-     strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+     strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
      num_epochs: 50
      enable_mixed_precision: true  # FP16 for faster training
      device: cuda

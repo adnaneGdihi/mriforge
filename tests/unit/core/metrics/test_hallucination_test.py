@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.hallucination_test import (
+from spectramr.core.metrics.hallucination_test import (
     feature_preservation_index,
     insert_synthetic_features,
     run_hallucination_test,

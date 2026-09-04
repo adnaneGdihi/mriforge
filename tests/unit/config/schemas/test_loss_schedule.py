@@ -1,6 +1,6 @@
 """Tests for the ``loss_schedule:`` config schema.
 
-Targets ``mriforge.config.schemas.loss_schedule``. The schema declares dynamic
+Targets ``spectramr.config.schemas.loss_schedule``. The schema declares dynamic
 loss-term scheduling rules (clock curriculum, plateau triggers, post-change
 monitoring). Validation discipline:
 
@@ -16,14 +16,14 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import (
+from spectramr.config.schemas.enums import (
     ActionType,
     MetricMode,
     OnFailureKind,
     RampShape,
     TriggerType,
 )
-from mriforge.config.schemas.loss_schedule import (
+from spectramr.config.schemas.loss_schedule import (
     ActionConfig,
     LossScheduleConfigSchema,
     LossScheduleRule,

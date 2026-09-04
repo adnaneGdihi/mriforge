@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-from mriforge.config.schemas.enums import Regime
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.config.schemas.enums import Regime
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -121,8 +121,8 @@ def test_every_knob_scope_names_a_real_schema_path() -> None:
     silently dropped from the config — the scope would then resolve to None and
     the check would pass vacuously forever. Walk the real schema.
     """
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.domain.workflows.knobs import KNOB_APPLICABILITY
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.domain.workflows.knobs import KNOB_APPLICABILITY
 
     for scope in KNOB_APPLICABILITY:
         model = TrainingSettings

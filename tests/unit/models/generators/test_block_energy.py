@@ -18,10 +18,10 @@ import math
 
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import SoftDataConsistency
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.signal_models import shepp_logan_2d
-from mriforge.models.generators.kspace_cold_diffusion_generator import (
+from spectramr.infrastructure.physics.data_consistency import SoftDataConsistency
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.signal_models import shepp_logan_2d
+from spectramr.models.generators.kspace_cold_diffusion_generator import (
     KSpaceColdDiffusionGenerator,
 )
 

@@ -1,6 +1,6 @@
 """Unit tests for the tissue-property registry.
 
-Targets :mod:`mriforge.infrastructure.physics.tissue_properties`. The
+Targets :mod:`spectramr.infrastructure.physics.tissue_properties`. The
 registry maps ``(field_strength, tissue_type)`` pairs to relaxation
 constants and converts a segmentation map to a per-tissue PD/T1/T2
 field map used by the Bloch simulator.
@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.tissue_properties import (
+from spectramr.infrastructure.physics.tissue_properties import (
     TissueFieldStrength,
     RelaxationProperties,
     TissuePropertyRegistry,

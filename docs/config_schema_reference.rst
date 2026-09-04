@@ -4,7 +4,7 @@
 Configuration Schema Reference — v6.0
 =================================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
 Every training run is driven by a single YAML file loaded once via
 ``TrainingSettings.from_yaml(path)`` and validated immediately. After
@@ -50,7 +50,12 @@ Top-Level Structure
    reporting:      { ... }      # ReportingSettings (end-of-training report)
    parallel:       { ... }      # ParallelismConfigSchema (DDP / FSDP / PEFT)
    metadata:       { ... }      # ExperimentMetadataSchema (name/description/tags/...
-                                #   + first-class hypothesis / baseline / primary_metric)
+                                #   + first-class hypothesis / baseline / primary_metric
+                                #   + status (closed: ready | needs_implementation | inert |
+                                #     blocked | needs_data | method_demonstration |
+                                #     wiring_demonstrator | baseline_control) and
+                                #     status_reason; `train` refuses needs_implementation /
+                                #     inert / blocked unless --allow-status names it)
    workflow:                    # WorkflowConfigSchema — declared imaging regime × task
      regime: mri_structural     #   Regime enum (closed) — what the signal IS
      task: reconstruction       #   Task enum (closed, optional) — what the arm DOES to it
@@ -134,8 +139,8 @@ Top-Level Structure
    torch's own recommended FSDP setting). Shrink that list; never grow it.
 
 The full list of accepted top-level keys lives on
-:class:`mriforge.config.settings.TrainingSettings`. See
-``src/mriforge/config/schemas/templates/v1.0_reference.yaml`` — the single
+:class:`spectramr.config.settings.TrainingSettings`. See
+``src/spectramr/config/schemas/templates/v1.0_reference.yaml`` — the single
 canonical, round-trip-tested reference template, with inline
 ``# options:`` comments for every constrained field. It replaced the
 ``v6.0``/``v6.1`` pair: two references are two SSOTs, and those two had
@@ -186,7 +191,7 @@ Python access:
 
 .. code-block:: python
 
-   from mriforge.config.settings import TrainingSettings
+   from spectramr.config.settings import TrainingSettings
 
    cfg = TrainingSettings.from_yaml("experiments/training/my.yaml")
 
@@ -303,7 +308,7 @@ what representation comes out.*
 
    **The old flat spellings still load.**  ``data.batch_size``,
    ``data.contrasts``, ``data.patch_size`` and the rest are ``fold`` records in
-   :mod:`mriforge.config.schemas.renames`: a ``mode="before"`` validator MOVES
+   :mod:`spectramr.config.schemas.renames`: a ``mode="before"`` validator MOVES
    the key to its canonical home at parse time rather than raising, so an
    unmigrated arm is unaffected.  There is no forwarding property — the read
    side is canonical only.  ``--override data.batch_size=8`` is translated the
@@ -534,7 +539,7 @@ Five named sub-blocks, plus the scheduler keys that are still flat:
    :class: note
 
    ``optimization.learning_rate`` and its 34 siblings are ``fold`` records in
-   :mod:`mriforge.config.schemas.renames`: a ``mode="before"`` validator moves
+   :mod:`spectramr.config.schemas.renames`: a ``mode="before"`` validator moves
    each into its sub-block, so an unmigrated arm keeps loading. They are gone
    from Python — ``config.optimization.learning_rate`` raises ``AttributeError``.
    ``scripts/ci/check_no_legacy_config_keys.py`` prints how many remain; when a
@@ -917,6 +922,13 @@ Replaces all legacy ``objectives:`` + ``lambda_*`` flat keys.
      - ``"gaussian"``
      - Only ``gaussian`` is implemented; anything else raises at construction
        rather than degrading silently.
+   * - ``data_consistency.apply_at_predict``
+     - ``false``
+     - Hard projection onto the measured k-space as the last step of
+       ``infer``. Read by the inference strategies only, so independent of
+       ``enabled`` and ``method``. Needs the ``mask`` dataset of an HDF5 input
+       and a k-space input route; raises when either is missing. See
+       :doc:`running_pipelines`.
    * - ``data_consistency.acs_mask_center_fraction``
      - ``0.08``
      - ACS center fraction
@@ -949,9 +961,9 @@ Replaces all legacy ``objectives:`` + ``lambda_*`` flat keys.
    ``model.model_kwargs.dc_weight`` are still tolerated, but the
    ``ModelBuilder`` reconciles them against ``physics.data_consistency``
    on every build and raises :class:`ValueError` on disagreement
-   (see :mod:`mriforge.infrastructure.training.builders.model_builder`,
+   (see :mod:`spectramr.infrastructure.training.builders.model_builder`,
    ``_reconcile`` helper). Generators that consume ``dc_method`` via
-   ``**kwargs`` (e.g. :class:`~mriforge.models.generators.kspace_cold_diffusion_generator.KSpaceColdDiffusionGenerator`)
+   ``**kwargs`` (e.g. :class:`~spectramr.models.generators.kspace_cold_diffusion_generator.KSpaceColdDiffusionGenerator`)
    are also reconciled — the contract inspector adds a ``"**kwargs"``
    sentinel for generators that accept arbitrary keyword arguments.
    Regression: ``tests/unit/infrastructure/training/builders/test_dc_config_unification.py``.
@@ -1017,7 +1029,7 @@ Replaces all legacy ``objectives:`` + ``lambda_*`` flat keys.
 
    **The whole** ``checkpoint:`` **block is optional.** A config that omits it
    receives a default ``CheckpointConfigSchema`` (every sub-field above is
-   defaulted), so :func:`mriforge.bootstrap.build_container` builds a working
+   defaulted), so :func:`spectramr.bootstrap.build_container` builds a working
    checkpoint service rather than aborting. Prior to 2026-06-20 the root field
    defaulted to ``None`` and ``build_container`` raised
    ``config.checkpoint is required but not provided`` — which silently blocked
@@ -1106,7 +1118,7 @@ the accel-gap stamp look those names up and do not raise on a miss. An empty
 ladder, a rung below 1x, a non-finite value and a boolean are all **refused at
 load time**. Under ``undersampling.schedule_type: step`` a rung outside
 ``undersampling.acceleration_range`` has no timestep inverse and is skipped at
-runtime; ``mriforge audit`` warns before the launch. See
+runtime; ``spectramr audit`` warns before the launch. See
 :ref:`validation-cascade-levels`.
 
 .. warning::
@@ -1396,7 +1408,7 @@ Seven sub-blocks: *what the run is called* (``identity``), *where lines go*
 Enum Catalog
 ============
 
-All enums from ``src/config/schemas/enums.py``:
+All enums from ``src/spectramr/config/schemas/enums.py``:
 
 **TrainingMode values** → see :ref:`strategies_reference` for strategy dispatch.
 
@@ -1493,7 +1505,7 @@ The ``ConfigHealthChecker`` validates:
 
 Both spellings work. ``optimization.learning_rate`` above is a ``fold`` record
 whose canonical path is ``optimization.optimizer.learning_rate``;
-:func:`mriforge.config.schemas.renames.canonical_override_path` translates the
+:func:`spectramr.config.schemas.renames.canonical_override_path` translates the
 legacy path before the write, so the two forms are interchangeable exactly as
 they are in YAML.
 
@@ -1520,9 +1532,9 @@ References
 
 1. Pydantic V2 Documentation — https://docs.pydantic.dev/latest/
 
-2. Schema source: ``src/config/schemas/`` (45 files)
+2. Schema source: ``src/spectramr/config/schemas/`` (45 files)
 
-3. Settings entry: ``src/config/settings.py::TrainingSettings.from_yaml``
+3. Settings entry: ``src/spectramr/config/settings.py::TrainingSettings.from_yaml``
 
 .. _naming-convention:
 
@@ -1562,8 +1574,8 @@ One acquisition tuple, one definition
 
 An acquisition tuple — ``{name, TE, TR, TI, FA, B0, contrast_type,
 include_concomitant}`` — is declared **once**, as
-:class:`mriforge.config.schemas.data.AcquisitionParamsSchema`.
-``mriforge.config.schemas.training.pmps.AcquisitionParam`` is an alias of it, kept so
+:class:`spectramr.config.schemas.data.AcquisitionParamsSchema`.
+``spectramr.config.schemas.training.pmps.AcquisitionParam`` is an alias of it, kept so
 ``fixed_protocols`` and the module's ``__all__`` are unchanged for callers.
 
 It was not always one. ``pmps.py`` re-declared the class with the same eight fields,

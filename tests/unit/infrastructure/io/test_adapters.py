@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.infrastructure.io.adapters``.
+"""Tests for ``spectramr.infrastructure.io.adapters``.
 
 Focus: the intensity-normalisation contract. ``load_dicom`` / ``load_nifti``
 previously assumed 8-bit ``[0, 255]`` pixel data and applied a fixed
@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from mriforge.infrastructure.io.adapters import (
+from spectramr.infrastructure.io.adapters import (
     _normalize_to_unit_range,
     load_dicom,
     load_h5_kspace,
@@ -158,7 +158,7 @@ def test_load_dicom_16bit_in_unit_range(monkeypatch: pytest.MonkeyPatch) -> None
     fake_ds = types.SimpleNamespace(pixel_array=pixels)
     fake_pydicom = types.SimpleNamespace(dcmread=lambda _p: fake_ds)
     monkeypatch.setattr(
-        "mriforge.infrastructure.io.adapters.get_pydicom",
+        "spectramr.infrastructure.io.adapters.get_pydicom",
         lambda: fake_pydicom,
     )
 
@@ -179,7 +179,7 @@ def test_load_dicom_3d_returns_all_slices(
     fake_ds = types.SimpleNamespace(pixel_array=stack)
     fake_pydicom = types.SimpleNamespace(dcmread=lambda _p: fake_ds)
     monkeypatch.setattr(
-        "mriforge.infrastructure.io.adapters.get_pydicom",
+        "spectramr.infrastructure.io.adapters.get_pydicom",
         lambda: fake_pydicom,
     )
 
@@ -199,7 +199,7 @@ def test_load_dicom_slice_index_selects_slice(
     fake_ds = types.SimpleNamespace(pixel_array=stack)
     fake_pydicom = types.SimpleNamespace(dcmread=lambda _p: fake_ds)
     monkeypatch.setattr(
-        "mriforge.infrastructure.io.adapters.get_pydicom",
+        "spectramr.infrastructure.io.adapters.get_pydicom",
         lambda: fake_pydicom,
     )
 

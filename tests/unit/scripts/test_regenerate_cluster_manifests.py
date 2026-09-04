@@ -75,7 +75,7 @@ def _run(monkeypatch, cwd: Path, *argv: str) -> int:
 
 def test_emitted_manifest_resolves_through_the_real_loader(tmp_path, monkeypatch):
     """The consumer is the oracle, not the builder's own docstring."""
-    from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+    from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
     databases = _build_h5_tree(tmp_path)
     rc = _run(

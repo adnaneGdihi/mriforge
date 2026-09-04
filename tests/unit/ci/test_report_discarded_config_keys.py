@@ -7,10 +7,10 @@ the same as a config that loaded and was clean, because both paths returned
 ``[]``. The roll-up then printed ``scanned N`` over both populations together.
 
 That is not hypothetical, and it is not confined to the corpus. Run against
-``src/mriforge/config/presets`` -- three YAMLs that ship *inside the package* --
+``src/spectramr/config/presets`` -- three YAMLs that ship *inside the package* --
 the pre-fix tool printed:
 
-    scanned 3 config(s) under src/mriforge/config/presets
+    scanned 3 config(s) under src/spectramr/config/presets
     0 declaration(s) SILENTLY DISCARDED across 0 key(s), in 0 arm(s)
       (none)
 
@@ -35,7 +35,7 @@ import pytest
 
 _REPO = Path(__file__).resolve().parents[3]
 _SCRIPT = _REPO / "scripts" / "ci" / "report_discarded_config_keys.py"
-# Globbed, not spelled: the package directory is `mriforge` today and `mriforge`
+# Globbed, not spelled: the package directory is `spectramr` today and `spectramr`
 # after the rename lands, and this module's fixtures RAISE on a missing file --
 # so a hardcoded path would turn the rename merge red here rather than at the
 # rename.

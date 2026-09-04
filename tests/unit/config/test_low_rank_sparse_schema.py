@@ -17,13 +17,13 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training import (
+from spectramr.config.schemas.training import (
     TrainingConfigLowRankSparse,
     TrainingConfigReconstruction,
     _MODE_DISPATCH,
 )
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.schemas.training.low_rank_sparse import (
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.low_rank_sparse import (
     LowRankSparseTrainingConfigSchema,
 )
 
@@ -93,7 +93,7 @@ class TestLowRankSparseSchema:
         # ``extra="forbid"`` it could only ever raise; the knobs are mounted on
         # ``TrainingStrategyConfigSchema``, which is what ``settings.training``
         # resolves to.
-        from mriforge.config.schemas.training.base import (
+        from spectramr.config.schemas.training.base import (
             TrainingStrategyConfigSchema,
         )
 

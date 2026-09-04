@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.infrastructure.orchestration.campaign_report_generator`.
+"""Unit tests for :mod:`spectramr.infrastructure.orchestration.campaign_report_generator`.
 
 The generator produces an HTML dashboard + side-car plot PNGs and a
 JSON evaluation_report. These tests exercise:
@@ -19,12 +19,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from mriforge.infrastructure.orchestration.campaign_evaluator import (
+from spectramr.infrastructure.orchestration.campaign_evaluator import (
     CampaignReport,
     PairwiseResult,
     UncertaintyReport,
 )
-from mriforge.infrastructure.orchestration.campaign_report_generator import (
+from spectramr.infrastructure.orchestration.campaign_report_generator import (
     CampaignReportGenerator,
 )
 

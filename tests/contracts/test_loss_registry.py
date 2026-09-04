@@ -25,7 +25,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 from tests.utils.registry_iterators import all_losses
 
 # ---------------------------------------------------------------------------

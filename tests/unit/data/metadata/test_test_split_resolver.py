@@ -12,8 +12,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mriforge.config.schemas.data import DataConfigSchema, DataSourceConfigSchema
-from mriforge.data.metadata.test_split_resolver import resolve_manifest_test_paths
+from spectramr.config.schemas.data import DataConfigSchema, DataSourceConfigSchema
+from spectramr.data.metadata.test_split_resolver import resolve_manifest_test_paths
 
 
 def test_no_manifest_configured_returns_empty() -> None:

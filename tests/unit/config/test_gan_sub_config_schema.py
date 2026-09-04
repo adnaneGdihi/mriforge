@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.training.base import (
+from spectramr.config.schemas.training.base import (
     GANSubConfigSchema,
     TrainingStrategyConfigSchema,
 )

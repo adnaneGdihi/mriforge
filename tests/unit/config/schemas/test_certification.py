@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.certification import DiceRiskCertificateConfig
+from spectramr.config.schemas.certification import DiceRiskCertificateConfig
 
 
 def test_dice_risk_defaults() -> None:

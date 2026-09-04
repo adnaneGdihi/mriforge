@@ -1,7 +1,7 @@
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.losses.physics_losses import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.losses.physics_losses import (
     ParallelImagingKSpaceLoss,
     PhysicsConstraintLoss,
     PhysicsInformedLoss,

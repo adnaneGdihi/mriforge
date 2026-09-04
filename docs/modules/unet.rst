@@ -3,7 +3,7 @@
 Universal U-Net Generator
 =========================
 
-**File Path:** ``src/models/reconstruction/unet.py``
+**File Path:** ``src/spectramr/models/reconstruction/unet.py``
 
 High-Level Logic
 ----------------
@@ -36,10 +36,10 @@ Where :math:`g` is the gating signal (from the decoder) and :math:`x` is the fea
 Class Breakdown
 ---------------
 
-.. autoclass:: mriforge.models.reconstruction.unet.UNet
+.. autoclass:: spectramr.models.reconstruction.unet.UNet
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. autoclass:: mriforge.models.reconstruction.unet.ConfigurableResidualBlock
+.. autoclass:: spectramr.models.reconstruction.unet.ConfigurableResidualBlock
    :members:

@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.losses.beltrami_diagnostic_loss import (  # noqa: E402
+from spectramr.models.losses.beltrami_diagnostic_loss import (  # noqa: E402
     BeltramiDiagnosticLoss,
 )
 

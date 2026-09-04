@@ -8,7 +8,7 @@ sys.path = [str(Path.cwd()), *sys.path]
 
 # We need to ensure we can import from src
 try:
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
         HealthCheckResult,
     )

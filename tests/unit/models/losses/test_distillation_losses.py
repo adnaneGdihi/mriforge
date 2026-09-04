@@ -1,6 +1,6 @@
 """Tests for ``KnowledgeDistillationLoss`` and ``EMASelfDistillationLoss``.
 
-Targets ``mriforge.models.losses.distillation_losses``. Both losses require
+Targets ``spectramr.models.losses.distillation_losses``. Both losses require
 a teacher / EMA-target via the ``context`` dict — they fail loud when
 absent (CLAUDE.md #9).
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.distillation_losses import KnowledgeDistillationLoss
+from spectramr.models.losses.distillation_losses import KnowledgeDistillationLoss
 
 
 # ---------------------------------------------------------------------------
@@ -185,13 +185,13 @@ def test_teacher_is_detached_from_grad() -> None:
 
 def test_kd_registered() -> None:
     """``knowledge_distillation`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "knowledge_distillation" in list_available()
 
 
 def test_ema_self_distillation_registered() -> None:
     """``ema_self_distillation`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "ema_self_distillation" in list_available()

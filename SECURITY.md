@@ -15,7 +15,7 @@ After the 1.0.0 release, the two most recent minor versions will be supported.
 ## Reporting a Vulnerability
 
 Report security issues via GitHub's private vulnerability reporting at
-https://github.com/adnaneGdihi/mriforge/security/advisories/new, or by email to
+https://github.com/adnaneGdihi/spectramr/security/advisories/new, or by email to
 adnane.gdihi@gmail.com. Expect an acknowledgement within 7 days.
 
 Please include:

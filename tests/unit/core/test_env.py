@@ -6,17 +6,17 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.core import env
+from spectramr.core import env
 
 
 def test_names_lists_every_module_constant() -> None:
     """``env.names()`` must enumerate every public name advertised via __all__."""
     names = env.names()
-    # Must contain the load-bearing MRIFORGE_ variables.
+    # Must contain the load-bearing SPECTRAMR_ variables.
     must = {
-        "MRIFORGE_DATA_ROOT",
+        "SPECTRAMR_DATA_ROOT",
         "PROJECT_ROOT",
-        "MRIFORGE_SUPPRESS_CLINICAL_WARNING",
+        "SPECTRAMR_SUPPRESS_CLINICAL_WARNING",
         "CUBLAS_WORKSPACE_CONFIG",
         "RANK",
         "LOCAL_RANK",
@@ -27,21 +27,21 @@ def test_names_lists_every_module_constant() -> None:
 
 
 def test_data_root_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Without MRIFORGE_DATA_ROOT, data_root() falls back to ./databases."""
-    monkeypatch.delenv(env.MRIFORGE_DATA_ROOT, raising=False)
+    """Without SPECTRAMR_DATA_ROOT, data_root() falls back to ./databases."""
+    monkeypatch.delenv(env.SPECTRAMR_DATA_ROOT, raising=False)
     assert env.data_root() == Path("./databases")
 
 
 def test_data_root_honours_env(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(env.MRIFORGE_DATA_ROOT, "/tmp/mriforge_data")
-    assert env.data_root() == Path("/tmp/mriforge_data")
+    monkeypatch.setenv(env.SPECTRAMR_DATA_ROOT, "/tmp/spectramr_data")
+    assert env.data_root() == Path("/tmp/spectramr_data")
 
 
 def test_project_root_prefers_project_root_over_data_root(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv(env.PROJECT_ROOT, "/a")
-    monkeypatch.setenv(env.MRIFORGE_DATA_ROOT, "/b")
+    monkeypatch.setenv(env.SPECTRAMR_DATA_ROOT, "/b")
     assert env.project_root() == Path("/a")
 
 
@@ -49,7 +49,7 @@ def test_project_root_falls_back_to_data_root(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv(env.PROJECT_ROOT, raising=False)
-    monkeypatch.setenv(env.MRIFORGE_DATA_ROOT, "/b")
+    monkeypatch.setenv(env.SPECTRAMR_DATA_ROOT, "/b")
     assert env.project_root() == Path("/b")
 
 
@@ -57,29 +57,29 @@ def test_project_root_none_when_neither_set(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv(env.PROJECT_ROOT, raising=False)
-    monkeypatch.delenv(env.MRIFORGE_DATA_ROOT, raising=False)
+    monkeypatch.delenv(env.SPECTRAMR_DATA_ROOT, raising=False)
     assert env.project_root() is None
 
 
 def test_cache_root_explicit(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv(env.MRIFORGE_CACHE_ROOT, "/tmp/cache")
+    monkeypatch.setenv(env.SPECTRAMR_CACHE_ROOT, "/tmp/cache")
     assert env.cache_root() == Path("/tmp/cache")
 
 
 def test_cache_root_xdg(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv(env.MRIFORGE_CACHE_ROOT, raising=False)
+    monkeypatch.delenv(env.SPECTRAMR_CACHE_ROOT, raising=False)
     monkeypatch.setenv(env.XDG_CACHE_HOME, "/xdg")
-    assert env.cache_root() == Path("/xdg/mriforge")
+    assert env.cache_root() == Path("/xdg/spectramr")
 
 
 def test_suppress_clinical_warning(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.delenv(env.MRIFORGE_SUPPRESS_CLINICAL_WARNING, raising=False)
+    monkeypatch.delenv(env.SPECTRAMR_SUPPRESS_CLINICAL_WARNING, raising=False)
     assert env.suppress_clinical_warning() is False
-    monkeypatch.setenv(env.MRIFORGE_SUPPRESS_CLINICAL_WARNING, "1")
+    monkeypatch.setenv(env.SPECTRAMR_SUPPRESS_CLINICAL_WARNING, "1")
     assert env.suppress_clinical_warning() is True
-    monkeypatch.setenv(env.MRIFORGE_SUPPRESS_CLINICAL_WARNING, "true")
+    monkeypatch.setenv(env.SPECTRAMR_SUPPRESS_CLINICAL_WARNING, "true")
     assert env.suppress_clinical_warning() is True
-    monkeypatch.setenv(env.MRIFORGE_SUPPRESS_CLINICAL_WARNING, "0")
+    monkeypatch.setenv(env.SPECTRAMR_SUPPRESS_CLINICAL_WARNING, "0")
     assert env.suppress_clinical_warning() is False
 
 
@@ -221,7 +221,7 @@ def _env_vars_set_by_main() -> set[str]:
     import re
     from pathlib import Path
 
-    main_py = Path(__file__).resolve().parents[3] / "src" / "mriforge" / "main.py"
+    main_py = Path(__file__).resolve().parents[3] / "src" / "spectramr" / "main.py"
     source = main_py.read_text()
     return set(re.findall(r'os\.environ(?:\.setdefault\(\s*|\[)"([A-Z_][A-Z0-9_]*)"', source))
 
@@ -252,7 +252,7 @@ def test_every_env_var_main_sets_is_declared_here() -> None:
 #    as export list AND registry. A constant declared in the module but omitted
 #    from ``__all__`` is invisible to ``names()`` -- and therefore invisible to
 #    ``test_env_example_lists_every_constant_name``, which iterates ``names()``.
-#    ``MRIFORGE_GPU_MEMORY_FRACTION`` sat in exactly that hole: constant present,
+#    ``SPECTRAMR_GPU_MEMORY_FRACTION`` sat in exactly that hole: constant present,
 #    validating resolver present, its own docstring claiming it was "registered
 #    in core/env.py", and no advertisement anywhere.
 #
@@ -282,32 +282,32 @@ def test_all_constants_are_exported() -> None:
     )
 
 
-def _mriforge_vars_read_in_src() -> dict[str, str]:
-    """Every ``MRIFORGE_*`` string literal in the package, in any position.
+def _spectramr_vars_read_in_src() -> dict[str, str]:
+    """Every ``SPECTRAMR_*`` string literal in the package, in any position.
 
     Maps name -> first file containing it, so a failure says where to look.
-    Scoped to ``MRIFORGE_*``: third-party and standard names (``TMPDIR``,
+    Scoped to ``SPECTRAMR_*``: third-party and standard names (``TMPDIR``,
     ``CUDA_VISIBLE_DEVICES``, …) are read all over and are not ours to own.
     ``core/env.py`` itself is skipped -- it is the declaration site.
 
     AST, not a regex over the ``os.environ.get(...)`` call site, and that is
     not incidental. The first version of this census matched only a literal
     argument at the call site, and it missed three names for two distinct
-    reasons: ``MRIFORGE_PLUGINS`` and ``MRIFORGE_LEDGER_STRICT`` are read through
+    reasons: ``SPECTRAMR_PLUGINS`` and ``SPECTRAMR_LEDGER_STRICT`` are read through
     a named module constant (``PLUGIN_ENV_VAR``, ``STRICT_ENV``), and the
-    ``MRIFORGE_LAUNCH_*`` family is composed with an f-string from a prefix.
+    ``SPECTRAMR_LAUNCH_*`` family is composed with an f-string from a prefix.
     A call-site regex is therefore blindest exactly where the code is tidiest.
     Do not "simplify" this back to a regex.
 
     The cost of matching any literal is that a prefix constant looks like a
     variable, so the caller drops trailing-underscore names -- see
-    ``test_every_mriforge_var_read_in_src_is_declared_here``.
+    ``test_every_spectramr_var_read_in_src_is_declared_here``.
     """
     import ast
     import re
 
-    name_re = re.compile(r"MRIFORGE_[A-Z0-9_]*")
-    src = Path(__file__).resolve().parents[3] / "src" / "mriforge"
+    name_re = re.compile(r"SPECTRAMR_[A-Z0-9_]*")
+    src = Path(__file__).resolve().parents[3] / "src" / "spectramr"
     found: dict[str, str] = {}
     for py in sorted(src.rglob("*.py")):
         if py.name == "env.py" and py.parent.name == "core":
@@ -323,35 +323,35 @@ def _mriforge_vars_read_in_src() -> dict[str, str]:
     return found
 
 
-def test_src_reads_mriforge_vars_at_all() -> None:
+def test_src_reads_spectramr_vars_at_all() -> None:
     """Anti-vacuity twin: a broken census would make the check below vacuous."""
-    found = _mriforge_vars_read_in_src()
+    found = _spectramr_vars_read_in_src()
     assert len(found) >= 18, (
         f"parsed only {len(found)} names {sorted(found)} from src/; the census "
-        "is under-collecting. 21 MRIFORGE_* literals were present as of "
-        "2026-08-16 (20 variables + the MRIFORGE_LAUNCH_ prefix)."
+        "is under-collecting. 21 SPECTRAMR_* literals were present as of "
+        "2026-08-16 (20 variables + the SPECTRAMR_LAUNCH_ prefix)."
     )
 
 
-def test_every_mriforge_var_read_in_src_is_declared_here() -> None:
-    """Reading a ``MRIFORGE_*`` name anywhere in the package must register it.
+def test_every_spectramr_var_read_in_src_is_declared_here() -> None:
+    """Reading a ``SPECTRAMR_*`` name anywhere in the package must register it.
 
     The inverse does not hold: a declared name need not be read in ``src/``
-    (``MRIFORGE_NO_GPU_PROBE`` is read by a shell entrypoint), so this checks one
+    (``SPECTRAMR_NO_GPU_PROBE`` is read by a shell entrypoint), so this checks one
     direction only.
 
     One carve-out: a literal ending in ``_`` is a prefix, not a variable
-    (``MRIFORGE_LAUNCH_``, from which ``backends.py`` composes the launch->child
+    (``SPECTRAMR_LAUNCH_``, from which ``backends.py`` composes the launch->child
     provenance handoff). Those are framework-internal and must NOT be set by an
     operator, so registering them would advertise the opposite of the intent.
     The exclusion is structural rather than a name allowlist, so a future prefix
     is covered without editing this test -- and any real variable, which by
     construction does not end in ``_``, still fails the check.
     """
-    read = _mriforge_vars_read_in_src()
+    read = _spectramr_vars_read_in_src()
     undeclared = sorted(n for n in set(read) - set(env.names()) if not n.endswith("_"))
     assert not undeclared, (
-        "these MRIFORGE_* variables are read in src/ but not declared in "
+        "these SPECTRAMR_* variables are read in src/ but not declared in "
         f"core/env.py: {[(n, read[n]) for n in undeclared]}. Add a constant, "
         "list it in __all__, and add a .env.example stanza -- an operator moving "
         "to another machine cannot set a knob that nothing advertises."

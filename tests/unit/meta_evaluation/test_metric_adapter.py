@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.meta_evaluation.metric_adapter import (
+from spectramr.core.metrics.meta_evaluation.metric_adapter import (
     safe_metric_call,
     wrap_metric,
     build_safe_metric_set,
@@ -40,7 +40,7 @@ def _pair_2d() -> tuple[torch.Tensor, torch.Tensor]:
 
 def test_ssim_rescued_by_4d_retry() -> None:
     """``ssim`` from the registry crashes on [C, H, W]; adapter should fix it."""
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     metric = get_metric("ssim")
     pred, target = _pair_2d()
@@ -50,7 +50,7 @@ def test_ssim_rescued_by_4d_retry() -> None:
 
 
 def test_hfen_rescued_by_4d_retry() -> None:
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     pred, target = _pair_2d()
     value = safe_metric_call(get_metric("hfen"), pred, target)
@@ -58,7 +58,7 @@ def test_hfen_rescued_by_4d_retry() -> None:
 
 
 def test_gradient_error_rescued() -> None:
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     pred, target = _pair_2d()
     value = safe_metric_call(get_metric("gradient_error"), pred, target)
@@ -69,7 +69,7 @@ def test_clinical_ssim_does_not_crash_the_run() -> None:
     """``clinical_ssim`` has a structural ``None * float`` bug independent
     of input shape, so the adapter cannot return a finite scalar — but it
     must return NaN cleanly rather than propagate the TypeError."""
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     pred, target = _pair_2d()
     value = safe_metric_call(get_metric("clinical_ssim"), pred, target)
@@ -96,7 +96,7 @@ def test_clinical_ssim_does_not_crash_the_run() -> None:
 
 
 def test_wrap_metric_forwards_higher_is_better() -> None:
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     raw = get_metric("psnr")
     wrapped = wrap_metric(raw)
@@ -107,7 +107,7 @@ def test_wrap_metric_forwards_higher_is_better() -> None:
 
 
 def test_wrap_metric_returns_float() -> None:
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     wrapped = wrap_metric(get_metric("mse"))
     pred, target = _pair_2d()
@@ -145,8 +145,8 @@ def test_disabled_metrics_filtered_silently() -> None:
     """Radiomics metrics (frd, rfs) are in DISABLED_METRICS — filtered
     before any construction attempt, no ImportError warnings emitted."""
     import logging
-    from mriforge.core.metrics import list_available
-    from mriforge.core.metrics.meta_evaluation.metric_adapter import DISABLED_METRICS
+    from spectramr.core.metrics import list_available
+    from spectramr.core.metrics.meta_evaluation.metric_adapter import DISABLED_METRICS
 
     # Confirm the radiomics names are still in the registry (so the
     # disable-list is what's filtering them, not the registry).

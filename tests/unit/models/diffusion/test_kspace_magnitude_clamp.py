@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.diffusion.kspace_process import (
+from spectramr.models.diffusion.kspace_process import (
     apply_ceiling_ratio,
     clamp_to_magnitude_ceiling,
     paired_magnitude,

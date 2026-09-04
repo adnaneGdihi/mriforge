@@ -1,6 +1,6 @@
 """Tests for the failure-case gallery plotter.
 
-Targets ``mriforge.infrastructure.reporting.plotters.failure_gallery``. The
+Targets ``spectramr.infrastructure.reporting.plotters.failure_gallery``. The
 regression of note: with only 1-3 cases the grid must stay compact rather than
 producing a mostly-empty ultra-wide canvas (the provenance stamp pins
 ``bbox_inches`` to full width, so the layout itself must adapt).
@@ -15,7 +15,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import failure_gallery
+from spectramr.infrastructure.reporting.plotters import failure_gallery
 
 
 def _case(seed, name):

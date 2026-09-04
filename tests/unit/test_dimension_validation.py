@@ -334,7 +334,7 @@ class TestModelDimensionHandling:
 
     def test_kspace_cold_diffusion_4d(self):
         """KSpaceColdDiffusionGenerator with 4D input."""
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -365,7 +365,7 @@ class TestModelDimensionHandling:
 
     def test_kspace_cold_diffusion_5d(self):
         """KSpaceColdDiffusionGenerator with 5D input."""
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 

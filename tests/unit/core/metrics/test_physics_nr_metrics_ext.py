@@ -1,7 +1,7 @@
 """Tests for the ``physics_nr_metrics`` no-reference battery extensions.
 
 Covers the five metrics appended to
-``mriforge.core.metrics.physics_nr_metrics`` by the NR-metrics spec (§3):
+``spectramr.core.metrics.physics_nr_metrics`` by the NR-metrics spec (§3):
 
 * ``psdc`` — Power-Spectrum Decay Conformity  (lower is better)
 * ``ksk``  — k-Space Spike Kurtosis           (lower is better)
@@ -26,9 +26,9 @@ torch = pytest.importorskip("torch")
 
 import torch.nn.functional as F  # noqa: E402
 
-from mriforge.core.metrics.context import MetricContext  # noqa: E402
-from mriforge.core.metrics.registry import get_metric  # noqa: E402
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
+from spectramr.core.metrics.context import MetricContext  # noqa: E402
+from spectramr.core.metrics.registry import get_metric  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

@@ -20,7 +20,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.mrf_kspace_strategies import (
+from spectramr.infrastructure.training.strategies.mrf_kspace_strategies import (
     RiemannianMRFDiffusionStrategy,
 )
 

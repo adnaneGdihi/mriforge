@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.step_executor import (
+from spectramr.infrastructure.training.step_executor import (
     OptimizationStepConfig,
     StepExecutor,
 )
@@ -336,7 +336,7 @@ class TestNonFiniteLossGuard:
         do-nothing method — the mock would assert that the guard is wired while
         proving nothing about whether it fires.
         """
-        from mriforge.infrastructure.training.optimizers import AMPPolicy
+        from spectramr.infrastructure.training.optimizers import AMPPolicy
 
         amp_helper.scaler = None
         real_policy = AMPPolicy(max_grad_norm=1.0, enable_gradient_clipping=False)
@@ -469,7 +469,7 @@ class TestDDPNoSyncUnderAccumulation:
     def test_helper_is_duck_typed_so_fsdp_is_covered(self):
         """FSDP exposes no_sync with the same meaning; naming DDP in an
         isinstance check would have excluded it."""
-        from mriforge.infrastructure.training.step_executor import _suppress_ddp_sync
+        from spectramr.infrastructure.training.step_executor import _suppress_ddp_sync
 
         class _OnlyNoSync:
             def __init__(self):

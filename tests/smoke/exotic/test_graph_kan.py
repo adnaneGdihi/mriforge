@@ -9,7 +9,7 @@ Verifies:
 import pytest
 import torch
 
-from mriforge.models.topological.graph_kan import GraphKAN, knn_graph
+from spectramr.models.topological.graph_kan import GraphKAN, knn_graph
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

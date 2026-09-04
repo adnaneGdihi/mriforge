@@ -17,13 +17,13 @@ import pytest
 
 
 # Importing the package triggers registration of all plotters.
-from mriforge.infrastructure.reporting.plotters import (  # noqa: E402
+from spectramr.infrastructure.reporting.plotters import (  # noqa: E402
     PLOTTERS,
     active_acquisition_trajectory,
     bloch_consistency_residual,
     qmap_riemannian_vs_euclidean,
 )
-from mriforge.infrastructure.reporting.plotters.ksd_certificate import (
+from spectramr.infrastructure.reporting.plotters.ksd_certificate import (
     render_ksd_certificate,
 )
 

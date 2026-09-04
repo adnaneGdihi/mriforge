@@ -59,9 +59,9 @@ def changed_files(base: str, head: str) -> tuple[list[str], list[str]]:
 
     Scoping happens in Python, NOT via a ``src/**/*.py`` pathspec: git's wildmatch wants
     an intermediate directory for ``**``, so that pathspec matches
-    ``src/mriforge/models/x.py`` but silently MISSES ``src/x.py``. The whole-file gate
+    ``src/spectramr/models/x.py`` but silently MISSES ``src/x.py``. The whole-file gate
     this replaces had exactly that hole -- it only ever worked because everything in
-    this repo happens to sit one level down, under ``src/mriforge/``.
+    this repo happens to sit one level down, under ``src/spectramr/``.
     """
     out = _git("diff", "--name-status", "--diff-filter=ACM", f"{base}...{head}")
     added: list[str] = []

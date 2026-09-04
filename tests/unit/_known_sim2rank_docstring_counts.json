@@ -103,7 +103,7 @@
     [
       "scripts/sim2rank/metrics_list.py",
       "<module>",
-      "209 metrics"
+      "210 metrics"
     ],
     [
       "scripts/sim2rank/per_axis_figures.py",

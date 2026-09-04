@@ -1,4 +1,4 @@
-# Allowlist for the public MRIForge export. FAIL-CLOSED: a tracked path ships
+# Allowlist for the public spectraMR export. FAIL-CLOSED: a tracked path ships
 # only if a pattern below names it. Every pattern carries the reason it ships.
 #
 # A trailing "/" means "directory prefix"; anything else is an fnmatch glob.
@@ -89,7 +89,7 @@ conftest.py
 # scripts/sim2rank/ -- the metric meta-evaluation subsystem (65 files, 36,803
 # LOC), a research programme rather than framework surface, and CLAUDE.md records
 # it as under heavy active development. Its in-package half DOES ship
-# (mriforge.core.metrics.meta_evaluation), so denying these costs real coverage:
+# (spectramr.core.metrics.meta_evaluation), so denying these costs real coverage:
 # 15 of the 63 shipped tests importing that subpackage. 48 survive, so it is a
 # partial loss, not an untested subsystem -- measured, not assumed. Shipping the
 # 36.8k LOC to recover 15 tests is the worse trade.
@@ -299,6 +299,8 @@ codecov.yml
 LICENSE                    # Apache-2.0
 NOTICE
 CITATION.cff               # personal identifiers belong HERE, and here only
+.zenodo.json               # Zenodo deposition metadata; agreement with CITATION.cff
+                           # is pinned by tests/unit/release/test_zenodo_deposit.py
 MAINTAINERS.md             # ... and here
 CODE_OF_CONDUCT.md
 CONTRIBUTING.md
@@ -306,15 +308,35 @@ GOVERNANCE.md
 SECURITY.md
 DISCLAIMER.md              # not-for-clinical-use; the CLI warning points at it
 README.md
-CHANGELOG.md               # B: needs a de-link pass -- internal PR numbers dangle,
-                           #    and #N in a public repo autolinks to a stranger's PR
+CHANGELOG.md               # de-linked 2026-09-03, and it carries no bare #N at all.
+                           #    Not for the reason first assumed. MEASURED 2026-09-03: a
+                           #    blob-rendered .md does NOT autolink #N. psf/black's
+                           #    CHANGES.md carries 826 bare refs and 0 explicit links,
+                           #    and GitHub renders all 826 as plain text -- its single
+                           #    anchor comes from a full URL (line 1027), which GFM
+                           #    autolinks and then displays as '#3968'. Autolinking is a
+                           #    CONVERSATION feature: POST /markdown mode=gfm with
+                           #    context=<repo> rewrote '#1' into that repo's PR #1 and
+                           #    left '#9' and '#341' alone -- it fires only for numbers
+                           #    that EXIST, so the hazard grows as the repo accrues PRs,
+                           #    and it reaches these files only when their text is quoted
+                           #    into a PR/issue body or commit message.
+                           #    The reason that does hold is citation: the export drops
+                           #    CLAUDE.md, .agent/rules/ and .claude/skills/ (all three
+                           #    verified absent from the shipped tree), so 'pitfall #9'
+                           #    points a reader at nothing while the '#' makes it look
+                           #    like a clickable repository reference. All 33 refs across
+                           #    the 7 .md files that had them now read 'pitfall 15' /
+                           #    'internal issue 341'; the 5 survivors are URL anchors
+                           #    inside link targets. Re-check with:
+                           #      grep -rhoE '#[0-9]+' --include='*.md' <export>
 
 # ---- example arms ----------------------------------------------------------
 experiments/templates/     # the copy-me templates (see #1529 before shipping these)
 #
 # ...but only the one that loads. A template is copied, so a template that does
 # not parse is worse than an absent one: the reader's first act is to inherit the
-# defect. Both denials measured with `mriforge audit` on this branch:
+# defect. Both denials measured with `spectramr audit` on this branch:
 #
 #   categorical_values_reference.yaml       exit 2 -- "config_version is required
 #                                           ... Must be one of ['1.0']"
@@ -333,20 +355,14 @@ experiments/templates/     # the copy-me templates (see #1529 before shipping th
 !experiments/templates/categorical_values_reference.yaml
 !experiments/templates/comprehensive_config_template_v5.0.yaml
 
-# NO exemplar arms ship. Owner decision, 2026-08-29: nothing under
-# experiments/ is published except the v1.0 template above.
-#
-# Three arms (b1_structural_recon_m4raw, ssdu_selfsup_m4raw,
-# experiment_96_sde_diffusion) were allowed here and were withdrawn. They were
-# not withdrawn for being broken -- all three passed `mriforge audit` AND
-# `mriforge audit --probe` on an RTX 4080 from the exported tree on 2026-08-29,
-# exit 0 each. The corpus is simply not part of the published surface.
-#
-# Do not re-add one "as an example". experiments/ is an internal research
-# corpus: an arm names manifests, cluster paths and datasets that a public
-# reader has no way to obtain, so a shipped arm advertises a runnable config
-# that is not runnable -- the exact over-claim this release exists to remove.
-# The template is the supported starting point; it is copied, not run.
+# Three exemplar arms, one per paradigm family, so the shipped tree carries a
+# config that can actually be run rather than only a template to fill in. All
+# three are at config_version 1.0 with a declared workflow regime x task, and
+# all three read M4Raw (CC-BY-4.0) -- no fastMRI-derived data, which the DUA
+# forbids republishing. They name the two manifests the builder below writes.
+experiments/inprogress/workflow_baselines/b1_structural_recon_m4raw.yaml
+experiments/inprogress/reconstruction/ssdu_selfsup_m4raw.yaml
+experiments/inprogress/diffusion/experiment_96_sde_diffusion.yaml
 
 # ---- tests whose SUBJECT does not ship -------------------------------------
 # Found by walking every shipped test for a `Path(__file__).parents[N] / ...`
@@ -389,11 +405,6 @@ experiments/templates/     # the copy-me templates (see #1529 before shipping th
 !tests/unit/scratch/test_compile_diagnostics.py
 !tests/unit/scripts/test_check_produced_by_arm_resolves.py
 !tests/unit/scripts/test_cluster_verify.py
-# Subject scripts/migrations/rename_package_identifier.py. Measured on the
-# export 2026-08-29: 0 passed, 14 errors -- every test collects a
-# FileNotFoundError loading the script by path. It also carries the only
-# /home/adn/ literal left in the tree, as a planted-violation fixture.
-!tests/unit/scripts/test_rename_package_identifier.py
 !tests/unit/scripts/test_migrate_config_version_to_v1.py
 !tests/unit/scripts/test_migrate_metrics_to_compute_list.py
 !tests/unit/scripts/test_report_discarded_config_keys.py
@@ -542,100 +553,158 @@ experiments/templates/     # the copy-me templates (see #1529 before shipping th
 !tests/unit/test_sim2rank_v2_additions.py                   # 0 / 11
 !tests/unit/test_sim2rank_v3_additions.py                   # 0 / 10
 
+# Added to dev AFTER the tree was published, and measured in a materialized export
+# (2026-08-30) rather than inferred from their imports:
+#   test_production_plan_batch_partition.py plants against
+#     TODO/production_plan/tools/check_batch_partition.py, and TODO/ is a dropped
+#     root -- ModuleNotFoundError at IMPORT, so pytest raises Interrupted and the
+#     export's whole session collects NOTHING. The severe shape: not one lost test.
+#   test_rename_package_identifier.py plants against
+#     scripts/migrations/rename_package_identifier.py, which does not ship: 14 errors.
+# Both are correct on this branch; neither has a subject in the distribution.
+!tests/unit/tools/test_production_plan_batch_partition.py    # collection error -> Interrupted
+!tests/unit/scripts/test_rename_package_identifier.py        # 0 / 14
+
+# ---- CI workflows ----------------------------------------------------------
+# Workstream F's condition is met: the two Claude workflows are denied below, so
+# no CLAUDE_CODE_OAUTH_TOKEN is implied by a public checkout (and no such secret
+# exists there anyway).
+#
+# They do NOT ship inert. Actions is ENABLED on adnaneGdihi/spectramr -- measured on
+# the remote, and the three merged dependabot PRs there are checks that actually ran.
+# The earlier note here said the opposite and pinned that claim in
+# docs/known_limitations.rst; it was true when the repo was created and stopped being
+# true without one character of this file changing. Treat the lane as live: it fires
+# on real PRs, so a workflow shipped here must be one the public tree can actually run.
+# They ship because tests/unit/ci/test_workflow_triggers.py takes them as its subject,
+# and `make gate` DERIVES the local lane from pr-required.yml rather than restating it.
+#
+# pull_request_target / issue_comment / issues workflows are read from the DEFAULT
+# branch, so these must be present on the published `main` or they stay inert there.
+.github/
+
+# The two Claude workflows. `claude.yml` is issues/issue_comment-triggered and
+# `claude-code-review.yml` runs on every PR; both consume
+# secrets.CLAUDE_CODE_OAUTH_TOKEN. A comment-triggered workflow holding a long-lived
+# OAuth token on a PUBLIC repo is an exposure path in a way it is not on a private
+# one, and the secret does not exist in the published repo regardless -- so the first
+# push would go red even if the exposure were acceptable. Measured: these are the only
+# two workflows referencing any secret beyond the auto-provided GITHUB_TOKEN.
+!.github/workflows/claude.yml
+!.github/workflows/claude-code-review.yml
+
+# manual-full-suite.yml drives the experiment corpus and two scripts that do not ship
+# (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh). It is
+# workflow_dispatch-only, so it would never fail on its own -- it would sit in the
+# Actions tab looking like a capability the repo has. That is the advertised-but-inert
+# shape (non-negotiable 16) with a green-looking surface, which is worse than an absent
+# workflow.
+!.github/workflows/manual-full-suite.yml
+
+# tests/unit/ci/test_workflow_triggers.py READS the three denials above -- it parses
+# this file's `!.github/workflows/` lines with the same comment rule as
+# parse_allowlist, so a denial added here needs no companion edit there. That link
+# matters because _ALLOWED_NON_PR_EVENTS carries a `claude.yml` key whose workflow is
+# absent in the export; without it the export would ship a test red on arrival.
+#
+# The test keeps a second register, _NOT_DISTRIBUTED, mapping each such workflow to
+# WHY it is not distributed. That is not a competing copy of this list: membership is
+# decided here and only here, and an excuse this file no longer backs is itself a
+# reported failure ("the excuse names a scope decision that public_allowlist.txt no
+# longer makes"). So the direction is fixed -- every _NOT_DISTRIBUTED name must appear
+# here, and a denial added here needs an excuse only if the workflow also holds an
+# _ALLOWED_NON_PR_EVENTS key. Verified on the merged tree, not inferred: neither
+# manual-full-suite.yml nor claude-code-review.yml holds one, so the denial above is
+# self-contained.
+
 # ---- submodule pointers ----------------------------------------------------
 .gitmodules                # external/ baselines are pointers, not vendored code
 external/
 
-# ---- docs: the published documentation site (Workstream G) -----------------
-# Reviewed page by page on 2026-08-29 and measured, not sampled. `docs/` is 271
-# TRACKED files and 2 MB -- the "2,332 files / 195 MB" this block used to cite is
-# the untracked working tree, which is why shipping two pages looked prudent.
+# ---- docs: the curated public site (Workstream G) --------------------------
+# Still deliberately NOT "docs/": the tree holds 2,332 files and the exclusion note
+# that used to sit here measured ~68% of them citing pre-refactor src/<x>/ paths.
+# The curated set below was measured on its own terms rather than inheriting that
+# figure -- 35 src/<x>/ citations across 9 of its 58 content pages -- and
+# scripts/ci/check_docs_paths_exist.py (shipped below) is the gate that keeps a
+# published page from naming a path the published tree does not have.
 #
-# The tree builds, and `.readthedocs.yaml` sets `fail_on_warning: true`, so every
-# warning below is fatal to the RTD badge rather than cosmetic. A full build of the
-# EXPORTED tree on 2026-08-29 reported 453: 440 duplicate-object descriptions, all
-# of them out of the GENERATED `docs/api/` tree (now denied, below), and 13 broken
-# cross-references in the prose, every one of which is repaired in this change --
-# three `:ref:` labels written BELOW their section title instead of above it so
-# they anchored nothing, five links into pages this allowlist denies, an uncited
-# citation, a `:doc:` to `api/index` (a file that does not exist in either tree),
-# and a shipped page citing the internal `TODO/` directory. An earlier revision of
-# this comment claimed the prose "carries no broken cross-references at all"; that
-# was written before the build was read, and it was wrong on 13 counts.
+# This list reproduces what adnaneGdihi/spectramr already carries. It was hand-
+# assembled there, so until now a re-export would have DELETED 57 of these pages.
+# docs/index.rst ships FROM THIS BRANCH, not from the overlay. The public toctree may
+# name only pages that ship (Read the Docs builds with -W), and there were two ways to
+# get that: overlay a public index over an internal one, or make the tracked index the
+# public one and move the internal-only entries to a separate `:orphan:` page. The
+# second wins -- see docs/index_internal.rst, which is not allowlisted below and so is
+# excluded by construction. The overlay form kept two hand-maintained lists of the same
+# 38 pages with nothing comparing them; the split form is checked by
+# check_docs_navigation.py, which is what reported the 38 duplicate toctree entries when
+# the orphan page was briefly made comprehensive. One audience, one list, one owner.
+docs/tutorials/
+docs/how_to/
+docs/explanation/
+docs/reference/
+docs/modules/
+docs/_static/
+docs/conf.py
+docs/Makefile
+docs/index.rst                      # the PUBLIC index; internal-only entries live
+#                                     in docs/index_internal.rst, which does not ship
 #
-# Everything ships except the pages below, each denied for a stated reason.
-docs/
-!docs/index_internal.rst
-#   ^ the comprehensive internal index. It names the internal-only pages denied
-#     below, and a toctree entry to a missing document is a warning -- fatal here.
-#     `docs/index.rst` is the PUBLIC landing page and ships: Read the Docs serves
-#     `index.html` at the site root, so the root doc must be named `index`. An
-#     earlier revision kept the internal page at `index.rst` and had conf.py fall
-#     back to `index_public` when it was absent; that built successfully, reported
-#     "build succeeded", and produced no `index.html` at all -- a green build and
-#     a 404 site root. The internal page carries `:orphan:` so the private build
-#     stays warning-free without a toctree entry.
-!docs/contributing/ci.rst
-#   ^ the PRIVATE repo's CI. 30 `dev` base-branch references for a repo whose base
-#     is `main`, a "Publishing to `main`" section describing the internal
-#     dev->public mirror, triage sections about red tests on `dev`, a corpus-guard
-#     section about a corpus that does not ship, 11 paths absent from the export,
-#     and a first content element that is an `.. image::` of a stale SVG which is
-#     not allowlisted. Not repairable into truth yet, because the public lane does
-#     not exist: Workstream F still has to add the workflows. Documenting a lane
-#     before it is built is this release's own over-claim, pointed at CI. The
-#     public CI page is an F deliverable, written FROM the workflows that ship.
-!docs/contributing/public_export.rst
-#   ^ documents this allowlist and the export procedure. Internal process, and it
-#     names the private tree throughout.
-!docs/contributing/issue_labels.rst
-#   ^ the nature:/cohort: taxonomy, whose cohort half is one label per internal
-#     experiment cohort. Meaningless without the corpus.
-!docs/cluster_verification.rst
-#   ^ one site's SLURM allocation and storage checks. Sanitized of identity like
-#     every other page, but a public reader has no such cluster: it documents a
-#     machine, not the framework. Nothing that ships links to it -- the only
-#     reference was from the denied `docs/index.rst`.
+# Getting started / using it
+docs/getting_started.rst
+docs/user_guide.rst
+docs/troubleshooting.rst
+docs/known_limitations.rst          # E6: what the shipped tree does NOT do, stated
 #
-#     `docs/CLUSTER_DATA_LAYOUT.md` was denied here for the same reason and is
-#     now SHIPPED instead. Four pages that ship -- environment_variables.rst, the
-#     first_reconstruction tutorial, the write_experiment_yaml how-to and the
-#     audit_ladder explanation -- link to it for how MRIFORGE_DATA_ROOT resolves,
-#     which makes it part of the framework's own story rather than one site's.
-#     Denying it broke four cross-references; the content is sanitized already.
-!docs/reference/workflow_backlog.md
-#   ^ an internal backlog of unimplemented workflow regimes.
-!docs/api/
-#   ^ 174 GENERATED sphinx-apidoc stub files. Denied for three reasons, in order
-#     of weight. (1) It is generated, and the public repo gets no regeneration
-#     gate, so it would rot from the day it lands -- the same rule that says a
-#     generated doc is rebuilt, never merged. (2) It is the sole source of all 440
-#     duplicate-object warnings, and with `fail_on_warning: true` that alone keeps
-#     the RTD build red; `:no-index:` on the 173 package-level automodules cleared
-#     203 of 643 but cannot reach the residue, which is uniformly `Class.member`
-#     -- `:no-index:` does not propagate into the members of a class it suppresses.
-#     (3) it is 174 files of the export's manifest to review under "why does this
-#     ship", for content no one reads by choice.
-#     An earlier revision of this comment gave a third ground that was WRONG: it
-#     said `docs/api/index.rst` does not exist. `docs/api/index.md` does, and it
-#     is the tree's working entry point -- the file is Markdown, and checking for
-#     one extension answered a question about a page. The claim is withdrawn
-#     rather than repaired, because it was never load-bearing: grounds (1) and (2)
-#     each independently settle it.
-#     What ships instead is the HAND-WRITTEN reference set, which is the better
-#     half anyway: scripting_api, cli_reference, config_schema_reference,
-#     config_key_reference, model_registry_reference, losses_reference,
-#     metrics_reference, strategies_reference, transform_registry.
-!docs/lean/
-#   ^ 30 files of Lean 4 proof artifacts for the sim2rank reliability theory,
-#     retained in the private tree because tests/unit/docs/test_sim2rank_*_layer.py
-#     read the .lean sources and assert they are free of sorry/admit/axiom. Those
-#     tests do not ship either. conf.py already excludes the tree from the build.
-
+# Driving it from configuration
+docs/config_schema_reference.rst
+docs/config_key_reference.rst       # generated; its generator ships below
+docs/transform_registry.rst
+docs/environment_variables.rst
+docs/CLUSTER_DATA_LAYOUT.md
+#
+# Running it
+docs/running_pipelines.rst
+docs/execution_modes.rst
+docs/cli_reference.rst
+docs/plugins.rst
+docs/campaigns_user_guide.rst
+docs/hpo_guide.md
+docs/audit_ladder_user_guide.rst
+docs/accelerated_run_contract.rst
+docs/distributed_training.rst
+docs/training_throughput.rst
+#
+# Results, logging, debugging
+docs/run_provenance_and_logging.rst
+docs/reporting.md
+docs/reporting_pipeline.rst
+docs/debug_snapshot_contract.rst
+#
+# What you can configure
+docs/models_reference.rst
+docs/model_capabilities.rst
+docs/model_registry_reference.rst
+docs/MODEL_TASK_MAPPING.md
+docs/strategies_reference.rst
+docs/losses_reference.rst
+docs/metrics_reference.rst
+#
+# API + theory
+docs/scripting_api.rst
+docs/sim2rank_reliability_theory.rst
+#
+# Read the Docs reads its config from the REPO ROOT, which is why the file moved
+# there from docs/ in this change rather than being configured with a custom path.
 .readthedocs.yaml
-#   ^ moved from docs/.readthedocs.yaml in this change: Read the Docs looks in the
-#     repository ROOT by default, so at the old path it configured nothing and the
-#     `fail_on_warning: true` in it was never applied to anything.
+
+# ---- conda packaging -------------------------------------------------------
+# The recipe reads its version out of src/spectramr/__init__.py with
+# load_file_regex, so it adds no fifth version declaration for build_dist.py to
+# reconcile. It is parse-verified only: `conda build` has never been run on it (no
+# conda on the authoring host), so the first real build IS its first test.
+conda/
 
 # ---- scripts: CURATED SUBSET, pending Workstream C -------------------------
 # Deliberately NOT "scripts/". 414 files, many carrying cluster paths, SLURM
@@ -662,24 +731,45 @@ scripts/ci/baselines/f821_unparseable.txt #   ship, so the gate exits 1 in the e
 #   new repo (`--write`). The direction is DOWNWARD -- rows removed, never a raised
 #   ceiling -- which is the only direction non-negotiable 20 permits.
 scripts/ci/check_test_paired_with_source.py
-scripts/ci/check_docs_navigation.py       # OK, 57 documents, run inside the export
 scripts/ci/lint_changed_lines.py
-scripts/ci/check_docs_paths_exist.py      # OK inside the export once the 52 COMMAND
-                                          #   findings were fixed; run it AGAINST the
-                                          #   export, never the checkout -- the paths
-                                          #   it catches all exist here and are absent
-                                          #   there, which is the whole point.
-scripts/ci/migrate_config_keys.py         # Ships because it is the reader's tool, not
-                                          #   ours: config_key_reference.rst tells them
-                                          #   to run it on their own arms. Verified on
-                                          #   the one config that ships --
-                                          #   `--dry-run experiments/templates/
-                                          #   comprehensive_config_template.yaml` exits
-                                          #   0 reporting "would migrate 68 key(s); 0
-                                          #   skipped; 0 unparseable; 0 unsupported".
-                                          #   Imports are stdlib + ruamel + two shipped
-                                          #   mriforge.config.schemas modules; no
-                                          #   dropped root is referenced.
+# The two docs gates the published pr-required.yml already invokes. They were
+# missing from this list while the published tree carried them, so the export and
+# the publication disagreed in both directions at once. check_docs_paths_exist.py
+# is corpus-independent BY DESIGN -- it takes the tree as an argument precisely so
+# it can be run against the export.
+scripts/ci/check_docs_navigation.py
+scripts/ci/check_docs_paths_exist.py
+# The RENAMES fixer and its paired check. Both take their roots as arguments
+# (DEFAULT_ROOTS is only a default), so they run against a reader's OWN configs
+# rather than needing this tree's corpus. The published repo already carried
+# tests/unit/scripts/test_check_no_legacy_config_keys.py while shipping neither
+# script -- a test whose subject is absent, which is the exact shape the denial
+# block above exists to prevent. Shipping the pair fixes it in the direction that
+# adds a capability rather than deleting a test.
+scripts/ci/migrate_config_keys.py
+scripts/ci/check_no_legacy_config_keys.py
+scripts/ci/report_discarded_config_keys.py  # the detector that answers "is this key
+#   actually read?" -- 155 lines, stdlib plus spectramr.config.settings and
+#   spectramr.core.execution_ledger, both of which ship. It ships because CONTRIBUTING
+#   tells a contributor to run it and because the shipped
+#   tests/unit/scripts/test_export_public_tree.py loads it as the single owner of what
+#   "discarded" means; without it that test fails in the export rather than skipping.
+# The witness gate. Its subject EXISTS here now -- experiments/inprogress ships the
+# three exemplar arms -- so it runs for real rather than over an absent corpus, and
+# .pre-commit-config.yaml invokes it on every commit. Deliberately WITHOUT
+# scripts/ci/witness_baseline.txt: that file names 487 internal arms, and an absent
+# baseline makes read_baseline() return the empty set, so the public gate accepts no
+# inherited debt. Strict by construction is the right posture for a fresh tree.
+scripts/ci/check_witness_corpus.py
+
+# ---- the one file out of tools/ --------------------------------------------
+# docs/config_key_reference.rst declares itself generated by this script and tells
+# the reader to run it. Shipping the page without it publishes an instruction that
+# cannot be followed -- the same bar `make help` was judged against: an inert
+# feature is acceptable unadvertised, not acceptable documented as working.
+# Only this file, not tools/: relocating the directory lands two new over-ceiling
+# entries in large_files.txt (#1492), so it is a decompose-on-move job.
+tools/docs/generate_key_reference.py
 #
 # Makefile targets call these; all four are stdlib-only and corpus-independent.
 scripts/coverage/print_per_layer.py
@@ -698,53 +788,18 @@ scripts/verify/verify_dependencies.py
 # verified by exporting at dev and reading the emitted file, not assumed.
 scripts/data/regenerate_cluster_manifests.py
 
-# ---------------------------------------------------------------------------
-# .github/ -- Workstream F
-# ---------------------------------------------------------------------------
-# Ships nearly whole. The composite action, the issue/PR templates, CODEOWNERS,
-# dependabot and the labeler are identical in both trees and are ALLOWLISTED
-# rather than overlaid, deliberately: an overlaid copy would be a second owner
-# that drifts from this one with nothing to notice (non-negotiable 17). Only the
-# two files whose CONTENT must differ are overlaid -- see public_overlay/ below.
-#
-# pull_request_target and issue_comment workflows are read from the DEFAULT
-# branch, so these must be present on the new repo's `main` or they stay inert.
-.github/
-
-# The two Claude workflows. `claude.yml` is issue_comment/issues-triggered and
-# `claude-code-review.yml` runs on every PR; both consume
-# secrets.CLAUDE_CODE_OAUTH_TOKEN. A comment-triggered workflow holding a
-# long-lived OAuth token on a PUBLIC repo is an exposure path in a way it is not
-# on a private one, and the secret will not exist in the new repo regardless --
-# so the first push would go red even if the exposure were acceptable.
-# Measured: these are the ONLY two workflows referencing any secret other than
-# the auto-provided GITHUB_TOKEN.
-#
-# tests/unit/ci/test_workflow_triggers.py carries a `claude.yml` key in
-# _ALLOWED_NON_PR_EVENTS. That key MUST be deleted in the same commit as this
-# denial, or test_allowlist_has_no_stale_entries fails in the export -- verified
-# by simulating the end state, where it was the single remaining failure.
-!.github/workflows/claude.yml
-!.github/workflows/claude-code-review.yml
-
-# manual-full-suite.yml drives the experiment corpus and two scripts that do not
-# ship (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh).
-# It is workflow_dispatch-only, so it would never fail on its own -- it would sit
-# in the Actions tab looking like a capability the repo has. That is the
-# advertised-but-inert shape (non-negotiable 16) with a green-looking surface,
-# which is worse than an absent workflow. It carries no _ALLOWED_NON_PR_EVENTS
-# key, so denying it makes nothing stale.
-!.github/workflows/manual-full-suite.yml
-
-
 # ============================================================================
 # NOT SHIPPED -- each a decision, recorded so the export cannot silently regain it
 # ============================================================================
 # CLAUDE.md            defect counts, issue numbers, internal process; a public
 #                      dev guide replaces it
-# TODO/                the 249-row production plan and its 16 audit dossiers
+# TODO/                the 249-row production plan; compiled from the 16 audit
+#                      dossiers restored to docs/audits/design_compliance/ below
 # tools/               the generator behind TODO/production_plan/ (compile_plan.py,
-#                      annotations.json) -- it has no meaning without that corpus
+#                      annotations.json) -- it has no meaning without that corpus.
+#                      EXCEPT tools/docs/generate_key_reference.py, allowed above,
+#                      because a generated page that ships without its generator
+#                      documents a command the reader cannot run
 # .agent/  .claude/    design axioms and 16 skills carrying internal audit intel
 # experiments/         1,555 files minus templates/ above; also the blast radius
 #                      for the inert-knob surface, which the drop removes wholesale
@@ -757,11 +812,32 @@ scripts/data/regenerate_cluster_manifests.py
 # data/                dataset payloads
 # paper/               JOSS draft -- a separate deadline
 # docs/audits/ docs/superpowers/ docs/presentation/ docs/lean/ docs/analysis/
-# docs/deep_papers_*   internal analysis; also where the fastMRI-derived figures live
+# docs/deep_papers_*   internal analysis; also where the fastMRI-derived figures live.
+#   Still excluded now that a curated docs/ set ships: the allowances above name
+#   pages and prefixes one by one, so nothing here is reachable by construction.
+# docs/api/            175 autoapi pages; the public site uses docs/modules/ instead
+# docs/contributing/   internal process (this export, the label taxonomy, the CI
+#                      ratchet). docs/cluster_verification.rst likewise -- it
+#                      documents one site's cluster. All four are why the two indexes
+#                      are split: docs/index.rst names only pages that ship, and
+#                      docs/index_internal.rst (`:orphan:`, not allowlisted) is the
+#                      only page that reaches these.
+#   docs/audits/design_compliance/ was deleted by PR #1587 and RESTORED, because it
+#   is the compiler input for TODO/production_plan/ -- compile_plan.py reads nothing
+#   else, and without it the generator silently printed 'TOTAL 0' and exited 0. It is
+#   excluded by the same decision as TODO/ and tools/: the three are one corpus and
+#   shipping any of them alone is meaningless.
+#
+#   Enforced by this file being FAIL-CLOSED, deliberately NOT by a '!docs/audits/'
+#   denial. docs/ ships as three exact filenames, so nothing allows these paths in
+#   the first place; export_public_tree.py only marks a denial used once it cancels
+#   an otherwise-shipping file, so such a line would never be used, would land in
+#   'dead', and would make --strict exit 2. A dead denial breaks the gate it was
+#   meant to document -- see docs/contributing/public_export.rst on dead patterns.
 # audit_file.txt  EXPERIMENTS_YAML_CATALOG.md  RELEASE_NOTES_v6_1.md
 # mata_eval.sbatch  cluster_update.sh  run_eda.sh  clear_cache.sh
 # download_datasets.sh manifest.yaml mutmut_config.py
 # .aiexclude .cgcignore .vscode/
-# .github/             ships after F drops claude.yml + claude-code-review.yml
-#                      (a CLAUDE_CODE_OAUTH_TOKEN secret on a public repo is an
-#                      exposure path, and the secret will not exist there anyway)
+# (.github/ now SHIPS -- see the "CI workflows" block above. F's condition is met
+#  by the two denials there. This line is kept as the record of why it was held
+#  back, not as a current exclusion.)

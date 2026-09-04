@@ -17,7 +17,7 @@ from tests.utils.data_config_stub import DataConfigStub
 torch = pytest.importorskip("torch")
 nn = torch.nn
 
-from mriforge.infrastructure.validation import energy_probe as ep  # noqa: E402
+from spectramr.infrastructure.validation import energy_probe as ep  # noqa: E402
 
 
 # ── toy modules ───────────────────────────────────────────────────────────────
@@ -442,8 +442,8 @@ def test_hooks_label_the_mechanism_not_the_wrapper() -> None:
     import torch
     from torch import nn
 
-    from mriforge.infrastructure.validation.energy_probe import register_energy_hooks
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.infrastructure.validation.energy_probe import register_energy_hooks
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
 
     class _Net(nn.Module):
         def __init__(self) -> None:
@@ -474,8 +474,8 @@ def test_hooks_capture_both_effective_and_raw_gain() -> None:
     import torch
     from torch import nn
 
-    from mriforge.infrastructure.validation.energy_probe import register_energy_hooks
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.infrastructure.validation.energy_probe import register_energy_hooks
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
 
     class _Net(nn.Module):
         def __init__(self) -> None:

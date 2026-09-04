@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
 
 
 class TestCheckpointConfigSchema:

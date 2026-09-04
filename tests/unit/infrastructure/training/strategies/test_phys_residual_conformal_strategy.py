@@ -1,6 +1,6 @@
 r"""Unit tests for the PR-CC calibration strategy + its science helper.
 
-Targets ``mriforge.infrastructure.training.strategies.phys_residual_conformal_strategy``.
+Targets ``spectramr.infrastructure.training.strategies.phys_residual_conformal_strategy``.
 
 The strategy is a no-gradient calibration pass (mirrors B-1 equivariance_conformal):
 it freezes a tissue-parameter estimator, runs ``run_phys_residual_calibration``
@@ -30,7 +30,7 @@ def _params(h: int = 16, w: int = 16) -> torch.Tensor:
 
 
 def _se_render(params: torch.Tensor) -> torch.Tensor:
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -42,7 +42,7 @@ def _se_render(params: torch.Tensor) -> torch.Tensor:
 
 
 def test_run_phys_residual_calibration_emits_coverage() -> None:
-    from mriforge.infrastructure.training.strategies.phys_residual_conformal_strategy import (
+    from spectramr.infrastructure.training.strategies.phys_residual_conformal_strategy import (
         run_phys_residual_calibration,
     )
 
@@ -77,7 +77,7 @@ def test_run_phys_residual_calibration_emits_coverage() -> None:
 
 
 def test_mondrian_stratifies_by_field() -> None:
-    from mriforge.infrastructure.training.strategies.phys_residual_conformal_strategy import (
+    from spectramr.infrastructure.training.strategies.phys_residual_conformal_strategy import (
         run_phys_residual_calibration,
     )
 
@@ -114,7 +114,7 @@ def test_mondrian_stratifies_by_field() -> None:
 
 
 def test_batch_extraction_raises_on_unknown_shape() -> None:
-    from mriforge.infrastructure.training.strategies.phys_residual_conformal_strategy import (
+    from spectramr.infrastructure.training.strategies.phys_residual_conformal_strategy import (
         _extract_input_target_b0,
     )
 
@@ -123,7 +123,7 @@ def test_batch_extraction_raises_on_unknown_shape() -> None:
 
 
 def test_strategy_resolves_via_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     path = TrainingStrategyFactory.STRATEGY_CLASS_PATHS["phys_residual_conformal"]
     assert path.endswith("PhysResidualConformalStrategy")

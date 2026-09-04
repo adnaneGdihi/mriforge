@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.blocks.radial_linearizer import (
+from spectramr.models.blocks.radial_linearizer import (
     MorphologicalRadialLinearizer,
     radial_inside_out_indices,
     radial_outside_in_indices,
@@ -160,7 +160,7 @@ class TestMambaLayerRadialIntegration:
 
     @requires_cuda_for_mamba
     def test_radial_inside_out_mode(self):
-        from mriforge.models.generators.mamba_unet import MambaLayer2D
+        from spectramr.models.generators.mamba_unet import MambaLayer2D
 
         layer = MambaLayer2D(channels=16, linearization_mode="radial_inside_out")
         x = torch.randn(1, 16, 8, 8)
@@ -169,7 +169,7 @@ class TestMambaLayerRadialIntegration:
 
     @requires_cuda_for_mamba
     def test_radial_outside_in_mode(self):
-        from mriforge.models.generators.mamba_unet import MambaLayer2D
+        from spectramr.models.generators.mamba_unet import MambaLayer2D
 
         layer = MambaLayer2D(channels=16, linearization_mode="radial_outside_in")
         x = torch.randn(1, 16, 8, 8)

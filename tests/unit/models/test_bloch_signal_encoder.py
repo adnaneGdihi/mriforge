@@ -8,7 +8,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks import (  # noqa: E402
+from spectramr.models.blocks import (  # noqa: E402
     BLOCK_REGISTRY,
     BlochSignalEncoder,
     ReferencePanel,

@@ -1,6 +1,6 @@
 r"""Tests for ``SpectralNormalizedDenoiser`` (paradigm-expansion PR-9 / M1).
 
-Targets ``mriforge.models.wrappers.spectral_normalized``.
+Targets ``spectramr.models.wrappers.spectral_normalized``.
 
 Categories:
 
@@ -23,7 +23,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.wrappers.spectral_normalized import (
+from spectramr.models.wrappers.spectral_normalized import (
     SpectralNormalizedDenoiser,
 )
 

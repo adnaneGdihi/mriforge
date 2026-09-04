@@ -21,7 +21,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.key_reachability import (
+from spectramr.config.key_reachability import (
     PACKAGE_DIR,
     ReachabilityVerdict,
     ReadEvidence,
@@ -31,24 +31,24 @@ from mriforge.config.key_reachability import (
 
 def test_package_dir_is_this_repos_own_checkout() -> None:
     """``key_reachability`` must analyse THIS checkout, not whatever ``import
-    mriforge`` happens to resolve to.
+    spectramr`` happens to resolve to.
 
     ``PACKAGE_DIR = Path(__file__).resolve().parents[1]`` inside
     ``key_reachability.py`` is derived from that module's own file location, so
     it is safe by construction -- but nothing previously checked that the
     module doing the deriving is actually the one under this repo root rather
-    than a `mriforge` importable from a different checkout on `sys.path` /
+    than a `spectramr` importable from a different checkout on `sys.path` /
     `PYTHONPATH`. Today a wrong-tree import fails loudly for an unrelated
     reason (this module did not exist on `dev` before this branch); once this
     branch merges that accidental protection is gone, so this guard replaces
     it with a real one.
     """
     this_repo_root = Path(__file__).resolve().parents[3]
-    assert PACKAGE_DIR == this_repo_root / "src" / "mriforge", (
+    assert PACKAGE_DIR == this_repo_root / "src" / "spectramr", (
         f"key_reachability.PACKAGE_DIR ({PACKAGE_DIR}) does not sit under this "
         f"test file's own repo root ({this_repo_root}) -- the reachability "
         "analysis would be scanning a different checkout's source tree "
-        "entirely. Check PYTHONPATH / which `mriforge` import resolved."
+        "entirely. Check PYTHONPATH / which `spectramr` import resolved."
     )
 
 
@@ -58,7 +58,7 @@ def unreachable_key() -> str:
 
     Chosen from the complement of ``KNOWN_UNCONSUMED`` (measured 2026-08-12; it
     is not on that list, so text-matching calls it consumed). Its leaf,
-    ``max_steps``, has exactly one read in ``src/mriforge/`` outside
+    ``max_steps``, has exactly one read in ``src/spectramr/`` outside
     ``config/schemas/``: ``MRIEnv.__init__`` in
     ``models/reasoning/rl_acquisition.py``. ``MRIEnv`` is constructed nowhere in
     ``src/``, ``runners/``, ``scripts/`` or ``tools/`` -- only in
@@ -187,7 +187,7 @@ class TestAmbiguityResolvesToReachable:
         out: the same shape covers ``register_service(SomeType, ...)`` and every
         ``name -> class`` registry in the tree.
         """
-        from mriforge.config.key_reachability import class_liveness
+        from spectramr.config.key_reachability import class_liveness
 
         verdict = class_liveness("LoggingServiceFactory")
 
@@ -202,7 +202,7 @@ class TestAmbiguityResolvesToReachable:
         instantiates it from a YAML string. A call-graph analysis that demanded a
         literal call site would declare all 992 decorator-registered classes dead.
         """
-        from mriforge.config.key_reachability import class_liveness
+        from spectramr.config.key_reachability import class_liveness
 
         verdict = class_liveness("BrennerFocus")
 
@@ -215,7 +215,7 @@ class TestAmbiguityResolvesToReachable:
         The reverse does not hold, and must not: a live base says nothing about
         an unused subclass.
         """
-        from mriforge.config.key_reachability import class_liveness
+        from spectramr.config.key_reachability import class_liveness
 
         verdict = class_liveness("MetricsMixin")
 
@@ -230,7 +230,7 @@ class TestAmbiguityResolvesToReachable:
         training strategies as never constructed -- the exact wrong-direction
         verdict that would license deleting them.
         """
-        from mriforge.config.key_reachability import class_liveness
+        from spectramr.config.key_reachability import class_liveness
 
         for name in ("FieldBridgeStrategy", "RecoverabilityVIBStrategy"):
             assert class_liveness(name).live, name

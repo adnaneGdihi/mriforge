@@ -1,6 +1,6 @@
 """Startup import-budget regression guard.
 
-The ``mriforge`` CLI cold start (notably ``--help``) historically pulled
+The ``spectramr`` CLI cold start (notably ``--help``) historically pulled
 torch, the full SOTA model catalogue, wandb and scipy *before* argparse
 even built the parser — ~8.7 s on ``--help``. The fixes (see
 ``docs/cli_startup_budget.rst``) keep the parser-construction
@@ -34,7 +34,7 @@ def _run_in_clean_subprocess(code: str) -> subprocess.CompletedProcess[str]:
     # Let the child import the exact same package the parent resolved,
     # whether installed (CI) or run from a source checkout.
     env["PYTHONPATH"] = os.pathsep.join(p for p in sys.path if p)
-    env.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+    env.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
     return subprocess.run(
         [sys.executable, "-c", textwrap.dedent(code)],
         capture_output=True,
@@ -47,7 +47,7 @@ def test_build_parser_is_torch_free() -> None:
     result = _run_in_clean_subprocess(
         """
         import sys
-        import mriforge.cli.app as app
+        import spectramr.cli.app as app
 
         app.build_parser()
 
@@ -66,18 +66,18 @@ def test_importing_models_does_not_eagerly_load_sota_registry() -> None:
     result = _run_in_clean_subprocess(
         """
         import sys
-        import mriforge.models
+        import spectramr.models
 
-        assert 'mriforge.models.sota_registry' not in sys.modules, (
-            'mriforge.models eagerly imported the SOTA catalogue'
+        assert 'spectramr.models.sota_registry' not in sys.modules, (
+            'spectramr.models eagerly imported the SOTA catalogue'
         )
         # The lazy PEP-562 hook must still resolve the submodule on demand.
-        assert hasattr(mriforge.models, '__getattr__')
+        assert hasattr(spectramr.models, '__getattr__')
         print('OK')
         """
     )
     assert result.returncode == 0, (
-        f"import mriforge.models is no longer lean.\n"
+        f"import spectramr.models is no longer lean.\n"
         f"stdout={result.stdout}\nstderr={result.stderr}"
     )
 
@@ -85,9 +85,9 @@ def test_importing_models_does_not_eagerly_load_sota_registry() -> None:
 def test_cli_help_exits_zero_and_lists_subcommands() -> None:
     env = os.environ.copy()
     env["PYTHONPATH"] = os.pathsep.join(p for p in sys.path if p)
-    env.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+    env.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
     result = subprocess.run(
-        [sys.executable, "-m", "mriforge.cli", "--help"],
+        [sys.executable, "-m", "spectramr.cli", "--help"],
         capture_output=True,
         text=True,
         env=env,
@@ -99,30 +99,30 @@ def test_cli_help_exits_zero_and_lists_subcommands() -> None:
 
 
 def test_importing_core_does_not_eagerly_load_the_metric_registry() -> None:
-    """``mriforge.core`` must not drag the metric-discovery walk in (#1130).
+    """``spectramr.core`` must not drag the metric-discovery walk in (#1130).
 
     ``core/metrics/__init__.py`` walks its package and imports torch; the
     parser path only ever wanted ``core.env``. Because importing any submodule
     runs its parent ``__init__`` first, an eager ``from . import metrics`` here
-    was charged to every ``mriforge --help``.
+    was charged to every ``spectramr --help``.
     """
     result = _run_in_clean_subprocess(
         """
         import sys
-        import mriforge.core
+        import spectramr.core
 
-        assert 'mriforge.core.metrics' not in sys.modules, (
-            'mriforge.core eagerly imported the metric registry'
+        assert 'spectramr.core.metrics' not in sys.modules, (
+            'spectramr.core eagerly imported the metric registry'
         )
         heavy = set(HEAVY) & set(sys.modules)
-        assert not heavy, f'import mriforge.core pulled heavy imports: {sorted(heavy)}'
+        assert not heavy, f'import spectramr.core pulled heavy imports: {sorted(heavy)}'
         # The lazy PEP-562 hook must still resolve both exported submodules.
-        assert hasattr(mriforge.core, '__getattr__')
+        assert hasattr(spectramr.core, '__getattr__')
         print('OK')
         """.replace("HEAVY", repr(HEAVY_MODULES))
     )
     assert result.returncode == 0, (
-        f"import mriforge.core is no longer lean.\nstdout={result.stdout}\nstderr={result.stderr}"
+        f"import spectramr.core is no longer lean.\nstdout={result.stdout}\nstderr={result.stderr}"
     )
 
 
@@ -131,7 +131,7 @@ def test_core_lazy_exports_still_resolve_on_demand() -> None:
 
     Pins the "nothing is lost" half of the change: touching ``core.metrics``
     resolves a real module and the registry still fills, and the submodules
-    that are *not* exported keep working through ``from mriforge.core import X``
+    that are *not* exported keep working through ``from spectramr.core import X``
     (the import system falls back to a submodule import when ``__getattr__``
     raises). Six modules use that form.
     """
@@ -139,21 +139,21 @@ def test_core_lazy_exports_still_resolve_on_demand() -> None:
         """
         import types
 
-        import mriforge.core
+        import spectramr.core
 
         # 1. Attribute access resolves the exported submodules.
-        assert isinstance(mriforge.core.env, types.ModuleType)
-        assert isinstance(mriforge.core.metrics, types.ModuleType)
+        assert isinstance(spectramr.core.env, types.ModuleType)
+        assert isinstance(spectramr.core.metrics, types.ModuleType)
 
         # 2. Touching metrics still runs walk-discovery: the registry fills.
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert len(MetricsRegistry._metrics) > 100, (
             f'metric discovery did not run: {len(MetricsRegistry._metrics)} metrics'
         )
 
         # 3. Non-exported submodules keep resolving through `from ... import`.
-        from mriforge.core import compute_device, execution_ledger, resources
+        from spectramr.core import compute_device, execution_ledger, resources
 
         assert isinstance(execution_ledger, types.ModuleType)
         assert isinstance(compute_device, types.ModuleType)
@@ -164,7 +164,7 @@ def test_core_lazy_exports_still_resolve_on_demand() -> None:
         #    cannot tell a correct refusal from an unrelated blow-up inside the
         #    hook, and a planted silent-fallback slipped through on exactly that.
         try:
-            mriforge.core.not_a_real_module
+            spectramr.core.not_a_real_module
         except AttributeError as exc:
             assert 'not_a_real_module' in str(exc), (
                 f'AttributeError did not name the attribute: {exc}'
@@ -175,5 +175,5 @@ def test_core_lazy_exports_still_resolve_on_demand() -> None:
         """
     )
     assert result.returncode == 0, (
-        f"lazy mriforge.core lost a resolution path.\nstdout={result.stdout}\nstderr={result.stderr}"
+        f"lazy spectramr.core lost a resolution path.\nstdout={result.stdout}\nstderr={result.stderr}"
     )

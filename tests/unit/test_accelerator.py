@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.accelerator`.
+"""Unit tests for :mod:`spectramr.accelerator`.
 
 The accelerator module wires three concerns together:
 
@@ -24,8 +24,8 @@ import numpy as np
 import pytest
 import torch
 
-import mriforge.accelerator as accelerator_mod
-from mriforge.accelerator import initialize_accelerator, seed_everything, seed_worker
+import spectramr.accelerator as accelerator_mod
+from spectramr.accelerator import initialize_accelerator, seed_everything, seed_worker
 
 # ── Fixtures ───────────────────────────────────────────────────────
 
@@ -36,7 +36,7 @@ def _isolate_environment(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Pat
     state so we don't pollute the host environment or other tests."""
     monkeypatch.setenv("TMPDIR", str(tmp_path))
     # Force resolve_cache_root() to use TMPDIR rather than ~/.cache/.
-    monkeypatch.delenv("MRIFORGE_CACHE_ROOT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_CACHE_ROOT", raising=False)
     # Pop any stale settings from earlier tests so initialize_accelerator
     # re-applies the setdefault chain.
     for key in ("TORCH_HOME", "CUDA_CACHE_CONFIG", "PYTORCH_CUDA_ALLOC_CONF"):
@@ -113,14 +113,14 @@ class TestInitializeAcceleratorCPU:
         GPU allocation ran ~100x slower and still reported success. The
         accelerated-run contract refuses to degrade silently.
         """
-        from mriforge.core.compute_device import AcceleratorRequiredError
+        from spectramr.core.compute_device import AcceleratorRequiredError
 
         with pytest.raises(AcceleratorRequiredError, match="CUDA is not available"):
             initialize_accelerator("cuda", seed=42)
 
     def test_auto_raises_on_heavy_pipeline_without_gpu(self, force_cpu: None) -> None:
         """``auto`` must not quietly mean "cpu" for a training run."""
-        from mriforge.core.compute_device import AcceleratorRequiredError
+        from spectramr.core.compute_device import AcceleratorRequiredError
 
         with pytest.raises(AcceleratorRequiredError, match="no accelerator"):
             initialize_accelerator("auto", seed=42, pipeline="train")
@@ -168,7 +168,7 @@ class TestInitializeAcceleratorCachePaths:
     ) -> None:
         initialize_accelerator("cpu", seed=42)
         # resolve_cache_root reads TMPDIR (from the fixture) and tacks
-        # on `mriforge_cache`. Both env vars must be set AND on disk.
+        # on `spectramr_cache`. Both env vars must be set AND on disk.
         torch_home = os.environ.get("TORCH_HOME")
         cuda_cache = os.environ.get("CUDA_CACHE_CONFIG")
         assert torch_home is not None
@@ -432,7 +432,7 @@ class TestTF32HasOneOwner:
         import inspect
         import textwrap
 
-        from mriforge.infrastructure.training.utils import training_utils
+        from spectramr.infrastructure.training.utils import training_utils
 
         tree = ast.parse(
             textwrap.dedent(inspect.getsource(training_utils.initialize_device))

@@ -12,7 +12,7 @@ Covers :func:`spearman_rank_correlation`, :func:`compare_summaries`, and
 
 from __future__ import annotations
 
-from mriforge.core.metrics.meta_evaluation import (
+from spectramr.core.metrics.meta_evaluation import (
     compare_summaries,
     render_comparison_markdown,
     spearman_rank_correlation,

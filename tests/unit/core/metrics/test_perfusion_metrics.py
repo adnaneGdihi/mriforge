@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.perfusion_metrics import (
+from spectramr.core.metrics.perfusion_metrics import (
     BAT,
     NegativeVoxelCount,
     ToftsModel,

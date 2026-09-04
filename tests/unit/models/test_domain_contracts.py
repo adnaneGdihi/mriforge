@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.registry import get_model_capabilities
+from spectramr.models.registry import get_model_capabilities
 
 
 def test_image_cold_diffusion_accepts_image_and_complex_image() -> None:

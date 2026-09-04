@@ -4,21 +4,21 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.signal_models.perfusion_kinetics import (
+from spectramr.infrastructure.physics.signal_models.perfusion_kinetics import (
     extended_tofts_forward,
     parker_population_aif,
 )
-from mriforge.models.losses.perfusion_losses import (
+from spectramr.models.losses.perfusion_losses import (
     AIFConsistencyLoss,
     PerfusionMapSmoothnessLoss,
     PerfusionPhysiologicalBoxLoss,
     ToftsResidualLoss,
 )
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 
 
 def test_perfusion_losses_registered_and_tagged() -> None:
-    from mriforge.config.schemas.enums import Regime
+    from spectramr.config.schemas.enums import Regime
 
     meta = LossRegistry._loss_domains
     for name in (

@@ -7,8 +7,8 @@ from dataclasses import FrozenInstanceError
 import pytest
 import torch
 
-from mriforge.core.metrics.registry import get_metric
-from mriforge.infrastructure.physics.quality_descriptors import (
+from spectramr.core.metrics.registry import get_metric
+from spectramr.infrastructure.physics.quality_descriptors import (
     QualityDescriptor,
     UnmeasurableAttributeError,
     measure,
@@ -101,7 +101,7 @@ def test_sharpness_falls_under_noise_too_on_structured_data():
     side. On uniform-random 'anatomy' this does NOT hold, which is exactly why that
     substrate is banned above.
     """
-    from mriforge.infrastructure.physics.degradation_chain import (
+    from spectramr.infrastructure.physics.degradation_chain import (
         ChainLink,
         DegradationChain,
     )
@@ -175,7 +175,7 @@ def test_read_spacing_mm_uses_the_header_pair():
 
 def test_read_spacing_mm_raises_on_a_missing_header():
     # An assumed 1 mm default would resample every volume onto the wrong grid.
-    from mriforge.data.nifti_export import GeometryUnavailableError
+    from spectramr.data.nifti_export import GeometryUnavailableError
 
     with pytest.raises(GeometryUnavailableError):
         read_spacing_mm(None, torch.rand(1, 64, 64))

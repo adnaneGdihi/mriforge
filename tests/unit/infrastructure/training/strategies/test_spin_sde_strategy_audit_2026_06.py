@@ -12,7 +12,7 @@ import inspect
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.spin_sde_strategy import SpinSDEStrategy
+from spectramr.infrastructure.training.strategies.spin_sde_strategy import SpinSDEStrategy
 
 
 def _bare(n_steps: int = 32, dt: float = 1e-3, echo_times=None) -> SpinSDEStrategy:

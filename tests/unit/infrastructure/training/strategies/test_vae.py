@@ -16,7 +16,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
 
 class _SentinelError(Exception):

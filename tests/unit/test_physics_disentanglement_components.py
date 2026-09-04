@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, patch
 import torch
 import torch.nn as nn
 
-from mriforge.data.builders.torchio_subject_builder import FastMRISubjectBuilder
-from mriforge.data.metadata.physics_registry import get_physics_vector
-from mriforge.models.generators.disentangled_mri import DisentangledMRI
+from spectramr.data.builders.torchio_subject_builder import FastMRISubjectBuilder
+from spectramr.data.metadata.physics_registry import get_physics_vector
+from spectramr.models.generators.disentangled_mri import DisentangledMRI
 
 
 class TestPhysicsRegistry:
@@ -55,7 +55,7 @@ class TestDisentangledMRI:
 
 
 class TestSubjectBuilderPhysics:
-    @patch("mriforge.data.builders.torchio_subject_builder.get_physics_vector")
+    @patch("spectramr.data.builders.torchio_subject_builder.get_physics_vector")
     def test_physics_injection(self, mock_get_physics):
         # Mock physics vector
         mock_vec = torch.tensor([0.1, 0.2, 0.3, 0.4])

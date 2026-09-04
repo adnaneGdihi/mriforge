@@ -13,7 +13,7 @@ import pytest
 
 pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 def _cfg(operator_id: dict | None, patch=(64, 64, 1), in_channels=1):
@@ -135,8 +135,8 @@ def test_yaml_audits_clean(yaml_path):
     if not os.path.exists(yaml_path):
         pytest.skip(f"{yaml_path} not present (git-ignored experiments tree).")
 
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.config_health_checker import (
         validate_config_health,
     )
 

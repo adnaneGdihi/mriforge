@@ -1,6 +1,6 @@
 """Tests for the metrics registry singleton.
 
-Targets ``mriforge.core.metrics.registry``. Singleton dict-of-classes with
+Targets ``spectramr.core.metrics.registry``. Singleton dict-of-classes with
 case-insensitive aliases; canonical entry-points are
 ``register_metric``, ``get_metric``, ``compute_metric``,
 ``list_available``.
@@ -25,7 +25,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.registry import (
+from spectramr.core.metrics.registry import (
     IMetric,
     MetricsRegistry,
     compute_metric,
@@ -177,7 +177,7 @@ def test_compute_metric_calls_metric() -> None:
 def test_injects_higher_is_better_from_direction_map(monkeypatch) -> None:
     """A metric that doesn't self-declare direction gets it injected at
     registration time from the central SSOT map."""
-    from mriforge.core.metrics import metric_directions
+    from spectramr.core.metrics import metric_directions
 
     monkeypatch.setitem(metric_directions.METRIC_HIGHER_IS_BETTER, "__inject_test__", True)
 
@@ -195,7 +195,7 @@ def test_injects_higher_is_better_from_direction_map(monkeypatch) -> None:
 def test_self_declared_direction_not_overwritten(monkeypatch) -> None:
     """A class that declares its own ``higher_is_better`` is never clobbered
     by the injection, even if the map disagrees."""
-    from mriforge.core.metrics import metric_directions
+    from spectramr.core.metrics import metric_directions
 
     monkeypatch.setitem(metric_directions.METRIC_HIGHER_IS_BETTER, "__self_decl__", True)
 
@@ -389,7 +389,7 @@ class TestDirectionValidationUnconditional:
         central map for the test — to exercise the "mapped name" branch without
         colliding with a real production registration.
         """
-        from mriforge.core.metrics import metric_directions
+        from spectramr.core.metrics import metric_directions
 
         # The key is genuinely *present in* METRIC_HIGHER_IS_BETTER for the
         # duration of the test (monkeypatch restores the map afterward), so the
@@ -441,8 +441,8 @@ class TestWorkflowTagIntegrity:
         After a test called clear(), metrics_tagged(regime) still returned True
         for metrics that no longer existed.
         """
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         saved_metrics = dict(MetricsRegistry._metrics)
         saved_aliases = dict(MetricsRegistry._aliases)
@@ -479,7 +479,7 @@ class TestWorkflowTagIntegrity:
         """
         import pytest
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         with pytest.raises(TypeError, match="substring-match"):
 
@@ -493,7 +493,7 @@ class TestWorkflowTagIntegrity:
     def test_a_non_regime_member_in_workflows_is_rejected(self) -> None:
         import pytest
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         with pytest.raises(TypeError, match="non-Regime"):
 
@@ -516,18 +516,18 @@ class TestWorkflowsAccessor:
     """
 
     def test_declared_workflows_are_returned(self) -> None:
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.workflows("cbf_rmse") == frozenset({Regime.PERFUSION})
 
     def test_agnostic_metric_returns_none(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.workflows("psnr") is None
 
     def test_alias_resolves_to_the_canonical_tag(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.workflows("CBFRMSE") == MetricsRegistry.workflows(
             "cbf_rmse"
@@ -539,25 +539,25 @@ class TestWorkflowsAccessor:
         Returning a narrow set for an unrecognised key would let a typo
         silently delete a metric from a run.
         """
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.workflows("_no_such_metric") is None
 
     def test_applies_to_regime_matches_and_rejects(self) -> None:
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.applies_to_regime("cbf_rmse", Regime.PERFUSION)
         assert not MetricsRegistry.applies_to_regime("cbf_rmse", Regime.STRUCTURAL)
 
     def test_applies_to_regime_with_no_regime_is_a_no_op(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.applies_to_regime("cbf_rmse", None)
 
     def test_agnostic_metric_applies_to_every_regime(self) -> None:
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert all(MetricsRegistry.applies_to_regime("psnr", r) for r in Regime)
 

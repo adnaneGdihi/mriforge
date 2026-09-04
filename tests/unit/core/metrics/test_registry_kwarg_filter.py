@@ -4,15 +4,15 @@ The metrics computer constructs every metric as ``get(name, device=...)``. Metri
 whose ``__init__`` does not declare ``device`` (e.g. _QCRCBase) must not crash (the
 error was previously caught and stored as a silent NaN). The fix filters kwargs to
 the constructor signature; this regression guards it. Also guards that the
-quantitative subpackage registers via a plain ``import mriforge.core.metrics``.
+quantitative subpackage registers via a plain ``import spectramr.core.metrics``.
 """
 
 from __future__ import annotations
 
 import torch
 
-import mriforge.core.metrics  # noqa: F401 - triggers registration (incl. quantitative)
-from mriforge.core.metrics.registry import get_metric, register_metric
+import spectramr.core.metrics  # noqa: F401 - triggers registration (incl. quantitative)
+from spectramr.core.metrics.registry import get_metric, register_metric
 
 
 def test_quantitative_metrics_register_via_package_import() -> None:

@@ -8,7 +8,7 @@ one-line ``ddof=1`` and is exercised here by feeding >1 seed per step.
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import learning_curves
+from spectramr.infrastructure.reporting.plotters import learning_curves
 
 
 def _curves() -> pd.DataFrame:

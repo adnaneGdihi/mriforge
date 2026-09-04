@@ -1,4 +1,4 @@
-"""Unit tests for ``mriforge.infrastructure.calibration.pac_bayes_certificate``.
+"""Unit tests for ``spectramr.infrastructure.calibration.pac_bayes_certificate``.
 
 Covers:
 
@@ -19,7 +19,7 @@ import math
 
 import pytest
 
-from mriforge.infrastructure.calibration.pac_bayes_certificate import (
+from spectramr.infrastructure.calibration.pac_bayes_certificate import (
     PACBayesCertificate,
     PACBayesReport,
     mcallester_complexity_term,

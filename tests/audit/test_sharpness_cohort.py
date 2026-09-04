@@ -26,7 +26,7 @@ from typing import Any
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 from tests.utils.corpus import tracked_yamls
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -117,7 +117,7 @@ def test_hfen_loss_fires_and_is_differentiable() -> None:
     resolves the registry, constructs with the arm's own declared kwargs, and checks the
     term both discriminates a blurred input and produces a non-zero gradient.
     """
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     settings = TrainingSettings.from_yaml(str(_VARIANT))
     entry = _entries(settings, "image_losses")[0]
@@ -152,7 +152,7 @@ def test_hfen_does_not_double_bridge() -> None:
     twice — the #467 failure, which silently redirected 47% of that cohort's loss weight
     into the wrong domain. HFEN must not carry the flag.
     """
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     settings = TrainingSettings.from_yaml(str(_VARIANT))
     assert str(

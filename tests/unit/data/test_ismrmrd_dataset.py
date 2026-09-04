@@ -10,8 +10,8 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.config.schemas.data import IsmrmrdConfigSchema
-from mriforge.data.datasets.ismrmrd_dataset import (
+from spectramr.config.schemas.data import IsmrmrdConfigSchema
+from spectramr.data.datasets.ismrmrd_dataset import (
     IsmrmrdKspaceDataset,
     build_ismrmrd_index,
 )
@@ -90,7 +90,7 @@ def test_requires_enabled(tmp_path):
 
 
 def test_schema_defaults_and_allow_list():
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert DataConfigSchema().ismrmrd.enabled is False
     assert DataConfigSchema().ismrmrd.density_compensation == "iterative"
@@ -114,7 +114,7 @@ def test_schema_paired_trajectory_fields():
 
 
 def test_resolve_nominal_file(tmp_path):
-    from mriforge.data.datasets.ismrmrd_dataset import resolve_nominal_file
+    from spectramr.data.datasets.ismrmrd_dataset import resolve_nominal_file
 
     (tmp_path / "spiral_monitored.h5").write_text("x")
     nom = tmp_path / "spiral_nominal.h5"
@@ -158,7 +158,7 @@ def test_dry_iter_returns_length_correct_stub_subjects() -> None:
     """
     import torchio as tio
 
-    from mriforge.data.datasets.ismrmrd_dataset import IsmrmrdKspaceDataset
+    from spectramr.data.datasets.ismrmrd_dataset import IsmrmrdKspaceDataset
 
     ds = IsmrmrdKspaceDataset.__new__(IsmrmrdKspaceDataset)
     ds.index = ['a', 'b', 'c']

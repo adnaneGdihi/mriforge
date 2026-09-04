@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.latent_diffusion_generator import (
+from spectramr.models.generators.latent_diffusion_generator import (
     LatentDiffusionGenerator,
     LatentDiffusionGeneratorConfig,
 )

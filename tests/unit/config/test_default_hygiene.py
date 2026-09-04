@@ -30,12 +30,12 @@ from pydantic import BaseModel
 
 
 def _schema_classes() -> dict[str, type[BaseModel]]:
-    """Every Pydantic model reachable from ``mriforge.config.schemas``.
+    """Every Pydantic model reachable from ``spectramr.config.schemas``.
 
     Walked live rather than grepped: an inventory built by grep cannot prove
     completeness, which is the lesson from the 2,536-key schema audit (#539).
     """
-    import mriforge.config.schemas as schemas
+    import spectramr.config.schemas as schemas
 
     found: dict[str, type[BaseModel]] = {}
     for mod_info in pkgutil.walk_packages(schemas.__path__, schemas.__name__ + "."):
@@ -173,7 +173,7 @@ class TestNoTrueSubFlagUnderADisabledParent:
         revert would restore the hygiene violation AND silently re-enable
         corruption for any arm that omits the flag.
         """
-        from mriforge.config.schemas.physics import DigitalTwinConfig
+        from spectramr.config.schemas.physics import DigitalTwinConfig
 
         for field in ("enable_motion", "enable_b0", "enable_b1"):
             assert DigitalTwinConfig.model_fields[field].default is False, (

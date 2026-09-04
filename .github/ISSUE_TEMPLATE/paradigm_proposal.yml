@@ -35,7 +35,7 @@ body:
     id: novelty
     attributes:
       label: Novelty vs. existing strategies
-      description: How does this differ from the closest existing paradigm in `src/mriforge/infrastructure/training/strategies/`?
+      description: How does this differ from the closest existing paradigm in `src/spectramr/infrastructure/training/strategies/`?
     validations:
       required: true
 

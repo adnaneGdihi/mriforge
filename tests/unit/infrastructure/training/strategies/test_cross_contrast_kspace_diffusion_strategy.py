@@ -3,7 +3,7 @@
 ``CrossContrastKspaceDiffusionStrategy._compute_losses_impl`` used to
 ``return super()._compute_losses_impl(...)`` whenever ``batch['kspace_source']``
 or ``batch['kspace_target']`` was absent. **No dataset under
-``src/mriforge/data/`` emits either key**, so that fallthrough was not a rare
+``src/spectramr/data/`` emits either key**, so that fallthrough was not a rare
 edge case — it was the only path: the arm kept its cross-contrast name,
 smoke-passed, and trained the parent's vanilla reconstruction objective
 (facade, pitfall #16; silent fallback, pitfall #9).
@@ -31,10 +31,10 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.cross_contrast_kspace_diffusion_strategy import (
     CrossContrastKspaceDiffusionStrategy,
 )
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 

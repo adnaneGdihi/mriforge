@@ -30,7 +30,7 @@ import torch
 # ---------------------------------------------------------------------------
 tkbn = pytest.importorskip("torchkbnufft")
 
-from mriforge.infrastructure.physics.nufft_ops import (  # noqa: E402
+from spectramr.infrastructure.physics.nufft_ops import (  # noqa: E402
     GoldenAngleTrajectory,
     NUFFTForwardModel,
 )

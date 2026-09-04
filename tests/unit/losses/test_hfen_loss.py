@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.hfen_loss import HFENLoss
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.hfen_loss import HFENLoss
+from spectramr.models.losses.registry import create_loss
 
 B, C, H, W = 2, 1, 32, 32
 

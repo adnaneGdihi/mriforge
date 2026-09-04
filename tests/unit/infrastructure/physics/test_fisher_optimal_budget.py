@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fisher_optimal_budget import (
+from spectramr.infrastructure.physics.fisher_optimal_budget import (
     FisherOptimalBudgetAllocator,
     d_optimal_budget,
     d_optimal_logdet,

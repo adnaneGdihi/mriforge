@@ -17,13 +17,13 @@ from __future__ import annotations
 
 import os
 
-os.environ.setdefault("MRIFORGE_SUPPRESS_CLINICAL_WARNING", "1")
+os.environ.setdefault("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", "1")
 
 import pathlib
 
 import pytest
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 VF_DIR = pathlib.Path(__file__).resolve().parents[2] / "experiments" / "inprogress" / "vf"
 
@@ -160,7 +160,7 @@ def test_faithful_arms_wired_to_multi_acquisition(
 # ---------------------------------------------------------------------------
 import yaml  # noqa: E402
 
-from mriforge.infrastructure.validation.config_health_checker import (  # noqa: E402
+from spectramr.infrastructure.validation.config_health_checker import (  # noqa: E402
     ConfigHealthChecker,
 )
 from tests.utils.corpus import tracked_yamls  # noqa: E402
@@ -213,8 +213,8 @@ def test_subvoxel_arm_upsample_knob_is_spelled_for_its_backbone() -> None:
     """
     import inspect
 
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     stem = "exp_vf_01_subvoxel_superres_v2"

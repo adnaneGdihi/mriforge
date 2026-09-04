@@ -3,7 +3,7 @@
 ``src/data/metadata/index_builder.py:767`` used to open ``h5py.File``
 directly, violating CLAUDE.md pitfall #11 (data-loading SSOT). The
 read now goes through
-``mriforge.data.io_strategies.FastMRIH5Strategy.load_torchio_tensor``,
+``spectramr.data.io_strategies.FastMRIH5Strategy.load_torchio_tensor``,
 which preserves the manifest reader's key-precedence behaviour.
 """
 
@@ -20,18 +20,18 @@ REPO = Path(__file__).resolve().parents[3]
 def test_index_builder_does_not_import_h5py_directly() -> None:
     """The inline ``import h5py`` next to the manifest subject builder
     is the symptom we removed — the data-layer strategy owns h5py now."""
-    src = (REPO / "src/mriforge/data/metadata/index_builder.py").read_text()
+    src = (REPO / "src/spectramr/data/metadata/index_builder.py").read_text()
     builder_region = src.split("if fmt == \"h5\":")[1].split("elif fmt")[0]
     assert "import h5py" not in builder_region, (
-        "src/mriforge/data/metadata/index_builder.py reintroduced a direct h5py "
+        "src/spectramr/data/metadata/index_builder.py reintroduced a direct h5py "
         "import inside the manifest subject-builder. Route the read "
-        "through mriforge.data.io_strategies.FastMRIH5Strategy.load_torchio_tensor "
+        "through spectramr.data.io_strategies.FastMRIH5Strategy.load_torchio_tensor "
         "instead — audit 16 F3 / D17 / CLAUDE.md pitfall #11."
     )
 
 
 def test_index_builder_uses_canonical_strategy() -> None:
-    src = (REPO / "src/mriforge/data/metadata/index_builder.py").read_text()
+    src = (REPO / "src/spectramr/data/metadata/index_builder.py").read_text()
     assert "FastMRIH5Strategy.load_torchio_tensor" in src, (
         "index_builder no longer calls the canonical strategy helper. "
         "The manifest reader's H5 path must go through "
@@ -56,7 +56,7 @@ def test_load_torchio_tensor_key_precedence(
     """Each precedence key produces the right ``tio.ScalarImage``-shaped tensor."""
     import h5py
 
-    from mriforge.data.io_strategies import FastMRIH5Strategy
+    from spectramr.data.io_strategies import FastMRIH5Strategy
 
     h5_path = tmp_path / f"{dataset_key}.h5"
     with h5py.File(h5_path, "w") as f:
@@ -71,7 +71,7 @@ def test_load_torchio_tensor_falls_back_to_first_key(tmp_path: Path) -> None:
     key in the file — matching the pre-migration behaviour."""
     import h5py
 
-    from mriforge.data.io_strategies import FastMRIH5Strategy
+    from spectramr.data.io_strategies import FastMRIH5Strategy
 
     h5_path = tmp_path / "unknown.h5"
     with h5py.File(h5_path, "w") as f:
@@ -88,7 +88,7 @@ def test_load_torchio_tensor_kspace_wins_over_reconstruction_rss(
     is chosen — matching the pre-migration key precedence."""
     import h5py
 
-    from mriforge.data.io_strategies import FastMRIH5Strategy
+    from spectramr.data.io_strategies import FastMRIH5Strategy
 
     h5_path = tmp_path / "mixed.h5"
     with h5py.File(h5_path, "w") as f:

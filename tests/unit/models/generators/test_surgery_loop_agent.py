@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.surgery_loop_agent import (
+from spectramr.models.generators.surgery_loop_agent import (
     ActionPredictor,
     RewardModel,
     StateEncoder,

@@ -1,6 +1,6 @@
 """Tests for ``LossScheduleController``.
 
-Targets ``mriforge.infrastructure.training.loss_schedule_controller`` — the
+Targets ``spectramr.infrastructure.training.loss_schedule_controller`` — the
 runtime that turns a ``loss_schedule:`` block into per-step ``{term: weight}``
 overrides. Covers each trigger kind, each action kind, ramp parity with
 ``LossScheduler``, and the ``monitor_after`` rollback/hold/continue paths.
@@ -12,12 +12,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.loss import LossConfigSchema
-from mriforge.config.schemas.loss_schedule import LossScheduleConfigSchema
-from mriforge.infrastructure.training.loss_schedule_controller import (
+from spectramr.config.schemas.loss import LossConfigSchema
+from spectramr.config.schemas.loss_schedule import LossScheduleConfigSchema
+from spectramr.infrastructure.training.loss_schedule_controller import (
     LossScheduleController,
 )
-from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
 
 def _ctrl(rules, loss_config=None) -> LossScheduleController:

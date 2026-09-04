@@ -14,10 +14,10 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.fisher_rao_geodesic_loss import (
+from spectramr.models.losses.fisher_rao_geodesic_loss import (
     FisherRaoGeodesicLoss,
 )
-from mriforge.models.losses.registry import LossRegistry, create_loss
+from spectramr.models.losses.registry import LossRegistry, create_loss
 
 
 def _img(mean: float, std: float, h: int = 16, w: int = 16) -> torch.Tensor:
@@ -93,7 +93,7 @@ class TestFisherRaoGeometry:
 
     def test_primitive_is_exercised(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """fisher_norm from the primitive must be called during forward."""
-        import mriforge.models.losses.fisher_rao_geodesic_loss as mod
+        import spectramr.models.losses.fisher_rao_geodesic_loss as mod
 
         calls = {"n": 0}
         real = mod.fisher_norm
@@ -109,7 +109,7 @@ class TestFisherRaoGeometry:
     def test_metric_uses_fisher_information_primitive(
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        import mriforge.models.losses.fisher_rao_geodesic_loss as mod
+        import spectramr.models.losses.fisher_rao_geodesic_loss as mod
 
         calls = {"n": 0}
         real = mod.fisher_information_from_jacobian

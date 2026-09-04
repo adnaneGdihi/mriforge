@@ -8,7 +8,7 @@ from types import SimpleNamespace
 
 from tests.utils.config_block_stub import block_stub
 
-from mriforge.infrastructure.training.strategies.mixins.optimizer import OptimizerMixin
+from spectramr.infrastructure.training.strategies.mixins.optimizer import OptimizerMixin
 
 
 def _mixin(clip_method: str) -> OptimizerMixin:

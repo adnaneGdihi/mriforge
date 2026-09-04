@@ -11,7 +11,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.sinkhorn_sfc import (  # noqa: E402
+from spectramr.models.blocks.sinkhorn_sfc import (  # noqa: E402
     SinkhornSFCLinearizer,
     sinkhorn,
 )
@@ -144,14 +144,14 @@ def test_reverse_wrong_ndim_raises() -> None:
 def test_sinkhorn_non_square_raises() -> None:
     """Non-square log_alpha raises ValueError."""
     with pytest.raises(ValueError, match="square"):
-        from mriforge.models.blocks.sinkhorn_sfc import sinkhorn
+        from spectramr.models.blocks.sinkhorn_sfc import sinkhorn
         sinkhorn(torch.randn(3, 4))
 
 
 def test_sinkhorn_zero_tau_raises() -> None:
     """tau <= 0 raises ValueError."""
     with pytest.raises(ValueError, match="tau"):
-        from mriforge.models.blocks.sinkhorn_sfc import sinkhorn
+        from spectramr.models.blocks.sinkhorn_sfc import sinkhorn
         sinkhorn(torch.randn(4, 4), tau=0.0)
 
 

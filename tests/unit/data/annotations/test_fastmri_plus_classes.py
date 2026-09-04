@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.annotations.fastmri_plus_classes import (
+from spectramr.data.annotations.fastmri_plus_classes import (
     NON_PARENCHYMAL_GROUPS,
     LesionGroup,
     UnmappedLabelError,

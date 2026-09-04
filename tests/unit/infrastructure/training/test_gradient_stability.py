@@ -17,7 +17,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.gradient_stability import (
+from spectramr.infrastructure.training.gradient_stability import (
     EnhancedLRScheduler,
     GradientStabilityManager,
     Lookahead,

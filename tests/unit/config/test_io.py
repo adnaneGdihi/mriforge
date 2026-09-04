@@ -1,4 +1,4 @@
-"""Tests for ``mriforge.config.io`` — raw YAML I/O for build-time tools.
+"""Tests for ``spectramr.config.io`` — raw YAML I/O for build-time tools.
 
 This helper is the SSOT-compliant escape valve: legitimate build-time
 code paths (ablation generation, HPO winner-config materialisation)
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.io import read_yaml_dict, write_yaml_dict
+from spectramr.config.io import read_yaml_dict, write_yaml_dict
 
 
 def test_read_yaml_dict_returns_dict(tmp_path: Path) -> None:

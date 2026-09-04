@@ -11,7 +11,7 @@ Covers the two config-hygiene guarantees added 2026-05-28:
   (Pydantic's ``Field(deprecated=...)`` marker alone does not).
 
 NOTE on the strict warning policy: ``pyproject.toml`` promotes any
-``DeprecationWarning`` raised by ``mriforge.*`` to an error during tests, so
+``DeprecationWarning`` raised by ``spectramr.*`` to an error during tests, so
 the H3 tests MUST consume the warning via ``pytest.warns(DeprecationWarning)``
 (which it does) — otherwise the warning would fail the run.
 """
@@ -22,13 +22,13 @@ from typing import ClassVar
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     ACCEPTED_CONFIG_VERSIONS,
     CANONICAL_CONFIG_VERSION,
     LEGACY_CONFIG_VERSIONS,
 )
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema
+from spectramr.config.settings import TrainingSettings
 
 #: Tiers that were once declarable and are now unloadable. They are NOT in
 #: ``LEGACY_CONFIG_VERSIONS`` -- that set was emptied when the fold was deleted
@@ -123,7 +123,7 @@ def test_apply_overrides_raises_on_non_dict_traversal():
     existing scalar node used to silently replace it with ``{}`` — destroying
     the config subtree on typo'd paths. On permissive fields the Pydantic
     re-validation cannot catch the loss, so the traversal itself must raise."""
-    from mriforge.main import apply_overrides
+    from spectramr.main import apply_overrides
 
     settings = TrainingSettings(**_minimal_config())
     with pytest.raises(ValueError, match="non-dict config node"):
@@ -133,7 +133,7 @@ def test_apply_overrides_raises_on_non_dict_traversal():
 def test_apply_overrides_still_builds_absent_paths():
     """Building a nested path through absent/None nodes remains legal —
     only *existing non-dict* nodes are protected."""
-    from mriforge.main import apply_overrides
+    from spectramr.main import apply_overrides
 
     settings = TrainingSettings(**_minimal_config())
     updated = apply_overrides(settings, ["optimization.lr_scheduler_kwargs.step_size=5"])
@@ -410,7 +410,7 @@ def test_disabled_plugins_with_paths_logs_skip(caplog):
 
     cfg = _minimal_config()  # model_type="unet" — a real in-tree name
     cfg["plugins"] = {"enabled": False, "paths": ["mypkg.never.imported"]}
-    with caplog.at_level(logging.INFO, logger="mriforge.config.settings"):
+    with caplog.at_level(logging.INFO, logger="spectramr.config.settings"):
         TrainingSettings.settings_from_dict(cfg)
     assert "plugins.enabled is false" in caplog.text, (
         "expected an INFO log surfacing the disabled-but-populated plugins block"
@@ -470,14 +470,14 @@ def test_invalid_model_type_names_the_failed_import(monkeypatch, tmp_path) -> No
 
     Regression for the CI yaml-audit failure of 2026-07-12: the audit lane installed
     no torchvision, so `vf_reconstruction_generators` never imported, so the registry
-    held 171 models instead of 588, so `mriforge audit` rejected `neural_complex_sum`
+    held 171 models instead of 588, so `spectramr audit` rejected `neural_complex_sum`
     -- a model that exists and carries @register_model -- as an "Invalid model_type".
     The error must distinguish "you typed a bad name" from "the catalog is short".
     """
-    import mriforge.models.init_registry as init_registry
-    from mriforge.config.settings import TrainingSettings
+    import spectramr.models.init_registry as init_registry
+    from spectramr.config.settings import TrainingSettings
 
-    victim = "mriforge.models.generators.vf_reconstruction_generators"
+    victim = "spectramr.models.generators.vf_reconstruction_generators"
     monkeypatch.setitem(
         init_registry._IMPORT_FAILURES, victim, "ImportError: No module named 'torchvision'"
     )
@@ -516,7 +516,7 @@ class TestExecutionLedgerIntegration:
 
     @pytest.fixture(autouse=True)
     def _disarm(self):
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ExecutionLedger.reset()
         yield
@@ -524,7 +524,7 @@ class TestExecutionLedgerIntegration:
 
     def test_unarmed_load_records_nothing(self):
         """Audit, tests and notebooks must pay only one ContextVar read."""
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         TrainingSettings.settings_from_dict(copy.deepcopy(self.BASE))
         assert ExecutionLedger.recording() is False
@@ -532,7 +532,7 @@ class TestExecutionLedgerIntegration:
 
     def test_clean_config_records_no_dropped_key(self):
         """CONTROL: proves the diff is not simply always firing."""
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         ledger = ExecutionLedger.begin_run(source="control")
         TrainingSettings.settings_from_dict(copy.deepcopy(self.BASE))
@@ -551,7 +551,7 @@ class TestExecutionLedgerIntegration:
         declare is discarded while the YAML still shows it. That is exactly how
         ``min_center_fraction`` went missing and made the #534 ladder fix inert.
         """
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         data = copy.deepcopy(self.BASE)
         # `undersampling:`, the canonical block name since phase 11 renamed the
@@ -590,7 +590,7 @@ class TestExecutionLedgerIntegration:
         any arm still writing the legacy spelling. Flip this assertion when the
         walker learns to follow root renames.
         """
-        from mriforge.core.execution_ledger import ExecutionLedger, SubstitutionClass
+        from spectramr.core.execution_ledger import ExecutionLedger, SubstitutionClass
 
         data = copy.deepcopy(self.BASE)
         data["acceleration"] = {"center_fraction": 0.08, "min_centre_fraction": 0.02}
@@ -614,7 +614,7 @@ class TestExecutionLedgerIntegration:
         Itemising them would bury the handful of real findings, and the resolved
         value is already visible in ``resolved_config.json`` regardless.
         """
-        from mriforge.core.execution_ledger import ExecutionLedger
+        from spectramr.core.execution_ledger import ExecutionLedger
 
         ledger = ExecutionLedger.begin_run(source="defaults")
         TrainingSettings.settings_from_dict(copy.deepcopy(self.BASE))
@@ -626,7 +626,7 @@ class TestExecutionLedgerIntegration:
 
     def test_a_diff_failure_never_breaks_the_config_load(self, monkeypatch):
         """Instrumentation must not be able to stop a run from starting."""
-        from mriforge.core import execution_ledger as mod
+        from spectramr.core import execution_ledger as mod
 
         ledger = mod.ExecutionLedger.begin_run(source="boom")
 
@@ -674,7 +674,7 @@ class TestConfigVersionRetirement:
 
     def test_the_canonical_version_still_loads(self, tmp_path):
         """Anti-vacuity: refusal must be about the version, not the fixture."""
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
 
         settings = TrainingSettings.from_yaml(
             self._write(tmp_path, CANONICAL_CONFIG_VERSION)
@@ -683,8 +683,8 @@ class TestConfigVersionRetirement:
 
     def test_no_version_fold_record_is_emitted_any_more(self, tmp_path):
         """Nothing folds, so nothing may claim to have folded."""
-        from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-        from mriforge.core.execution_ledger import (
+        from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+        from spectramr.core.execution_ledger import (
             ExecutionLedger,
             SubstitutionClass,
         )
@@ -704,16 +704,16 @@ def test_training_settings_docstring_does_not_present_legacy_as_current() -> Non
     """The class docstring said "Schema Version: 6.0 / 6.1 (both accepted)".
 
     Accepted is not current. 6.0/6.1 load ONLY through the fold, which rewrites
-    them before anything downstream sees them, and `mriforge audit` reports a
+    them before anything downstream sees them, and `spectramr audit` reports a
     legacy declaration as an error. A docstring that presents them as the
     schema version is the stale-spelling class this repo keeps hitting: it never
     breaks a config, so nothing forces it to be corrected.
     """
-    from mriforge.config.schemas.base import (
+    from spectramr.config.schemas.base import (
         CANONICAL_CONFIG_VERSION,
         LEGACY_CONFIG_VERSIONS,
     )
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     doc = TrainingSettings.__doc__ or ""
     assert "CANONICAL_CONFIG_VERSION" in doc, (
@@ -830,3 +830,44 @@ class TestOverrideProvenancePrivateAttr:
         settings = TrainingSettings(**_minimal_config())
         settings._override_paths = ("training.max_iterations",)
         assert settings._override_paths == ("training.max_iterations",)
+
+
+class TestValidationEnsembleNeedsAStochasticSampler:
+    """The DECLARED half of the ensemble guard: ``validation.sampling.ensemble_samples > 1``
+    against ``model.model_kwargs.sampler_sigma`` (the strategy re-checks the resolved
+    generator). Planted refusals first."""
+
+    @staticmethod
+    def _cfg(sigma=None, n: int = 2) -> dict:
+        cfg = _minimal_config()
+        cfg["validation"] = {"sampling": {"enable_multistep_cold": True, "ensemble_samples": n}}
+        if sigma is not None:
+            cfg["model"]["model_kwargs"] = {"sampler_sigma": sigma}
+        return cfg
+
+    def test_sigma_zero_is_refused(self) -> None:
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError, match="sampler_sigma"):
+            TrainingSettings(**self._cfg(sigma=0.0))
+
+    def test_an_absent_sigma_is_refused(self) -> None:
+        """Absent resolves to the deterministic default, so it is the same facade."""
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError, match="sampler_sigma"):
+            TrainingSettings(**self._cfg())
+
+    def test_a_non_numeric_sigma_is_refused(self) -> None:
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError, match="not a number"):
+            TrainingSettings(**self._cfg(sigma="loud"))
+
+    def test_a_positive_sigma_loads(self) -> None:
+        settings = TrainingSettings(**self._cfg(sigma=0.05))
+        assert settings.validation.sampling.ensemble_samples == 2
+
+    def test_a_single_sample_validation_never_reads_sigma(self) -> None:
+        settings = TrainingSettings(**self._cfg(n=1))
+        assert settings.validation.sampling.ensemble_samples == 1

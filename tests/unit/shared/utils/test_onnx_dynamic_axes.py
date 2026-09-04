@@ -1,4 +1,4 @@
-"""Unit tests for :mod:`mriforge.shared.utils.onnx_dynamic_axes`.
+"""Unit tests for :mod:`spectramr.shared.utils.onnx_dynamic_axes`.
 
 The module is a thin helper for ONNX export: given a sample input /
 output shape, produce a ``dynamic_axes`` dict for ``torch.onnx.export``.
@@ -24,7 +24,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.shared.utils.onnx_dynamic_axes import (
+from spectramr.shared.utils.onnx_dynamic_axes import (
     _axes_for_shape,
     build_dynamic_axes,
     extract_tensor_shape,

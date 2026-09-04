@@ -64,43 +64,43 @@ _PATTERNS = [
 
 _ALLOWLIST: dict[str, str] = {
     # Physics layer: loads coil maps / sampling patterns (config-like, not Datasets).
-    "src/mriforge/infrastructure/physics/coil_sensitivity.py": "loads coil-sensitivity maps as physics primitive",
-    "src/mriforge/infrastructure/physics/integration.py": "loads pre-computed coil maps for sense_forward",
-    "src/mriforge/infrastructure/physics/m4raw_pseudo_gt.py": "loads m4raw multi-rep pseudo-GT (physics helper)",
-    "src/mriforge/infrastructure/physics/sampling.py": "loads externally-provided sampling masks",
+    "src/spectramr/infrastructure/physics/coil_sensitivity.py": "loads coil-sensitivity maps as physics primitive",
+    "src/spectramr/infrastructure/physics/integration.py": "loads pre-computed coil maps for sense_forward",
+    "src/spectramr/infrastructure/physics/m4raw_pseudo_gt.py": "loads m4raw multi-rep pseudo-GT (physics helper)",
+    "src/spectramr/infrastructure/physics/sampling.py": "loads externally-provided sampling masks",
 
     # IO adapter layer: bottom-of-stack primitives the data layer composes from.
-    "src/mriforge/infrastructure/io/adapters.py": "low-level IO primitives consumed by src/data/",
+    "src/spectramr/infrastructure/io/adapters.py": "low-level IO primitives consumed by src/data/",
 
     # Domain helpers using optional imports.
-    "src/mriforge/domain/entities/optional_imports.py": "guarded h5py.File for optional dependency",
-    "src/mriforge/domain/entities/entities_3d.py": "Sphinx doctest example (>>> nib.load) — not executable code",
+    "src/spectramr/domain/entities/optional_imports.py": "guarded h5py.File for optional dependency",
+    "src/spectramr/domain/entities/entities_3d.py": "Sphinx doctest example (>>> nib.load) — not executable code",
 
     # (Checkpoint service uses pickle.loads on bytes, not pickle.load on a
     # file handle — not matched by the current patterns. No allowlist entry
     # needed.)
 
     # Reporting plotters operate on already-trained-artifacts (post-hoc).
-    "src/mriforge/infrastructure/reporting/plotters/failure_gallery.py": "loads sample artifacts for failure-gallery reports",
+    "src/spectramr/infrastructure/reporting/plotters/failure_gallery.py": "loads sample artifacts for failure-gallery reports",
 
     # CLI tools / utilities — not part of the training pipeline.
-    "src/mriforge/tools/cluster_explorer.py": "CLI utility for cluster filesystem inspection",
-    "src/mriforge/tools/inspect_cluster_data.py": "CLI utility for cluster filesystem inspection",
-    "src/mriforge/tools/index_datasets.py": "CLI utility that BUILDS the manifests src/data/ consumes",
-    "src/mriforge/shared/utils/preprocessing_qc.py": "QC tool — operates on artifacts post-preprocessing",
-    "src/mriforge/cli/audit_plan_novel_cli.py": "ad-hoc audit CLI: loads precomputed sample tensors / scores (not training data)",
+    "src/spectramr/tools/cluster_explorer.py": "CLI utility for cluster filesystem inspection",
+    "src/spectramr/tools/inspect_cluster_data.py": "CLI utility for cluster filesystem inspection",
+    "src/spectramr/tools/index_datasets.py": "CLI utility that BUILDS the manifests src/data/ consumes",
+    "src/spectramr/shared/utils/preprocessing_qc.py": "QC tool — operates on artifacts post-preprocessing",
+    "src/spectramr/cli/audit_plan_novel_cli.py": "ad-hoc audit CLI: loads precomputed sample tensors / scores (not training data)",
 
     # Diagnostic block — loads pre-trained statistical model, not data.
-    "src/mriforge/models/blocks/metric_sfc.py": "loads pre-trained SFC metric model parameters",
+    "src/spectramr/models/blocks/metric_sfc.py": "loads pre-trained SFC metric model parameters",
 
     # ─── Phase 1 (LANDED) — campaign_evaluator's data sites are now ───
     # routed through src/data/builders/eval_dataset_builder.py. Only the
     # pkl manifest load remains, which is config per Amendment C of the
     # data-layer unification plan.
-    "src/mriforge/infrastructure/orchestration/campaign_evaluator.py": "pickle.load on manifest (paths/config, not MRI data — Amendment C)",
+    "src/spectramr/infrastructure/orchestration/campaign_evaluator.py": "pickle.load on manifest (paths/config, not MRI data — Amendment C)",
 
     # ─── Phase-2 target — inference data path will route through SSOT ───
-    "src/mriforge/pipelines/infer.py": "phase2_target: inference data path to route through DataPipelineDirector",
+    "src/spectramr/pipelines/infer.py": "phase2_target: inference data path to route through DataPipelineDirector",
 }
 
 
@@ -117,7 +117,7 @@ def _grep_pattern(pattern: str) -> list[Violation]:
                 "-E",
                 pattern,
                 "--",
-                "src/mriforge/",
+                "src/spectramr/",
             ],
             capture_output=True,
             text=True,
@@ -133,7 +133,7 @@ def _grep_pattern(pattern: str) -> list[Violation]:
             continue
         path = line.split(":", 1)[0]
         # Filter out anything that lives under src/data/ — that's the SSOT.
-        if path.startswith("src/mriforge/data/"):
+        if path.startswith("src/spectramr/data/"):
             continue
         # Filter out tests directory (mirrored grep often misses but be safe).
         if "/tests/" in path or path.startswith("tests/"):
@@ -153,7 +153,7 @@ def test_no_unallowlisted_data_loading(pattern: str) -> None:
     if unallowed:
         msg_lines = [
             f"Forbidden data-load pattern {pattern!r} appears outside "
-            f"src/mriforge/data/ in unallowlisted files (CLAUDE.md #11):",
+            f"src/spectramr/data/ in unallowlisted files (CLAUDE.md #11):",
         ]
         for h in unallowed:
             msg_lines.append(f"  - {h.path}")

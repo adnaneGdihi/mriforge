@@ -53,7 +53,7 @@ Deliberately absent. An uncommitted arm cannot be reviewed, reproduced, audited
 or run on the cluster by anyone but its author, so a corpus-wide invariant has
 no business asserting over it -- and an ``include_untracked=`` switch would be a
 knob with no validator and no provenance stamp (pitfall #15). Checking a single
-work-in-progress arm is already served by ``mriforge audit <file>``.
+work-in-progress arm is already served by ``spectramr audit <file>``.
 
 Two absences of git, answered differently
 -----------------------------------------
@@ -110,7 +110,7 @@ def repo_root() -> Path:
 
     Asks git rather than counting ``parents[n]`` -- a hardcoded index is the
     single most repeated defect in this suite's history (the ``src`` ->
-    ``src/mriforge`` refactor invalidated it in four separate files, and a stale
+    ``src/spectramr`` refactor invalidated it in four separate files, and a stale
     index is *silent* where a directory is globbed, because a glob over a
     non-existent directory returns nothing and the test passes by scanning zero
     files). ``--show-toplevel`` is also correct inside a linked worktree, where

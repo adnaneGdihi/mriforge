@@ -10,7 +10,7 @@ class TestHomomorphicBiasFieldDecomposition:
 
     @pytest.fixture
     def make_transform(self):
-        from mriforge.data.transforms.homomorphic_bias_field import (
+        from spectramr.data.transforms.homomorphic_bias_field import (
             HomomorphicBiasFieldDecomposition,
         )
 
@@ -60,7 +60,7 @@ class TestHomomorphicBiasFieldDecomposition:
 
     def test_reconstruction_invertibility(self, make_transform, magnitude_subject):
         """log_anatomy + log_bias should reconstruct original (in log domain)."""
-        from mriforge.data.transforms.homomorphic_bias_field import (
+        from spectramr.data.transforms.homomorphic_bias_field import (
             reconstruct_from_log_components,
         )
 

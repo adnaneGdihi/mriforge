@@ -15,7 +15,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
+from spectramr.infrastructure.training.utils.kspace_masks import KSpaceMaskGenerator
 
 
 def test_default_linear_pattern_builds_without_silent_fallback():

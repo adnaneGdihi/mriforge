@@ -9,7 +9,7 @@ Validates:
 
 import torch
 
-from mriforge.models.blocks.attention import CrossContrastOLMPA
+from spectramr.models.blocks.attention import CrossContrastOLMPA
 
 
 class TestCrossContrastOLMPA:

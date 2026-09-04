@@ -1,7 +1,7 @@
 """Tests for the cross-dataset overview figures."""
 from __future__ import annotations
 
-from mriforge.data.eda.overview import render_overview
+from spectramr.data.eda.overview import render_overview
 
 
 def test_render_overview_writes_landscape_and_coverage(tmp_path):

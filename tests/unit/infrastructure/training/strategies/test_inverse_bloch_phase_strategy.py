@@ -1,6 +1,6 @@
 """Tests for ``InverseBlochPhaseStrategy``.
 
-Targets ``mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy``.
+Targets ``spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy``.
 
 The strategy is a multi-parameter mapper plus a Tikhonov smoothness prior on a
 background-removed ``phase_residual`` map. "Inverse-Bloch" is a legacy label:
@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy import (
+from spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy import (
     InverseBlochPhaseStrategy,
 )
 
@@ -42,7 +42,7 @@ def test_docstrings_disclaim_inverse_bloch_forward_model() -> None:
         (InverseBlochPhaseStrategy.__doc__ or "")
         + (
             __import__(
-                "mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy",
+                "spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy",
                 fromlist=["x"],
             ).__doc__
             or ""
@@ -58,7 +58,7 @@ def test_docstrings_disclaim_inverse_bloch_forward_model() -> None:
 
 def _shell(monkeypatch, lam):
     """Strategy shell with the parent loss stubbed, to isolate the guard."""
-    import mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy as m
+    import spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy as m
 
     s = object.__new__(InverseBlochPhaseStrategy)
     s.device = torch.device("cpu")

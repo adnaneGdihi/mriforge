@@ -5,8 +5,8 @@ from pathlib import Path
 
 import torch
 
-from mriforge.data.eda import plots, probes
-from mriforge.data.eda.catalog import DatasetEntry
+from spectramr.data.eda import plots, probes
+from spectramr.data.eda.catalog import DatasetEntry
 
 
 def _entry(modality="kspace", tier="present"):
@@ -108,7 +108,7 @@ def test_render_temporal_strip_writes_png(tmp_path):
     """The temporal suite: a row of sampled frames + a temporal-std panel → 61_temporal_strip.png."""
     import torch
 
-    from mriforge.data.eda import plots
+    from spectramr.data.eda import plots
 
     frames = [torch.rand(16, 20) for _ in range(5)]
     out = plots.render_temporal_strip(frames, tmp_path)

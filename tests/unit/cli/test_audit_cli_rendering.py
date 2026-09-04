@@ -3,7 +3,7 @@
 Audit anchor: TODO/audit/smoke_audit_20260516.md §F-COLOR.
 
 The round-11 retrofit (2026-05-17) added a rich ``Console`` to the
-audit CLI so ``python -m mriforge.cli audit foo.yaml`` is colored on a
+audit CLI so ``python -m spectramr.cli audit foo.yaml`` is colored on a
 TTY. The hard invariant downstream parsers depend on: **when stdout
 is NOT a TTY, the output must contain ZERO ANSI escape codes** and
 be byte-identical to the pre-round-11 plain-text rendering.
@@ -38,7 +38,7 @@ ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 
 
 def _audit(*extra_args: str, force_color: bool = False) -> subprocess.CompletedProcess:
-    """Run ``python -m mriforge.cli audit <yaml>`` as a subprocess (always non-TTY here)."""
+    """Run ``python -m spectramr.cli audit <yaml>`` as a subprocess (always non-TTY here)."""
     env = os.environ.copy()
     if force_color:
         env["FORCE_COLOR"] = "1"
@@ -50,7 +50,7 @@ def _audit(*extra_args: str, force_color: bool = False) -> subprocess.CompletedP
         # disables ANSI even when a downstream lib forces TTY.
         env["NO_COLOR"] = "1"
     return subprocess.run(
-        ["python", "-m", "mriforge.cli", "audit", str(EXAMPLE_YAML), *extra_args],
+        ["python", "-m", "spectramr.cli", "audit", str(EXAMPLE_YAML), *extra_args],
         capture_output=True, text=True, cwd=str(REPO_ROOT),
         env=env, timeout=120,
     )
@@ -61,7 +61,7 @@ def _audit(*extra_args: str, force_color: bool = False) -> subprocess.CompletedP
 
 def test_health_check_result_has_rich_method() -> None:
     """The __rich__ method is the contract rich-console relies on."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         HealthCheckResult,
     )
     r = HealthCheckResult(
@@ -76,7 +76,7 @@ def test_health_check_result_has_rich_method() -> None:
 
 def test_health_check_result_rich_returns_styled_text() -> None:
     """``__rich__`` returns a rich ``Text`` with at least one styled span."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         HealthCheckResult,
     )
     from rich.text import Text
@@ -100,7 +100,7 @@ def test_health_check_result_rich_returns_styled_text() -> None:
 
 def test_health_check_result_rich_pass_uses_green_icon() -> None:
     """Pass results render with a green ✅ icon."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         HealthCheckResult,
     )
     r = HealthCheckResult(passed=True, check_name="x", message="ok")
@@ -123,7 +123,7 @@ def test_health_check_result_rich_pass_uses_green_icon() -> None:
 
 def test_health_check_result_rich_error_uses_red_icon() -> None:
     """Error results render with a red ❌ icon."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         HealthCheckResult,
     )
     r = HealthCheckResult(
@@ -145,11 +145,11 @@ def test_health_check_result_rich_error_uses_red_icon() -> None:
 
 
 def test_console_module_exports_shared_console() -> None:
-    """``mriforge.cli._rendering`` must export a module-level ``console``."""
-    from mriforge.cli._rendering import console
+    """``spectramr.cli._rendering`` must export a module-level ``console``."""
+    from spectramr.cli._rendering import console
     from rich.console import Console
     assert isinstance(console, Console), (
-        "F-COLOR: mriforge.cli._rendering.console must be a rich.Console "
+        "F-COLOR: spectramr.cli._rendering.console must be a rich.Console "
         "instance. Without it, the audit CLI can't reliably emit "
         "ANSI markup."
     )
@@ -157,7 +157,7 @@ def test_console_module_exports_shared_console() -> None:
 
 def test_console_soft_wrap_enabled() -> None:
     """``soft_wrap=True`` so long messages don't get hard-broken (grep stays usable)."""
-    from mriforge.cli._rendering import console
+    from spectramr.cli._rendering import console
     assert getattr(console, "soft_wrap", False) is True, (
         "Console must have soft_wrap=True; otherwise rich inserts "
         "hard line breaks when the terminal is narrow and breaks "

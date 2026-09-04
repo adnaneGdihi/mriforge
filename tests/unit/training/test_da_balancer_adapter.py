@@ -20,10 +20,10 @@ def da_strategy_proto():
     via inheritance — the adapter only depends on ``_unpack_batch`` from
     the BatchPreparationMixin which itself just dispatches on dict shape.
     """
-    from mriforge.infrastructure.training.strategies.domain_adaptation import (
+    from spectramr.infrastructure.training.strategies.domain_adaptation import (
         DomainAdaptationTrainingStrategy,
     )
-    from mriforge.infrastructure.training.strategies.mixins.batch_preparation import (
+    from spectramr.infrastructure.training.strategies.mixins.batch_preparation import (
         BatchPreparationMixin,
     )
 

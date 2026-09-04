@@ -19,8 +19,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting import plotters
-from mriforge.infrastructure.reporting.plotters import (
+from spectramr.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting.plotters import (
     SKIP_NO_DATA,
     SKIP_RAISED,
     SKIP_UNREGISTERED,

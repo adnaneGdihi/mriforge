@@ -9,11 +9,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.init_registry import populate_model_registry
+from spectramr.models.init_registry import populate_model_registry
 
 populate_model_registry()
 
-from mriforge.models.generators.vf_field_generators import (
+from spectramr.models.generators.vf_field_generators import (
     AFIRatioCNN,
     BlochSiegertAlgebraicGenerator,
     BSSFPPeakFinder,
@@ -163,7 +163,7 @@ class TestGraphCutUnwrapCapabilityContract:
     """
 
     def test_the_declared_fields_match_what_forward_actually_does(self) -> None:
-        from mriforge.models.registry import get_model_capabilities
+        from spectramr.models.registry import get_model_capabilities
 
         caps = get_model_capabilities("graph_cut_unwrap")
         assert caps is not None
@@ -194,11 +194,11 @@ class TestGraphCutUnwrapCapabilityContract:
         beat an arm's own declaration (#986). The strategy IFFTs to image before
         this backbone runs, so the static data->model domain check does not apply.
         """
-        from mriforge.infrastructure.training.utils.domain_inference import (
+        from spectramr.infrastructure.training.utils.domain_inference import (
             KNOWN_IMAGE_OUTPUT_MODELS,
             KNOWN_KSPACE_OUTPUT_MODELS,
         )
-        from mriforge.models.registry import get_model_capabilities
+        from spectramr.models.registry import get_model_capabilities
 
         caps = get_model_capabilities("graph_cut_unwrap")
         assert caps.input_domain is None
@@ -216,7 +216,7 @@ class TestGraphCutUnwrapCapabilityContract:
         instead of magnitudes. Contrast ``bssfp_b0_regressor``, whose output IS a
         field in Hz and which therefore DOES declare it.
         """
-        from mriforge.models.registry import get_model_capabilities
+        from spectramr.models.registry import get_model_capabilities
 
         assert get_model_capabilities("graph_cut_unwrap").output_field_units is None
         assert get_model_capabilities("bssfp_b0_regressor").output_field_units == "Hz"

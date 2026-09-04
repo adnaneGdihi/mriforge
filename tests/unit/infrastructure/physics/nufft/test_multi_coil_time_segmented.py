@@ -1,6 +1,6 @@
 """Coverage tests for the multi-coil time-segmented MFI NUFFT wrapper.
 
-Targets :mod:`mriforge.infrastructure.physics.nufft.multi_coil_time_segmented`.
+Targets :mod:`spectramr.infrastructure.physics.nufft.multi_coil_time_segmented`.
 
 ``MultiCoilTimeSegmentedNUFFT`` wraps the single-coil
 :class:`TimeSegmentedNUFFT` across an array of coil sensitivities:
@@ -19,7 +19,7 @@ import torch
 
 pytest.importorskip("torchkbnufft")
 
-from mriforge.infrastructure.physics.nufft.multi_coil_time_segmented import (  # noqa: E402
+from spectramr.infrastructure.physics.nufft.multi_coil_time_segmented import (  # noqa: E402
     MultiCoilTimeSegmentedNUFFT,
 )
 

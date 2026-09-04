@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.losses.physics_losses import DifferentiableFourierBridge
+from spectramr.models.losses.physics_losses import DifferentiableFourierBridge
 
 
 def test_differentiable_fourier_bridge_gradients():

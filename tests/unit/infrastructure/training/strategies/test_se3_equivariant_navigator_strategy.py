@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.training.strategies.se3_equivariant_navigator_strategy import (
+from spectramr.infrastructure.training.strategies.se3_equivariant_navigator_strategy import (
     SE3EquivariantNavigatorStrategy,
 )
 
@@ -102,11 +102,11 @@ def test_apply_domain_losses_weighting() -> None:
 
 
 def test_strategy_inherits_required_mixins() -> None:
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
-    from mriforge.infrastructure.training.strategies.mixins.adversarial import (
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.mixins.adversarial import (
         AdversarialMixin,
     )
-    from mriforge.infrastructure.training.strategies.mixins.reconstruction import (
+    from spectramr.infrastructure.training.strategies.mixins.reconstruction import (
         ReconstructionMixin,
     )
 
@@ -125,7 +125,7 @@ def test_eq_defect_fed_latent_not_kspace_F10() -> None:
     import pathlib
 
     src = pathlib.Path(
-        "src/mriforge/infrastructure/training/strategies/se3_equivariant_navigator_strategy.py"
+        "src/spectramr/infrastructure/training/strategies/se3_equivariant_navigator_strategy.py"
     ).read_text(encoding="utf-8")
     # The buggy call (now only quoted in an explanatory comment) passed the
     # k-space as the loss's equivariant_fn/lie_input — pin the distinctive
@@ -147,7 +147,7 @@ def test_corrupt_and_forward_brings_target_to_image_domain() -> None:
     from types import SimpleNamespace
 
     src = pathlib.Path(
-        "src/mriforge/infrastructure/training/strategies/se3_equivariant_navigator_strategy.py"
+        "src/spectramr/infrastructure/training/strategies/se3_equivariant_navigator_strategy.py"
     ).read_text(encoding="utf-8")
     assert "self._ensure_image_domain_target(target_complex)" in src, (
         "_corrupt_and_forward must route the target through the k-space->image seam"
@@ -164,7 +164,7 @@ def test_corrupt_and_forward_brings_target_to_image_domain() -> None:
         ),
         physics=SimpleNamespace(kspace=SimpleNamespace(enable_kspace_recon=False)),
     )
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
 
     kspace = torch.randn(2, 1, 16, 16, dtype=torch.complex64)
     assert torch.allclose(s._ensure_image_domain_target(kspace), ifft2c(kspace), atol=1e-6)
@@ -175,7 +175,7 @@ def test_se3_loss_rejects_image_accepts_latent_F10() -> None:
     image (the exp_p3 crash input) is rejected with a clear shape error."""
     import pytest
 
-    from mriforge.models.losses.se3_equivariance_defect import (
+    from spectramr.models.losses.se3_equivariance_defect import (
         SE3EquivarianceDefectLoss,
     )
 

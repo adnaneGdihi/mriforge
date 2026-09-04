@@ -22,7 +22,7 @@ import pytest
 import torch
 import yaml
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 class TestGridSearchHPO:

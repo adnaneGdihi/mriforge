@@ -27,7 +27,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.flow.actnorm import ActNorm2d  # noqa: E402
+from spectramr.models.blocks.flow.actnorm import ActNorm2d  # noqa: E402
 
 
 @pytest.fixture

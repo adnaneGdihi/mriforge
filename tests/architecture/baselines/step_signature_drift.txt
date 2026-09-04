@@ -1,3 +1,3 @@
 # train_step/validation_step signatures that diverge from canonical and are not migrated behind @accepts_step_io
-src/mriforge/infrastructure/training/strategies/pma_varnet_strategy.py::validation_step('val_batch', 'batch_idx')
-src/mriforge/infrastructure/training/strategies/pretraining.py::validation_step('val_batch', 'batch_idx')
+src/spectramr/infrastructure/training/strategies/pma_varnet_strategy.py::validation_step('val_batch', 'batch_idx')
+src/spectramr/infrastructure/training/strategies/pretraining.py::validation_step('val_batch', 'batch_idx')

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.heisenberg_conv import (
+from spectramr.models.blocks.heisenberg_conv import (
     HeisenbergConv2d,
     twisted_convolution_step,
 )

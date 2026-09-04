@@ -21,8 +21,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
-from mriforge.infrastructure.physics.group_actions import (  # noqa: E402
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c  # noqa: E402
+from spectramr.infrastructure.physics.group_actions import (  # noqa: E402
     GROUP_REGISTRY,
     DihedralGroup,
     SmallRotationGroup,

@@ -22,7 +22,7 @@ import sys
 
 import pytest
 
-from mriforge.infrastructure.physics.sampling import SUPPORTED_ACCELERATION_TYPES
+from spectramr.infrastructure.physics.sampling import SUPPORTED_ACCELERATION_TYPES
 
 #: Driven in a fresh interpreter, through AccelerationConfigSchema ->
 #: resolve_undersampling_kwargs -> KSpaceUndersamplingProcess.q_sample, i.e. the
@@ -32,9 +32,9 @@ import sys
 import torch
 
 DIRECTION = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] else None
-from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-from mriforge.infrastructure.physics.sampling import SUPPORTED_ACCELERATION_TYPES
-from mriforge.models.diffusion.kspace_process import (
+from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+from spectramr.infrastructure.physics.sampling import SUPPORTED_ACCELERATION_TYPES
+from spectramr.models.diffusion.kspace_process import (
     KSpaceUndersamplingProcess,
     resolve_undersampling_kwargs,
 )

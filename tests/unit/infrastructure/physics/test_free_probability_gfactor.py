@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.free_probability_gfactor import (
+from spectramr.infrastructure.physics.free_probability_gfactor import (
     asymptotic_gfactor_density,
     gfactor_moments,
     marchenko_pastur_density,
@@ -109,7 +109,7 @@ def test_invalid_c_raises() -> None:
 
 
 def test_registered_metric_returns_worst_case() -> None:
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     metric = get_metric("asymptotic_gfactor")
     metric.__class__.__init__(metric, c=0.5)  # type: ignore[arg-type]

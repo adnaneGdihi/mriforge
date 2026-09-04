@@ -20,8 +20,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.diff_varnet import DiffVarNet
-from mriforge.models.generators.nafnet_generator import NAFNetGenerator
+from spectramr.models.generators.diff_varnet import DiffVarNet
+from spectramr.models.generators.nafnet_generator import NAFNetGenerator
 
 EMB = 256
 
@@ -160,7 +160,7 @@ class TestContrastWidthProjection:
     def test_arm_with_mismatched_widths_runs_contrast_conditioned_forward(self):
         import yaml
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 

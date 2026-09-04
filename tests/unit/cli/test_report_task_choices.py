@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-APP = Path(__file__).resolve().parents[3] / "src" / "mriforge" / "cli" / "app.py"
+APP = Path(__file__).resolve().parents[3] / "src" / "spectramr" / "cli" / "app.py"
 
 
 def _cli_task_choices() -> list[str]:
@@ -29,7 +29,7 @@ def _cli_task_choices() -> list[str]:
 
 
 def test_report_task_choices_cover_every_preset() -> None:
-    from mriforge.infrastructure.reporting.pipeline import TASK_PRESETS
+    from spectramr.infrastructure.reporting.pipeline import TASK_PRESETS
 
     cli = _cli_task_choices()
     presets = sorted(TASK_PRESETS)
@@ -66,8 +66,8 @@ def test_the_config_enum_agrees_with_both() -> None:
     passes argparse and is then rejected by config validation -- reachable on the
     command line, unusable in a YAML. Pin all three together.
     """
-    from mriforge.config.schemas.enums import ReportTask
-    from mriforge.infrastructure.reporting.pipeline import TASK_PRESETS
+    from spectramr.config.schemas.enums import ReportTask
+    from spectramr.infrastructure.reporting.pipeline import TASK_PRESETS
 
     enum_values = sorted(m.value for m in ReportTask)
     assert enum_values == sorted(TASK_PRESETS), (

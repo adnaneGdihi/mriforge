@@ -5,11 +5,11 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     CoordinateEmissionConfigSchema,
     DataConfigSchema,
 )
-from mriforge.data.transforms.coordinate_grid import (
+from spectramr.data.transforms.coordinate_grid import (
     CoordinateGridTransform,
     _make_normalized_grid,
 )

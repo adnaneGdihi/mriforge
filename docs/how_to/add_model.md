@@ -1,6 +1,6 @@
 # Add a model
 
-Models live under `src/mriforge/models/`. The framework distinguishes three
+Models live under `src/spectramr/models/`. The framework distinguishes three
 kinds:
 
 | Kind | Directory | Purpose |
@@ -19,7 +19,7 @@ time. Reading the decorator tells the framework what the model accepts
 and produces — without it, the model is invisible to the YAML dispatch.
 
 ```python
-from mriforge.models.registry import register_model
+from spectramr.models.registry import register_model
 
 @register_model(
     name="my_unet",
@@ -83,7 +83,7 @@ fires when its module is imported. The package's `__init__.py` must import
 the file for cold-import correctness:
 
 ```python
-# src/mriforge/models/generators/__init__.py
+# src/spectramr/models/generators/__init__.py
 from . import (
     breakthrough_attention_generators,    # noqa: F401  (registers 5 models)
     breakthrough_geometric_generators,    # noqa: F401  (registers 2 models)
@@ -101,15 +101,15 @@ import subprocess, sys
 def test_my_unet_registered_cold():
     rc = subprocess.run(
         [sys.executable, "-c",
-         "import mriforge.models.generators; "
-         "from mriforge.models.registry import MODEL_REGISTRY; "
+         "import spectramr.models.generators; "
+         "from spectramr.models.registry import MODEL_REGISTRY; "
          "assert MODEL_REGISTRY.get('my_unet') is not None"],
         capture_output=True, text=True, timeout=60,
     ).returncode
     assert rc == 0
 ```
 
-See [`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/mriforge/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
+See [`tests/unit/registration/test_breakthrough_components_registered.py`](https://github.com/adnaneGdihi/spectramr/blob/main/tests/unit/registration/test_breakthrough_components_registered.py)
 for the canonical pattern.
 
 ## What gets stored in the registry

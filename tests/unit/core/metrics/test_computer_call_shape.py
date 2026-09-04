@@ -16,18 +16,18 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.computer import (
+from spectramr.core.metrics.computer import (
     MetricCallShape,
     ValidationMetricsComputer,
     resolve_metric_call_shape,
 )
-from mriforge.core.metrics.outcome import (
+from spectramr.core.metrics.outcome import (
     MetricContractError,
     MetricNotApplicableError,
     NotApplicableReason,
 )
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.core.metrics.types import MetricSpec, ValidationMetricsConfig
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.types import MetricSpec, ValidationMetricsConfig
 
 
 class _NoRefSingleArg(torch.nn.Module):
@@ -104,7 +104,7 @@ def test_uninspectable_callable_falls_back_to_the_permissive_shape(monkeypatch) 
         raise ValueError("no signature found")
 
     monkeypatch.setattr(
-        "mriforge.core.metrics.computer.inspect.signature", _boom, raising=True
+        "spectramr.core.metrics.computer.inspect.signature", _boom, raising=True
     )
     assert _inspect is not None  # the module itself is untouched elsewhere
     shape = resolve_metric_call_shape(_NoRefSingleArg().forward)

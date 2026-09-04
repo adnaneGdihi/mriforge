@@ -7,7 +7,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.multi_echo import (
+from spectramr.data.transforms.multi_echo import (
     BundleMultiEcho,
     parse_echo_index_from_filename,
 )

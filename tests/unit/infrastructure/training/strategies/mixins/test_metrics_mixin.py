@@ -19,7 +19,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
+from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import MetricsMixin
 
 
 class _Mixin(MetricsMixin):
@@ -53,9 +53,7 @@ def test_magnitude_transform_with_two_channel_target_still_folds_to_magnitude():
 
     assert out_pred.shape == (2, 1, 8, 8)
     assert out_target.shape == (2, 1, 8, 8)
-    assert torch.allclose(
-        out_target, torch.complex(target[:, 0], target[:, 1]).abs().unsqueeze(1)
-    )
+    assert torch.allclose(out_target, torch.complex(target[:, 0], target[:, 1]).abs().unsqueeze(1))
 
 
 def test_magnitude_transform_with_complex_target():
@@ -115,9 +113,7 @@ def test_prediction_for_visualization_reduces_a_distribution_head():
     mixin = _Mixin()
     mixin.config = types.SimpleNamespace(
         model=types.SimpleNamespace(model_type="evidential_unet"),
-        data=types.SimpleNamespace(
-            processing=types.SimpleNamespace(enable_log_scaling=False)
-        ),
+        data=types.SimpleNamespace(processing=types.SimpleNamespace(enable_log_scaling=False)),
     )
     pred = torch.arange(4, dtype=torch.float32).reshape(1, 4, 1, 1)
 
@@ -139,7 +135,7 @@ class TestReportCaseId:
     """
 
     def test_level_is_encoded_and_rungs_are_distinct(self) -> None:
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             report_case_id,
         )
 
@@ -152,14 +148,14 @@ class TestReportCaseId:
 
     def test_absent_level_keeps_the_legacy_label(self) -> None:
         """Strategies without a cascade (the base mixin) must not change."""
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             report_case_id,
         )
 
         assert report_case_id(7) == "val_step7"
 
     def test_fractional_level_does_not_collide_with_its_floor(self) -> None:
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             report_case_id,
         )
 
@@ -177,7 +173,7 @@ class TestReportCaseId:
         deliberately different shapes; the recorder protocol (``arrays`` /
         ``domain``) never took a context and is unchanged by it.
         """
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             feed_report_case_recorder,
         )
 
@@ -235,9 +231,9 @@ class TestReportCaseId:
         import ast
         import pathlib
 
-        import mriforge
+        import spectramr
 
-        src_root = pathlib.Path(mriforge.__file__).resolve().parent
+        src_root = pathlib.Path(spectramr.__file__).resolve().parent
         offenders, found = [], []
         for path in sorted(src_root.rglob("*.py")):
             try:
@@ -258,12 +254,10 @@ class TestReportCaseId:
                     offenders.append(where)
 
         assert found, (
-            "found no metric sinks at all under "
-            f"{src_root} -- the scan is vacuous, not passing"
+            f"found no metric sinks at all under {src_root} -- the scan is vacuous, not passing"
         )
         assert not offenders, (
-            "these metric sinks would raise TypeError when the feeder passes "
-            f"context=: {offenders}"
+            f"these metric sinks would raise TypeError when the feeder passes context=: {offenders}"
         )
 
 
@@ -287,30 +281,26 @@ def test_the_dead_env_current_step_fallback_is_gone():
     """
     import inspect
 
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         MetricsMixin,
     )
 
     src = inspect.getsource(MetricsMixin._log_validation_images_to_tensorboard)
     # Comments stripped: the fix's own explanation names the dead attribute, and a
     # guard that its own rationale trips is a guard nobody can document.
-    code = "\n".join(
-        line for line in src.splitlines() if not line.strip().startswith("#")
+    code = "\n".join(line for line in src.splitlines() if not line.strip().startswith("#"))
+    assert "current_step" not in code, "the unreachable env.current_step fallback reappeared"
+    assert "resolve_loop_iteration" in code, (
+        "the image step label must come from the loop-state SSOT"
     )
-    assert (
-        "current_step" not in code
-    ), "the unreachable env.current_step fallback reappeared"
-    assert (
-        "resolve_loop_iteration" in code
-    ), "the image step label must come from the loop-state SSOT"
 
 
 def test_neither_environment_class_ever_had_current_step():
     """The evidence that the fallback was unreachable, not merely unused."""
-    from mriforge.infrastructure.training.builders.environment import (
+    from spectramr.infrastructure.training.builders.environment import (
         TrainingEnvironment as BuilderEnv,
     )
-    from mriforge.infrastructure.training.contexts import TrainingEnvironment
+    from spectramr.infrastructure.training.contexts import TrainingEnvironment
 
     for cls in (TrainingEnvironment, BuilderEnv):
         names = set(getattr(cls, "__annotations__", {})) | set(dir(cls))
@@ -323,7 +313,7 @@ def test_neither_environment_class_ever_had_current_step():
 def test_image_label_tracks_the_training_iteration():
     import types
 
-    from mriforge.infrastructure.training.loop_state import (
+    from spectramr.infrastructure.training.loop_state import (
         LoopState,
         resolve_loop_iteration,
     )
@@ -352,7 +342,7 @@ def test_image_label_tracks_the_training_iteration():
 class TestMetricSelectionIsGated:
     @staticmethod
     def _mixin():
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
@@ -364,14 +354,14 @@ class TestMetricSelectionIsGated:
     def test_an_unregistered_name_in_compute_raises(self):
         import pytest
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         cfg = MetricsConfigSchema(compute=["psnr", "totally_bogus_metric"])
         with pytest.raises(ValueError, match="not registered"):
             self._mixin()._extract_metrics_from_config(cfg)
 
     def test_a_valid_explicit_list_is_returned_unchanged(self):
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         got = self._mixin()._extract_metrics_from_config(
             MetricsConfigSchema(compute=["psnr", "ssim"])
@@ -404,14 +394,14 @@ class TestMetricSelectionIsGated:
         import pytest
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.core.metrics.flag_map import metric_for_flag
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.core.metrics.flag_map import metric_for_flag
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         target = metric_for_flag(flag)
-        assert not MetricsRegistry.is_registered(
-            target
-        ), f"{flag} -> '{target}' is now registered; drop it from this list"
+        assert not MetricsRegistry.is_registered(target), (
+            f"{flag} -> '{target}' is now registered; drop it from this list"
+        )
 
         # The GATE MOVED UPSTREAM. This used to build the config and assert the
         # mixin dropped the metric while keeping the valid ones. It can no
@@ -434,7 +424,7 @@ class TestMetricSelectionIsGated:
         Raising on a dangling FLAG (as opposed to an explicit name) would fail
         every one of them at load.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         got = self._mixin()._extract_metrics_from_config(
             MetricsConfigSchema(compute_advanced_metrics=True, compute_psnr=True)
@@ -446,16 +436,14 @@ class TestMetricSelectionIsGated:
         unreachable: an unregistered target behind a `hasattr` that never passes."""
         import inspect
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
         assert "compute_gradient_snr" not in MetricsConfigSchema.model_fields
         src = inspect.getsource(MetricsMixin._extract_metrics_from_config)
-        code = "\n".join(
-            line for line in src.splitlines() if not line.strip().startswith("#")
-        )
+        code = "\n".join(line for line in src.splitlines() if not line.strip().startswith("#"))
         assert '"gradient_snr"' not in code
 
 
@@ -479,12 +467,10 @@ class TestFlagCoverageDerivesFromTheSchema:
 
     @pytest.mark.parametrize("flag", ["compute_wm2max", "compute_frd", "compute_pdm"])
     def test_a_formerly_header_only_flag_now_selects(self, flag: str):
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.core.metrics.flag_map import metric_for_flag
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.core.metrics.flag_map import metric_for_flag
 
-        got = self._mixin()._extract_metrics_from_config(
-            MetricsConfigSchema(**{flag: True})
-        )
+        got = self._mixin()._extract_metrics_from_config(MetricsConfigSchema(**{flag: True}))
         assert metric_for_flag(flag) in got
 
     def test_the_default_arm_emits_no_dangling_flag_warning(self, caplog):
@@ -493,7 +479,7 @@ class TestFlagCoverageDerivesFromTheSchema:
         warning would fire on EVERY run — and ``audit --strict`` exits 2 on it."""
         import logging
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         with caplog.at_level(logging.WARNING):
             got = self._mixin()._extract_metrics_from_config(MetricsConfigSchema())
@@ -516,8 +502,8 @@ class TestFlagCoverageDerivesFromTheSchema:
 
     def test_selection_and_csv_columns_cover_the_same_flags(self):
         """The two maps are one map now. A column can no longer outlive a selector."""
-        from mriforge.core.metrics.flag_map import schema_flag_to_metric
-        from mriforge.pipelines.training_loop import _CSV_METRIC_NAME_MAP
+        from spectramr.core.metrics.flag_map import schema_flag_to_metric
+        from spectramr.pipelines.training_loop import _CSV_METRIC_NAME_MAP
 
         assert dict(_CSV_METRIC_NAME_MAP) == schema_flag_to_metric()
 
@@ -538,11 +524,9 @@ class TestFusedTransferIsSharedWithCore:
     def test_the_core_helper_is_the_one_doing_the_transfer(self):
         from unittest import mock
 
-        from mriforge.core.metrics import scalar_transfer
+        from spectramr.core.metrics import scalar_transfer
 
-        with mock.patch.object(
-            scalar_transfer.torch, "stack", wraps=torch.stack
-        ) as spy:
+        with mock.patch.object(scalar_transfer.torch, "stack", wraps=torch.stack) as spy:
             out = MetricsMixin._convert_metrics_to_floats(
                 {"a": torch.tensor(1.0), "b": torch.tensor(2.0)}
             )
@@ -603,7 +587,7 @@ ARM = (
 def _real_validation_config():
     if not ARM.is_file():
         pytest.skip(f"arm not present: {ARM}")
-    from mriforge.config.settings import TrainingSettings
+    from spectramr.config.settings import TrainingSettings
 
     return TrainingSettings.from_yaml(str(ARM)).validation
 
@@ -636,9 +620,7 @@ def test_output_transform_is_read_from_validation_scoring() -> None:
     )
 
     kspace = torch.randn(1, 8, 32, 32)
-    out, target = _KspaceMixin()._apply_metric_transforms(
-        kspace, kspace.clone(), val_config
-    )
+    out, target = _KspaceMixin()._apply_metric_transforms(kspace, kspace.clone(), val_config)
 
     assert out.shape[1] == 1, f"transform did not fire: {tuple(out.shape)}"
     assert target.shape[1] == 1
@@ -661,9 +643,7 @@ def test_domain_none_under_scoring_suppresses_the_transform() -> None:
     )
 
     kspace = torch.randn(1, 8, 32, 32)
-    out, _ = _KspaceMixin()._apply_metric_transforms(
-        kspace, kspace.clone(), val_config
-    )
+    out, _ = _KspaceMixin()._apply_metric_transforms(kspace, kspace.clone(), val_config)
 
     assert out.shape[1] == 8, "domain: none must suppress the transform"
 
@@ -677,9 +657,7 @@ def test_a_bare_string_transform_name_is_still_honoured() -> None:
     the two spellings from diverging again.
     """
     kspace = torch.randn(1, 8, 32, 32)
-    out, _ = _KspaceMixin()._apply_metric_transforms(
-        kspace, kspace.clone(), "ifft_magnitude"
-    )
+    out, _ = _KspaceMixin()._apply_metric_transforms(kspace, kspace.clone(), "ifft_magnitude")
 
     assert out.shape[1] == 1, f"string transform name dropped: {tuple(out.shape)}"
 
@@ -754,9 +732,7 @@ def test_scoring_output_transform_outranks_a_metrics_block_declaration() -> None
     result is the evidence that precedence holds.
     """
     val_config = _real_validation_config()
-    host = _KspaceMixinWithMetricsBlock(
-        transform="ifft_sense_adjoint", validation=val_config
-    )
+    host = _KspaceMixinWithMetricsBlock(transform="ifft_sense_adjoint", validation=val_config)
     kspace = torch.randn(1, 8, 32, 32)
 
     out, _ = host._apply_metric_transforms(kspace, kspace.clone(), val_config)
@@ -824,7 +800,7 @@ def test_the_resolved_transform_reaches_the_run_log(caplog) -> None:
 
     with caplog.at_level(
         logging.INFO,
-        logger="mriforge.infrastructure.training.strategies.mixins.metrics_mixin",
+        logger="spectramr.infrastructure.training.strategies.mixins.metrics_mixin",
     ):
         host._apply_metric_transforms(kspace, kspace.clone(), val_config)
         host._apply_metric_transforms(kspace, kspace.clone(), val_config)
@@ -833,3 +809,20 @@ def test_the_resolved_transform_reaches_the_run_log(caplog) -> None:
     assert len(lines) == 1, "provenance must be logged once, not per batch"
     assert "ifft_magnitude" in lines[0].getMessage()
     assert "validation.scoring.output_transform" in lines[0].getMessage()
+
+
+def test_a_host_copy_that_fails_is_not_swallowed():
+    """Planted violation: until 2026-09-03 ``_magnitude_np`` wrapped the detach /
+    device move in ``except Exception: pass`` and returned whatever ``np.asarray``
+    made of the tensor. The nested helper must contain no ``try`` at all."""
+    import ast
+    import inspect
+
+    from spectramr.infrastructure.training.strategies.mixins import metrics_mixin
+
+    tree = ast.parse(inspect.getsource(metrics_mixin))
+    helpers = [
+        n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name == "_magnitude_np"
+    ]
+    assert helpers, "_magnitude_np is gone; move this guard to its replacement"
+    assert not any(isinstance(n, ast.Try) for n in ast.walk(helpers[0]))

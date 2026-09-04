@@ -6,7 +6,7 @@ to replace the hollow zero-arg-only construction attempt:
 * :func:`build_minimal_model` — constructs a minimal but runnable instance
   of any registered model, falling back through a three-step ladder.
 * :func:`phantom_for` — synthesises a domain-correct input tensor that
-  matches the model's declared :class:`~mriforge.models.capabilities.ModelCapabilities`.
+  matches the model's declared :class:`~spectramr.models.capabilities.ModelCapabilities`.
 * :func:`expected_output_ok` — loose sanity check on a forward-pass output
   (Tensor or container holding one) with positive spatial dims.
 
@@ -64,9 +64,9 @@ from typing import Any
 import torch
 import torch.nn as nn
 
-from mriforge.models.capabilities import ModelCapabilities
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.capabilities import ModelCapabilities
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 # Trigger full registry population so that _BackboneAlias models can
 # resolve their backbone (configurable_unet) at construction time.

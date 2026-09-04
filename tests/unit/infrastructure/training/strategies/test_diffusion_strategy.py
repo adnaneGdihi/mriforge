@@ -8,12 +8,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.core.cascading_validation import CASCADING_LEVELS
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.core.cascading_validation import CASCADING_LEVELS
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
-from mriforge.infrastructure.training.strategies import diffusion as diffusion_mod
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies import diffusion as diffusion_mod
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 from tests.utils.mock_environment import create_mock_training_env
@@ -239,7 +239,7 @@ def training_env(simple_model, mock_diffusion_config):
 def mock_resolve_service():
     """Mock resolve_service to avoid DI errors."""
     with patch(
-        "mriforge.infrastructure.di.di_container.resolve_service"
+        "spectramr.infrastructure.di.di_container.resolve_service"
     ) as mock_resolve:
         mock_resolve.return_value = MagicMock()
         yield mock_resolve
@@ -430,7 +430,7 @@ class TestDiffusionStrategyErrorHandling:
         mock_diffusion_config.training.diffusion.timesteps = -1
 
         # Should raise ConfigurationError
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         with pytest.raises(ConfigurationError, match="Invalid diffusion timesteps"):
             DiffusionTrainingStrategy(env=training_env)
@@ -785,7 +785,7 @@ class TestXDiffusionIterationThreadsToWarmupGate:
     """
 
     def _make_strategy(self, training_env, mock_diffusion_config, warmup):
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             XDiffusionTrainingStrategy,
         )
 
@@ -877,10 +877,10 @@ class TestXDiffusionIterationThreadsToWarmupGate:
 # ---------------------------------------------------------------------------
 import types as _types  # noqa: E402
 
-from mriforge.domain.exceptions import (  # noqa: E402
+from spectramr.domain.exceptions import (  # noqa: E402
     ConfigurationError as _ConfigurationError,
 )
-from mriforge.infrastructure.training.strategies.diffusion import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.diffusion import (  # noqa: E402
     XDiffusionTrainingStrategy as _XDiffusionTrainingStrategy,
 )
 
@@ -1089,7 +1089,7 @@ class TestSmapsFallbackHonorsConfig:
         # Guard the attribute path against schema drift: the chain
         # config.physics.coil_processing.estimation.method must exist on a real
         # TrainingSettings.
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config = TrainingSettings(
             data={"train_path": "/tmp/t", "val_path": "/tmp/v", "batch_size": 1},
@@ -1114,7 +1114,7 @@ class TestEstimationKwargsHonorConfig:
         assert s._configured_estimation_kwargs() == {}
 
     def test_reads_sub_knobs_from_config(self) -> None:
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config = TrainingSettings(
             data={"train_path": "/tmp/t", "val_path": "/tmp/v", "batch_size": 1},
@@ -1144,7 +1144,7 @@ class TestEstimationKwargsHonorConfig:
     def test_default_config_reproduces_kernel_size_6(self) -> None:
         # A config with the default estimation block must yield kernel_size=6
         # (parity with the previous hardcoded call site).
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config = TrainingSettings(
             data={"train_path": "/tmp/t", "val_path": "/tmp/v", "batch_size": 1},
@@ -1158,7 +1158,7 @@ class TestEstimationKwargsHonorConfig:
         assert s._configured_estimation_kwargs()["kernel_size"] == 6
 
     def test_maps_path_included_when_set(self) -> None:
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config = TrainingSettings(
             data={"train_path": "/tmp/t", "val_path": "/tmp/v", "batch_size": 1},
@@ -1194,7 +1194,7 @@ class TestTimestepSamplingStrategyRaisesOnUnknown:
     def test_unknown_timestep_sampling_strategy_raises(
         self, mock_diffusion_config, training_env
     ):
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         strategy = self._strategy_with_strategy_value(
             training_env, mock_diffusion_config, "cosine_decay"
@@ -1401,7 +1401,7 @@ class TestStampAccelMean:
         Passing ``validation={"metrics": ...}`` to ``TrainingSettings`` lets the
         real loader fold it, so the fixture exercises the same path a YAML does.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         return TrainingSettings(
             model={
@@ -1467,7 +1467,7 @@ class TestMultiStepColdSamplingWiring:
         # the most expensive kind of red, because it reads as a mechanism
         # regression. Resolve the destination through RENAMES instead of
         # restating it, so the next move updates this test by construction.
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         canonical = RENAMES["validation.multistep_cold_sampling"].canonical
         assert f"self.config.{canonical}" in src
@@ -1511,7 +1511,7 @@ def test_diffusion_override_feeds_report_case_recorder():
     recorder stays unfed (a facade) for the cold-diffusion paradigm."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
 
@@ -1540,7 +1540,7 @@ class TestSmapsContentCache:
             return torch.ones(acs.shape, dtype=torch.complex64)
 
         monkeypatch.setattr(
-            "mriforge.infrastructure.training.strategies.diffusion.estimate_smaps",
+            "spectramr.infrastructure.training.strategies.diffusion.estimate_smaps",
             fake_estimate_smaps,
         )
         return calls
@@ -1790,7 +1790,7 @@ class TestCascadeCompleteness:
         test agree with a wrong understanding of it (which is how the first
         version of the corpus scan behind this PR reported a vacuous "0 arms").
         """
-        from mriforge.infrastructure.training.utils.kspace_masks import (
+        from spectramr.infrastructure.training.utils.kspace_masks import (
             KSpaceMaskGenerator,
         )
 
@@ -1892,7 +1892,7 @@ class TestCascadeCompleteness:
         make an absent range read as "everything is declared" and turn a skip
         into a spurious fatal error.
         """
-        from mriforge.infrastructure.training.utils.kspace_masks import (
+        from spectramr.infrastructure.training.utils.kspace_masks import (
             KSpaceMaskGenerator,
         )
 
@@ -2043,7 +2043,7 @@ def test_single_rung_ladder_records_the_gap_as_unavailable():
     `val_accel_gap_unavailable` absent — restoring the indistinguishable
     absence the flag was added (#1303, pitfall #16) to remove.
     """
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
 
@@ -2054,7 +2054,7 @@ def test_single_rung_ladder_records_the_gap_as_unavailable():
 
 
 def test_an_empty_ladder_also_records_the_gap_as_unavailable():
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
 

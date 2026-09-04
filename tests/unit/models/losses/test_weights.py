@@ -1,4 +1,4 @@
-"""Tests for the loss-weight SSOT (``mriforge.models.losses.weights``).
+"""Tests for the loss-weight SSOT (``spectramr.models.losses.weights``).
 
 These pin the behaviours that the eight legacy resolvers got wrong:
 a schema default is not a declaration, aliases collapse, an undeclared loss raises
@@ -11,10 +11,10 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.loss import LossConfigSchema
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.models.losses.registry import LossRegistry
-from mriforge.models.losses.weights import (
+from spectramr.config.schemas.loss import LossConfigSchema
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.models.losses.registry import LossRegistry
+from spectramr.models.losses.weights import (
     LEGACY_WARMUP_LOSSES,
     WEIGHT_SEMANTICS_VERSION,
     build_loss_weight_table,
@@ -360,7 +360,7 @@ def _section_classes(schema=LossConfigSchema, sections=None):
     exactly as ``_declared_lambdas`` skips it. That silence is a defect in its
     own right, pinned by :class:`TestLambdaSectionsAreAllReal` below.
     """
-    from mriforge.models.losses.weights import LAMBDA_SECTIONS
+    from spectramr.models.losses.weights import LAMBDA_SECTIONS
 
     out = {}
     for sec in LAMBDA_SECTIONS if sections is None else sections:
@@ -542,7 +542,7 @@ class TestLambdaSectionsAreAllReal:
     """
 
     def test_adversarial_is_the_only_known_dead_entry(self):
-        from mriforge.models.losses.weights import LAMBDA_SECTIONS
+        from spectramr.models.losses.weights import LAMBDA_SECTIONS
 
         dead = [s for s in LAMBDA_SECTIONS if s not in LossConfigSchema.model_fields]
         assert dead == ["adversarial"], (

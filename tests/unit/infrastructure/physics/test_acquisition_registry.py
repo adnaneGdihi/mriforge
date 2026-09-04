@@ -1,6 +1,6 @@
 """Tests for ``AcquisitionRegistry``.
 
-Targets ``mriforge.infrastructure.physics.acquisition_registry``. Looks up
+Targets ``spectramr.infrastructure.physics.acquisition_registry``. Looks up
 TR/TE/TI/B0 protocol parameters by ``(contrast, field_strength)`` and
 returns a min-max-normalised ``[1, 4]`` tensor for downstream conditioning.
 
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.acquisition_registry import AcquisitionRegistry
+from spectramr.infrastructure.physics.acquisition_registry import AcquisitionRegistry
 
 
 # ---------------------------------------------------------------------------

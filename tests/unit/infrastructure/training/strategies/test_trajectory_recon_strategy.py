@@ -14,10 +14,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.trajectory_recon_strategy import (
+from spectramr.infrastructure.training.strategies.trajectory_recon_strategy import (
     TrajectoryReconstructionStrategy,
 )
-from mriforge.models.generators.spiral_trajectory_estimator import (
+from spectramr.models.generators.spiral_trajectory_estimator import (
     SpiralTrajectoryEstimator,
 )
 

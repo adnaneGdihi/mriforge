@@ -4,8 +4,8 @@ from __future__ import annotations
 import torch
 from pytest import approx
 
-from mriforge.data.eda import probes
-from mriforge.infrastructure.physics.fft_ops import fft2c
+from spectramr.data.eda import probes
+from spectramr.infrastructure.physics.fft_ops import fft2c
 
 
 def test_radial_energy_decays_for_smooth_image():

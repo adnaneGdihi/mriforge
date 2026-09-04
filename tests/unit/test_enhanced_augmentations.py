@@ -2,8 +2,8 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-from mriforge.data.transforms.augmentation_factory import TorchIOAugmentationFactory
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.data.transforms.augmentation_factory import TorchIOAugmentationFactory
 
 
 @pytest.fixture

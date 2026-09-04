@@ -8,7 +8,7 @@ two numbers have never matched, in either direction:
 * **17 flags name a metric that is not registered** (issue #340), so setting one
   measures nothing. ``compute_advanced_metrics`` is the worst of them -- it
   defaults to ``True``, 249 corpus arms set it explicitly, and no code in
-  ``src/mriforge`` reads it at all.
+  ``src/spectramr`` reads it at all.
 
 A list closes both by construction, because registry membership becomes the
 validator.
@@ -19,7 +19,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.metrics import MetricsConfigSchema
+from spectramr.config.schemas.metrics import MetricsConfigSchema
 
 
 class TestTheComputeList:
@@ -76,7 +76,7 @@ class TestExtractionPrefersTheList:
 
     @staticmethod
     def _extract(cfg: MetricsConfigSchema) -> list[str]:
-        from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+        from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
             MetricsMixin,
         )
 
@@ -104,7 +104,7 @@ class TestTheRegistryIsBiggerThanTheFlags:
 
     def test_registered_metrics_outnumber_the_flags(self) -> None:
         pytest.importorskip("torch")
-        from mriforge.core.metrics import MetricsRegistry
+        from spectramr.core.metrics import MetricsRegistry
 
         registered = len(getattr(MetricsRegistry, "_metrics", {}))
         flags = len(
@@ -135,7 +135,7 @@ class TestTrainMetricIntervalIsSettable:
     """
 
     def test_it_is_now_settable(self) -> None:
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         assert MetricsConfigSchema(train_metric_interval=250).train_metric_interval == 250
 
@@ -145,7 +145,7 @@ class TestTrainMetricIntervalIsSettable:
         100 is the literal `_get_config_value(..., "train_metric_interval", 100)`
         fallback the mixin has always used.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         assert MetricsConfigSchema().train_metric_interval == 100
 
@@ -153,7 +153,7 @@ class TestTrainMetricIntervalIsSettable:
         import pytest
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         with pytest.raises(ValidationError):
             MetricsConfigSchema(train_metric_interval=0)
@@ -161,7 +161,7 @@ class TestTrainMetricIntervalIsSettable:
     def test_metric_interval_is_still_a_separate_inert_field(self) -> None:
         """Both must exist and be independent — conflating them is the change
         this commit deliberately does NOT make."""
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         cfg = MetricsConfigSchema(metric_interval=5)
         assert cfg.metric_interval == 5
@@ -171,7 +171,7 @@ class TestTrainMetricIntervalIsSettable:
         """Anti-vacuity: a field nothing reads would pass every test above."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies.mixins import metrics_mixin
+        from spectramr.infrastructure.training.strategies.mixins import metrics_mixin
 
         src = inspect.getsource(metrics_mixin)
         assert '"train_metric_interval"' in src, (
@@ -193,8 +193,8 @@ class TestTrainMetricIntervalIsSettable:
 class TestNoFlagAdvertisesAnUnregisteredMetric:
     @staticmethod
     def _dangling() -> list[str]:
-        from mriforge.core.metrics.flag_map import metric_for_flag, schema_compute_flags
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.flag_map import metric_for_flag, schema_compute_flags
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         return sorted(
             f

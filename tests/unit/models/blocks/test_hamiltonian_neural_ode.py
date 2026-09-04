@@ -14,7 +14,7 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.hamiltonian_neural_ode import (
+from spectramr.models.blocks.hamiltonian_neural_ode import (
     HamiltonianNeuralODE,
     PotentialNet,
 )

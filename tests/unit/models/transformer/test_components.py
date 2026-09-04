@@ -1,4 +1,4 @@
-"""Regression tests for mriforge.models.transformer.components.
+"""Regression tests for spectramr.models.transformer.components.
 
 Covers the unwired-knob fix: StandardViT / StandardViTWithKAN advertise an
 ``out_channels`` kwarg but the decoder head and forward reshape are hardcoded to
@@ -10,7 +10,7 @@ construction rather than silently produce a 1-channel output.
 import pytest
 import torch
 
-from mriforge.models.transformer.components import StandardViT, StandardViTWithKAN
+from spectramr.models.transformer.components import StandardViT, StandardViTWithKAN
 
 
 @pytest.mark.parametrize("cls", [StandardViT, StandardViTWithKAN])

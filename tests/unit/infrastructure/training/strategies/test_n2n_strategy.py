@@ -17,8 +17,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.n2n_strategy import NoiseToNoiseStrategy
-from mriforge.models.losses.computers import UnifiedReconstructionLossComputer
+from spectramr.infrastructure.training.strategies.n2n_strategy import NoiseToNoiseStrategy
+from spectramr.models.losses.computers import UnifiedReconstructionLossComputer
 
 
 @pytest.fixture
@@ -39,7 +39,7 @@ def mock_optimizer():
 @pytest.fixture
 def strategy(mock_model, mock_optimizer):
     """Instantiate NoiseToNoiseStrategy with a mocked TrainingEnvironment."""
-    from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
+    from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
 
     mock_env = MagicMock(spec=TrainingEnvironment)
     mock_env.models = {"generator": mock_model}
@@ -96,7 +96,7 @@ def test_fixture_actually_disables_snapshots(strategy):
     prevented the ``MagicMock/`` directory leak this fixture was written to
     stop was the unrelated ``run_dir`` type guard in ``save_debug_snapshot``.
     """
-    from mriforge.infrastructure.training.debug_snapshot import _resolve_config
+    from spectramr.infrastructure.training.debug_snapshot import _resolve_config
 
     resolved = _resolve_config(strategy.config.logging)
     assert resolved.enabled is False

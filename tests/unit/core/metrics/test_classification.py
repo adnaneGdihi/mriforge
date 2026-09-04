@@ -1,6 +1,6 @@
 """Tests for ``ClassificationEvaluator``.
 
-Targets ``mriforge.core.metrics.classification``. Wraps scikit-learn's
+Targets ``spectramr.core.metrics.classification``. Wraps scikit-learn's
 ``accuracy``, ``precision``, ``recall``, ``f1`` scores with the project's
 unified pred/target signature.
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.classification import ClassificationEvaluator
+from spectramr.core.metrics.classification import ClassificationEvaluator
 
 pytestmark = pytest.mark.unit
 
@@ -164,7 +164,7 @@ def test_valid_average_macro_still_constructs() -> None:
 
 def test_module_imports_and_exposes_sklearn_flag() -> None:
     """The module imports even in a torch-only env and exposes the flag."""
-    import mriforge.core.metrics.classification as c
+    import spectramr.core.metrics.classification as c
 
     assert isinstance(c.SKLEARN_AVAILABLE, bool)
 
@@ -172,7 +172,7 @@ def test_module_imports_and_exposes_sklearn_flag() -> None:
 def test_evaluator_raises_clear_error_when_sklearn_absent(monkeypatch) -> None:
     """With sklearn unavailable, evaluation raises a clear ImportError rather
     than an obscure ``NoneType is not callable`` from a stubbed metric fn."""
-    import mriforge.core.metrics.classification as c
+    import spectramr.core.metrics.classification as c
 
     monkeypatch.setattr(c, "SKLEARN_AVAILABLE", False)
     pred = torch.tensor([0, 1, 1, 0])

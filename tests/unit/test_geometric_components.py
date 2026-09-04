@@ -1,8 +1,8 @@
 import torch
 
-from mriforge.models.geometric.b0_estimator import B0Estimator
-from mriforge.models.layers.spatial_transformer import SpatialTransformer
-from mriforge.models.losses.registration import LocalCrossCorrelationLoss, SmoothnessLoss
+from spectramr.models.geometric.b0_estimator import B0Estimator
+from spectramr.models.layers.spatial_transformer import SpatialTransformer
+from spectramr.models.losses.registration import LocalCrossCorrelationLoss, SmoothnessLoss
 
 
 def test_spatial_transformer_identity():

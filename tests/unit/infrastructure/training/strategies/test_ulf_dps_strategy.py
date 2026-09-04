@@ -6,16 +6,16 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.field_guided_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.field_guided_diffusion_strategy import (
     make_alphas_cumprod,
 )
-from mriforge.infrastructure.training.strategies.ulf_dps_strategy import (
+from spectramr.infrastructure.training.strategies.ulf_dps_strategy import (
     UlfDpsStrategy,
     compute_ulf_dps_loss,
     ulf_dps_sample,
 )
-from mriforge.infrastructure.training.strategies.ulf_map_strategy import ulf_degrade
-from mriforge.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
+from spectramr.infrastructure.training.strategies.ulf_map_strategy import ulf_degrade
+from spectramr.models.generators.field_guided_score_unet import FieldGuidedScoreUNet
 from tests.utils.config_block_stub import block_stub
 
 
@@ -208,8 +208,8 @@ def test_output_in_data_range() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "ulf_dps" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "ulf_dps" in TrainingStrategyConfigSchema.model_fields
@@ -223,7 +223,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(UlfDpsStrategy)

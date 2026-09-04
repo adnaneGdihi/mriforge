@@ -7,9 +7,9 @@ import types
 import pytest
 import torch
 
-from mriforge.config.schemas.training.sparse_frame import SparseFrameConfig
-from mriforge.infrastructure.training.strategies.sparse_frame_strategy import SparseFrameStrategy
-from mriforge.models.generators.tight_frame_learner import TightFrameLearner
+from spectramr.config.schemas.training.sparse_frame import SparseFrameConfig
+from spectramr.infrastructure.training.strategies.sparse_frame_strategy import SparseFrameStrategy
+from spectramr.models.generators.tight_frame_learner import TightFrameLearner
 
 
 def _strategy(lam_c: float, lam_p: float = 0.01) -> SparseFrameStrategy:
@@ -17,14 +17,14 @@ def _strategy(lam_c: float, lam_p: float = 0.01) -> SparseFrameStrategy:
     strat.env = types.SimpleNamespace(generator=TightFrameLearner(num_atoms=8, kernel_size=3))
     strat._lambda_coherence = lam_c
     strat._lambda_parseval = lam_p
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.registry import create_loss
 
     strat._coherence_loss = create_loss("frame_coherence")
     return strat
 
 
 def test_adds_coherence_and_parseval_to_g_total_loss(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.sparse_frame_strategy as mod
+    import spectramr.infrastructure.training.strategies.sparse_frame_strategy as mod
 
     base = torch.tensor(1.0, requires_grad=True)
     monkeypatch.setattr(
@@ -40,7 +40,7 @@ def test_adds_coherence_and_parseval_to_g_total_loss(monkeypatch) -> None:
 
 
 def test_no_coherence_term_when_lambda_zero(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.sparse_frame_strategy as mod
+    import spectramr.infrastructure.training.strategies.sparse_frame_strategy as mod
 
     base = torch.tensor(1.0, requires_grad=True)
     monkeypatch.setattr(
@@ -55,7 +55,7 @@ def test_no_coherence_term_when_lambda_zero(monkeypatch) -> None:
 
 
 def test_validation_emits_mutual_coherence_witness(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.sparse_frame_strategy as mod
+    import spectramr.infrastructure.training.strategies.sparse_frame_strategy as mod
 
     monkeypatch.setattr(
         mod.ReconstructionTrainingStrategy,
@@ -69,7 +69,7 @@ def test_validation_emits_mutual_coherence_witness(monkeypatch) -> None:
 
 
 def test_setup_reads_config_block(monkeypatch) -> None:
-    import mriforge.infrastructure.training.strategies.sparse_frame_strategy as mod
+    import spectramr.infrastructure.training.strategies.sparse_frame_strategy as mod
 
     monkeypatch.setattr(
         mod.ReconstructionTrainingStrategy, "_setup_strategy_specific_components", lambda self: None
@@ -95,8 +95,8 @@ def test_schema_rejects_out_of_bounds_lambda() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "sparse_frame" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "sparse_frame" in TrainingStrategyConfigSchema.model_fields

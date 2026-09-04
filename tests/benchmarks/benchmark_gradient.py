@@ -3,7 +3,7 @@
 import pytest
 import torch
 import torch.nn as nn
-from mriforge.models.generators.unet_2d import UNet2D
+from spectramr.models.generators.unet_2d import UNet2D
 
 
 @pytest.fixture

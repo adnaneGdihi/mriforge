@@ -1,7 +1,7 @@
 """Regression tests for the affine-invariant SPD manifold.
 
 Covers the doc-contract clarification on
-:meth:`mriforge.infrastructure.physics.manifolds.spd_manifold.SPDManifold.metric_tensor`:
+:meth:`spectramr.infrastructure.physics.manifolds.spd_manifold.SPDManifold.metric_tensor`:
 it returns the ``[..., n, n]`` affine-invariant metric *factor* ``C^{-1}``,
 **not** the protocol's ``[..., dim, dim]`` (``dim = n(n+1)/2``) Gram matrix. The
 fix adds explicit :meth:`inner_product` / :meth:`squared_norm` helpers that
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.manifolds.spd_manifold import SPDManifold
+from spectramr.infrastructure.physics.manifolds.spd_manifold import SPDManifold
 
 
 def _batched_spd(batch: int, n: int, *, seed: int = 0) -> torch.Tensor:

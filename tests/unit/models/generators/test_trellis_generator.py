@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.generators.trellis_generator import (
+from spectramr.models.generators.trellis_generator import (
     TrellisGaussianRenderer,
     TRELLISGenerator,
     TrellisMeshRenderer,

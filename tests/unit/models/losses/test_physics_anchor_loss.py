@@ -1,6 +1,6 @@
 """Unit tests for the physics-anchoring (NOSE) loss.
 
-Targets ``mriforge.models.losses.physics_anchor_loss.PhysicsAnchorLoss``.
+Targets ``spectramr.models.losses.physics_anchor_loss.PhysicsAnchorLoss``.
 
 Covers the loss contract (registered; anchors an operator output to the analytic
 Bloch render), the required-context guard, and the layer-direction regression:
@@ -25,7 +25,7 @@ def _params() -> torch.Tensor:
 
 
 def _render(params: torch.Tensor) -> torch.Tensor:
-    from mriforge.infrastructure.physics.multi_physics_bloch import (
+    from spectramr.infrastructure.physics.multi_physics_bloch import (
         MultiPhysicsBlochLayer,
     )
 
@@ -37,13 +37,13 @@ def _render(params: torch.Tensor) -> torch.Tensor:
 
 
 def test_loss_is_registered() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     assert "physics_anchor" in LossRegistry.list_available()
 
 
 def test_zero_when_prediction_matches_analytic_render() -> None:
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     params = _params()
     prediction = _render(params)
@@ -57,7 +57,7 @@ def test_zero_when_prediction_matches_analytic_render() -> None:
 
 
 def test_positive_when_prediction_deviates() -> None:
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     params = _params()
     prediction = _render(params) + 0.5
@@ -71,7 +71,7 @@ def test_positive_when_prediction_deviates() -> None:
 
 
 def test_missing_context_raises() -> None:
-    from mriforge.models.losses.physics_anchor_loss import PhysicsAnchorLoss
+    from spectramr.models.losses.physics_anchor_loss import PhysicsAnchorLoss
 
     loss = PhysicsAnchorLoss()
     x = torch.zeros(1, 1, 2, 2)
@@ -89,8 +89,8 @@ def test_import_does_not_pull_infrastructure_calibration() -> None:
 
     code = (
         "import sys\n"
-        "import mriforge.models.losses.physics_anchor_loss\n"
-        "assert 'mriforge.infrastructure.calibration.scores' not in sys.modules, (\n"
+        "import spectramr.models.losses.physics_anchor_loss\n"
+        "assert 'spectramr.infrastructure.calibration.scores' not in sys.modules, (\n"
         "    'module-scope leftward import reintroduced')\n"
     )
     proc = subprocess.run(

@@ -15,10 +15,10 @@ from __future__ import annotations
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, sense_forward
-from mriforge.models.diffusion.bloch_manifold_dps_sampler import BlochManifoldDPSSampler
-from mriforge.models.physics.bloch_manifold_projector import BlochManifoldProjector
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.infrastructure.physics.fft_ops import fft2c, sense_forward
+from spectramr.models.diffusion.bloch_manifold_dps_sampler import BlochManifoldDPSSampler
+from spectramr.models.physics.bloch_manifold_projector import BlochManifoldProjector
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 class _DummyEps(nn.Module):

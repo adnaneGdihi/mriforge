@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.witness.registry import (
+from spectramr.infrastructure.validation.witness.registry import (
     Applicability,
     Severity,
     Stage,
@@ -117,12 +117,12 @@ def test_verdict_serialises_for_the_json_payload():
 
 def test_witness_import_error_classification_reraises_in_repo() -> None:
     """A broken in-repo witness module is a detector that does not exist."""
-    from mriforge.infrastructure.validation.witness import (
+    from spectramr.infrastructure.validation.witness import (
         _classify_witness_import_error,
     )
 
     for exc in (
-        ImportError("boom", name="mriforge.infrastructure.validation.witness.checks.x"),
+        ImportError("boom", name="spectramr.infrastructure.validation.witness.checks.x"),
         ImportError("boom"),  # falsy name: unattributable, so also loud
         RuntimeError("not an import problem"),
     ):
@@ -133,7 +133,7 @@ def test_witness_import_error_classification_reraises_in_repo() -> None:
 def test_witness_import_error_classification_downgrades_third_party() -> None:
     """A genuinely absent optional dependency warns rather than raising, so one
     missing package cannot take down every detector in the package."""
-    from mriforge.infrastructure.validation.witness import (
+    from spectramr.infrastructure.validation.witness import (
         _classify_witness_import_error,
     )
 

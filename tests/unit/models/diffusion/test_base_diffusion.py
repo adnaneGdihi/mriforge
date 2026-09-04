@@ -3,7 +3,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 
-from mriforge.models.diffusion.base_diffusion import (
+from spectramr.models.diffusion.base_diffusion import (
     Diffusion,
     DoubleConvWithTime,
     DownWithTime,
@@ -295,10 +295,10 @@ def test_the_two_cosine_implementations_really_do_differ() -> None:
     """Pins the premise -- if these ever converge, the betas hand-over is moot."""
     import torch
 
-    from mriforge.infrastructure.training.schedulers.diffusion_scheduler import (
+    from spectramr.infrastructure.training.schedulers.diffusion_scheduler import (
         DiffusionScheduler,
     )
-    from mriforge.models.diffusion.base_diffusion import cosine_beta_schedule
+    from spectramr.models.diffusion.base_diffusion import cosine_beta_schedule
 
     fwd = DiffusionScheduler(num_timesteps=1000, beta_schedule="cosine").betas
     rev = cosine_beta_schedule(1000)
@@ -308,7 +308,7 @@ def test_the_two_cosine_implementations_really_do_differ() -> None:
 def test_explicit_betas_are_used_verbatim() -> None:
     import torch
 
-    from mriforge.models.diffusion.base_diffusion import Diffusion
+    from spectramr.models.diffusion.base_diffusion import Diffusion
 
     betas = torch.linspace(0.01, 0.3, 50)
     d = Diffusion(timesteps=50, beta_schedule="cosine", betas=betas)
@@ -321,10 +321,10 @@ def test_forward_and_reverse_schedules_agree_after_handover() -> None:
     """The whole point: one schedule, owned by the forward process."""
     import torch
 
-    from mriforge.infrastructure.training.schedulers.diffusion_scheduler import (
+    from spectramr.infrastructure.training.schedulers.diffusion_scheduler import (
         DiffusionScheduler,
     )
-    from mriforge.models.diffusion.base_diffusion import Diffusion
+    from spectramr.models.diffusion.base_diffusion import Diffusion
 
     fwd = DiffusionScheduler(num_timesteps=200, beta_schedule="cosine")
     rev = Diffusion(timesteps=200, beta_schedule="cosine", betas=fwd.betas)
@@ -337,7 +337,7 @@ def test_named_schedule_still_works_when_no_betas_supplied() -> None:
     """Every non-LDM caller keeps its historical schedule untouched."""
     import torch
 
-    from mriforge.models.diffusion.base_diffusion import Diffusion, cosine_beta_schedule
+    from spectramr.models.diffusion.base_diffusion import Diffusion, cosine_beta_schedule
 
     d = Diffusion(timesteps=100, beta_schedule="cosine")
     torch.testing.assert_close(d.betas.cpu(), cosine_beta_schedule(100))
@@ -347,7 +347,7 @@ def test_mismatched_betas_length_raises() -> None:
     import pytest
     import torch
 
-    from mriforge.models.diffusion.base_diffusion import Diffusion
+    from spectramr.models.diffusion.base_diffusion import Diffusion
 
     with pytest.raises(ValueError, match="length timesteps"):
         Diffusion(timesteps=100, beta_schedule="cosine", betas=torch.linspace(0.1, 0.2, 7))

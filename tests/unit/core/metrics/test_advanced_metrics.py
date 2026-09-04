@@ -1,6 +1,6 @@
 """Tests for ``LossStatistics`` and ``LossAnalyzer``.
 
-Targets ``mriforge.core.metrics.advanced_metrics``. Provides streaming
+Targets ``spectramr.core.metrics.advanced_metrics``. Provides streaming
 statistics + anomaly detection (divergence, NaN/Inf, stagnation,
 spike, oscillation) over a loss trajectory.
 
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import math
 
-from mriforge.core.metrics.advanced_metrics import (
+from spectramr.core.metrics.advanced_metrics import (
     AnomalyReport,
     AnomalyType,
     LossAnalyzer,

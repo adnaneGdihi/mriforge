@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.latent_consistency_loss import LatentConsistencyLoss
+from spectramr.models.losses.latent_consistency_loss import LatentConsistencyLoss
 
 
 class MockDisentangledModel(nn.Module):

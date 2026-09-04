@@ -1,4 +1,4 @@
-"""Tests for :class:`mriforge.data.datasets.m4raw_dataset.M4RawRepetitionDataset`.
+"""Tests for :class:`spectramr.data.datasets.m4raw_dataset.M4RawRepetitionDataset`.
 
 Regression coverage for DC-1: ``coil_processing_mode`` must be validated at
 ``__init__`` time. An unrecognised mode string (e.g. a YAML typo) used to
@@ -15,15 +15,14 @@ from typing import ClassVar
 import h5py
 import numpy as np
 import pytest
-
 import torch
 
-import mriforge.data.datasets.m4raw_dataset as m4raw_mod
-from mriforge.data.datasets.m4raw_dataset import (
+import spectramr.data.datasets.m4raw_dataset as m4raw_mod
+from spectramr.data.datasets.m4raw_dataset import (
+    _MIN_REPS_FOR_LOO,
     _VALID_COIL_MODES,
     _VALID_TARGET_MODES,
     M4RawRepetitionDataset,
-    _MIN_REPS_FOR_LOO,
     _average_reps,
     _clamp_worker_threads_once,
     _read_kspace_shape,
@@ -36,15 +35,13 @@ from mriforge.data.datasets.m4raw_dataset import (
 
 
 def test_valid_target_modes_is_the_advertised_set() -> None:
-    assert _VALID_TARGET_MODES == frozenset({"complex_mean", "phase_aligned_mean"})
+    assert frozenset({"complex_mean", "phase_aligned_mean", "rep_pair"}) == _VALID_TARGET_MODES
 
 
 def test_average_reps_complex_mean_is_plain_mean() -> None:
     torch.manual_seed(0)
     reps = [torch.randn(1, 2, 4, 4, dtype=torch.complex64) for _ in range(3)]
-    assert torch.allclose(
-        _average_reps(reps, "complex_mean"), torch.stack(reps).mean(0)
-    )
+    assert torch.allclose(_average_reps(reps, "complex_mean"), torch.stack(reps).mean(0))
 
 
 def test_average_reps_phase_aligned_recovers_signal_under_global_drift() -> None:
@@ -52,9 +49,7 @@ def test_average_reps_phase_aligned_recovers_signal_under_global_drift() -> None
     x = torch.randn(1, 2, 8, 8, dtype=torch.complex64)
     reps = [x, x * torch.exp(torch.tensor(2.0j)), x * torch.exp(torch.tensor(-1.3j))]
     aligned = _average_reps(reps, "phase_aligned_mean")
-    assert torch.allclose(
-        aligned.abs(), x.abs(), atol=1e-4
-    )  # coherent, no cancellation
+    assert torch.allclose(aligned.abs(), x.abs(), atol=1e-4)  # coherent, no cancellation
     cancelled = _average_reps(reps, "complex_mean")
     assert cancelled.abs().sum() < aligned.abs().sum()  # plain mean cancels signal
 
@@ -93,9 +88,7 @@ def test_average_reps_exclude_leaving_one_rep_passes_through() -> None:
     """Two reps, exclude one → the single retained rep (no empty mean)."""
     torch.manual_seed(2)
     reps = [torch.randn(1, 2, 4, 4, dtype=torch.complex64) for _ in range(2)]
-    assert torch.allclose(
-        _average_reps(reps, "phase_aligned_mean", exclude_index=0), reps[1]
-    )
+    assert torch.allclose(_average_reps(reps, "phase_aligned_mean", exclude_index=0), reps[1])
 
 
 def test_average_reps_phase_alignment_anchors_to_first_retained_rep() -> None:
@@ -110,7 +103,7 @@ def test_average_reps_phase_alignment_anchors_to_first_retained_rep() -> None:
 
 def test_valid_coil_modes_is_the_advertised_set() -> None:
     """The module-level frozenset pins the four accepted coil modes."""
-    assert _VALID_COIL_MODES == frozenset({"none", "rss", "svd", "flatten"})
+    assert frozenset({"none", "rss", "svd", "flatten"}) == _VALID_COIL_MODES
 
 
 def test_clamp_worker_threads_runs_once(monkeypatch) -> None:
@@ -235,9 +228,7 @@ def _build_single_contrast_ds(tmp_path, *, hw=(32, 24)):
         p = tmp_path / f"2022_T1{rep}.h5"
         _write_kspace_h5(p, (2, 4, h, w), complex_dtype=True)
         files.append(p)
-    return M4RawRepetitionDataset(
-        h5_files=files, single_contrast=True, coil_processing_mode="none"
-    )
+    return M4RawRepetitionDataset(h5_files=files, single_contrast=True, coil_processing_mode="none")
 
 
 def test_index_property_aliases_groups_and_carries_shape(tmp_path) -> None:
@@ -444,7 +435,7 @@ def test_federated_pairs_stamp_their_source_contrast(tmp_path) -> None:
     the builder stopped stamping it, that attribution would silently drop every
     T1 file rather than fail, so the key is pinned at its origin.
     """
-    from mriforge.data.datasets.m4raw_dataset import M4RawRepetitionDataset
+    from spectramr.data.datasets.m4raw_dataset import M4RawRepetitionDataset
 
     groups = [
         [tmp_path / "p1_T101.h5", tmp_path / "p1_T102.h5"],
@@ -474,9 +465,7 @@ def test_provenance_counts_opens_no_voxel_data(tmp_path, monkeypatch) -> None:
     assert ds.provenance_counts()["files"] == 2
 
 
-def test_queue_filter_uses_fast_path_without_materializing(
-    tmp_path, monkeypatch
-) -> None:
+def test_queue_filter_uses_fast_path_without_materializing(tmp_path, monkeypatch) -> None:
     """REGRESSION: the patch-compat filter must NOT iterate the dataset.
 
     We poison ``_load_item`` (the per-sample loader) so ANY materialisation
@@ -484,7 +473,7 @@ def test_queue_filter_uses_fast_path_without_materializing(
     cleanly; the pre-fix slow path would touch ``__getitem__`` and explode —
     the exact 39 GB OOM that SIGKILLed queue-build on the cluster.
     """
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     ds = _build_single_contrast_ds(tmp_path, hw=(64, 64))
 
@@ -499,7 +488,7 @@ def test_queue_filter_uses_fast_path_without_materializing(
 
 def test_queue_filter_drops_too_small_via_shape_metadata(tmp_path, monkeypatch) -> None:
     """A volume smaller than the patch is dropped from ``index`` with no voxel load."""
-    from mriforge.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
 
     ds = _build_single_contrast_ds(tmp_path, hw=(16, 16))
 
@@ -520,11 +509,11 @@ def test_all_retries_exhausted_raises_not_zero_fill(tmp_path, monkeypatch) -> No
     input/target with no hard failure — the "loads zero/random" facade
     (pitfall #9/#16).
     """
-    from mriforge.data.datasets.m4raw_dataset import _SkipSample
+    from spectramr.data.datasets.m4raw_dataset import _SkipSample
 
     ds = _build_single_contrast_ds(tmp_path, hw=(16, 16))
 
-    def _always_skip(self, idx):  # noqa: ANN001
+    def _always_skip(self, idx):
         raise _SkipSample("simulated unreadable k-space file")
 
     monkeypatch.setattr(M4RawRepetitionDataset, "_load_item", _always_skip)
@@ -585,9 +574,7 @@ def _build_normalizing_ds(tmp_path, *, transform=None):
 
 
 @pytest.mark.parametrize("scale_domain", ["kspace", "image"])
-def test_kspace_normalization_is_invertible_via_stored_scale(
-    tmp_path, scale_domain
-) -> None:
+def test_kspace_normalization_is_invertible_via_stored_scale(tmp_path, scale_domain) -> None:
     """Round-trip: denormalizing the served k-space recovers the raw k-space.
 
     This holds only when the normalization ran EXACTLY ONCE and the scale it
@@ -598,7 +585,7 @@ def test_kspace_normalization_is_invertible_via_stored_scale(
 
     Semantics-agnostic on purpose: it must hold for either scale domain.
     """
-    from mriforge.data.transforms.normalization import (
+    from spectramr.data.transforms.normalization import (
         KSpaceNormalizationTransform,
         denormalize_kspace_robust,
     )
@@ -615,9 +602,7 @@ def test_kspace_normalization_is_invertible_via_stored_scale(
 
     raw = _load_raw_target(tmp_path)
     served = _stacked_to_complex(subject["target"].data)
-    restored = denormalize_kspace_robust(
-        served, subject["kspace_scale"], log_scaling=True
-    )
+    restored = denormalize_kspace_robust(served, subject["kspace_scale"], log_scaling=True)
 
     assert torch.allclose(restored, raw, rtol=1e-3, atol=1e-4 * raw.abs().max()), (
         "k-space is not recoverable from the stored scale — normalization was "
@@ -644,9 +629,9 @@ def test_dataset_does_not_morph_kspace_when_a_transform_owns_normalization(
     served = _stacked_to_complex(ds[0]["target"].data)
     raw = _load_raw_target(tmp_path)
 
-    assert torch.allclose(
-        served, raw, rtol=1e-4, atol=1e-6 * raw.abs().max()
-    ), "dataset morphed the k-space; normalization must live in the transform"
+    assert torch.allclose(served, raw, rtol=1e-4, atol=1e-6 * raw.abs().max()), (
+        "dataset morphed the k-space; normalization must live in the transform"
+    )
 
 
 def test_normalize_kspace_without_a_transform_raises(tmp_path) -> None:
@@ -681,8 +666,21 @@ def _load_raw_target(tmp_path) -> torch.Tensor:
 # PSNR/SSIM is an average over two different references. Nothing said so.
 
 
-def _build_loo_ds(tmp_path, *, n_reps: int, exclude_input: bool = True):
-    """Single-contrast dataset with exactly ``n_reps`` repetitions."""
+def _build_loo_ds(
+    tmp_path,
+    *,
+    n_reps: int,
+    exclude_input: bool = True,
+    nex_fallback: str = "all_reps",
+    target_mode: str = "phase_aligned_mean",
+):
+    """Single-contrast dataset with exactly ``n_reps`` repetitions.
+
+    ``nex_fallback`` defaults to the DECLARED acceptance of the all-reps
+    reference: since the cohort review (T0.1) the schema default ``error``
+    refuses a <3-rep group at construction, so the decline-warning path these
+    tests pin is reachable only once the arm has declared ``all_reps``.
+    """
     files = []
     for i in range(1, n_reps + 1):
         p = tmp_path / f"2022_T1{i:02d}.h5"
@@ -693,8 +691,9 @@ def _build_loo_ds(tmp_path, *, n_reps: int, exclude_input: bool = True):
         single_contrast=True,
         coil_processing_mode="none",
         use_repetitions=True,
-        target_mode="phase_aligned_mean",
+        target_mode=target_mode,
         nex_target_exclude_input=exclude_input,
+        nex_fallback=nex_fallback,
     )
 
 
@@ -719,9 +718,7 @@ def test_loo_firing_on_three_reps_is_silent(tmp_path, caplog) -> None:
     ds = _build_loo_ds(tmp_path, n_reps=3)
     with caplog.at_level(logging.WARNING, logger=m4raw_mod.logger.name):
         ds[0]
-    assert not [
-        r for r in caplog.records if "nex_target_exclude_input" in r.getMessage()
-    ]
+    assert not [r for r in caplog.records if "nex_target_exclude_input" in r.getMessage()]
 
 
 def test_no_warning_when_loo_was_never_requested(tmp_path, caplog) -> None:
@@ -729,9 +726,7 @@ def test_no_warning_when_loo_was_never_requested(tmp_path, caplog) -> None:
     ds = _build_loo_ds(tmp_path, n_reps=2, exclude_input=False)
     with caplog.at_level(logging.WARNING, logger=m4raw_mod.logger.name):
         ds[0]
-    assert not [
-        r for r in caplog.records if "nex_target_exclude_input" in r.getMessage()
-    ]
+    assert not [r for r in caplog.records if "nex_target_exclude_input" in r.getMessage()]
 
 
 def test_the_decline_is_reported_once_per_rep_count(tmp_path, caplog) -> None:
@@ -756,7 +751,7 @@ class TestRepetitionLoadFailuresAreLoud:
 
     @staticmethod
     def _paths(tmp_path, n_ok, n_missing):
-        from mriforge.data.datasets import m4raw_dataset as m
+        from spectramr.data.datasets import m4raw_dataset as m
 
         paths = []
         for i in range(n_ok):
@@ -784,7 +779,7 @@ class TestRepetitionLoadFailuresAreLoud:
 
         import torch
 
-        from mriforge.data.datasets import m4raw_dataset as m
+        from spectramr.data.datasets import m4raw_dataset as m
 
         paths, _ = self._paths(tmp_path, n_ok=2, n_missing=2)
         monkeypatch.setattr(m, "_load_kspace", lambda _p: torch.zeros(1, 4, 4))
@@ -801,7 +796,7 @@ class TestRepetitionLoadFailuresAreLoud:
 
         import torch
 
-        from mriforge.data.datasets import m4raw_dataset as m
+        from spectramr.data.datasets import m4raw_dataset as m
 
         paths, _ = self._paths(tmp_path, n_ok=3, n_missing=0)
         monkeypatch.setattr(m, "_load_kspace", lambda _p: torch.zeros(1, 4, 4))
@@ -824,7 +819,7 @@ class TestRepetitionLoadFailuresAreLoud:
         both from one helper is what keeps them from drifting again."""
         import inspect
 
-        from mriforge.data.datasets import m4raw_dataset as m
+        from spectramr.data.datasets import m4raw_dataset as m
 
         src = inspect.getsource(m.M4RawRepetitionDataset)
         assert src.count("_load_reps_or_skip(") == 2
@@ -838,7 +833,7 @@ class TestSingleSurvivingRepIsRefused:
     def test_source_refuses_the_degenerate_group(self) -> None:
         import inspect
 
-        from mriforge.data.datasets.m4raw_dataset import M4RawRepetitionDataset
+        from spectramr.data.datasets.m4raw_dataset import M4RawRepetitionDataset
 
         src = inspect.getsource(M4RawRepetitionDataset)
         assert "self.use_repetitions and len(kspace_reps) < 2" in src, (
@@ -851,7 +846,7 @@ class TestSingleSurvivingRepIsRefused:
         The error must say so, or the reader's only move is to delete data."""
         import inspect
 
-        from mriforge.data.datasets.m4raw_dataset import M4RawRepetitionDataset
+        from spectramr.data.datasets.m4raw_dataset import M4RawRepetitionDataset
 
         src = inspect.getsource(M4RawRepetitionDataset)
         assert "data.use_repetitions: false" in src
@@ -874,9 +869,7 @@ class TestRepetitionCountsDecideWhetherLOOIsEvenPossible:
 
     def test_loo_is_available_for_t1_and_t2_but_not_flair(self) -> None:
         """The partition the threshold actually draws."""
-        eligible = {
-            contrast: n >= _MIN_REPS_FOR_LOO for contrast, n in self.M4RAW_REPS.items()
-        }
+        eligible = {contrast: n >= _MIN_REPS_FOR_LOO for contrast, n in self.M4RAW_REPS.items()}
         assert eligible == {"T1": True, "T2": True, "FLAIR": False}
 
     def test_the_stale_6_6_4_figures_would_have_hidden_the_flair_case(self) -> None:
@@ -940,7 +933,7 @@ def test_published_contrast_is_a_plain_string_so_collation_keeps_it_per_sample(
     ``collated[key] = items`` branch, which is what lets a batch report the
     contrast of each sample it holds instead of one stacked number.
     """
-    from mriforge.data.collation.strategies import ImageCollateStrategy
+    from spectramr.data.collation.strategies import ImageCollateStrategy
 
     ds = _build_single_contrast_ds(tmp_path)
     subject = ds[0]
@@ -966,7 +959,7 @@ class TestM4RawRepetitionsByContrast:
     """
 
     def test_counts_match_the_documented_corpus(self) -> None:
-        from mriforge.data.datasets.m4raw_dataset import (
+        from spectramr.data.datasets.m4raw_dataset import (
             M4RAW_REPETITIONS_BY_CONTRAST,
         )
 
@@ -976,7 +969,7 @@ class TestM4RawRepetitionsByContrast:
         """The module docstring records PD as "variable", so no literal is
         correct for it. Absent is a state to report; a consumer must skip, not
         read a missing key as zero (non-negotiable 3)."""
-        from mriforge.data.datasets.m4raw_dataset import (
+        from spectramr.data.datasets.m4raw_dataset import (
             M4RAW_REPETITIONS_BY_CONTRAST,
         )
 
@@ -995,7 +988,7 @@ class TestM4RawRepetitionsByContrast:
         If someone ever collapses these two maps into one, this test is what
         catches it.
         """
-        from mriforge.data.datasets.m4raw_dataset import (
+        from spectramr.data.datasets.m4raw_dataset import (
             CONTRAST_MAP,
             M4RAW_REPETITIONS_BY_CONTRAST,
         )
@@ -1011,12 +1004,423 @@ class TestM4RawRepetitionsByContrast:
         """``_MIN_REPS_FOR_LOO`` and this map are two statements of one fact and
         must not drift: LOO is available exactly for the contrasts whose count
         reaches the threshold (T1/T2), and structurally impossible for FLAIR."""
-        from mriforge.data.datasets.m4raw_dataset import (
+        from spectramr.data.datasets.m4raw_dataset import (
             _MIN_REPS_FOR_LOO,
             M4RAW_REPETITIONS_BY_CONTRAST,
         )
 
-        eligible = {
-            c for c, n in M4RAW_REPETITIONS_BY_CONTRAST.items() if n >= _MIN_REPS_FOR_LOO
-        }
+        eligible = {c for c, n in M4RAW_REPETITIONS_BY_CONTRAST.items() if n >= _MIN_REPS_FOR_LOO}
         assert eligible == {"T1", "T2"}
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Leave-one-out NEX reference: the <3-rep contract (cohort review T0.1, #695)
+# ──────────────────────────────────────────────────────────────────────────
+
+
+def _build_reps_ds(tmp_path, *, n_reps: int, hw=(32, 24), **kw):
+    """Single-contrast M4Raw dataset with ``n_reps`` on-disk repetitions."""
+    h, w = hw
+    files = []
+    for rep in range(1, n_reps + 1):
+        p = tmp_path / f"2022_T1{rep:02d}.h5"
+        _write_kspace_h5(p, (2, 4, h, w), complex_dtype=True)
+        files.append(p)
+    return M4RawRepetitionDataset(
+        h5_files=files, single_contrast=True, coil_processing_mode="none", **kw
+    )
+
+
+def test_valid_nex_fallbacks_is_the_advertised_set() -> None:
+    from spectramr.data.datasets.m4raw_dataset import _VALID_NEX_FALLBACKS
+
+    assert frozenset({"error", "all_reps"}) == _VALID_NEX_FALLBACKS
+
+
+def test_unknown_nex_fallback_raises(tmp_path) -> None:
+    with pytest.raises(ValueError, match="Unknown nex_fallback"):
+        _build_reps_ds(tmp_path, n_reps=3, nex_target_exclude_input=True, nex_fallback="warn")
+
+
+def test_leave_one_out_refuses_a_two_rep_group_at_construction(tmp_path) -> None:
+    """The #695 shape: a 2-rep contrast under leave-one-out used to fall back to
+    the correlated all-reps average with only a warning. The default now
+    refuses BEFORE any sample is served, naming the contrast and the fix."""
+    with pytest.raises(ValueError, match=r"fewer than 3 repetitions.*T1.*nex_fallback: all_reps"):
+        _build_reps_ds(tmp_path, n_reps=2, nex_target_exclude_input=True)
+
+
+def test_leave_one_out_constructs_when_every_group_has_three_reps(tmp_path) -> None:
+    ds = _build_reps_ds(tmp_path, n_reps=3, nex_target_exclude_input=True)
+    assert len(ds) == 1 and ds.nex_fallback == "error"
+
+
+def test_declared_all_reps_fallback_accepts_the_two_rep_group(tmp_path) -> None:
+    """``all_reps`` is the DECLARED acceptance of the correlated reference for
+    the short groups; construction succeeds and the decline is logged once."""
+    ds = _build_reps_ds(tmp_path, n_reps=2, nex_target_exclude_input=True, nex_fallback="all_reps")
+    assert ds.nex_fallback == "all_reps"
+    subject = ds[0]
+    # target is the 2-rep average (not the input rep), and the decline was noted
+    assert 2 in ds._loo_declined_reported
+    assert subject is not None
+
+
+def test_no_leave_one_out_never_consults_the_fallback(tmp_path) -> None:
+    """With the all-reps reference the fallback is irrelevant: a 2-rep group
+    constructs and serves exactly as before."""
+    ds = _build_reps_ds(tmp_path, n_reps=2, nex_target_exclude_input=False)
+    assert ds[0] is not None
+    assert ds._loo_declined_reported == set()
+
+
+def test_use_repetitions_false_serves_rep0_for_both_and_skips_the_loo_check(tmp_path) -> None:
+    """``use_repetitions=False`` is the declared identity/debug mode; the
+    leave-one-out contract has nothing to refuse there."""
+    ds = _build_reps_ds(tmp_path, n_reps=2, use_repetitions=False, nex_target_exclude_input=True)
+    assert ds[0] is not None
+
+
+def test_kspace_readers_open_h5_in_swmr_mode(tmp_path, monkeypatch) -> None:
+    """Both HDF5 readers open with ``swmr=True`` like ``io_strategies`` (2026-09-03)."""
+    path = tmp_path / "vol.h5"
+    with h5py.File(path, "w") as f:
+        f.create_dataset("kspace", data=np.zeros((2, 4, 8, 8), dtype=np.complex64))
+    seen: list[dict] = []
+    real_file = h5py.File
+
+    def spy(*args, **kwargs):
+        seen.append(dict(kwargs))
+        return real_file(*args, **kwargs)
+
+    monkeypatch.setattr(m4raw_mod.h5py, "File", spy)
+    assert m4raw_mod._load_kspace(path).shape == (2, 4, 8, 8)
+    assert m4raw_mod._read_kspace_shape(path) == (2, 4, 8, 8)
+    assert len(seen) == 2 and all(k.get("swmr") is True for k in seen), seen
+
+
+class TestRepPairTarget:
+    """``target_mode: rep_pair`` -- the Noise2Noise repetition pair (cohort review 2026-09-02)."""
+
+    @staticmethod
+    def _reps(n: int = 3, seed: int = 0):
+        g = torch.Generator().manual_seed(seed)
+        return [
+            torch.complex(torch.randn(1, 8, 8, generator=g), torch.randn(1, 8, 8, generator=g))
+            for _ in range(n)
+        ]
+
+    def test_the_pair_is_another_repetition_aligned_to_the_input(self) -> None:
+        """The fires-test: the target is never the input rep, its magnitude is another
+        rep's, and its global phase is aligned to the input (real-positive dot)."""
+        reps = self._reps()
+        target = m4raw_mod._average_reps(reps, "rep_pair", exclude_index=0)
+        assert not torch.allclose(target, reps[0])
+        assert torch.allclose(target.abs(), reps[1].abs(), atol=1e-6)
+        dot = (target * reps[0].conj()).sum()
+        assert dot.imag.abs().item() < 1e-4 * dot.abs().item() and dot.real.item() > 0
+
+    def test_the_pair_is_not_an_average(self) -> None:
+        reps = self._reps()
+        target = m4raw_mod._average_reps(reps, "rep_pair", exclude_index=0)
+        mean = m4raw_mod._average_reps(reps, "phase_aligned_mean", exclude_index=0)
+        assert not torch.allclose(target.abs(), mean.abs())
+
+    def test_the_input_index_is_mandatory(self) -> None:
+        """Planted violation: a pair that may contain the input is the identity task."""
+        with pytest.raises(ValueError, match="exclude_index"):
+            m4raw_mod._average_reps(self._reps(), "rep_pair")
+
+    def test_a_single_repetition_has_no_pair(self) -> None:
+        with pytest.raises(ValueError, match="at least one repetition besides the input"):
+            m4raw_mod._average_reps(self._reps(1), "rep_pair", exclude_index=0)
+
+    def test_two_repetitions_suffice_on_the_dataset(self, tmp_path) -> None:
+        """A 2-rep group (FLAIR on M4Raw) is a valid pair, where leave-one-out averaging needs 3."""
+        ds = _build_loo_ds(tmp_path, n_reps=2, target_mode="rep_pair", nex_fallback="error")
+        # The synthetic writer seeds every file identically; give the second
+        # repetition its own noise so a pair is distinguishable from the input.
+        rng = np.random.default_rng(7)
+        with h5py.File(str(tmp_path / "2022_T102.h5"), "r+") as f:
+            k = f["kspace"][()]
+            f["kspace"][...] = k + (0.05 * rng.standard_normal(k.shape)).astype(np.complex64)
+        subject = ds[0]
+        inp = subject["input"].data if hasattr(subject["input"], "data") else subject["input"]
+        tgt = subject["target"].data if hasattr(subject["target"], "data") else subject["target"]
+        assert inp.shape == tgt.shape
+        assert not torch.allclose(inp, tgt)
+
+    def test_a_one_repetition_group_is_refused_whatever_the_fallback(self, tmp_path) -> None:
+        with pytest.raises(ValueError, match="fewer than 2"):
+            _build_loo_ds(tmp_path, n_reps=1, target_mode="rep_pair", nex_fallback="all_reps")
+
+
+# ── Slice-level records (#1757) ───────────────────────────────────────────────
+# ``slice_level_records`` expands each (patient, contrast) group into one record
+# per slice and reads ``f["kspace"][slice]`` for every repetition of that record.
+# The per-group route is the reference: a slice record must equal the matching
+# slice of the volume path, and the default path must not move at all.
+
+
+def _write_varied_kspace_h5(path, *, slices, coils=2, hw=(16, 16), seed=0, leader=0) -> None:
+    """Structured k-space whose slices and repetitions all differ (``seed``).
+
+    ``leader`` boosts one coil on every slice so the RSS phase-reference coil
+    (the highest-energy coil) is the same whichever slices are loaded; ``None``
+    boosts a different coil per slice so the leader varies.
+    """
+    h, w = hw
+    rng = np.random.default_rng(seed)
+    img = np.zeros((slices, coils, h, w), dtype=np.complex64)
+    img[:, :, h // 4 : 3 * h // 4, w // 4 : 3 * w // 4] = 1.0
+    img += 0.05 * rng.standard_normal(img.shape).astype(np.float32)
+    for s in range(slices):
+        img[s, leader if leader is not None else s % coils] *= 3.0
+    ksp = np.fft.fftshift(
+        np.fft.fft2(np.fft.ifftshift(img, axes=(-2, -1)), norm="ortho"), axes=(-2, -1)
+    ).astype(np.complex64)
+    with h5py.File(str(path), "w") as f:
+        f.create_dataset("kspace", data=ksp)
+
+
+def _slice_route_pair(tmp_path, *, slices=(3, 2), mode="none", leader=0):
+    """(volume dataset, slice dataset) over the same files.
+
+    Two single-contrast groups (``p1``, ``p2``) of two repetitions each, with
+    ``slices`` slices per group, so the record count is a sum, not a product.
+    """
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    files = []
+    for g, (patient, n) in enumerate(zip(("p1", "p2"), slices, strict=True)):
+        for rep in (1, 2):
+            p = tmp_path / f"{patient}_T1{rep:02d}.h5"
+            _write_varied_kspace_h5(p, slices=n, seed=10 * g + rep, leader=leader)
+            files.append(p)
+    kw = {
+        "single_contrast": True,
+        "coil_processing_mode": mode,
+        "target_mode": "phase_aligned_mean",
+    }
+    return (
+        M4RawRepetitionDataset(files, **kw),
+        M4RawRepetitionDataset(files, slice_level_records=True, **kw),
+    )
+
+
+def test_slice_route_len_is_the_sum_of_slice_counts(tmp_path) -> None:
+    vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    assert len(vol) == 2
+    assert len(sl) == 3 + 2
+    assert [r["slice_index"] for r in sl.index] == [0, 1, 2, 0, 1]
+    assert [r["group_index"] for r in sl.index] == [0, 0, 0, 1, 1]
+    assert [r["shape"] for r in sl.index] == [(1, 2, 16, 16)] * 5
+
+
+def test_slice_record_equals_the_slice_of_the_volume_path(tmp_path) -> None:
+    """The fires-test: every tensor a slice record serves is the matching slice
+    of what the per-group route serves, and the record is a depth-1 subject."""
+    vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    volumes = [vol[0], vol[1]]
+    for k, rec in enumerate(sl.index):
+        g, s = rec["group_index"], rec["slice_index"]
+        subject = sl[k]
+        for key in ("input", "target", "kspace"):
+            assert subject[key].data.shape[-1] == 1
+            assert torch.equal(subject[key].data, volumes[g][key].data[..., s : s + 1]), (k, key)
+        assert int(subject["contrast_idx"]) == int(volumes[g]["contrast_idx"])
+        assert subject["contrast"] == volumes[g]["contrast"]
+        assert subject["file_id"] == volumes[g]["file_id"]
+        assert int(subject["slice_index"]) == s
+    # The per-group route publishes no slice key: nothing about it moved.
+    assert "slice_index" not in volumes[0]
+
+
+def test_the_target_is_the_per_slice_nex_average(tmp_path) -> None:
+    """A NEX target is per slice already; the slice route averages the same
+    two repetitions of one slice that the volume path averages for all."""
+    vol, sl = _slice_route_pair(tmp_path, slices=(2, 2))
+    full = vol[0]["target"].data
+    assert not torch.equal(vol[0]["input"].data, full)  # repetitions differ
+    assert torch.equal(sl[1]["target"].data, full[..., 1:2])
+
+
+def test_rss_reference_coil_is_chosen_per_record(tmp_path) -> None:
+    """Under ``rss`` the phase-reference coil is the highest-energy coil of the
+    loaded tensor. With one coil leading every slice the slice route equals
+    the volume path; when the leader varies per slice the two can differ on
+    that slice, because the volume path picks one coil for the whole volume.
+    Pinned so the divergence is a stated fact rather than a surprise."""
+    vol, sl = _slice_route_pair(tmp_path, slices=(3, 2), mode="rss", leader=0)
+    for k, rec in enumerate(sl.index):
+        g, s = rec["group_index"], rec["slice_index"]
+        assert torch.equal(sl[k]["input"].data, vol[g]["input"].data[..., s : s + 1])
+
+    vol_v, sl_v = _slice_route_pair(tmp_path / "varied", slices=(3, 2), mode="rss", leader=None)
+    diverged = [
+        k
+        for k, rec in enumerate(sl_v.index)
+        if not torch.equal(
+            sl_v[k]["input"].data,
+            vol_v[rec["group_index"]]["input"].data[
+                ..., rec["slice_index"] : rec["slice_index"] + 1
+            ],
+        )
+    ]
+    assert diverged, "expected the per-slice reference coil to differ on some slice"
+
+
+def test_an_out_of_range_slice_raises(tmp_path) -> None:
+    """Planted violation: a record promising a slice the file lacks is an index
+    defect. It is raised, not censused as an unreadable repetition and not
+    skipped by the retry loop (which only catches ``_SkipSample``)."""
+    _vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    sl.index[0]["slice_index"] = 99
+    with pytest.raises(IndexError, match=r"out of range.*3 slice"):
+        _ = sl[0]
+
+
+def test_load_kspace_slice_keeps_the_slice_axis(tmp_path) -> None:
+    """One slice comes back as ``(1, C, H, W)`` so every consumer downstream
+    (``_rss_combine`` needs 4-D, the TorchIO converter needs a slice axis) sees
+    the layout of the per-group route; the real-storage layout is covered too."""
+    p = tmp_path / "vol.h5"
+    _write_varied_kspace_h5(p, slices=3)
+    whole = m4raw_mod._load_kspace(p)
+    one = m4raw_mod._load_kspace(p, 2)
+    assert one.shape == (1, 2, 16, 16) and one.dtype == torch.complex64
+    assert torch.equal(one, whole[2:3])
+    real = tmp_path / "real.h5"
+    _write_kspace_h5(real, (3, 4, 8, 8), complex_dtype=False)  # stored (3, 4, 8, 8, 2)
+    assert m4raw_mod._load_kspace(real, 1).shape == (1, 4, 8, 8)
+
+
+def test_one_item_reads_exactly_one_slice_per_repetition(tmp_path, monkeypatch) -> None:
+    """The read-count assertion behind #1757: a slice record reads one slice of
+    each repetition, where the per-group route reads every slice of each."""
+    vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    seen: list = []
+    real_getitem = h5py.Dataset.__getitem__
+
+    def spy(self, key, *args, **kwargs):
+        seen.append(key)
+        return real_getitem(self, key, *args, **kwargs)
+
+    monkeypatch.setattr(h5py.Dataset, "__getitem__", spy)
+    _ = sl[4]  # group p2, slice 1
+    assert seen == [1, 1], seen  # two repetitions, the one slice each
+    seen.clear()
+    _ = vol[1]
+    assert seen == [(), ()], seen  # two repetitions, the whole volume each
+
+
+def test_retry_leaves_the_failing_group_on_the_slice_route(tmp_path, monkeypatch) -> None:
+    """A skip on a slice record must move to the next GROUP: stepping by one
+    would retry the other slices of the same unreadable files and report a
+    systemic failure after five attempts."""
+    _vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    real_load = m4raw_mod._load_kspace
+
+    def flaky(path, slice_index=None):
+        if path.name.startswith("p1_"):
+            raise OSError("simulated unreadable repetition")
+        return real_load(path, slice_index)
+
+    monkeypatch.setattr(m4raw_mod, "_load_kspace", flaky)
+    subject = sl[0]  # p1 slice 0 fails -> step 3 -> p2 slice 0
+    assert subject["file_id"] == "p2_T101"
+    assert int(subject["slice_index"]) == 0
+
+
+def test_provenance_counts_on_the_slice_route(tmp_path) -> None:
+    """``groups`` keeps counting groups; the record count is its own key."""
+    vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    assert sl.provenance_counts() == {
+        "groups": 2,
+        "patients": 2,
+        "files": 4,
+        "per_contrast": {"T1": 2},
+        "files_per_contrast": {"T1": 4},
+        "slice_records": 5,
+    }
+    per_group = vol.provenance_counts()
+    assert "slice_records" not in per_group
+    assert per_group["groups"] == 2 and per_group["per_contrast"] == {"T1": 2}
+
+
+def test_queue_filter_drops_slice_records_for_a_deep_patch_without_materializing(
+    tmp_path, monkeypatch
+) -> None:
+    """A slice record describes a depth-1 subject, so the fast path drops every
+    record under a depth-3 patch and keeps every record under depth 1."""
+    from spectramr.data.builders.torchio_queue_builder import TorchIOQueueBuilder
+
+    def _boom(*_a, **_k):
+        raise AssertionError("materialised a subject: slow path taken")
+
+    monkeypatch.setattr(M4RawRepetitionDataset, "_load_item", _boom)
+    _vol, deep = _slice_route_pair(tmp_path, slices=(3, 2))
+    assert len(TorchIOQueueBuilder._filter_patch_compatible_subjects(deep, (16, 16, 3))) == 0
+    _vol, flat = _slice_route_pair(tmp_path / "flat", slices=(3, 2))
+    assert len(TorchIOQueueBuilder._filter_patch_compatible_subjects(flat, (16, 16, 1))) == 5
+    assert len(TorchIOQueueBuilder._filter_patch_compatible_subjects(flat, (16, 16))) == 5
+
+
+def _federated_files(tmp_path, *, t1_slices=2, t2_slices=2):
+    files = []
+    for contrast, n in (("T1", t1_slices), ("T2", t2_slices)):
+        for rep in (1, 2):
+            p = tmp_path / f"p1_{contrast}{rep:02d}.h5"
+            _write_varied_kspace_h5(p, slices=n, seed=rep + (0 if contrast == "T1" else 5))
+            files.append(p)
+    return files
+
+
+def test_federated_slice_route_pairs_source_and_target_per_slice(tmp_path) -> None:
+    files = _federated_files(tmp_path)
+    kw = {"single_contrast": False, "coil_processing_mode": "none"}
+    vol = M4RawRepetitionDataset(files, **kw)
+    sl = M4RawRepetitionDataset(files, slice_level_records=True, **kw)
+    assert len(vol) == 1 and len(sl) == 2
+    whole = vol[0]
+    for s in range(2):
+        subject = sl[s]
+        for key in ("input", "target"):
+            assert subject[key].data.shape[-1] == 1
+            assert torch.equal(subject[key].data, whole[key].data[..., s : s + 1])
+        assert int(subject["slice_index"]) == s
+        assert int(subject["federated_target_channel_start"]) == int(
+            whole["federated_target_channel_start"]
+        )
+
+
+def test_federated_slice_route_refuses_sides_with_different_slice_counts(tmp_path) -> None:
+    files = _federated_files(tmp_path, t1_slices=2, t2_slices=3)
+    with pytest.raises(ValueError, match="different slice counts per side"):
+        M4RawRepetitionDataset(
+            files, single_contrast=False, coil_processing_mode="none", slice_level_records=True
+        )
+
+
+def test_an_unreadable_header_refuses_the_slice_route_at_construction(tmp_path) -> None:
+    """The per-group route tolerates a group without a stamped shape (it falls
+    to the slow filter); the slice route cannot build its index without the
+    slice count and says which file, rather than guessing."""
+    files = []
+    for rep in ("01", "02"):
+        p = tmp_path / f"p1_T1{rep}.h5"
+        with h5py.File(str(p), "w") as f:
+            f.create_dataset("not_kspace", data=np.zeros((2, 2)))
+        files.append(p)
+    M4RawRepetitionDataset(files, single_contrast=True, coil_processing_mode="none")  # loads
+    with pytest.raises(ValueError, match=r"p1_T101\.h5.*could not be read"):
+        M4RawRepetitionDataset(
+            files, single_contrast=True, coil_processing_mode="none", slice_level_records=True
+        )
+
+
+def test_dry_iter_has_one_shell_per_slice_record(tmp_path) -> None:
+    """``tio.Queue.iterations_per_epoch`` walks ``dry_iter``; with
+    ``samples_per_volume: 1`` that makes an epoch exactly one pass over the
+    slices, which is the whole no-double-sampling argument."""
+    _vol, sl = _slice_route_pair(tmp_path, slices=(3, 2))
+    assert len(sl.dry_iter()) == 5

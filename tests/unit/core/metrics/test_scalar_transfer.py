@@ -23,8 +23,8 @@ from unittest import mock
 import pytest
 import torch
 
-from mriforge.core.metrics import scalar_transfer
-from mriforge.core.metrics.scalar_transfer import fuse_to_host
+from spectramr.core.metrics import scalar_transfer
+from spectramr.core.metrics.scalar_transfer import fuse_to_host
 
 
 class TestTransfersCorrectValues:

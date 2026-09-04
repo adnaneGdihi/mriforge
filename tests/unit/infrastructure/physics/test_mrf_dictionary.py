@@ -1,6 +1,6 @@
 """Tests for the MRF Bloch dictionary.
 
-Targets ``mriforge.infrastructure.physics.mrf_dictionary``. The
+Targets ``spectramr.infrastructure.physics.mrf_dictionary``. The
 ``BlochDictionary`` generates a fingerprint dictionary by simulating
 Bloch responses across a (T1, T2) grid, then matches observed signals
 to recover quantitative maps via dot-product matching.
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.mrf_dictionary import BlochDictionary
+from spectramr.infrastructure.physics.mrf_dictionary import BlochDictionary
 
 
 def _coarse_dict() -> BlochDictionary:

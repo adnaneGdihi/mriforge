@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.metrics.statistical_tests import StatisticalTests
+from spectramr.core.metrics.statistical_tests import StatisticalTests
 
 # ---------------------------------------------------------------------------
 # Bonferroni (existing — regression guard)

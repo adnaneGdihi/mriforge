@@ -19,7 +19,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.phantom_builder import (  # noqa: E402
+from spectramr.infrastructure.validation.phantom_builder import (  # noqa: E402
     save_probe_images,
     synthetic_phantom,
 )

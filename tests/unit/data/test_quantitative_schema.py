@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     AcquisitionMetadataConfigSchema,
     DataConfigSchema,
     QuantitativeConfigSchema,

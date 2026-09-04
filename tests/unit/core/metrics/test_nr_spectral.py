@@ -23,10 +23,10 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.context import MetricContext  # noqa: E402
-from mriforge.core.metrics.registry import get_metric  # noqa: E402
+from spectramr.core.metrics.context import MetricContext  # noqa: E402
+from spectramr.core.metrics.registry import get_metric  # noqa: E402
 
-PROLATE_MOD = "mriforge.infrastructure.physics.prolate"
+PROLATE_MOD = "spectramr.infrastructure.physics.prolate"
 
 
 # ---------------------------------------------------------------------------
@@ -277,7 +277,7 @@ class TestBPCISingleImage:
         assert math.isnan(v), f"expected NaN for an unestimable input, got {v}"
 
     def test_degenerate_segment_count_is_rejected(self) -> None:
-        from mriforge.core.metrics.nr_spectral import BicoherencePhaseCouplingIndex
+        from spectramr.core.metrics.nr_spectral import BicoherencePhaseCouplingIndex
 
         with pytest.raises(ValueError, match="n_segments must be >= 2"):
             BicoherencePhaseCouplingIndex(n_segments=1)
@@ -288,7 +288,7 @@ class TestBPCISingleImage:
 # ===========================================================================
 class TestSSEL:
     def test_needs_and_direction(self) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.needs("ssel") == ("foreground_mask", "mask")
         assert get_metric("ssel").higher_is_better is False
@@ -377,7 +377,7 @@ class TestSSEL:
 class TestRegistration:
     @pytest.mark.parametrize("key", ["csr", "sher", "bpci", "ssel"])
     def test_registered_no_reference_lower_is_better(self, key: str) -> None:
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         assert MetricsRegistry.is_registered(key)
         inst = get_metric(key)
@@ -386,7 +386,7 @@ class TestRegistration:
         assert MetricsRegistry.requires_reference(key) is False
 
     def test_module_imports_cleanly(self) -> None:
-        import mriforge.core.metrics.nr_spectral as mod
+        import spectramr.core.metrics.nr_spectral as mod
 
         assert hasattr(mod, "ConjugateSymmetryResidual")
         assert hasattr(mod, "SlepianSubspaceEnergyLeakage")

@@ -24,9 +24,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.diffusion.kspace_process import band_local_magnitude_ceiling
-from mriforge.models.init_registry import populate_model_registry
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.diffusion.kspace_process import band_local_magnitude_ceiling
+from spectramr.models.init_registry import populate_model_registry
+from spectramr.models.registry import MODEL_REGISTRY
 
 # The cohort's shape, shrunk: 4 complex coils, the two knobs under test, and a
 # backbone small enough to instantiate in a unit test.

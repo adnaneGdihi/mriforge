@@ -23,7 +23,7 @@ repos:
     rev: v1.10.0
     hooks:
       - id: mypy
-        files: ^src/mriforge/(core|config|domain)/
+        files: ^src/spectramr/(core|config|domain)/
         additional_dependencies: [pydantic>=2.6, types-PyYAML]
 
   - repo: https://github.com/codespell-project/codespell

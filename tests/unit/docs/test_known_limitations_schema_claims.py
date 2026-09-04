@@ -35,8 +35,8 @@ from pathlib import Path
 import pytest
 from pydantic import BaseModel
 
-from mriforge.config.schemas import training as training_schemas
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.schemas import training as training_schemas
+from spectramr.config.settings import TrainingSettings
 
 DOC = Path(__file__).resolve().parents[3] / "docs" / "known_limitations.rst"
 
@@ -136,25 +136,48 @@ def test_the_class_counts_match_the_live_schema(reachable, doc_text):
     assert (stated_total, stated_forbid, stated_ignore) == (total, forbid, ignore)
 
 
+_COUNT_WORDS = {
+    5: "Five",
+    6: "Six",
+    7: "Seven",
+    8: "Eight",
+    9: "Nine",
+    10: "Ten",
+    11: "Eleven",
+    12: "Twelve",
+    20: "Twenty",
+    21: "Twenty-one",
+    22: "Twenty-two",
+}
+
+# ``[\w-]``, not ``\w``: the table above spells 21 and 22 with a hyphen, which
+# ``\w`` does not match -- see the pairing test at the foot of this module.
+_HEADING_RE = r"^([\w-]+) schema classes accept \*any\* key$"
+
+
 def test_the_heading_count_word_matches_the_list_length(doc_text):
     """The heading says a number in words; a list edit must not leave it behind."""
-    words = {
-        5: "Five",
-        6: "Six",
-        7: "Seven",
-        8: "Eight",
-        9: "Nine",
-        10: "Ten",
-        11: "Eleven",
-        12: "Twelve",
-        20: "Twenty",
-        21: "Twenty-one",
-        22: "Twenty-two",
-    }
     section = doc_text.split('are ``extra="allow"``:', 1)[1].split(".. [#du]", 1)[0]
     n = len(re.findall(r"\* ``(\w+)``", section))
-    heading = re.search(r"^(\w+) schema classes accept \*any\* key$", doc_text, re.M).group(1)
-    assert heading == words[n]
+    m = re.search(_HEADING_RE, doc_text, re.M)
+    assert m, "the doc no longer states the open-class count as a word in its heading"
+    assert m.group(1) == _COUNT_WORDS[n]
+
+
+def test_every_spelling_in_the_table_is_matchable_by_the_heading_regex():
+    r"""The blindness this pair had: a table entry the regex cannot match.
+
+    ``_HEADING_RE`` was ``^(\w+) schema classes ...`` while the table already
+    offered ``Twenty-one`` and ``Twenty-two`` -- and ``\w`` excludes ``-``. So the
+    day the live count reached 21 the test above began failing with
+    ``AttributeError`` on *any* page content, correct spelling included, and the
+    page could not be made green without editing this file. The regex had only
+    ever been exercised on the un-hyphenated half of its own vocabulary.
+    """
+    for n, word in _COUNT_WORDS.items():
+        probe = f"{word} schema classes accept *any* key"
+        m = re.search(_HEADING_RE, probe, re.M)
+        assert m and m.group(1) == word, f"{word!r} (n={n}) is unmatchable by _HEADING_RE"
 
 
 def test_the_published_walk_reaches_a_discriminated_union_member(reachable):

@@ -9,7 +9,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.data.transforms.acquisition_params_extractors import (
+from spectramr.data.transforms.acquisition_params_extractors import (
     AcquisitionParams,
     AcquisitionParamsExtractionError,
     extract_acquisition_params,
@@ -97,7 +97,7 @@ def test_extract_dispatcher_missing_metadata_raises(tmp_path: Path) -> None:
 def test_injector_uses_real_extractor(tmp_path: Path) -> None:
     """When the batch carries a list of paths with sidecars, the injector
     pulls real values rather than the registry fallback."""
-    from mriforge.data.transforms.acquisition_params_injector import (
+    from spectramr.data.transforms.acquisition_params_injector import (
         infer_acquisition_params,
     )
 
@@ -120,7 +120,7 @@ def test_injector_uses_real_extractor(tmp_path: Path) -> None:
 
 def test_injector_falls_back_when_sidecars_missing(tmp_path: Path) -> None:
     """Missing sidecars should not crash — fall back to the registry path."""
-    from mriforge.data.transforms.acquisition_params_injector import (
+    from spectramr.data.transforms.acquisition_params_injector import (
         infer_acquisition_params,
     )
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.brenier_icnn import BrenierICNN
+from spectramr.models.generators.brenier_icnn import BrenierICNN
 
 
 def _net(**kw) -> BrenierICNN:
@@ -72,8 +72,8 @@ def test_synthetic_forward_probe_passes_for_both_arms() -> None:
     # identity-collapse heuristic; the model declares synthetic_forward_probe_skip =
     # {"identity_collapse"} so a healthy arm passes --probe (the input-invariance #20 check
     # stays active). Regression for both the convex arm and its enforce_convexity=false control.
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.forward_probe import synthetic_forward_probe
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.forward_probe import synthetic_forward_probe
 
     for arm in (
         "b15_brenier_map",
@@ -113,8 +113,8 @@ def test_transfer_arm_is_monotone_in_input() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "brenier_icnn" in MODEL_REGISTRY

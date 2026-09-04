@@ -3,7 +3,7 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mriforge"
+name = "spectraMR"
 dynamic = ["version"]
 description = "A multi-paradigm research framework for MRI reconstruction, super-resolution, and generative modelling"
 readme = "README.md"
@@ -30,7 +30,21 @@ classifiers = [
   "Typing :: Typed",
 ]
 dependencies = [
-  "torch>=2.11",
+  # FLOOR = 2.8, held by ONE reason since the index moved to cu126 (2026-08-31):
+  #   - it is the highest torch floor any dependency actually DECLARES: `monai
+  #     1.6.0` requires `torch>=2.8.0`. Every other declaration in the installed
+  #     set is lower (diffusers >=2.6, transformers >=2.5, bitsandbytes >=2.4,
+  #     torchio >=1.9), so 2.8 is where this graph already sits.
+  # The second reason this floor used to have -- "oldest torch on the index" --
+  # LAPSED when the pin moved from cu129 to cu126: cu126 carries 2.6.0 through
+  # 2.13.0 (listing read 2026-08-31), so the index no longer holds any floor. Only
+  # the monai declaration does. Do not restore the version-count argument.
+  #
+  # This is NOT a Volta / V100 (compute capability 7.0) accommodation, though it
+  # is easy to read it as one -- sm_70 is served by the INDEX, not by the version.
+  # See the note above [[tool.uv.index]], which also names the CEILING side of it:
+  # a bump past 2.12 must re-read the arch list.
+  "torch>=2.8",
   "numpy>=2.0",
   "pydantic>=2.13",
   "pydantic-settings>=2.14",
@@ -42,9 +56,36 @@ dependencies = [
   "pandas>=2.3",
   "openpyxl>=3.1",
   "jaxtyping>=0.3",
+  # beartype is DELIBERATELY NOT DECLARED HERE YET — and that is a finding, not
+  # an omission. It is jaxtyping's runtime checker and shares a single `try:`
+  # with it in 8 modules; `try: import beartype; import jaxtyping;` fails
+  # ATOMICALLY, so with beartype absent every one of those modules took the
+  # except branch and rebound BOTH names to no-op decorators. jaxtyping was
+  # installed and working the whole time — its contracts simply never ran, and
+  # the state was indistinguishable from both packages being missing (#341,
+  # non-negotiable #18).
+  #
+  # Measured 2026-08-29 by installing beartype 0.22.9 to a scratch --target and
+  # importing with it on PYTHONPATH: 3 of 6 sampled modules then FAIL to import
+  # with BeartypeDecorHintForwardRefException. The dormant contracts include 33
+  # malformed annotations across 12 files whose axis spec is an unquoted name or
+  # int — `Float[Tensor, B]`, `Bool[Tensor, N]`, `Float[Tensor, 3]` — where
+  # jaxtyping requires a string literal (`Float[Tensor, "B"]`). `from __future__
+  # import annotations` keeps them lazy, so nothing ever evaluated them.
+  # Declaring beartype turns 8 modules' type contracts on AND breaks the import
+  # of the metric/loss modules among them, so it cannot ride in a packaging
+  # change. Fix the annotations first, then declare it. → issue #1618.
   "rich>=15",
   "typer>=0.25",
   "einops>=0.8",
+  # safetensors is the checkpoint container read by
+  # domain/entities/optional_imports.py and the GAN-discriminator checkpoint
+  # integration test. It arrived transitively (via diffusers/huggingface) in
+  # every environment that happened to install a `diffusion`-class extra and was
+  # declared nowhere, so a core install's safetensors path was reachable only by
+  # accident. Pure-wheel and already in torch's ecosystem, so declaring it costs
+  # nothing and removes an accident.
+  "safetensors>=0.4",
   # Memory telemetry — imported unconditionally by
   # infrastructure/services/memory_optimization_service.py, which bootstrap.py
   # loads for EVERY training command (train/sanity/ablation/campaign). Was an
@@ -56,10 +97,16 @@ dependencies = [
   # until the 2026-07-01 review: when the import failed the module silently
   # returned a fabricated 0.0 for these, pegging any `primary_metric: lpips`
   # arm's plateau monitor at a constant (now raises instead — pitfall #9).
-  # NOTE: torchmetrics requires huggingface-hub<1.0 to import; if your env has
-  # hf-hub>=1.0 the import fails and these metrics raise. Resolve at the env
-  # level (we do not pin hf-hub here to avoid cascading transformers downgrades).
-  # See docs/review_fixes_2026_07_01.rst.
+  # The huggingface-hub<1.0 caveat that stood here is SPENT and has been removed:
+  # it described torchmetrics<1.9, and was carried forward unverified. Re-measured
+  # 2026-08-29 against the working venv (torchmetrics 1.9.0, huggingface-hub
+  # 1.27.0): `import torchmetrics` succeeds. Leaving the note in place would have
+  # kept pointing future debugging at a resolved conflict. The opposite hazard was
+  # then proposed on the release branch -- that an env ALREADY carrying hf-hub>=1.0
+  # breaks the import -- and shipped as prose marked "untested here". Tested now, in
+  # the env that satisfies its premise: huggingface-hub 1.27.0, torchmetrics 1.9.0,
+  # `import torchmetrics` succeeds. So no pin, and no note: hf-hub is unpinned
+  # deliberately, to avoid cascading transformers downgrades.
   "torchmetrics>=1.9,<2.0",
   # Same story as psutil above. Declared ONLY under `viz` until 2026-08-12, but
   # imported at module top level — not deferred into a function — by three
@@ -79,23 +126,74 @@ dependencies = [
   # `RuntimeError: operator torchvision::nms does not exist` on any import that
   # reaches torchvision.ops — which is populate_model_registry(). Observed
   # 2026-08-12 with torch 2.13.0+cpu against a PyPI torchvision.
-  "torchvision>=0.26",
+  # Floor tracks torch's. The cu126 index pairs torch 2.8.0 with torchvision
+  # 0.23.0 (the offset is +15 on the minor throughout: 2.11 <-> 0.26,
+  # 2.13 <-> 0.28; cu126 carries torchvision 0.21.0 through 0.28.0, listing read
+  # 2026-08-31), so `torch>=2.8` and `torchvision>=0.23` are the same
+  # statement. The pair cannot drift once both floors are declared: torchvision
+  # pins its torch EXACTLY in its own metadata (`torchvision 0.28.0` declares
+  # `torch==2.13.0`), which is why the `nms does not exist` failure above needed
+  # a DIFFERENT INDEX to happen at all -- a mismatched version alone cannot
+  # resolve.
+  "torchvision>=0.23",
 ]
 
+# =============================================================================
+# Optional dependencies
+# =============================================================================
+# Two kinds of group live in this table, and the distinction is load-bearing:
+#
+#   RUNTIME FEATURE groups (mri, viz, diffusion, …) gate a capability the
+#   installed package can exercise. Every one of them is imported under a
+#   `try:`/`except ImportError` or from inside a function — verified by AST
+#   census over src/ on 2026-08-29: there are ZERO unguarded, undeclared
+#   top-level imports in the package. So a missing feature group degrades to a
+#   clean raise at construction, never to a wrong answer (non-negotiable #3).
+#
+#   ROLE groups (test, qa, docs, profile, dev) gate a *workflow*, not a
+#   capability: nothing under src/ imports them. They are what a contributor,
+#   a CI lane, or a docs build needs, and they are the axis the `dev` umbrella
+#   composes.
+#
+# Two aggregates sit on top:
+#   `all` — every group that resolves in ONE `pip install` (build isolation on).
+#   `dev` — `all` + the config-migration toolchain. The full contributor
+#           environment. Role groups are reached THROUGH `all`, not listed
+#           here: `all` owns the completeness rule and there is only one owner.
+#
+# A group is EXCLUDED from `all` only when it physically cannot resolve in one
+# shot — it compiles CUDA against an already-present torch, needs nvcc, or ships
+# a binary that has no wheel for this interpreter. Each such group carries the
+# reason and its own install line. Nothing is excluded from `all` as a matter of
+# taste, so "install everything installable" is exactly `.[dev]`.
+# =============================================================================
+
 [project.optional-dependencies]
+
+# ---------------------------------------------------------------------------
+# Runtime feature groups — all of these ride in `all`.
+# ---------------------------------------------------------------------------
+
+# Medical-image IO and MRI-native transforms. pydicom joins the group it always
+# belonged to: 6 modules under data/ (eda/loader.py, the DICOM dataset readers)
+# import it and it was declared in no group at all, so `.[mri]` could not read
+# a DICOM series — the one input format the extra's name promises.
 mri = [
   "torchio>=1.2",
   "monai>=1.5",
   "nibabel>=5.4",
   "torchkbnufft>=1.5",
+  "pydicom>=3.0",
 ]
+
 # Pretrained Stable-Diffusion VAE backbone for the latent diffusion generator
-# (model_kwargs.vae_backbone: sd → mriforge.models.generators.pretrained_vae_adapter).
+# (model_kwargs.vae_backbone: sd → spectramr.models.generators.pretrained_vae_adapter).
 # Guarded at runtime: absent diffusers, PretrainedSDVAEAdapter raises a clean
 # ImportError at construction (CLAUDE.md #9 — no silent fallback to a random
 # latent). Pure-Python, so it rides in the one-shot `.[all]` resolve.
 # (einops moved to core.)
 diffusion = ["diffusers>=0.30"]
+
 viz = [
   "matplotlib>=3.10",
   "tensorboard>=2.16",
@@ -104,51 +202,33 @@ viz = [
   # torchvision moved to core dependencies — it is a hard import on the
   # registry-populate path, not a plotting extra. See the note there.
   # Optional: interactive group-IQM plots in the MRIQC-style HTML report
-  # (mriforge.infrastructure.reporting.html_report). Absent → static-PNG
+  # (spectramr.infrastructure.reporting.html_report). Absent → static-PNG
   # fallback, so this is a soft dependency, not a hard requirement.
   "plotly>=6.8",
 ]
+
 hpo = ["optuna>=4.8"]
-# Mamba / SSM models (hilbert_mamba, geomamba, d2_mamba, bloch_mamba, …) REQUIRE
-# the official selective-scan CUDA kernel — MambaBlock fails loud without it
-# (the Gated-Conv+GRU fallback is NOT an SSM and is opt-in via
-# MRIFORGE_ALLOW_MAMBA_FALLBACK for CPU/CI wiring tests only). Needs CUDA + nvcc
-# to build, so it is a separate extra (not in core deps / CPU installs):
-#     pip install -e '.[mamba]' --no-build-isolation
-mamba = [
-  "mamba-ssm>=2.2",
-  "causal-conv1d>=1.4",
-]
-# 8-bit optimizer states (Dettmers et al.), reachable as
-# optimizer_type: adam8bit / adamw8bit. Registered unconditionally and RAISING
-# at construction when absent -- never a silent fall back to a 32-bit optimizer,
-# because the 8-bit state IS the arm's memory claim and substituting one would
-# make its memory/convergence numbers describe a different run.
-# Deliberately NOT in `all`: the wheel ships a CUDA binary whose import fails on
-# the CPU boxes CI runs on (same reasoning as `mamba`, different mechanism).
-#     pip install -e '.[bnb]'
-bnb = ["bitsandbytes>=0.45"]
-# Schedule-free optimizers (Defazio et al. 2024), as schedulefree_adamw /
-# schedulefree_sgd. Same raise-not-fallback guard. Pure Python and resolvable in
-# one shot, so unlike `bnb` it rides in `all`.
-schedulefree = ["schedulefree>=1.4"]
-# ZeRO / DeepCompile / ZenFlow backend, reachable as parallel.strategy: deepspeed.
-# `check_deepspeed_extra_installed` (an ERROR-severity audit check) hands this
-# exact install line to the user, and DeepSpeedUnavailableError repeats it, so
-# the extra has to exist -- pip on a missing extra warns and installs NOTHING,
-# which reads as "the fix did not help" on a fresh cluster node.
-# Deliberately NOT in `all`, for the `mamba`/`bnb` reason: DeepSpeed JIT-builds
-# CUDA ops and needs nvcc, so it cannot resolve on CI's CPU boxes.
-#     pip install -e '.[deepspeed]'
-deepspeed = ["deepspeed>=0.15"]
+
 # Closed-form perceptual IQA metrics (HaarPSI, MDSI, VSI, DSS, MS-GMSD) used by
-# the sim2rank metric sweep. Guarded at runtime — absent piq, those metrics are
-# skipped, like the radiomic metrics under a missing pyradiomics.
-iqa = ["piq>=0.8"]
-# Learned perceptual similarity (lpips_alex metric). Guarded at runtime —
-# absent lpips the metric raises a clean ImportError at construction.
+# the sim2rank metric sweep, plus the VIF/FSIM pair in
+# infrastructure/reporting/metrics/vif_fsim.py — which imported `sewar` from a
+# group that did not exist, so those two metrics were unreachable from every
+# documented install line. Both guarded at runtime.
+iqa = [
+  "piq>=0.8",
+  "sewar>=0.4",
+]
+
+# Learned perceptual / distributional similarity. lpips backs the `lpips_alex`
+# metric; torch-fidelity backs the FID/KID path behind
+# domain/entities/optional_imports.has_torch_fidelity(). Both raise a clean
+# ImportError at construction when absent.
 #     pip install -e '.[eval]'
-eval = ["lpips>=0.1.4"]
+eval = [
+  "lpips>=0.1.4",
+  "torch-fidelity>=0.3",
+]
+
 # No-reference metric battery deps (TODO/NR_METRICS_IMPLEMENTATION_SPEC.md §9).
 # PyWavelets powers the wavelet texture metrics (wlms/wpde); scikit-learn +
 # statsmodels back the aggregator / ICC / group-lasso. Guarded at runtime —
@@ -159,6 +239,7 @@ quality = [
   "scikit-learn>=1.8",
   "statsmodels>=0.14",
 ]
+
 # Persistent-homology / optimal-transport topology losses (cubical_ph_w2, the
 # geomamba_ulf PH arms). gudhi builds the cubical complex + persistence diagram;
 # POT provides the Wasserstein matching. Guarded at construction —
@@ -169,15 +250,163 @@ topology = [
   "gudhi>=3.12",
   "POT>=0.9",
 ]
-docs = [
-  "sphinx>=9.1",
-    "sphinx-rtd-theme>=3",
-  "furo>=2024.5",
-  "sphinx-autoapi>=3.1",
-  "myst-parser>=5",
-  "sphinxcontrib-mermaid>=2",
-  "sphinx-copybutton>=0.5",
+
+# Pretrained vision / SSL encoder backbones: timm feeds
+# models/encoders/medical_dino_encoder.py, transformers feeds
+# models/encoders/hf_ssl_encoders.py. Both were imported under a guard and
+# declared nowhere, so the encoders were dead on every install. Pure-Python
+# wheels, so they resolve in one shot.
+encoders = [
+  "timm>=1.0",
+  "transformers>=4.45",
 ]
+
+# Neural-ODE / continuous-time dynamics: torchdiffeq backs
+# infrastructure/physics/dynamics/neural_ode.py, models/transport/kidot.py and
+# the neural_ode generator. Guarded (the modules raise rather than fall back to
+# a fixed-step Euler, which would silently change the arm's dynamics).
+dynamics = ["torchdiffeq>=0.2"]
+
+# SigPy reference implementations, used for differential tests against our own
+# operators (the `requires_sigpy` pytest marker) and by the mask-export
+# benchmarking scripts. Guarded at 13 sites; the marker skips without it.
+sigpy = ["sigpy>=0.1.26"]
+
+# Graph collation (data/collation/strategies.py, `graph` collate strategy).
+# torch-geometric itself is pure Python and resolves in one shot; its OPTIONAL
+# compiled companions (torch-scatter / torch-sparse) are NOT declared here —
+# they build against a fixed torch ABI and would take this group out of `all`.
+graph = ["torch-geometric>=2.6"]
+
+# ANTs-backed inter-modality co-registration
+# (infrastructure/services/co_registration_service.py) and the ULF/LDM dataset
+# preparation script. Guarded at the service boundary.
+# EXCLUDED FROM `all`: it resolves fine, but it CAPS THE CORE STACK. antspyx
+# 0.6.3 declares `numpy<2.4.0` and `scipy<1.16`; in a resolution that also has
+# to satisfy torch/numba/sigpy, pip's cheapest way out is to move numpy and
+# scipy DOWN under everything else -- measured 2026-08-29, an unconstrained
+# `.[all]` dry run planned numpy 2.5.2 -> 2.3.5 and scipy 1.18.0 -> 1.15.3 and
+# reported no conflict. This is the one group here whose exclusion is about
+# BLAST RADIUS rather than buildability, so it is isolated and installed alone:
+#     pip install -e '.[registration]'
+# Pinned, not ranged: 0.5.3 is the newest release measured to carry a BARE
+# `Requires-Dist: numpy` with no upper bound, and it ships a cp312 manylinux
+# wheel (no ANTs C++ build). Move the pin only after reading the candidate's
+# METADATA and confirming the cap is gone -- a range would let an unmeasured
+# release back in, which is exactly how the cap arrived.
+registration = ["antspyx==0.5.3"]
+
+# Symbolic-regression generator (models/generators/symbolic_regression_wrapper.py),
+# behind a deferred import.
+# Rides in `all`: the Python package installs in one shot (704 kB). PySR does
+# bootstrap a Julia runtime, but on FIRST USE, not at install — a runtime cost
+# for the arms that ask for it, not an install-time blocker.
+symbolic = ["pysr>=1.0"]
+
+# Distributed HPO scaling behind models/tuning/enhanced_hyperparameter_tuning.py
+# (deferred import). Optuna's local sequential path (the `hpo` group) is what the
+# documented workflows use; this is for fanning a study across a cluster.
+# Rides in `all`, but it is the single heaviest group here — ray + pyarrow +
+# tensorboardx is ~198 MB installed. Recorded explicitly so the cost is a
+# visible decision rather than a surprise in the image size; if a cluster image
+# needs to shed weight, this is the first group to reconsider.
+ray = ["ray[tune]>=2.35"]
+
+# Schedule-free optimizers (Defazio et al. 2024), as schedulefree_adamw /
+# schedulefree_sgd. Registered unconditionally and RAISING at construction when
+# absent — never a silent fall back. Pure Python and resolvable in one shot, so
+# unlike `bnb` it rides in `all`.
+schedulefree = ["schedulefree>=1.4"]
+
+# ---------------------------------------------------------------------------
+# Runtime feature groups EXCLUDED from `all` — each with the reason it cannot
+# ride in a single resolve. These are the only gaps in "install everything".
+# ---------------------------------------------------------------------------
+
+# Mamba / SSM models (hilbert_mamba, geomamba, d2_mamba, bloch_mamba, …) REQUIRE
+# the official selective-scan CUDA kernel — MambaBlock fails loud without it
+# (the Gated-Conv+GRU fallback is NOT an SSM and is opt-in via
+# SPECTRAMR_ALLOW_MAMBA_FALLBACK for CPU/CI wiring tests only).
+# EXCLUDED FROM `all`: their setup.py imports torch, so they need torch ALREADY
+# installed plus a CUDA toolchain (nvcc):
+#     pip install -e '.[mamba]' --no-build-isolation
+mamba = [
+  "mamba-ssm>=2.2",
+  "causal-conv1d>=1.4",
+]
+
+# 8-bit optimizer states (Dettmers et al.), reachable as
+# optimizer_type: adam8bit / adamw8bit. Registered unconditionally and RAISING
+# at construction when absent -- never a silent fall back to a 32-bit optimizer,
+# because the 8-bit state IS the arm's memory claim and substituting one would
+# make its memory/convergence numbers describe a different run.
+# IN `all` since 2026-08-29. It was previously held out, on the stated grounds
+# that "the wheel ships a CUDA binary whose import fails on the CPU boxes CI
+# runs on" -- an assumption that was never measured. Measured: the group resolves under build
+# isolation (exit 0) and `import bitsandbytes` succeeds (0.50.2). Import on a
+# CPU-ONLY box remains unmeasured; if CI goes red here, measure it THERE before
+# excluding the group again, and record the reading next to this line.
+bnb = ["bitsandbytes>=0.45"]
+
+# ZeRO / DeepCompile / ZenFlow backend, reachable as parallel.strategy: deepspeed.
+# `check_deepspeed_extra_installed` (an ERROR-severity audit check) hands this
+# exact install line to the user, and DeepSpeedUnavailableError repeats it, so
+# the extra has to exist -- pip on a missing extra warns and installs NOTHING,
+# which reads as "the fix did not help" on a fresh cluster node.
+# IN `all` since 2026-08-29. It was previously held out on the grounds that
+# "DeepSpeed JIT-builds CUDA ops and needs nvcc, so it cannot resolve on CI's
+# CPU boxes" -- which conflated BUILD with RUNTIME. DeepSpeed ships wheels and JIT-builds its
+# CUDA ops LAZILY, on first use. Measured 2026-08-29 on a box with no nvcc at
+# all: pip resolve exit 0, `import deepspeed` succeeds (0.19.6), and each
+# uncompilable op logs "compatibility check failed (CUDA_HOME does not exist)"
+# and is marked not compatible. A missing nvcc costs you ops, not the install.
+deepspeed = ["deepspeed>=0.15"]
+
+# Fused-attention backends behind models/blocks/attention_utils.py. Both are
+# guarded and both fall through to the PyTorch SDPA path, so absence changes
+# speed, not numerics.
+# EXCLUDED FROM `all`: MEASURED 2026-08-29 — flash-attn fails under build
+# isolation with "depends on torch, but doesn't declare it as a build
+# dependency". Exactly the `mamba` mechanism: torch must already be importable
+# in the build environment, which a one-shot resolve cannot provide.
+#     pip install -e '.[attention]' --no-build-isolation
+#
+# xformers ALONE does resolve (0.0.35, exit 0) -- do not take that as licence to
+# install half the group. Its wheel carries binaries compiled against a pinned
+# torch + CPython ABI, and pip matches neither: measured 2026-08-29, xformers
+# 0.0.35 installed against torch 2.13.0+cu132 / py3.12 announces at import that
+# it was built for torch 2.10.0+cu128 / py3.10, loads no kernels, and raises
+# NotImplementedError from every op. attention_utils.py keys availability on
+# `import xformers` alone, so the backend then advertises itself as AVAILABLE
+# and each call throws and falls back to SDPA -- see issue 1620. Install this
+# group matched to the torch actually present, or not at all.
+attention = [
+  "flash-attn>=2.6",
+  "xformers>=0.0.28",
+]
+
+# Radiomic feature metrics (core/metrics/radiomic.py) and the SimpleITK-backed
+# preprocessing scripts. Guarded — absent pyradiomics, ``get_metric`` skips the
+# radiomic family rather than fabricating one.
+# EXCLUDED FROM `all`: MEASURED 2026-08-29 — there is no cp312 wheel, so pip
+# falls back to the sdist and the C extension build fails outright
+# (`_cmatrices.o ... returned non-zero exit status 1`, missing `cmatrices.h`).
+# pip's resolver refuses even earlier, before any build: it lists 3.1.0 as
+# existing and still reports "No matching distribution found for
+# pyradiomics>=3.1", because no artifact of it is compatible with cp312.
+# This is the one feature group here that genuinely cannot install on this
+# interpreter, so `all` would fail as a whole if it were included.
+#     pip install -e '.[radiomics]'
+radiomics = [
+  "pyradiomics>=3.1",
+  "SimpleITK>=2.3",
+]
+
+# ---------------------------------------------------------------------------
+# Role groups — the workflow axis. Nothing under src/ imports any of these.
+# ---------------------------------------------------------------------------
+
+# TEST — running the suite. `make test`, every CI lane, tests/smoke/.
 test = [
   "pytest>=9",
   "pytest-cov>=7",
@@ -188,25 +417,114 @@ test = [
   # error while leaving the timeouts dead. The plugin registers it AND honours it.
   "pytest-timeout>=2.3",
   "hypothesis>=6.152",
+  # tests/fuzz/schema_fuzz/test_audit_vs_training_disagreement.py imports this at
+  # module level, unguarded — the ONE undeclared hard import in the whole tree
+  # (AST census, 2026-08-29). Undeclared, that file is a collection ERROR, which
+  # under a bare-path `ERROR <file>` aborts the session rather than skipping one test.
+  "hypothesis-jsonschema>=0.23",
 ]
-# Profiling toolchain for `mriforge profile` (docs/SCALENE_USAGE.md). Scalene was
-# used and documented here for a long time while being declared NOWHERE — a
-# working `.venv` and a green docs page together made an undeclared dependency
-# look installed, so a fresh clone had a documented command it could not run.
-# `mriforge profile` raises an actionable error when scalene is absent rather
-# than degrading to another profiler, so this extra is what makes it reachable.
-profile = [
-  "scalene>=1.5",
-]
-dev = [
-  # dev == the full `all` feature set + lint/type/hook tooling. Referencing
-  # `all` (not a hand-listed subset) keeps the two meta-groups from drifting —
-  # the previous hand-list silently omitted hpo/eval/topology, so a "full dev"
-  # box was missing those features.
-  "mriforge[all]",
-  "pre-commit>=4.6",
+
+# QA — lint, type, security and hook tooling. Previously scattered: ruff/mypy/
+# pre-commit were buried inside `dev`, while pip-audit and detect-secrets were
+# `pip install`-ed ad hoc inside workflow steps (pr-required.yml:389,
+# pr-advisory.yml:75,110) and so were pinned nowhere and reproducible on no
+# developer's machine. This group is what a QA lane installs.
+qa = [
   "ruff>=0.15",
   "mypy>=2.1",
+  "pre-commit>=4.6",
+  # Mirrors the mirrors-mypy hook's `additional_dependencies` so a local
+  # `mypy` run sees the same stubs the hook does.
+  "types-PyYAML>=6.0",
+  # `pip install pip-audit` in pr-required.yml — declared here so the blocking
+  # security lane resolves from the same table as everything else.
+  "pip-audit>=2.7",
+  # The codespell pre-commit hook, runnable directly.
+  "codespell>=2.3",
+  "detect-secrets>=1.5",
+]
+
+# DOCS — the Sphinx build (`.github/workflows/pr-advisory.yml` installs `.[docs]`).
+docs = [
+  "sphinx>=9.1",
+  # docs/conf.py imports `sphinx_rtd_theme` inside a try/except that falls back
+  # to `alabaster`, and its comment records that as a deliberate restoration of
+  # the original RTD look. The theme was declared NOWHERE, while `furo` — which
+  # nothing in this repository references — was the only theme declared. So the
+  # advisory docs build silently rendered in alabaster: a green build producing
+  # the wrong site (pitfall #9). One owner elected: the theme conf.py asks for.
+  "sphinx-rtd-theme>=3.0",
+  "sphinx-autoapi>=3.1",
+  "myst-parser>=5",
+  "sphinxcontrib-mermaid>=2",
+  "sphinx-copybutton>=0.5",
+]
+
+# PROFILE — the profiling toolchain for `spectramr profile` (docs/SCALENE_USAGE.md).
+# Scalene was used and documented here for a long time while being declared
+# NOWHERE — a working `.venv` and a green docs page together made an undeclared
+# dependency look installed, so a fresh clone had a documented command it could
+# not run. `spectramr profile` raises an actionable error when scalene is absent
+# rather than degrading to another profiler, so this extra is what makes it
+# reachable. GPUtil and nvtx join it: models/profiling/advanced_profiling.py and
+# infrastructure/performance_optimizer.py guard-import both for GPU utilisation
+# sampling and NVTX range annotation, and neither was declared anywhere.
+profile = [
+  "scalene>=1.5",
+  "gputil>=1.4",
+  "nvtx>=0.2",
+]
+
+# ---------------------------------------------------------------------------
+# Aggregates
+# ---------------------------------------------------------------------------
+
+# ALL — every group that resolves in a SINGLE `pip install` (build isolation on).
+# `.[all]` installs EVERYTHING installable: every feature group AND every role
+# group (test/qa/docs/profile). A cluster or contributor box that runs this line
+# is missing nothing that can be obtained in one resolve.
+#
+# Four groups are absent. Three PHYSICALLY cannot ride along, each verified by an
+# actual `uv pip install --target` build on 2026-08-29 — not by reasoning about it:
+#   mamba      - compiles the CUDA selective-scan kernel; needs nvcc and
+#                `--no-build-isolation` (see the group's own comment).
+#   attention  - flash-attn does not declare torch in build-system.requires, so
+#                it cannot build under isolation:
+#                "depends on `torch`, but doesn't declare it as a build dependency".
+#                xformers alone would be fine; the group fails as a unit.
+#   radiomics  - pyradiomics has no cp312 wheel and its C extension fails to
+#                compile ("returned non-zero exit status 1" on _cmatrices.o).
+# The fourth is out for a DIFFERENT reason, and the difference matters — it would
+# resolve, which is precisely why it is dangerous:
+#   registration - antspyx caps the core stack (`numpy<2.4.0`, `scipy<1.16` at
+#                0.6.3). Riding in `all`, it makes downgrading numpy/scipy the
+#                resolver's cheapest solution, silently and with no conflict
+#                reported. Isolated and pinned instead; see the group's comment.
+#
+# `bnb` and `deepspeed` are IN. They were excluded before this change on the
+# assumption that they need a CUDA toolchain at install time; both were built
+# here under isolation and both exited 0, so the assumption was wrong and the
+# `all` completeness gate had been standing red on exactly those two.
+#
+# The documented follow-up steps, each installed ALONE so it cannot renegotiate
+# the environment `all` just established:
+#     pip install -e '.[all]'
+#     pip install -e '.[mamba]' --no-build-isolation   # on a node with nvcc
+#     pip install -e '.[registration]'                 # only if you need ANTs
+all = [
+  "spectramr[mri,diffusion,viz,hpo,iqa,eval,quality,topology,encoders,dynamics,sigpy,graph,symbolic,ray,schedulefree,bnb,deepspeed,test,qa,docs,profile]",
+]
+
+# DEV — the full contributor environment. `pip install -e '.[dev]'` is the one
+# line CONTRIBUTING.md gives a new contributor, so it has to be a superset of
+# what any CI lane installs.
+#
+# Composed by REFERENCE, never by hand-listing: the previous hand-list silently
+# omitted hpo/eval/topology, so a "full dev" box was missing those features and
+# nothing said so. Since `all` now carries the role groups too, `dev` is `all`
+# plus only what is genuinely dev-box-only.
+dev = [
+  "spectramr[all]",
   # The config-migration toolchain (#976). 12 scripts under scripts/ and tools/
   # import it, including `scripts/ci/migrate_config_keys.py`, which
   # `check_no_legacy_config_keys.py` execs at startup — so on a fresh clone the
@@ -216,55 +534,42 @@ dev = [
   # here for round-trip preservation, and the experiment corpus carries
   # load-bearing comments that a pyyaml rewrite would silently strip.
   # Tooling only — nothing under `src/` imports it, so it stays out of the
-  # runtime extras.
+  # runtime groups.
   "ruamel.yaml>=0.18",
 ]
-# "Install everything" convenience group: every runtime + tooling extra that
-# resolves in a SINGLE `pip install` (build isolation ON). This is the set a
-# cluster install should pull so no feature silently degrades at run time —
-# LPIPS/piq metrics (iqa/eval), topology losses (topology), HPO (hpo), docs, and
-# the pytest smoke battery (test).
-#
-# NB: the `mamba` extra is DELIBERATELY EXCLUDED. mamba-ssm / causal-conv1d
-# compile the CUDA selective-scan kernel, which requires `--no-build-isolation`
-# with torch ALREADY installed (their setup imports torch) plus a full CUDA
-# toolchain (nvcc). They therefore cannot ride in a one-shot `.[all]` resolve —
-# pip's isolated build env has no torch. On a cluster node with nvcc, install
-# them as a documented SECOND step, after `.[all]` has brought torch in:
-#     pip install -e '.[all]'
-#     pip install -e '.[mamba]' --no-build-isolation
-all = ["mriforge[mri,diffusion,viz,hpo,docs,test,iqa,eval,quality,topology,schedulefree,profile]"]
 
 [project.scripts]
-mriforge = "mriforge.cli.app:main"
+spectramr = "spectramr.cli.app:main"
 
-# Out-of-tree plugin discovery contract (see mriforge.plugins / docs/plugins.rst).
+# Out-of-tree plugin discovery contract (see spectramr.plugins / docs/plugins.rst).
 # A third-party package declares its custom components in ITS OWN pyproject under
-# these groups; mriforge imports them at registry population so the @register_*
-# decorators fire. Models/losses/metrics map name -> "module[:attr]" (imported as
+# these groups; spectramr imports them at registry population so the @register_*
+# decorators fire. Models/losses/metrics/datasets map name -> "module[:attr]" (imported as
 # a side effect); strategies map short-name -> "module.StrategyClass" (resolved
 # lazily by the strategy factory). These framework-side stubs are intentionally
 # empty — the framework registers its own components in-tree.
-[project.entry-points."mriforge.models"]
+[project.entry-points."spectramr.models"]
 
-[project.entry-points."mriforge.losses"]
+[project.entry-points."spectramr.losses"]
 
-[project.entry-points."mriforge.metrics"]
+[project.entry-points."spectramr.metrics"]
 
-[project.entry-points."mriforge.strategies"]
+[project.entry-points."spectramr.datasets"]
+
+[project.entry-points."spectramr.strategies"]
 
 [project.urls]
-Homepage = "https://github.com/adnaneGdihi/mriforge"
-Documentation = "https://mriforge.readthedocs.io"
-Repository = "https://github.com/adnaneGdihi/mriforge"
-Issues = "https://github.com/adnaneGdihi/mriforge/issues"
-Changelog = "https://github.com/adnaneGdihi/mriforge/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/adnaneGdihi/spectramr"
+Documentation = "https://spectramr.readthedocs.io"
+Repository = "https://github.com/adnaneGdihi/spectramr"
+Issues = "https://github.com/adnaneGdihi/spectramr/issues"
+Changelog = "https://github.com/adnaneGdihi/spectramr/blob/main/CHANGELOG.md"
 
 [tool.hatch.version]
-path = "src/mriforge/__init__.py"
+path = "src/spectramr/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mriforge"]
+packages = ["src/spectramr"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
@@ -285,6 +590,24 @@ exclude = [
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# ``external/`` holds git SUBMODULES -- separate upstream repositories vendored
+# for baseline comparison. Ruff walks into them because submodule contents are
+# not gitignored, which had two consequences:
+#
+#   * ``scripts/ci/check_f821_ratchet.py`` (a BLOCKING gate) went red on
+#     undefined names in ``cdiffmr`` and ``fdb``. Its message says "bind it or
+#     import it" -- advice nobody here can act on, because the fix belongs in
+#     someone else's repository, and a submodule bump could turn this repo's
+#     required check red with no change of ours;
+#   * ``make format`` (``ruff format``) would rewrite third-party sources in
+#     place, dirtying the submodules.
+#
+# This NARROWS a detector's reach, which non-negotiable 15 rightly treats as
+# suspect -- so, precisely: it removes code this repository does not own and
+# cannot fix. Every path under ``src/``, ``tests/`` and ``scripts/`` is
+# untouched, and the 55 F821 findings outside ``external/`` remain visible; only
+# the 3 inside it go.
+extend-exclude = ["external/"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "W", "C4", "SIM", "RUF"]
@@ -304,7 +627,7 @@ python_version = "3.12"
 strict = true
 warn_unused_ignores = true
 warn_redundant_casts = true
-files = ["src/mriforge/core", "src/mriforge/config", "src/mriforge/domain"]
+files = ["src/spectramr/core", "src/spectramr/config", "src/spectramr/domain"]
 
 [[tool.mypy.overrides]]
 module = ["torch.*", "monai.*", "torchio.*", "torchkbnufft.*", "h5py.*"]
@@ -351,23 +674,23 @@ markers = [
   "requires_bart: needs BART CLI on PATH",
 ]
 filterwarnings = [
-  "error::DeprecationWarning:mriforge.*",
+  "error::DeprecationWarning:spectramr.*",
   "ignore::DeprecationWarning:torchkbnufft.*",
   "ignore::DeprecationWarning:torch.*",
   # `torch.ao.quantization`'s deprecation is issued with a stacklevel that
   # attributes it to the CALLER, so the module-keyed `torch.*` ignore above
-  # never sees it -- it arrives labelled `mriforge.*` and hits the `error` rule
+  # never sees it -- it arrives labelled `spectramr.*` and hits the `error` rule
   # on the first line. Keyed on the message instead, which is the only field
   # that identifies it. This is torch's own deprecation of an API that remains
   # supported until 2.10; the torchao migration is tracked separately, and the
-  # `mriforge.*` error rule is deliberately left untouched.
+  # `spectramr.*` error rule is deliberately left untouched.
   "ignore:torch.ao.quantization is deprecated:DeprecationWarning",
   "ignore::DeprecationWarning:torchio.*",
   "ignore::DeprecationWarning:monai.*",
 ]
 
 [tool.coverage.run]
-source = ["src/mriforge"]
+source = ["src/spectramr"]
 branch = true
 omit = ["*/tests/*", "*/experiments/*"]
 
@@ -383,7 +706,7 @@ show_missing = true
 
 # ============================================================
 # uv-specific configuration — preserved from previous layout so the
-# CUDA 12.9 PyTorch wheels keep resolving when `uv` is the resolver.
+# CUDA 12.6 PyTorch wheels keep resolving when `uv` is the resolver.
 # `pip install` uses PyPI by default; users on CUDA install torch
 # explicitly from the PyTorch index per README instructions.
 # ============================================================
@@ -393,19 +716,60 @@ environments = [
     "sys_platform == 'linux'",
 ]
 
+# CUDA 12.6 is what the TARGET HARDWARE needs, and it is the hardware that
+# dictates this pin — not whatever the machine you happen to be developing on
+# has. A local `.venv` sitting on a newer build (e.g. 2.13.0+cu132 on a
+# workstation with CUDA 13.2, observed 2026-08-29) is EXPECTED and is not
+# evidence that this pin has gone stale.
+#
+# WHY cu126 AND NOT cu129 (switched 2026-08-31, owner decision): both target
+# clusters run Tesla V100s — compute capability 7.0, Volta — and NO cu129 wheel
+# ships sm_70 at ANY torch version. The CUDA 12.9 build's arch list is
+# `7.5;8.0;8.6;9.0;10.0;12.0+PTX` (pytorch/pytorch#157517), and the trailing
+# `+PTX` is sm_120 forward-JIT, which compiles UP to newer architectures at
+# runtime and can never back-compile DOWN to 7.0. Every kernel launch on a V100
+# then fails with `cudaErrorNoKernelImageForDevice` — observed 2026-08-31 on both
+# clusters from one arm: a clean raise at pipeline build on 1 rank, and SIGSEGV on
+# all 4 ranks under torchrun with no diagnostic at all. Pinning an OLDER TORCH
+# does not help; the arch list is a property of the CUDA build, so the only lever
+# is the INDEX. (#1676 tracks the missing preflight that let `[STARTUP]
+# accelerated=True` be stamped for such a device in the first place.)
+#
+# CUDA 12.6 is the one lane that still carries the legacy architectures. Read
+# 2026-08-31 from pytorch's own build script, per release branch
+# (`.ci/manywheel/build_cuda.sh`, `TORCH_CUDA_ARCH_LIST` for the 12.6 case):
+#   - release/2.8   `5.0;6.0;7.0;7.5;8.0;8.6;9.0`            -> sm_70 PRESENT
+#   - release/2.11  base list + `5.0;6.0;7.0`, 10.0 stripped -> sm_70 PRESENT
+#   - release/2.12  same, over the comment "Only 12.6 includes legacy
+#                   Maxwell/Pascal/Volta"                    -> sm_70 PRESENT
+#   - release/2.13  the shell script was REPLACED by `.ci/manywheel/
+#                   build_env_setup.py`; its `TORCH_CUDA_ARCH_LIST_TABLE` reads
+#                   `"12.6": {"x86_64": {50, 60, 70, 75, 80, 86, 90}}`
+#                                                            -> sm_70 PRESENT
+# That same table is what makes the failure legible from the other side:
+# `"12.9": {"x86_64": {75, 80, 86, 90, 100, 120}}` -- 70 is simply not in the set.
+# On `main`, `CUDA_ARCHES = ["12.6", "13.0", "13.2", "13.4"]` — 12.8 and 12.9 are
+# gone from the matrix entirely while 12.6 remains, so this pin is not a dead end.
+#
+# `uv.lock` currently resolves torch 2.13.0+cu126 / torchvision 0.28.0+cu126, the
+# top of that verified range. ON ANY FUTURE BUMP, re-read the table above (or
+# `torch.cuda.get_arch_list()` from the wheel that actually resolved) and require
+# sm_70. Do not infer it from wheel availability: EXISTENCE (2.6.0 through 2.13.0
+# on this index, listing read 2026-08-31) and ARCH-LIST CONTENT are two separate
+# measurements, and only the second one decides whether a V100 can run.
 [[tool.uv.index]]
-name = "pytorch-cu129"
-url = "https://download.pytorch.org/whl/cu129"
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
 explicit = true
 
 [tool.uv.sources]
-torch = [{ index = "pytorch-cu129" }]
+torch = [{ index = "pytorch-cu126" }]
 # torchvision ships compiled ops built against a FIXED torch ABI, so it must
 # resolve from the same index as torch. Pinning only torch let the pair diverge:
 # `torch 2.13.0+cpu` with a PyPI `torchvision 0.28.0` raises
 # `RuntimeError: operator torchvision::nms does not exist` on any import that
 # reaches `torchvision.ops` — which includes `populate_model_registry()`.
-torchvision = [{ index = "pytorch-cu129" }]
+torchvision = [{ index = "pytorch-cu126" }]
 
 [tool.uv.extra-build-dependencies]
 antlr4-python3-runtime = ["setuptools"]

@@ -15,8 +15,8 @@ the intent: at that point delete it and assert the forwarding instead.
 import dataclasses
 import inspect
 
-from mriforge.application.use_cases.hpo_use_case import HPORequest
-from mriforge.infrastructure.coordination.hpo_coordinator import HPOCoordinator
+from spectramr.application.use_cases.hpo_use_case import HPORequest
+from spectramr.infrastructure.coordination.hpo_coordinator import HPOCoordinator
 
 
 def test_request_device_defaults_to_none():

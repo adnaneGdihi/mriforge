@@ -15,9 +15,9 @@ import types
 
 import pytest
 
-from mriforge import main as main_mod
-from mriforge.config.settings import TrainingSettings
-from mriforge.main import _declared_device
+from spectramr import main as main_mod
+from spectramr.config.settings import TrainingSettings
+from spectramr.main import _declared_device
 
 # Module-level ``__``-prefixed name: no mangling applies outside a class body,
 # but ``getattr`` states that explicitly rather than relying on it.
@@ -80,7 +80,7 @@ def test_legacy_top_level_device_is_rejected_by_the_schema():
 
 def _stub_config_load(monkeypatch, settings):
     """Make ``TrainingSettings.from_yaml`` yield ``settings`` and mute the ledger."""
-    from mriforge.core.execution_ledger import ExecutionLedger
+    from spectramr.core.execution_ledger import ExecutionLedger
 
     monkeypatch.setattr(
         main_mod.TrainingSettings, "from_yaml", classmethod(lambda _cls, _p: settings)
@@ -152,7 +152,7 @@ def test_train_chain_third_leg_reads_the_declared_device(monkeypatch):
     _stub_config_load(monkeypatch, settings)
     seen = _capture_accelerator(monkeypatch)
     monkeypatch.setattr(
-        "mriforge.bootstrap.build_container", lambda *_a, **_k: types.SimpleNamespace()
+        "spectramr.bootstrap.build_container", lambda *_a, **_k: types.SimpleNamespace()
     )
 
     _common_train_setup(_train_args(dry_run=True))
@@ -165,7 +165,7 @@ def test_train_chain_is_none_when_nothing_is_declared(monkeypatch):
     _stub_config_load(monkeypatch, settings)
     seen = _capture_accelerator(monkeypatch)
     monkeypatch.setattr(
-        "mriforge.bootstrap.build_container", lambda *_a, **_k: types.SimpleNamespace()
+        "spectramr.bootstrap.build_container", lambda *_a, **_k: types.SimpleNamespace()
     )
 
     _common_train_setup(_train_args(dry_run=True))
@@ -181,7 +181,7 @@ def test_dry_run_validates_the_device_the_live_run_would_use(monkeypatch):
     _capture_accelerator(monkeypatch)
     seen: dict = {}
     monkeypatch.setattr(
-        "mriforge.bootstrap.build_container",
+        "spectramr.bootstrap.build_container",
         lambda _cfg, device=None, pipeline=None: seen.update(
             device=device, pipeline=pipeline
         ),
@@ -206,7 +206,7 @@ def test_live_train_run_forwards_the_resolved_device_to_the_pipeline(monkeypatch
         seen["device"] = device
         return {"success": True}
 
-    monkeypatch.setattr("mriforge.pipelines.run_training_pipeline", _fake_pipeline)
+    monkeypatch.setattr("spectramr.pipelines.run_training_pipeline", _fake_pipeline)
 
     _common_train_setup(_train_args())
 

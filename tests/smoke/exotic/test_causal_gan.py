@@ -5,7 +5,7 @@ Unit tests for Causal-GAN.
 import pytest
 import torch
 
-from mriforge.models.reasoning.causal_gan import CausalGAN
+from spectramr.models.reasoning.causal_gan import CausalGAN
 
 
 @pytest.fixture

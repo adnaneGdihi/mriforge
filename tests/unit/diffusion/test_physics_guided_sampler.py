@@ -9,7 +9,7 @@ class TestPhysicsGuidedReverseSampler:
 
     @pytest.fixture
     def make_sampler(self):
-        from mriforge.models.diffusion.physics_guided_sampler import (
+        from spectramr.models.diffusion.physics_guided_sampler import (
             PhysicsGuidedReverseSampler,
         )
         def _factory(dc_mode="hard", lambda_dc=1.0, **kwargs):
@@ -64,7 +64,7 @@ class TestPhysicsGuidedReverseSampler:
         pred, measured, mask = kspace_data
 
         # Compute initial residual
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         pred_complex = torch.complex(pred[:, 0:1], pred[:, 1:2])
         meas_complex = torch.complex(measured[:, 0:1], measured[:, 1:2])

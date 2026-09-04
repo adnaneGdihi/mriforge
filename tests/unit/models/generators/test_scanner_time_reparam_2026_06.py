@@ -13,7 +13,7 @@ import inspect
 import pytest
 import torch
 
-from mriforge.models.generators.mrf_models import ScannerTimeReparam
+from spectramr.models.generators.mrf_models import ScannerTimeReparam
 
 
 def test_per_scanner_tau_differs_by_scanner_id() -> None:
@@ -45,7 +45,7 @@ def test_rejects_non_positive_num_scanners() -> None:
 
 
 def test_strategy_threads_scanner_id() -> None:
-    from mriforge.infrastructure.training.strategies.mrf_acquisition_strategies import (
+    from spectramr.infrastructure.training.strategies.mrf_acquisition_strategies import (
         CrossScannerMRFHarmonisationStrategy,
     )
 

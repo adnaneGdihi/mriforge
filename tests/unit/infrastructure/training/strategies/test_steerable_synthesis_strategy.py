@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.steerable_synthesis_strategy import (
+from spectramr.infrastructure.training.strategies.steerable_synthesis_strategy import (
     SteerableSynthesisStrategy,
     compute_steerable_synthesis_loss,
 )
-from mriforge.models.generators.steerable_field_unet import SteerableFieldUNet
+from spectramr.models.generators.steerable_field_unet import SteerableFieldUNet
 
 
 def _net() -> SteerableFieldUNet:
@@ -53,7 +53,7 @@ def test_loss_reduces() -> None:
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # REGRESSION (cohort guard): the canonical pipeline forwards a TrainingBatch, not a
     # dict. The guard must accept any mapping exposing .get.
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(SteerableSynthesisStrategy)
@@ -119,8 +119,8 @@ def test_validation_forward_raises_without_field() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "steerable_synthesis" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "steerable_synthesis" in TrainingStrategyConfigSchema.model_fields
@@ -130,7 +130,7 @@ def test_strategy_registered_and_config_mounted() -> None:
 
 
 def test_contrast_id_threaded_to_model() -> None:
-    from mriforge.infrastructure.training.strategies.steerable_synthesis_strategy import (
+    from spectramr.infrastructure.training.strategies.steerable_synthesis_strategy import (
         compute_steerable_synthesis_loss,
     )
 

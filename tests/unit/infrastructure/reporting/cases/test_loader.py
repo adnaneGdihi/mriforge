@@ -5,11 +5,11 @@ matplotlib.use("Agg")
 import matplotlib.image as mpimg
 import numpy as np
 
-from mriforge.infrastructure.reporting.cases.loader import (
+from spectramr.infrastructure.reporting.cases.loader import (
     load_image_pair_cases,
     load_report_cases,
 )
-from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
 
 
 def _make_cases(tmp_path):
@@ -136,7 +136,7 @@ def _write_pair(base, step=100):
 
 
 def test_a_profiling_runs_pngs_are_not_adopted_as_the_arms_cases(tmp_path):
-    """`mriforge profile` writes a throwaway run under `profiles/<id>/run/`.
+    """`spectramr profile` writes a throwaway run under `profiles/<id>/run/`.
 
     Its PNGs are a *measurement* of the arm, at a truncated iteration budget and
     often a capped validation loop. Reported as the arm's validation cases they
@@ -144,7 +144,7 @@ def test_a_profiling_runs_pngs_are_not_adopted_as_the_arms_cases(tmp_path):
     `_find_image_dirs` reaches them, and it fires precisely when the arm has no
     images of its own -- i.e. exactly when the throwaway would be adopted.
     """
-    from mriforge.infrastructure.reporting.cases.loader import _find_image_dirs
+    from spectramr.infrastructure.reporting.cases.loader import _find_image_dirs
 
     arm = tmp_path / "experiments" / "results" / "exp_11"
     _write_pair(arm / "profiles" / "train-full-all-20260824" / "run" / "metrics")
@@ -159,7 +159,7 @@ def test_the_arms_own_nested_pngs_are_still_recovered(tmp_path):
     A test that only asserts the profiling case is dropped stays green if
     `_find_image_dirs` were made to return `(None, None)` unconditionally.
     """
-    from mriforge.infrastructure.reporting.cases.loader import _find_image_dirs
+    from spectramr.infrastructure.reporting.cases.loader import _find_image_dirs
 
     arm = tmp_path / "experiments" / "results" / "exp_11"
     real, fake = _write_pair(arm / "some" / "nested" / "download")
@@ -170,7 +170,7 @@ def test_the_arms_own_nested_pngs_are_still_recovered(tmp_path):
 
 def test_a_real_run_beside_a_profiling_run_still_reports_its_own_images(tmp_path):
     """The mixed tree: both present. The arm's own must win, not merely survive."""
-    from mriforge.infrastructure.reporting.cases.loader import _find_image_dirs
+    from spectramr.infrastructure.reporting.cases.loader import _find_image_dirs
 
     arm = tmp_path / "experiments" / "results" / "exp_11"
     _write_pair(arm / "profiles" / "run-abc" / "run" / "metrics", step=999)

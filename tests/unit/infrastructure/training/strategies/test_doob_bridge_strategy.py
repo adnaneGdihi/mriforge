@@ -6,18 +6,18 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.doob_bridge_strategy import (
+from spectramr.infrastructure.training.strategies.doob_bridge_strategy import (
     DoobBridgeStrategy,
     compute_doob_loss,
     compute_doob_residual_loss,
     doob_h_transform_sample,
     doob_residual_sample,
 )
-from mriforge.infrastructure.training.strategies.field_guided_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.field_guided_diffusion_strategy import (
     make_alphas_cumprod,
 )
-from mriforge.models.generators.doob_marginal_score_unet import DoobMarginalScoreUNet
-from mriforge.models.generators.doob_residual_score_unet import DoobResidualScoreUNet
+from spectramr.models.generators.doob_marginal_score_unet import DoobMarginalScoreUNet
+from spectramr.models.generators.doob_residual_score_unet import DoobResidualScoreUNet
 from tests.utils.config_block_stub import block_stub
 
 
@@ -138,7 +138,7 @@ def test_validation_sampling_is_reproducible_with_seed() -> None:
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # REGRESSION (cohort guard): the canonical pipeline forwards a TrainingBatch, not a dict.
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(DoobBridgeStrategy)
@@ -171,8 +171,8 @@ def test_compute_losses_rejects_tensor_batch() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "doob_bridge" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "doob_bridge" in TrainingStrategyConfigSchema.model_fields
@@ -241,7 +241,7 @@ def test_anchor_preserves_source_low_frequency_structure() -> None:
 
 def test_validation_forward_forwards_anchor_scale(monkeypatch) -> None:
     # ANTI-FACADE (#16): the strategy MUST read _db_anchor_scale and forward it to the sampler.
-    import mriforge.infrastructure.training.strategies.doob_bridge_strategy as mod
+    import spectramr.infrastructure.training.strategies.doob_bridge_strategy as mod
 
     captured: dict = {}
 
@@ -369,7 +369,7 @@ def test_residual_flag_routes_loss_and_validation(monkeypatch) -> None:
     # ANTI-FACADE (#16): _db_residual MUST route BOTH the loss (compute_doob_residual_loss) and
     # validation (doob_residual_sample). With the flag on, the residual paths are called; off,
     # the unconditional paths are.
-    import mriforge.infrastructure.training.strategies.doob_bridge_strategy as mod
+    import spectramr.infrastructure.training.strategies.doob_bridge_strategy as mod
 
     calls: dict = {}
 

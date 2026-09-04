@@ -45,7 +45,7 @@ def _load(module_name: str, file_name: str):
 
 # ``print_per_layer`` is covered by tests/unit/coverage/test_print_per_layer.py,
 # which owns it alone. It used to be tested here too, from a fixture whose
-# filenames carried a ``mriforge/`` prefix that coverage does not emit for this
+# filenames carried a ``spectramr/`` prefix that coverage does not emit for this
 # repo; the assertions passed because that fixture and the parser's leading-
 # component strip were wrong in mirror-image ways. One owner, one fixture.
 

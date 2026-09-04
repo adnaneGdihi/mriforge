@@ -13,7 +13,7 @@ from collections import OrderedDict
 
 import pytest
 
-from mriforge.data.samplers import VolumeBlockedSliceSampler
+from spectramr.data.samplers import VolumeBlockedSliceSampler
 
 
 def _corpus(groups: int = 3, fields: int = 5, slices: int = 20):

@@ -11,11 +11,11 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.validation_constants import (
+from spectramr.config.validation_constants import (
     TRAINING_MODE_CONSTRAINTS,
     VALID_TRAINING_MODES,
 )
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 _FRONTIER_MODES = [
     "bloch_schrodinger_bridge",

@@ -1,10 +1,10 @@
-"""Regression guard: ``mriforge.models.latent_diffusion.__all__`` must be importable.
+"""Regression guard: ``spectramr.models.latent_diffusion.__all__`` must be importable.
 
 Audit finding (WS-6): the package ``__all__`` listed eight names
 (``LatentDiffusionTrainingStrategy``, ``LatentGANTrainingStrategy``,
 ``VAETrainingStrategy``, ``VQVAETrainingStrategy`` and four ``create_*``
 helpers) whose import block was commented out. ``from
-mriforge.models.latent_diffusion import *`` therefore raised ``AttributeError``
+spectramr.models.latent_diffusion import *`` therefore raised ``AttributeError``
 because those names were advertised in ``__all__`` but absent from the module
 namespace. The real VAE/VQVAE strategies live in
 ``infrastructure/training/strategies/vae.py``; the commented ``latent_training_strategies``
@@ -23,7 +23,7 @@ import importlib
 
 def test_all_names_resolve_on_module() -> None:
     """Every name in ``__all__`` is a real attribute (import-star is safe)."""
-    mod = importlib.import_module("mriforge.models.latent_diffusion")
+    mod = importlib.import_module("spectramr.models.latent_diffusion")
     missing = [name for name in mod.__all__ if not hasattr(mod, name)]
     assert not missing, (
         "names in __all__ but absent from the module namespace "
@@ -33,9 +33,9 @@ def test_all_names_resolve_on_module() -> None:
 
 def test_import_star_does_not_raise() -> None:
     """Exercise the actual ``import *`` machinery against ``__all__``."""
-    mod = importlib.import_module("mriforge.models.latent_diffusion")
+    mod = importlib.import_module("spectramr.models.latent_diffusion")
     namespace: dict = {}
-    # Emulate ``from mriforge.models.latent_diffusion import *``: this is exactly
+    # Emulate ``from spectramr.models.latent_diffusion import *``: this is exactly
     # what raised AttributeError before the fix.
     for name in mod.__all__:
         namespace[name] = getattr(mod, name)
@@ -44,7 +44,7 @@ def test_import_star_does_not_raise() -> None:
 
 def test_removed_strategy_names_are_not_advertised() -> None:
     """The eight orphaned strategy names must no longer appear in ``__all__``."""
-    mod = importlib.import_module("mriforge.models.latent_diffusion")
+    mod = importlib.import_module("spectramr.models.latent_diffusion")
     orphaned = {
         "LatentDiffusionTrainingStrategy",
         "LatentGANTrainingStrategy",

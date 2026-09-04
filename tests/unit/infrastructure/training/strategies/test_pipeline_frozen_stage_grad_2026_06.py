@@ -20,7 +20,7 @@ import types
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.pipeline_strategy import (
+from spectramr.infrastructure.training.strategies.pipeline_strategy import (
     MultiTrainingStrategy,
 )
 

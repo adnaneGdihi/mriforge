@@ -12,7 +12,7 @@ import pytest
 torch = pytest.importorskip("torch")
 tio = pytest.importorskip("torchio")
 
-from mriforge.data.transforms.image_undersampling import (  # noqa: E402
+from spectramr.data.transforms.image_undersampling import (  # noqa: E402
     RetrospectiveImageUndersampling,
 )
 
@@ -95,7 +95,7 @@ def test_mask_is_cached_per_shape():
 def test_cached_mask_matches_fresh_generate():
     """The cached mask is identical to a fresh ``MaskGenerator.generate_mask``
     — caching changes nothing numerically."""
-    from mriforge.infrastructure.physics.sampling import MaskGenerator, MaskType
+    from spectramr.infrastructure.physics.sampling import MaskGenerator, MaskType
 
     t = RetrospectiveImageUndersampling(acceleration=4.0)
     t(_subject(h=32, w=32))

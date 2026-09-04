@@ -26,7 +26,7 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.core.module_utils import (  # noqa: E402
+from spectramr.core.module_utils import (  # noqa: E402
     WRAPPER_ATTRS,
     is_wrapped,
     strip_wrapper_prefixes,
@@ -208,7 +208,7 @@ class TestStripWrapperPrefixes:
 def test_pipelines_parallel_reexports_the_same_helper() -> None:
     """``pipelines.parallel.unwrap_model`` stays importable (it has tests and is
     the historical name) but must not be a second implementation."""
-    from mriforge.pipelines.parallel import unwrap_model as reexported
+    from spectramr.pipelines.parallel import unwrap_model as reexported
 
     assert reexported is unwrap_model
 
@@ -247,7 +247,7 @@ class TestResolveStateDict:
 
     def test_generator_envelope_resolves(self) -> None:
         """The envelope ``checkpoint_director`` actually writes (#1310)."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         w = self._weights()
         out = resolve_state_dict({"generator": w, "epoch": 7}, self._keys(), source="t")
@@ -255,7 +255,7 @@ class TestResolveStateDict:
 
     def test_model_state_dict_envelope_resolves(self) -> None:
         """The envelope ``checkpoint_service`` writes -- the other writer."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         w = self._weights()
         out = resolve_state_dict({"model_state_dict": w}, self._keys(), source="t")
@@ -263,14 +263,14 @@ class TestResolveStateDict:
 
     def test_bare_state_dict_resolves(self) -> None:
         """A raw ``model.state_dict()`` saved with no envelope at all."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         w = self._weights()
         assert set(resolve_state_dict(w, self._keys(), source="t")) == set(w)
 
     def test_wrapper_prefixes_are_stripped(self) -> None:
         """A DDP/compile-wrapped payload loads into a bare model."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         w = self._weights()
         wrapped = {f"module.{k}": v for k, v in w.items()}
@@ -284,7 +284,7 @@ class TestResolveStateDict:
         checkpoints store the *config* under ``"model"``. Selecting the first
         recognised key would hand a config dict to ``load_state_dict``.
         """
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         w = self._weights()
         payload = {"model": {"model_type": "unet", "base_channels": 32}, "generator": w}
@@ -293,7 +293,7 @@ class TestResolveStateDict:
 
     def test_zero_overlap_raises_instead_of_loading_nothing(self) -> None:
         """No silent no-op load: a payload that matches nothing must raise."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         foreign = {"totally.other.weight": torch.zeros(1)}
         with pytest.raises(ValueError, match="zero parameter"):
@@ -301,14 +301,14 @@ class TestResolveStateDict:
 
     def test_non_mapping_payload_raises_typeerror(self) -> None:
         """A pickled ``nn.Module`` (the deprecated format) is not a state dict."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         with pytest.raises(TypeError):
             resolve_state_dict(Tiny(), self._keys(), source="ckpt.pt")
 
     def test_source_is_named_in_the_error(self) -> None:
         """The message must say *which* checkpoint failed, not just that one did."""
-        from mriforge.core.module_utils import resolve_state_dict
+        from spectramr.core.module_utils import resolve_state_dict
 
         with pytest.raises(ValueError, match=re.escape("run42/best.pt")):
             resolve_state_dict(

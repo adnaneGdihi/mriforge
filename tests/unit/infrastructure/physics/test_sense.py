@@ -1,6 +1,6 @@
 """Tests for SENSE-manifold projection and SENSE loss.
 
-Targets ``mriforge.infrastructure.physics.sense``. ``SENSESubspaceProjector``
+Targets ``spectramr.infrastructure.physics.sense``. ``SENSESubspaceProjector``
 projects multi-coil k-space onto the physical SENSE manifold via
 adjoint→forward; ``compute_sense_loss`` applies L1 in the
 SENSE-combined image domain.
@@ -11,8 +11,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
-from mriforge.infrastructure.physics.sense import (
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.sense import (
     SENSESubspaceProjector,
     compute_sense_loss,
 )

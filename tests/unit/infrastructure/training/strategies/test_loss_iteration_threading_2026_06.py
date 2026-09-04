@@ -22,14 +22,14 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.disentangled_vae_strategy import (
+from spectramr.infrastructure.training.strategies.disentangled_vae_strategy import (
     DisentangledVAETrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
-from mriforge.models.losses.computers.base import LossOutput
+from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
+from spectramr.models.losses.computers.base import LossOutput
 
 _ITER = 5000  # well past the default warmup_iterations=1000
 

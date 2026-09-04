@@ -68,7 +68,7 @@ def test_degradation_mosaic_shares_one_robust_scale_across_panels() -> None:
     Guards both defects at once: a shared range makes θ comparable, and a
     percentile-derived range keeps the anatomy visible.
     """
-    from mriforge.core.metrics.meta_evaluation import figures
+    from spectramr.core.metrics.meta_evaluation import figures
 
     rng = np.random.default_rng(1)
     clean = _p99_normalised_brain(rng)

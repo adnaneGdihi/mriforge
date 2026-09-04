@@ -4,11 +4,29 @@
 Loss Functions — Mathematical Reference
 ======================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
-The MRIForge framework provides **147 registered loss functions** accessible via
-the ``@register_loss`` decorator and ``LossRegistry`` singleton.
-All losses implement ``forward(prediction, target, **kwargs) → Tensor``.
+Losses are registered with the ``@register_loss`` decorator and resolved through
+the ``LossRegistry`` singleton. All implement
+``forward(prediction, target, **kwargs) → Tensor``.
+
+.. note::
+
+   **This page is hand-written and not exhaustive.** It documents 106 of the
+   217 losses the registry holds, so a name's absence here is **not** evidence
+   that it does not exist -- check the registry before concluding one is
+   unavailable. Counts are deliberately not restated in the prose above: a frozen
+   number in a hand-maintained page drifts silently, and this one had -- it read 147.
+
+   .. code-block:: python
+
+      from spectramr.models.losses.registry import LossRegistry
+
+      LossRegistry.list_available()          # the canonical names
+      len(LossRegistry.list_available())
+
+   Tracked as issue #1643 -- these pages should be generated from the
+   registries, the way ``docs/config_key_reference.rst`` already is.
 
 .. contents:: Table of Contents
    :depth: 2
@@ -28,7 +46,7 @@ refuses to silently overwrite a registration:
 
 Practical consequence: a colliding ``@register_loss`` decoration breaks
 the import that triggers it, so the audit ladder
-(``python -m mriforge.cli audit``) catches the bug before training starts —
+(``python -m spectramr.cli audit``) catches the bug before training starts —
 rather than letting the registry silently flip between two classes
 depending on import order.
 
@@ -43,7 +61,7 @@ Usage
 
 .. code-block:: python
 
-   from mriforge.models.losses.registry import create_loss
+   from spectramr.models.losses.registry import create_loss
 
    l1 = create_loss("l1")
    value = l1(prediction, target)
@@ -68,7 +86,7 @@ The v6.0 declarative loss form (``losses.image_losses``,
 way to wire losses into a reconstruction experiment. The LossBuilder
 turns each list entry into a callable and pushes it into
 ``env.losses``, which the strategy passes to
-:py:meth:`mriforge.models.losses.computers.unified_diffusion_reconstruction.UnifiedReconstructionLossComputer.compute`
+:py:meth:`spectramr.models.losses.computers.unified_diffusion_reconstruction.UnifiedReconstructionLossComputer.compute`
 as ``losses_dict``.
 
 Two collaborating paths inside the computer add components to the
@@ -127,7 +145,7 @@ A list entry passes constructor arguments through ``kwargs:``:
          kwargs:
            sigma: 0.02
 
-:class:`~mriforge.config.schemas.loss.LossComponentConfig` declares exactly four
+:class:`~spectramr.config.schemas.loss.LossComponentConfig` declares exactly four
 fields — ``name``, ``weight``, ``enabled``, ``kwargs`` — and is
 ``extra="ignore"``. A ``config:`` mapping in that position therefore **loads
 without error and is discarded at parse time**, so the loss is constructed with
@@ -142,7 +160,7 @@ the entry's kwargs over the schema-derived ones and splats the result into the
 loss constructor, so a key the constructor does not accept becomes a
 ``TypeError`` at build time rather than a no-op. The 56 committed occurrences
 were all ``sobolev_kspace`` carrying ``sobolev_order``, and
-:class:`~mriforge.models.losses.kspace_physics_losses.SobolevKSpaceLoss` is
+:class:`~spectramr.models.losses.kspace_physics_losses.SobolevKSpaceLoss` is
 parameterless by design — its ``1 + k_x^2 + k_y^2`` weighting is fixed, and
 ``loss_builder.py`` maps it to ``{}`` explicitly. The declaration was never
 true, so the correct migration was deletion.
@@ -157,22 +175,22 @@ declares ``config:`` on a loss entry.
 ==========================================================================
 
 The v6.0 adapter chains
-(:py:mod:`mriforge.infrastructure.builders.leaf.adapter_builders`) have five
+(:py:mod:`spectramr.infrastructure.builders.leaf.adapter_builders`) have five
 hooks: ``pre_model``, ``post_model``, ``pre_loss_pred``,
 ``pre_loss_target``, ``pre_metric``. The audit
-(:py:mod:`mriforge.infrastructure.validation`) validates every declared
+(:py:mod:`spectramr.infrastructure.validation`) validates every declared
 chain, but until this fix no training strategy actually *applied*
 ``pre_model`` at forward time — so a YAML opt-in produced no runtime
 effect and the audit's "pass" was a lie.
 
 The m4raw dataset's cross-contrast pipeline (lines 818–852 of
-``src/data/datasets/m4raw_dataset.py``) emits a 4-channel tensor even
+``src/spectramr/data/datasets/m4raw_dataset.py``) emits a 4-channel tensor even
 when the YAML declares ``coil_processing_mode: rss_image``: per-side
 RSS reduces to 1 ch, then source||target ``cat`` doubles it, then
 real/imag interleave doubles it again. The audit's
 ``_derive_expected_channels`` does not model that doubling, so it
 reports 1 ch and the YAML passes — but
-:py:meth:`mriforge.infrastructure.training.strategies.base.BaseTrainingStrategy.train_step`'s
+:py:meth:`spectramr.infrastructure.training.strategies.base.BaseTrainingStrategy.train_step`'s
 strict DomainMismatch check at lines 633–663 (and a downstream
 ``Conv2d`` channel-mismatch crash) catches the discrepancy at runtime
 with the same opaque error every time.
@@ -181,7 +199,7 @@ The fix has three parts:
 
 1. ``rss_coils_to_magnitude`` registers ``pre_model`` in its
    ``insertion_points`` tuple
-   (:py:mod:`mriforge.data.adapters.channels`).
+   (:py:mod:`spectramr.data.adapters.channels`).
 2. :py:meth:`BaseTrainingStrategy.train_step` now applies the
    ``pre_model`` chain to **both** ``input_batch_prepared`` and
    ``target_batch`` immediately after the complex→real guard and
@@ -213,7 +231,7 @@ The RSS reduction is a side-effect-free squashing of an
 arbitrary-channel real tensor to a 1-channel magnitude image — equally
 valid at the prediction-side hook. The fix adds ``pre_loss_pred`` to
 the registered insertion points (see
-:py:mod:`mriforge.data.adapters.channels`). Pinned by the additional three
+:py:mod:`spectramr.data.adapters.channels`). Pinned by the additional three
 ``test_adapters_pre_model_rss`` cases (``test_rss_coils_to_magnitude_advertises_pre_loss_pred``,
 ``test_adapter_chain_builder_accepts_pre_loss_pred_chain``,
 ``test_rss_coils_to_magnitude_lists_all_four_hooks``).
@@ -224,7 +242,7 @@ Dict-output unwrap in unified loss computers (audit-2026-05-14 F2a)
 Several generators (latent / cold diffusion, multi-head VAEs) return a
 ``dict`` like ``{"pred": tensor, "aux": ...}`` from ``forward``. Before
 the round-2 fix, those dicts landed in
-:py:func:`mriforge.models.losses.computers.unified_diffusion_reconstruction._complex_safe_mse`
+:py:func:`spectramr.models.losses.computers.unified_diffusion_reconstruction._complex_safe_mse`
 and ``._complex_safe_l1``, which called ``.shape`` / ``.device`` on the
 dict and raised ``AttributeError: 'dict' object has no attribute
 'shape'`` — the W6 / W3 warning class (28+ occurrences in the
@@ -246,7 +264,7 @@ of non-tensors raises, tuple/list unwrap, ``_complex_safe_mse`` and
 K-space RSS phase-strip pitfall (audit-2026-05-14 F5)
 =====================================================
 
-The legacy :py:meth:`mriforge.data.transforms.kspace_coil_transforms.CoilCombineTransform._rss_combine`
+The legacy :py:meth:`spectramr.data.transforms.kspace_coil_transforms.CoilCombineTransform._rss_combine`
 chains IFFT → RSS-magnitude → FFT-back-to-k-space. The third step
 ``fft2c(|x|)`` is phase-stripping: the returned k-space is
 Hermitian-symmetric, and any downstream IFFT-then-magnitude produces a
@@ -255,7 +273,7 @@ of 89 smoke mosaics on 2026-05-14.
 
 The round-2 fix adds ``method="rss_image"`` which stops at step 2 and
 returns the real magnitude image directly. The TorchIO transform
-builder (:py:mod:`mriforge.data.builders.torchio_transform_builder`) routes
+builder (:py:mod:`spectramr.data.builders.torchio_transform_builder`) routes
 ``coil_processing_mode: rss_image`` to this new branch at both
 training and eval sites.
 
@@ -290,7 +308,7 @@ many datasets — complex multi-coil raw k-space (``calgary_campinas``,
 :math:`\hat{\nu}\to m`, and the nc-:math:`\chi` branch reduces to the Gaussian
 magnitude fidelity — so the repair provably generalises the published objective.
 The k-space data-consistency solve it pairs with lives in the physics layer as
-``mriforge.infrastructure.physics.tangent_cg.cg_data_consistency``.
+``spectramr.infrastructure.physics.tangent_cg.cg_data_consistency``.
 
 Ambient held-out consistency (SOTA plan Phase B)
 ================================================
@@ -312,7 +330,7 @@ nc-χ Bessel-ratio data consistency (SOTA plan T4)
 reconstruction toward the **non-central-χ ML magnitude** of the noisy
 measurement — the Bessel-ratio fixed point :math:`\nu = m\,R_L(m\nu/\sigma^2)`,
 :math:`R_L=I_L/I_{L-1}` — computed by
-``mriforge.infrastructure.physics.ncchi_data_consistency`` (the ratio via a stable
+``spectramr.infrastructure.physics.ncchi_data_consistency`` (the ratio via a stable
 backward continued fraction, any coil count ``L``). It is the **exact** ``L``-coil
 generalisation of the moment-based :class:`rician_consistency` unbiasing
 (:math:`\sqrt{\max(m^2-2\sigma^2,0)}`, the high-SNR approximation at ``L=1``) and
@@ -753,8 +771,8 @@ decomposed-component matching term:
                  \big).
 
 The decomposition reuses
-:func:`mriforge.infrastructure.physics.helmholtz_hodge.helmholtz_hodge_decompose`
-and :func:`mriforge.infrastructure.physics.helmholtz_hodge.divergence`; the
+:func:`spectramr.infrastructure.physics.helmholtz_hodge.helmholtz_hodge_decompose`
+and :func:`spectramr.infrastructure.physics.helmholtz_hodge.divergence`; the
 3D primitive is invoked with a degenerate depth axis (``D=1``) so every
 :math:`\partial/\partial z` term vanishes and the operators collapse to
 their 2D forms. Requires :math:`\geq 2` channels; shape mismatches raise
@@ -797,7 +815,7 @@ collocation set, using the target's residual operator as the running cost. A
 prediction that satisfies the same HJB relation as the target scores ~0; any
 departure — in particular one changing the Hamiltonian
 :math:`G_{\max}\|\nabla V\|` term — is penalised. The implementation reuses
-:func:`mriforge.infrastructure.physics.hjb_optimal_control.hjb_residual_loss`.
+:func:`spectramr.infrastructure.physics.hjb_optimal_control.hjb_residual_loss`.
 Shape mismatches raise ``ValueError``; reduction is ``"mean"`` or ``"sum"``.
 
 
@@ -824,9 +842,9 @@ Fisher metric evaluated at the geodesic midpoint:
    g(\theta) = \mathrm{diag}\!\left(\tfrac{1}{\sigma^2},\,\tfrac{2}{\sigma^2}\right).
 
 The metric is built through the physics SSOT
-:func:`mriforge.infrastructure.physics.fisher_rao_geometry.fisher_information_from_jacobian`
+:func:`spectramr.infrastructure.physics.fisher_rao_geometry.fisher_information_from_jacobian`
 (fed the Gaussian score Jacobian) and the arc-length is taken with
-:func:`mriforge.infrastructure.physics.fisher_rao_geometry.fisher_norm`, rather
+:func:`spectramr.infrastructure.physics.fisher_rao_geometry.fisher_norm`, rather
 than hand-coding the metric. Because :math:`g\propto 1/\sigma^2`, the same
 :math:`(\mu,\sigma)` gap costs *more* between tight distributions than broad
 ones — the curvature signature a plain :math:`L_2` cannot reproduce. The loss
@@ -1156,7 +1174,7 @@ mathematics instead of a vanilla reconstruction term. For a temporal fMRI
 series (input ``[B, T, H, W]``, or ``[B, C, H, W]`` with the channel axis read
 as time), each spatial snapshot is lifted into a learned observable space
 :math:`\Phi` by the encoder of the existing primitive
-:class:`mriforge.models.temporal.koopman_operator.KoopmanMotionFilter`. The
+:class:`spectramr.models.temporal.koopman_operator.KoopmanMotionFilter`. The
 best-fit *constant* linear Koopman operator :math:`K` is fitted to the
 prediction's own snapshots by ridge-stabilised least squares (the exact-DMD
 estimator :math:`K = Z_{+} Z_{-}^{+}`, then detached), and the loss penalizes
@@ -1370,7 +1388,7 @@ beta-TCVAE Loss
 ================
 
 **Registry name:** ``beta_tc_vae`` — **Class:** ``BetaTCVAELoss``
-**File:** ``src/models/losses/beta_tc_vae_loss.py``
+**File:** ``src/spectramr/models/losses/beta_tc_vae_loss.py``
 
 Decomposes the ELBO into three interpretable terms for better
 disentanglement:
@@ -1486,7 +1504,7 @@ The ``domain=`` vocabulary
 ==========================
 
 ``@register_loss(..., domain=...)`` accepts exactly the values in
-:data:`~mriforge.models.losses.registry.REGISTRABLE_DOMAINS`. **Anything else
+:data:`~spectramr.models.losses.registry.REGISTRABLE_DOMAINS`. **Anything else
 raises at import.**
 
 .. list-table::
@@ -1505,7 +1523,7 @@ raises at import.**
      - Operates on any tensor, so it is legal under every block.
    * - ``physics``, ``bloch_synthesis``
      - exempt
-     - :data:`~mriforge.models.losses.registry.NON_SIGNAL_DOMAINS` — grades
+     - :data:`~spectramr.models.losses.registry.NON_SIGNAL_DOMAINS` — grades
        gradient waveforms, Hamiltonians or Bloch simulations rather than the
        reconstruction signal, so no block corresponds to it.
    * - omitted (``None``)
@@ -1872,12 +1890,12 @@ samples are then scored against this target distribution; the discrepancy is
 near zero when prediction and target share a distribution and grows as the
 aggregated prediction drifts (mode collapse, biased aggregation, DP-noise
 corruption). The U-statistic estimator is reused verbatim from
-:func:`mriforge.core.metrics.stein.kernelised_stein_discrepancy`; the loss adds a
+:func:`spectramr.core.metrics.stein.kernelised_stein_discrepancy`; the loss adds a
 differentiable in-graph twin (identical IMQ Stein-kernel math) so gradients flow
 to the prediction. ``batch_chunks`` splits the batch into federated
 mini-cohorts; ``reduction`` is ``"mean"`` or ``"sum"`` over chunks.
 
-.. autoclass:: mriforge.models.losses.stein_discrepancy_loss.SteinDiscrepancyLoss
+.. autoclass:: spectramr.models.losses.stein_discrepancy_loss.SteinDiscrepancyLoss
    :members:
    :no-index:
 
@@ -1907,12 +1925,12 @@ that intercepts every directed path :math:`A\to I`:
 Each :math:`[B, C, H, W]` batch is summarised per sample into anatomy,
 mediator, and image proxies, soft-binned into empirical conditionals, and the
 front-door-adjusted estimate is computed through the physics SSOT primitive
-:func:`mriforge.infrastructure.physics.causal_frontdoor.frontdoor_adjusted_prediction`.
+:func:`spectramr.infrastructure.physics.causal_frontdoor.frontdoor_adjusted_prediction`.
 The loss penalises the discrepancy between the prediction's and target's
 front-door-adjusted quantities (so the reconstruction respects the
 confounder-robust relationship), plus a mediator-scanner mutual-information
 term from
-:func:`mriforge.infrastructure.physics.causal_frontdoor.donsker_varadhan_mi`
+:func:`spectramr.infrastructure.physics.causal_frontdoor.donsker_varadhan_mi`
 that enforces the site-invariance making the estimate valid. The scanner/site
 label is supplied via ``kwargs["scanner"]`` (defaulting to a per-sample
 intensity proxy). A bare :math:`L_1`/:math:`L_2` residual that ignores the
@@ -1920,7 +1938,7 @@ causal primitive is not confounder-robust. The loss is near-zero when
 prediction and target coincide, strictly positive otherwise; ``reduction`` is
 ``"mean"`` or ``"sum"`` and shape mismatches raise ``ValueError``.
 
-.. autoclass:: mriforge.models.losses.frontdoor_criterion_loss.FrontdoorCriterionLoss
+.. autoclass:: spectramr.models.losses.frontdoor_criterion_loss.FrontdoorCriterionLoss
    :members:
    :no-index:
 
@@ -1948,20 +1966,20 @@ and at the optimal resetting rate the distribution sits at *criticality*
 The loss treats the residual magnitude :math:`|\mathrm{prediction}-\mathrm{target}|`
 as an empirical sample of the passage / residual distribution and combines three
 terms, all routed through the genuine primitives in
-:mod:`mriforge.models.diffusion.stochastic_resetting`: (1) a **criticality** term
+:mod:`spectramr.models.diffusion.stochastic_resetting`: (1) a **criticality** term
 :math:`(\mathrm{CoV}(\tau)-1)^2` via
-:func:`~mriforge.models.diffusion.stochastic_resetting.coefficient_of_variation`,
+:func:`~spectramr.models.diffusion.stochastic_resetting.coefficient_of_variation`,
 (2) a **reset-consistency** term that applies one Bernoulli
-:func:`~mriforge.models.diffusion.stochastic_resetting.apply_resetting` step
+:func:`~spectramr.models.diffusion.stochastic_resetting.apply_resetting` step
 toward the anchor (= target) and penalises the leftover discrepancy (exactly
 zero when prediction equals the anchor), and (3) an **MFPT** term penalising
-:func:`~mriforge.models.diffusion.stochastic_resetting.mfpt_with_resetting` at the
+:func:`~spectramr.models.diffusion.stochastic_resetting.mfpt_with_resetting` at the
 configured resetting rate so training shortens the expected passage to the data
 manifold. A bare :math:`L_1`/:math:`L_2` residual ignoring the resetting
 primitive is not the advertised objective. ``reduction`` is ``"mean"`` or
 ``"sum"`` and shape mismatches raise ``ValueError``.
 
-.. autoclass:: mriforge.models.losses.resetting_consistency_loss.ResettingConsistencyLoss
+.. autoclass:: spectramr.models.losses.resetting_consistency_loss.ResettingConsistencyLoss
    :members:
    :no-index:
 
@@ -1991,13 +2009,13 @@ the network's score estimate and matches it against the fractional
 where the noise draw and the :math:`\sigma^{\alpha}` scaling both depend on
 the stability index :math:`\alpha\in(0,2]` (:math:`\alpha=2` recovers the
 Gaussian VP-SDE limit). The objective is computed by genuinely calling
-:func:`mriforge.models.diffusion.alpha_stable_levy.fractional_score_matching_loss`
+:func:`spectramr.models.diffusion.alpha_stable_levy.fractional_score_matching_loss`
 (Chambers-Mallows-Stuck α-stable sampler); a bare :math:`L_1`/:math:`L_2`
 residual ignoring the primitive is not the advertised objective. The
 ``alpha`` and ``sigma`` dispersion are constructor knobs; shape mismatches
 raise ``ValueError``.
 
-.. autoclass:: mriforge.models.losses.levy_score_consistency_loss.LevyScoreConsistencyLoss
+.. autoclass:: spectramr.models.losses.levy_score_consistency_loss.LevyScoreConsistencyLoss
    :members:
    :no-index:
 
@@ -2028,9 +2046,9 @@ which is 0 iff the atoms are mutually orthogonal and rises with coherence. It is
 **parameter** penalty (not a ``(pred, target)`` loss): invoked without a frame /
 atom tensor it **raises** so it cannot silently no-op in a YAML ``losses`` block
 (CLAUDE.md #16). It is wired through
-:class:`~mriforge.infrastructure.training.strategies.sparse_frame_strategy.SparseFrameStrategy`
+:class:`~spectramr.infrastructure.training.strategies.sparse_frame_strategy.SparseFrameStrategy`
 (``training_mode: sparse_frame``), which trains a
-:class:`~mriforge.models.generators.tight_frame_learner.TightFrameLearner` (a learnable
+:class:`~spectramr.models.generators.tight_frame_learner.TightFrameLearner` (a learnable
 convolutional analysis/synthesis frame, ``synthesize`` = the exact ``conv_transpose2d``
 adjoint of ``analyze``) with reconstruction + an always-on **Parseval-tightness** term
 (``lambda_parseval``) + this **coherence** term (the one-knob ``lambda_coherence``).
@@ -2040,7 +2058,7 @@ so the one-knob ablation isolates coherence. The strategy emits ``val_mutual_coh
 witness; the oracle is that ``lambda_coherence>0`` yields lower learned :math:`\mu` than
 the control at matched reconstruction.
 
-.. autoclass:: mriforge.models.losses.frame_coherence_loss.FrameCoherenceLoss
+.. autoclass:: spectramr.models.losses.frame_coherence_loss.FrameCoherenceLoss
    :members:
    :no-index:
 
@@ -2066,7 +2084,7 @@ across field — which is what training :math:`M` separate models already does.
 the high-field terms dominate the gradient, because a 0.055 T acquisition is far
 noisier than 7 T.
 
-.. autoclass:: mriforge.models.losses.image.multifield_data_consistency.MultiFieldDataConsistency
+.. autoclass:: spectramr.models.losses.image.multifield_data_consistency.MultiFieldDataConsistency
    :members:
    :no-index:
 
@@ -2082,7 +2100,7 @@ A one-sided hinge enforcing :math:`\partial T_1/\partial B_0 \ge 0`. Exactly zer
 on a physical solution, so it adds no gradient there — it only acts when the fit
 strays into a region BPP theory forbids.
 
-.. autoclass:: mriforge.models.losses.dispersion_monotonicity_loss.DispersionMonotonicity
+.. autoclass:: spectramr.models.losses.dispersion_monotonicity_loss.DispersionMonotonicity
    :members:
    :no-index:
 

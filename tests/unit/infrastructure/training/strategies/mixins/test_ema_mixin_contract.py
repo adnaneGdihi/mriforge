@@ -10,7 +10,7 @@ pitfall #9 (silent fallback / advertised-but-never-fires).
 
 from __future__ import annotations
 
-from mriforge.infrastructure.training.strategies.mixins.ema import EMAMixin
+from spectramr.infrastructure.training.strategies.mixins.ema import EMAMixin
 
 
 def test_ema_mixin_is_empty_marker() -> None:
@@ -24,6 +24,6 @@ def test_ema_mixin_is_empty_marker() -> None:
 
 def test_base_training_strategy_still_inherits_ema_mixin() -> None:
     """Keep the MRO intact so existing isinstance checks don't trip."""
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     assert EMAMixin in BaseTrainingStrategy.__mro__

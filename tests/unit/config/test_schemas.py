@@ -21,14 +21,14 @@ class TestSchemaImports:
 
     # @# pytest.mark.timeout(10)
     def test_import_training_settings(self):
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         assert TrainingSettings is not None
 
     # @# pytest.mark.timeout(10)
     def test_import_model_config_schema(self):
         try:
-            from mriforge.config.schemas.model import ModelConfigSchema
+            from spectramr.config.schemas.model import ModelConfigSchema
 
             assert ModelConfigSchema is not None
         except ImportError:
@@ -37,7 +37,7 @@ class TestSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_data_config_schema(self):
         try:
-            from mriforge.config.schemas.data import DataConfigSchema
+            from spectramr.config.schemas.data import DataConfigSchema
 
             assert DataConfigSchema is not None
         except ImportError:
@@ -46,7 +46,7 @@ class TestSchemaImports:
     # @# pytest.mark.timeout(10)
     def test_import_optimization_schema(self):
         try:
-            from mriforge.config.schemas.optimization import OptimizationConfigSchema
+            from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
             assert OptimizationConfigSchema is not None
         except ImportError:
@@ -54,7 +54,7 @@ class TestSchemaImports:
 
     # @# pytest.mark.timeout(10)
     def test_import_early_stopping_schema(self):
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         assert EarlyStoppingConfigSchema is not None
 
@@ -66,7 +66,7 @@ class TestTrainingSettings:
     # @# pytest.mark.timeout(30)
     def test_minimal_config_loads(self):
         """Minimal valid config should load."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config_dict = {
             "config_version": "1.0",
@@ -108,7 +108,7 @@ class TestTrainingSettings:
     # @# pytest.mark.timeout(30)
     def test_missing_required_field_raises(self):
         """Missing required fields should raise ValidationError."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         # Missing model section
         config_dict = {
@@ -124,7 +124,7 @@ class TestTrainingSettings:
     # @# pytest.mark.timeout(30)
     def test_default_values_applied(self):
         """Default values should be applied for optional fields."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema()
 
@@ -135,7 +135,7 @@ class TestTrainingSettings:
     # @# pytest.mark.timeout(30)
     def test_getattr_access_pattern(self):
         """Config should support getattr access (not .get())."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema(enabled=True, patience=15)
 
@@ -157,7 +157,7 @@ class TestEarlyStoppingSchema:
 
     # @# pytest.mark.timeout(30)
     def test_early_stopping_defaults(self):
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema()
 
@@ -167,12 +167,12 @@ class TestEarlyStoppingSchema:
 
     # @# pytest.mark.timeout(30)
     def test_early_stopping_custom_values(self):
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         # ``mode`` must be stated: it defaults to MIN, and minimising PSNR is
         # the silent inversion the reconciliation validator now rejects (metrics
         # plan PR 2, 2.5). This fixture relied on that default.
-        from mriforge.config.schemas.enums import MetricMode
+        from spectramr.config.schemas.enums import MetricMode
 
         config = EarlyStoppingConfigSchema(
             enabled=True,
@@ -189,7 +189,7 @@ class TestEarlyStoppingSchema:
     # @# pytest.mark.timeout(30)
     def test_early_stopping_check_interval(self):
         """Test iteration-based check_interval."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema(check_interval=5000)
 
@@ -203,7 +203,7 @@ class TestPhysicsSchema:
     # @# pytest.mark.timeout(30)
     def test_physics_schema_import(self):
         try:
-            from mriforge.config.schemas.physics import PhysicsConfigSchema
+            from spectramr.config.schemas.physics import PhysicsConfigSchema
 
             assert PhysicsConfigSchema is not None
         except ImportError:
@@ -212,7 +212,7 @@ class TestPhysicsSchema:
     # @# pytest.mark.timeout(30)
     def test_data_consistency_config(self):
         try:
-            from mriforge.config.schemas.physics import PhysicsConfigSchema
+            from spectramr.config.schemas.physics import PhysicsConfigSchema
         except ImportError:
             pytest.skip("PhysicsConfigSchema not available")
 
@@ -228,8 +228,8 @@ class TestSchemaValidation:
     # @# pytest.mark.timeout(30)
     def test_invalid_enum_value_raises(self):
         """Invalid enum values should raise ValidationError."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
-        from mriforge.config.schemas.enums import MetricMode
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.enums import MetricMode
 
         # Valid mode
         config = EarlyStoppingConfigSchema(mode=MetricMode.MIN)
@@ -242,7 +242,7 @@ class TestSchemaValidation:
     # @# pytest.mark.timeout(30)
     def test_negative_patience_raises(self):
         """Patience must be >= 1."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         with pytest.raises(ValidationError):
             EarlyStoppingConfigSchema(patience=0)
@@ -253,7 +253,7 @@ class TestSchemaValidation:
     # @# pytest.mark.timeout(30)
     def test_type_coercion(self):
         """Types should be coerced when possible."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         # String "true" might not coerce, but bool True should work
         config = EarlyStoppingConfigSchema(enabled=True)
@@ -271,7 +271,7 @@ class TestNestedConfigs:
     # @# pytest.mark.timeout(30)
     def test_objectives_nested_config(self):
         """Test losses section with nested configs (lambda fields moved from objectives)."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config_dict = {
             "config_version": "1.0",
@@ -320,7 +320,7 @@ class TestYAMLLoading:
         """Test loading config from YAML file."""
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config_dict = {
             "config_version": "1.0",
@@ -369,7 +369,7 @@ class TestFrozenConfigs:
     # @# pytest.mark.timeout(30)
     def test_early_stopping_is_frozen(self):
         """Frozen configs should not allow modification."""
-        from mriforge.config.schemas.early_stopping import EarlyStoppingConfigSchema
+        from spectramr.config.schemas.early_stopping import EarlyStoppingConfigSchema
 
         config = EarlyStoppingConfigSchema(patience=10)
 

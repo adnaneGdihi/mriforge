@@ -9,7 +9,7 @@ gradient reaching the network — i.e. the previously-inert facade now fires
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.equivariant_imaging_probe import (
+from spectramr.infrastructure.validation.equivariant_imaging_probe import (
     ei_forward_probe,
 )
 
@@ -88,7 +88,7 @@ def test_cli_audit_routes_ei_arm_to_ei_probe():
     """The audit --probe dispatch must route EI arms to ei_forward_probe."""
     import inspect
 
-    from mriforge.cli import app
+    from spectramr.cli import app
 
     src = inspect.getsource(app._audit_one)
     assert "ei_forward_probe" in src

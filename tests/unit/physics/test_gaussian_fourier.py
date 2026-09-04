@@ -54,7 +54,7 @@ class TestGaussianFourierOp(unittest.TestCase):
         # So we should call gradcheck on that function.
         # GaussianFourierOp.apply likely refers to torch.autograd.Function.apply which this is NOT.
 
-        from mriforge.infrastructure.physics.implementations.gaussian_fourier_op import (
+        from spectramr.infrastructure.physics.implementations.gaussian_fourier_op import (
             differentiable_gaussian_fourier,
         )
 
@@ -70,7 +70,7 @@ class TestGaussianFourierOp(unittest.TestCase):
         Previously the orientation was ignored (axis-aligned decay only), so any
         rotation was a silent no-op (pitfall #15).
         """
-        from mriforge.infrastructure.physics.implementations.gaussian_fourier_op import (
+        from spectramr.infrastructure.physics.implementations.gaussian_fourier_op import (
             differentiable_gaussian_fourier,
         )
 

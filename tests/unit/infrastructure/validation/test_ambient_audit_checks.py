@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 class _Model:
@@ -21,7 +21,7 @@ class _Training:
         self.input_domain = input_domain
         self.ambient = object() if ambient_block else None
         self.strategy_class = (
-            "mriforge.infrastructure.training.strategies."
+            "spectramr.infrastructure.training.strategies."
             "ambient_diffusion_strategy.AmbientDiffusionStrategy"
         )
 
@@ -40,7 +40,7 @@ def _c():
 
 def test_not_applicable_when_not_ambient():
     cfg = _Config(ambient_block=False)
-    cfg.training.strategy_class = "mriforge.x.Y"
+    cfg.training.strategy_class = "spectramr.x.Y"
     cfg.training.training_mode = "reconstruction"
     r = _c().check_ambient_requires_score_model(cfg)
     assert r.passed and r.severity == "info"

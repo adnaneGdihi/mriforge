@@ -43,10 +43,10 @@ def test_strategy_key_resolves_to_base_subclass(key: str) -> None:
     look up the short key in STRATEGY_CLASS_PATHS, then import the full
     dotted path.
     """
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     full_path = TrainingStrategyFactory.STRATEGY_CLASS_PATHS[key]
 

@@ -13,9 +13,9 @@ import types
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.signal_models.registry import get_signal_model
-from mriforge.infrastructure.physics.signal_models.spectroscopy import lorentzian_fid
-from mriforge.infrastructure.training.strategies.mrs_quantification_strategy import (
+from spectramr.infrastructure.physics.signal_models.registry import get_signal_model
+from spectramr.infrastructure.physics.signal_models.spectroscopy import lorentzian_fid
+from spectramr.infrastructure.training.strategies.mrs_quantification_strategy import (
     MRSQuantificationStrategy,
 )
 
@@ -83,8 +83,8 @@ def _batch(**extra: object) -> dict:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "mrs_quantification" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "mrs_quantification" in TrainingStrategyConfigSchema.model_fields
@@ -92,7 +92,7 @@ def test_strategy_registered_and_config_mounted() -> None:
 
 def test_data_block_is_mounted_not_silently_dropped() -> None:
     """DataConfigSchema is extra="ignore" — an unmounted block vanishes quietly."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     assert "spectroscopy" in DataConfigSchema.model_fields
     data = DataConfigSchema(spectroscopy={"enabled": True, "num_resonances": 5})
@@ -100,7 +100,7 @@ def test_data_block_is_mounted_not_silently_dropped() -> None:
 
 
 def test_strategy_is_spectroscopy_tagged_for_the_ledger() -> None:
-    from mriforge.config.schemas.enums import Regime, Task
+    from spectramr.config.schemas.enums import Regime, Task
 
     caps = MRSQuantificationStrategy.__dict__["capabilities"]
     assert caps.workflows == frozenset({Regime.SPECTROSCOPIC})
@@ -292,7 +292,7 @@ def test_the_fit_reduces_the_residual_on_a_synthetic_fid() -> None:
 
 def test_no_weighted_loss_raises_rather_than_training_a_plain_regressor() -> None:
     """An arm advertising MRS physics with every lambda at 0 is pitfall #16."""
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
     strat = object.__new__(MRSQuantificationStrategy)
     strat.config = types.SimpleNamespace(

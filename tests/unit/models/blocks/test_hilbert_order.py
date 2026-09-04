@@ -16,13 +16,13 @@ from __future__ import annotations
 import numpy as np
 import torch
 
-from mriforge.models.blocks.dtn2s_mask import build_dtn2s_mask, dual_traversal_pair
-from mriforge.models.blocks.hilbert_order import HilbertOrder
-from mriforge.models.blocks.sfc_windowed_attention import (
+from spectramr.models.blocks.dtn2s_mask import build_dtn2s_mask, dual_traversal_pair
+from spectramr.models.blocks.hilbert_order import HilbertOrder
+from spectramr.models.blocks.sfc_windowed_attention import (
     CrossDomainBlock,
     SFCWindowedAttention,
 )
-from mriforge.infrastructure.physics.marker_estimators import (
+from spectramr.infrastructure.physics.marker_estimators import (
     crlb_from_fisher,
     conformal_coverage_check,
     fisher_information_motion,
@@ -107,7 +107,7 @@ class TestHilbertOrder:
     def test_hilbert_square_pow2_byte_identical_to_strict(self) -> None:
         # On a square power-of-2 grid the rect-routed builder must reduce
         # byte-identically to the strict one (zero behaviour change).
-        from mriforge.models.blocks.topology_linearizer import _hilbert_2d_indices
+        from spectramr.models.blocks.topology_linearizer import _hilbert_2d_indices
 
         h = HilbertOrder(order=4, n_dims=2, mode="hilbert")  # 16x16
         assert np.array_equal(h.permutation.numpy(), _hilbert_2d_indices(16, 16))
@@ -266,7 +266,7 @@ class TestThroughPlaneMotion:
     def test_recovers_planted_delta_z(self) -> None:
         # Generate forward-model intensities for known Δz=2.0 mm,
         # then ensure recovery returns ≈ 2.0
-        from mriforge.infrastructure.physics.marker_estimators import _gaussian_profile
+        from spectramr.infrastructure.physics.marker_estimators import _gaussian_profile
 
         slice_thickness = 5.0
         slice_centers = torch.tensor([-7.5, -2.5, 2.5, 7.5])
@@ -395,7 +395,7 @@ class TestPrivilegedLearning:
 
 class TestXDTA:
     def test_forward_shape(self) -> None:
-        from mriforge.models.generators.xdta import XDTA, COND_VOCAB
+        from spectramr.models.generators.xdta import XDTA, COND_VOCAB
 
         # Tiny config — keeps wallclock under 5 s on CPU
         m = XDTA(
@@ -415,7 +415,7 @@ class TestXDTA:
         assert not torch.is_complex(x_hat)
 
     def test_unconditional_works(self) -> None:
-        from mriforge.models.generators.xdta import XDTA
+        from spectramr.models.generators.xdta import XDTA
         m = XDTA(image_size=32, win_tok=8, d_model=32, n_blocks=1,
                  n_heads=2, win_attn=8, n_global=0, cross_every=1)
         B = 1

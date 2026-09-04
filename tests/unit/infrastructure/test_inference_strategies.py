@@ -15,7 +15,7 @@ class TestReconstructionInference:
 
     def test_strategy_exists(self):
         """Test reconstruction inference exists."""
-        from mriforge.infrastructure.inference.reconstruction_inference_strategy import (
+        from spectramr.infrastructure.inference.reconstruction_inference_strategy import (
             ReconstructionInferenceStrategy,
         )
 
@@ -27,7 +27,7 @@ class TestDiffusionInference:
 
     def test_strategy_exists(self):
         """Test diffusion inference exists."""
-        from mriforge.infrastructure.inference.diffusion_inference_strategy import (
+        from spectramr.infrastructure.inference.diffusion_inference_strategy import (
             DiffusionInferenceStrategy,
         )
 
@@ -39,7 +39,7 @@ class TestGANInference:
 
     def test_strategy_exists(self):
         """Test GAN inference exists."""
-        from mriforge.infrastructure.inference.gan_inference_strategy import (
+        from spectramr.infrastructure.inference.gan_inference_strategy import (
             GANInferenceStrategy,
         )
 
@@ -51,7 +51,7 @@ class TestVAEInference:
 
     def test_strategy_exists(self):
         """Test VAE inference exists."""
-        from mriforge.infrastructure.inference.vae_inference_strategy import (
+        from spectramr.infrastructure.inference.vae_inference_strategy import (
             VAEInferenceStrategy,
         )
 
@@ -63,7 +63,7 @@ class TestSSLInference:
 
     def test_strategy_exists(self):
         """Test SSL inference exists."""
-        from mriforge.infrastructure.inference.ssl_inference_strategy import (
+        from spectramr.infrastructure.inference.ssl_inference_strategy import (
             SSLInferenceStrategy,
         )
 
@@ -75,7 +75,7 @@ class TestSlidingWindowInference:
 
     def test_sliding_window_exists(self):
         """Test sliding window module exists."""
-        from mriforge.infrastructure.inference.sliding_window import sliding_window_inference
+        from spectramr.infrastructure.inference.sliding_window import sliding_window_inference
 
         assert callable(sliding_window_inference)
 
@@ -85,7 +85,7 @@ class TestStreamingInference:
 
     def test_streaming_exists(self):
         """Test streaming inference module exists."""
-        from mriforge.infrastructure.inference.streaming_inference import (
+        from spectramr.infrastructure.inference.streaming_inference import (
             StreamingInferenceEngine,
         )
 
@@ -97,7 +97,7 @@ class TestMultiModalInference:
 
     def test_multi_modal_exists(self):
         """Test multi-modal inference module exists."""
-        from mriforge.infrastructure.inference.multi_modal_inference import (
+        from spectramr.infrastructure.inference.multi_modal_inference import (
             MultiModalConditioning,
         )
 
@@ -109,7 +109,7 @@ class TestProcessingStrategies:
 
     def test_processing_exists(self):
         """Test processing strategies exist."""
-        from mriforge.infrastructure.inference.processing_strategies import InferenceStrategy
+        from spectramr.infrastructure.inference.processing_strategies import InferenceStrategy
 
         assert hasattr(InferenceStrategy, "infer")
 
@@ -119,7 +119,7 @@ class TestPerformanceOptimization:
 
     def test_optimization_exists(self):
         """Test optimization module exists."""
-        from mriforge.infrastructure.inference.performance_optimization import (
+        from spectramr.infrastructure.inference.performance_optimization import (
             InferencePerformanceOptimizer,
         )
 
@@ -133,7 +133,7 @@ class TestInferencePerformanceOptimizer:
         """__init__ must establish autocast attributes before optimize_model()."""
         import torch
 
-        from mriforge.infrastructure.inference.performance_optimization import (
+        from spectramr.infrastructure.inference.performance_optimization import (
             InferencePerformanceOptimizer,
         )
 
@@ -152,7 +152,7 @@ class TestInferencePerformanceOptimizer:
         import torch
         import torch.nn as nn
 
-        from mriforge.infrastructure.inference.performance_optimization import (
+        from spectramr.infrastructure.inference.performance_optimization import (
             InferencePerformanceOptimizer,
         )
 

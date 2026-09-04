@@ -6,24 +6,24 @@ import pytest
 import torch
 
 
-class TestBPPDispersion:
-    """Tests for BPP T₁/T₂ dispersion scaling."""
+class TestPowerLawDispersion:
+    """Tests for power-law T₁/T₂ dispersion scaling."""
 
     def test_t1_shortens_at_lower_field(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import bpp_dispersion
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
 
         t1_3t = torch.tensor([1350.0, 850.0])  # GM, WM at 3T (ms)
         t2_3t = torch.tensor([110.0, 80.0])
-        t1_ulf, t2_ulf = bpp_dispersion(t1_3t, t2_3t, b0_source=3.0, b0_target=0.064)
+        t1_ulf, _t2_ulf = power_law_dispersion(t1_3t, t2_3t, b0_source=3.0, b0_target=0.064)
         # T₁ must shorten at lower field
         assert (t1_ulf < t1_3t).all(), "T₁ should decrease at lower B₀"
 
     def test_contrast_compression(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import bpp_dispersion
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
 
         t1_3t = torch.tensor([1350.0, 850.0])  # GM, WM
         t2_3t = torch.tensor([110.0, 80.0])
-        t1_ulf, _ = bpp_dispersion(t1_3t, t2_3t)
+        t1_ulf, _ = power_law_dispersion(t1_3t, t2_3t)
 
         contrast_3t = (t1_3t[0] - t1_3t[1]).abs()
         contrast_ulf = (t1_ulf[0] - t1_ulf[1]).abs()
@@ -33,30 +33,63 @@ class TestBPPDispersion:
         )
 
     def test_t2_weak_dependence(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import bpp_dispersion
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
 
         t1_3t = torch.tensor([1350.0])
         t2_3t = torch.tensor([110.0])
-        _, t2_ulf = bpp_dispersion(t1_3t, t2_3t, gamma_t2=0.05)
+        _, t2_ulf = power_law_dispersion(t1_3t, t2_3t, gamma_t2=0.05)
         # T₂ should change very little (γ=0.05 is weak)
         ratio = (t2_ulf / t2_3t).item()
         assert 0.7 < ratio < 1.0, f"T₂ ratio {ratio:.3f} should be near 1.0"
 
     def test_identity_at_same_field(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import bpp_dispersion
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
 
         t1 = torch.tensor([1000.0])
         t2 = torch.tensor([100.0])
-        t1_out, t2_out = bpp_dispersion(t1, t2, b0_source=3.0, b0_target=3.0)
+        t1_out, t2_out = power_law_dispersion(t1, t2, b0_source=3.0, b0_target=3.0)
         assert torch.allclose(t1_out, t1, atol=1e-4)
         assert torch.allclose(t2_out, t2, atol=1e-4)
+
+    def test_delegates_to_the_elected_owner_bit_for_bit(self):
+        """Both halves must BE dispersion.py's power law, not agree with it.
+
+        ``torch.allclose`` would pass on a re-implementation that drifted within
+        tolerance, which is how the T1 half sat here undetected. Bit-identity is
+        what says "one owner" (non-negotiable 17).
+        """
+        from spectramr.infrastructure.physics.dispersion import (
+            power_law_t1_transport,
+            power_law_t2_transport,
+        )
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
+
+        t1 = torch.tensor([1600.0, 850.0])
+        t2 = torch.tensor([80.0, 60.0])
+        got_t1, got_t2 = power_law_dispersion(
+            t1, t2, b0_source=7.0, b0_target=0.1, beta=0.35, gamma_t2=0.05
+        )
+        assert torch.equal(got_t1, power_law_t1_transport(t1, 7.0, 0.1, 0.35))
+        assert torch.equal(got_t2, power_law_t2_transport(t2, 7.0, 0.1, 0.05))
+
+    def test_nonpositive_field_raises_valueerror(self):
+        """Delegation upgrades a bare ZeroDivisionError into a named ValueError.
+
+        The previous inline arithmetic divided by ``b0_source`` directly: a Python
+        ``0.0`` raised ZeroDivisionError with no message, and a zero *tensor* entry
+        produced ``inf`` and no error at all (pitfall #9).
+        """
+        from spectramr.infrastructure.physics.ulf_forward_operator import power_law_dispersion
+
+        with pytest.raises(ValueError, match="positive field strengths"):
+            power_law_dispersion(torch.tensor([1000.0]), torch.tensor([80.0]), b0_source=0.0)
 
 
 class TestErnstMagnetization:
     """Tests for steady-state Ernst equation rendering."""
 
     def test_output_nonnegative(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import ernst_magnetization
+        from spectramr.infrastructure.physics.ulf_forward_operator import ernst_magnetization
 
         rho = torch.ones(1, 1, 8, 8)
         t1 = torch.full((1, 1, 8, 8), 500.0)
@@ -65,7 +98,7 @@ class TestErnstMagnetization:
         assert (mxy >= 0).all(), "Magnitude Mxy should be non-negative"
 
     def test_b1_modulation(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import ernst_magnetization
+        from spectramr.infrastructure.physics.ulf_forward_operator import ernst_magnetization
 
         rho = torch.ones(1, 1, 8, 8)
         t1 = torch.full((1, 1, 8, 8), 500.0)
@@ -87,7 +120,7 @@ class TestErnstMagnetization:
         )
 
     def test_zero_rho_gives_zero(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import ernst_magnetization
+        from spectramr.infrastructure.physics.ulf_forward_operator import ernst_magnetization
 
         rho = torch.zeros(1, 1, 4, 4)
         t1 = torch.full((1, 1, 4, 4), 500.0)
@@ -100,14 +133,14 @@ class TestGNLWarp:
     """Tests for gradient non-linearity warping."""
 
     def test_none_coefficients_identity(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import gnl_warp
+        from spectramr.infrastructure.physics.ulf_forward_operator import gnl_warp
 
         image = torch.randn(1, 1, 16, 16)
         result = gnl_warp(image, sh_coefficients=None)
         assert torch.allclose(result, image)
 
     def test_nonzero_coefficients_change(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import gnl_warp
+        from spectramr.infrastructure.physics.ulf_forward_operator import gnl_warp
 
         image = torch.randn(1, 1, 16, 16)
         # Order 3 → K=10 basis functions
@@ -118,7 +151,7 @@ class TestGNLWarp:
         assert not torch.allclose(result, image, atol=1e-4), "GNL should warp the image"
 
     def test_shape_preserved(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import gnl_warp
+        from spectramr.infrastructure.physics.ulf_forward_operator import gnl_warp
 
         image = torch.randn(2, 1, 32, 32)
         coeffs = torch.zeros(2, 10)
@@ -134,7 +167,7 @@ class TestGNLWarp:
         basis size is a config/wiring error and must fail loud instead of
         degrading to identity warping (which a --strict smoke run would mask).
         """
-        from mriforge.infrastructure.physics.ulf_forward_operator import gnl_warp
+        from spectramr.infrastructure.physics.ulf_forward_operator import gnl_warp
 
         image = torch.randn(1, 1, 16, 16)
         # max_order=3 -> K=10 basis functions; provide a mis-sized block (7 != 10)
@@ -147,7 +180,7 @@ class TestULFNoise:
     """Tests for ULF noise injection."""
 
     def test_thermal_scaling(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import inject_ulf_noise
+        from spectramr.infrastructure.physics.ulf_forward_operator import inject_ulf_noise
 
         kspace = torch.zeros(1, 1, 1000, dtype=torch.complex64)
         t = torch.linspace(0, 0.03, 1000)
@@ -160,7 +193,7 @@ class TestULFNoise:
         assert power_064 > power_3t, "Noise should be larger at lower B₀"
 
     def test_emi_adds_energy(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import inject_ulf_noise
+        from spectramr.infrastructure.physics.ulf_forward_operator import inject_ulf_noise
 
         kspace = torch.zeros(1, 1, 1000, dtype=torch.complex64)
         t = torch.linspace(0, 0.03, 1000)
@@ -176,7 +209,7 @@ class TestDifferentiableULFForwardOperator:
 
     @pytest.fixture
     def operator(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import (
+        from spectramr.infrastructure.physics.ulf_forward_operator import (
             DifferentiableULFForwardOperator,
         )
 
@@ -209,8 +242,8 @@ class TestDifferentiableULFForwardOperator:
         mis-center on odd dims. With fft2c the operator runs and produces valid
         centered k-space on an odd grid.
         """
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
-        from mriforge.infrastructure.physics.ulf_forward_operator import (
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.physics.ulf_forward_operator import (
             DifferentiableULFForwardOperator,
         )
 
@@ -249,7 +282,7 @@ class TestDifferentiableULFForwardOperator:
         assert not torch.allclose(k1, k2, atol=1e-4), "B₁⁺ should change output"
 
     def test_noise_increases_energy(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import (
+        from spectramr.infrastructure.physics.ulf_forward_operator import (
             DifferentiableULFForwardOperator,
         )
 
@@ -274,7 +307,7 @@ class TestDifferentiableULFForwardOperator:
         assert diff > 1e-6, "Noise should measurably change the output"
 
     def test_maxwell_phase_adds_imaginary(self):
-        from mriforge.infrastructure.physics.ulf_forward_operator import (
+        from spectramr.infrastructure.physics.ulf_forward_operator import (
             DifferentiableULFForwardOperator,
         )
 

@@ -12,8 +12,8 @@ import torch
 from torch import nn
 from torch.optim import SGD, Adam, AdamW, Optimizer, RMSprop
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders import OptimizationBuilder
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders import OptimizationBuilder
 
 
 class DummyModel(nn.Module):
@@ -340,7 +340,7 @@ class TestBuildSchedulersRaisesOnUnknown:
         named was stale. Resolution moved from ``create_scheduler``'s bare
         ``ValueError`` to ``resolve_scheduler_spec``, which raises the domain
         ``ConfigurationError`` and additionally lists the valid names.
-        ``ConfigurationError`` derives from ``MRIForgeError``, not ``ValueError``,
+        ``ConfigurationError`` derives from ``SpectraMRError``, not ``ValueError``,
         so ``pytest.raises(ValueError)`` no longer caught it -- a red test over
         a guard that had in fact got stricter. The sibling suite in
         ``tests/unit/infrastructure/training/builders/`` already expects
@@ -349,7 +349,7 @@ class TestBuildSchedulersRaisesOnUnknown:
         Assert the payload, not just the type: "raises" alone would still pass
         if the message stopped naming which value was rejected.
         """
-        from mriforge.domain.exceptions import ConfigurationError
+        from spectramr.domain.exceptions import ConfigurationError
 
         builder = self._make_builder_with_optimizer(
             {"type": "totally_unknown_scheduler", "kwargs": {}}, dummy_model

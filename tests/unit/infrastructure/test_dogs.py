@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.distributed.dogs import DistributedVolumeTrainer
+from spectramr.infrastructure.training.distributed.dogs import DistributedVolumeTrainer
 
 
 class SimpleConvModel(nn.Module):

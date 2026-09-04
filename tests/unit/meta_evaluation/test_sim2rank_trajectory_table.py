@@ -16,12 +16,12 @@ import struct
 import pytest
 import torch
 
-from mriforge.core.metrics.meta_evaluation.rankers.sim2rank import (
+from spectramr.core.metrics.meta_evaluation.rankers.sim2rank import (
     _build_trajectory_table,
     _dataset_axes,
     _per_family_average,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
 )

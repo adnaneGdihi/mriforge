@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.bloch_field_bottleneck import BlochFieldBottleneck
+from spectramr.models.generators.bloch_field_bottleneck import BlochFieldBottleneck
 
 
 def _net(use_field_dispersion: bool = True) -> BlochFieldBottleneck:
@@ -52,7 +52,7 @@ def test_signal_scale_lifts_range_above_spgr_ceiling() -> None:
     # FINDING #2: the raw SPGR weighting maxes ~0.23 at flip=15deg, so without a gain the
     # render can never reach the bright pixels of a [0,1] target and clamp(0,1) is dead.
     # The learnable global gain must lift the achievable output well above that ceiling.
-    from mriforge.models.blocks.spgr_signal import spgr_signal
+    from spectramr.models.blocks.spgr_signal import spgr_signal
 
     m = _net()
     # Drive PD toward 1 and pick T1/T2 near the bright corner by maxing the head bias is
@@ -103,6 +103,6 @@ def test_rejects_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.registry import MODEL_REGISTRY
 
     assert "bloch_field_bottleneck" in MODEL_REGISTRY

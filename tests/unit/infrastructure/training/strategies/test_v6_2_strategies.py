@@ -29,39 +29,39 @@ import importlib
 
 import pytest
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
 
 V6_2_STRATEGIES: list[tuple[str, str, str]] = [
     ("kspace_inr",
-     "mriforge.infrastructure.training.strategies.kspace_inr_strategy",
+     "spectramr.infrastructure.training.strategies.kspace_inr_strategy",
      "KSpaceINRStrategy"),
     ("bloch_consistent_denoising",
-     "mriforge.infrastructure.training.strategies.bloch_consistent_denoising_strategy",
+     "spectramr.infrastructure.training.strategies.bloch_consistent_denoising_strategy",
      "BlochConsistentDenoisingStrategy"),
     ("girf_aware",
-     "mriforge.infrastructure.training.strategies.girf_aware_strategy",
+     "spectramr.infrastructure.training.strategies.girf_aware_strategy",
      "GIRFAwareStrategy"),
     ("inverse_bloch_phase",
-     "mriforge.infrastructure.training.strategies.inverse_bloch_phase_strategy",
+     "spectramr.infrastructure.training.strategies.inverse_bloch_phase_strategy",
      "InverseBlochPhaseStrategy"),
     ("low_rank_sparse",
-     "mriforge.infrastructure.training.strategies.low_rank_sparse_strategy",
+     "spectramr.infrastructure.training.strategies.low_rank_sparse_strategy",
      "LowRankSparseStrategy"),
     ("qsm_pipeline",
-     "mriforge.infrastructure.training.strategies.qsm_pipeline_strategy",
+     "spectramr.infrastructure.training.strategies.qsm_pipeline_strategy",
      "QSMPipelineStrategy"),
     ("qspace_diffusion",
-     "mriforge.infrastructure.training.strategies.qspace_diffusion_strategy",
+     "spectramr.infrastructure.training.strategies.qspace_diffusion_strategy",
      "QSpaceDiffusionStrategy"),
     ("adversarial_robustness",
-     "mriforge.infrastructure.training.strategies.adversarial_robustness_strategy",
+     "spectramr.infrastructure.training.strategies.adversarial_robustness_strategy",
      "AdversarialRobustnessStrategy"),
     ("stochastic_interpolants",
-     "mriforge.infrastructure.training.strategies.stochastic_interpolants_strategy",
+     "spectramr.infrastructure.training.strategies.stochastic_interpolants_strategy",
      "StochasticInterpolantsStrategy"),
     ("jepa",
-     "mriforge.infrastructure.training.strategies.jepa_strategy",
+     "spectramr.infrastructure.training.strategies.jepa_strategy",
      "JEPAStrategy"),
 ]
 

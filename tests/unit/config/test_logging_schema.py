@@ -1,8 +1,8 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import LogLevel
-from mriforge.config.schemas.logging import LoggingConfigSchema
+from spectramr.config.schemas.enums import LogLevel
+from spectramr.config.schemas.logging import LoggingConfigSchema
 
 
 class TestLoggingConfigSchema:

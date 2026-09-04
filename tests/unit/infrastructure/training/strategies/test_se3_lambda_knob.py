@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.se3_navigator import SE3NavigatorConfig
+from spectramr.config.schemas.training.se3_navigator import SE3NavigatorConfig
 
 
 def test_lambda_se3_equivariance_is_a_validated_field():

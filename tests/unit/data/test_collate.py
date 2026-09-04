@@ -10,7 +10,7 @@ Legacy module kept for backward compatibility.
 import torch
 
 # Import from new builders module (Phase T3)
-from mriforge.data.collation.strategies import PhysicsCollateStrategy, RobustCollateStrategy
+from spectramr.data.collation.strategies import PhysicsCollateStrategy, RobustCollateStrategy
 
 
 # Convenience wrappers for backward compatibility with old tests

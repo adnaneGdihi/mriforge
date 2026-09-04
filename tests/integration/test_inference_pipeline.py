@@ -22,7 +22,7 @@ import pytest
 import torch
 import yaml
 
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.settings import TrainingSettings
 
 
 class TestModelLoadingForInference:
@@ -220,8 +220,8 @@ class TestBatchInference:
 
         def test_batch_inference_with_data_consistency(self, synthetic_test_batch):
             """Test batch inference with Data Consistency Layer."""
-            from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
-            from mriforge.infrastructure.physics.fft_ops import ifft2c
+            from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
+            from spectramr.infrastructure.physics.fft_ops import ifft2c
 
             # Create model
             model = torch.nn.Sequential(
@@ -269,7 +269,7 @@ class TestBatchInference:
 
             # Verify DC enforces mask in k-space
             # Convert consistent image back to k-space to check against measured
-            from mriforge.infrastructure.physics.fft_ops import fft2c
+            from spectramr.infrastructure.physics.fft_ops import fft2c
 
             consistent_kspace = fft2c(
                 torch.complex(consistent_img[:, 0], consistent_img[:, 1]).unsqueeze(1)
@@ -528,7 +528,7 @@ class TestInferencePreprocessingAlignment:
         Training: train_noise_level=0.01
         Inference: eval_noise_level=0.005 (lower, more realistic)
         """
-        from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
+        from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
 
         dc_layer = DataConsistencyLayer(
             train_noise_level=0.01,

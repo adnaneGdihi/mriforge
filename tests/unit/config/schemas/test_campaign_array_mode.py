@@ -7,7 +7,7 @@ This file pins the schema contract only; the orchestrator submission path is
 covered in
 ``tests.unit.infrastructure.orchestration.test_campaign_orchestrator``.
 
-These tests import ONLY ``mriforge.config.schemas.campaign`` (no evaluator /
+These tests import ONLY ``spectramr.config.schemas.campaign`` (no evaluator /
 torch chain), so they collect on a torch-less interpreter.
 """
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.campaign import (
+from spectramr.config.schemas.campaign import (
     CampaignConfigSchema,
     CampaignExperimentSchema,
 )

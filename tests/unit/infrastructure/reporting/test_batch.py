@@ -1,6 +1,6 @@
 """Tests for batch reporting over a cohort tree.
 
-Targets ``mriforge.infrastructure.reporting.batch``: run discovery, per-run
+Targets ``spectramr.infrastructure.reporting.batch``: run discovery, per-run
 report generation, the linking index, and per-run failure isolation.
 """
 
@@ -10,7 +10,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 
-from mriforge.infrastructure.reporting.batch import (
+from spectramr.infrastructure.reporting.batch import (
     discover_run_dirs,
     generate_reports,
     write_batch_index,
@@ -67,7 +67,7 @@ def test_generate_reports_isolates_per_run_failure(tmp_path, monkeypatch):
     _make_run(tmp_path, "ok_run")
     bad = _make_run(tmp_path, "bad_run")
 
-    import mriforge.infrastructure.reporting.batch as batch_mod
+    import spectramr.infrastructure.reporting.batch as batch_mod
 
     real = batch_mod.generate_report
 
@@ -90,7 +90,7 @@ def test_write_batch_index_none_when_empty(tmp_path):
 
 
 # --------------------------------------------------------------------------
-# `mriforge profile` files a throwaway run under <exp>/profiles/<run_id>/run/.
+# `spectramr profile` files a throwaway run under <exp>/profiles/<run_id>/run/.
 # --------------------------------------------------------------------------
 
 

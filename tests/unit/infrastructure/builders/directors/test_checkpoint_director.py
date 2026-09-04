@@ -18,19 +18,19 @@ import pytest
 
 import torch.nn as nn
 
-from mriforge.infrastructure.builders.context import BuilderContext
+from spectramr.infrastructure.builders.context import BuilderContext
 
 try:
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.builders.directors.checkpoint_director import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.builders.directors.checkpoint_director import (
         CheckpointDirector,
         CheckpointState,
         _native_tag_for,
     )
-    from mriforge.infrastructure.distributed.checkpoint_adapters import (
+    from spectramr.infrastructure.distributed.checkpoint_adapters import (
         DeepSpeedCheckpointAdapter,
     )
-    from mriforge.infrastructure.distributed.strategy_registry import ParallelRuntime
+    from spectramr.infrastructure.distributed.strategy_registry import ParallelRuntime
 except ImportError:  # pragma: no cover - import guard mirrors sibling director tests
     pytest.skip("CheckpointDirector not available", allow_module_level=True)
 
@@ -120,7 +120,7 @@ class TestScalerSSOT:
 
     @staticmethod
     def _director():
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -156,7 +156,7 @@ class TestScalerSSOT:
     def test_build_grad_scaler_no_longer_fabricates_one(self):
         """The builder step survives as a no-op (it is part of the documented
         public chain) but must not put a second scaler into circulation."""
-        from mriforge.infrastructure.training.builders.optimization_builder import (
+        from spectramr.infrastructure.training.builders.optimization_builder import (
             OptimizationBuilder,
         )
 
@@ -171,14 +171,14 @@ class TestParallelRuntimeWiring:
 
     @staticmethod
     def _director():
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
         return CheckpointDirector.__new__(CheckpointDirector)
 
     def test_unset_runtime_yields_the_default_adapter(self):
-        from mriforge.infrastructure.distributed.checkpoint_adapters import (
+        from spectramr.infrastructure.distributed.checkpoint_adapters import (
             DefaultCheckpointAdapter,
         )
 
@@ -187,10 +187,10 @@ class TestParallelRuntimeWiring:
         assert isinstance(director._adapter, DefaultCheckpointAdapter)
 
     def test_an_fsdp_runtime_yields_the_gathering_adapter(self):
-        from mriforge.infrastructure.distributed.checkpoint_adapters import (
+        from spectramr.infrastructure.distributed.checkpoint_adapters import (
             FSDPCheckpointAdapter,
         )
-        from mriforge.infrastructure.distributed.strategy_registry import ParallelRuntime
+        from spectramr.infrastructure.distributed.strategy_registry import ParallelRuntime
 
         director = self._director()
         director._parallel = ParallelRuntime(
@@ -226,14 +226,14 @@ class TestBypassedInitIsTolerated:
 
     @staticmethod
     def _bare():
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
         return CheckpointDirector.__new__(CheckpointDirector)
 
     def test_adapter_resolves_without_init(self):
-        from mriforge.infrastructure.distributed.checkpoint_adapters import (
+        from spectramr.infrastructure.distributed.checkpoint_adapters import (
             DefaultCheckpointAdapter,
         )
 
@@ -628,7 +628,7 @@ def test_director_publishes_checkpoints_through_the_atomic_writer():
     """
     import inspect
 
-    from mriforge.infrastructure.builders.directors import checkpoint_director
+    from spectramr.infrastructure.builders.directors import checkpoint_director
 
     source = inspect.getsource(checkpoint_director)
     assert "atomic_save_torch(checkpoint_data, checkpoint_path)" in source

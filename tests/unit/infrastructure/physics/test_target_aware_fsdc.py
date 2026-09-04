@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import TargetAwareFSDC
+from spectramr.infrastructure.physics.data_consistency import TargetAwareFSDC
 
 
 class TestTargetAwareFSDC:
@@ -280,7 +280,7 @@ class TestAcsTaper:
         taper-shape change can still pass without false-alarming on
         small numerical drift.
         """
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
 
         H = W = 256
         ref = torch.zeros(1, 1, H, W)

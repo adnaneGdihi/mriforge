@@ -6,7 +6,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.vf_field_extraction import (
+from spectramr.infrastructure.physics.vf_field_extraction import (
     K0PhaseDriftTracker,
     LarmorDriftTracker,
     MarkerB0FromDualEcho,

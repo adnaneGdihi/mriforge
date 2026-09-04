@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.models.parameter_normalization import (
+from spectramr.models.parameter_normalization import (
     ModelParameterSchema,
     ParameterCategory,
     ParameterMapping,

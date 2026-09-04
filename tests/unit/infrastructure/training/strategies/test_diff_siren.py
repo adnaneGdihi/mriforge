@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.diff_siren import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.diff_siren import (  # noqa: E402
     DIFFSirenStrategy,
 )
 

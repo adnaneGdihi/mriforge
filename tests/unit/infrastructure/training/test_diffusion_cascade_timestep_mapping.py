@@ -24,8 +24,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core.cascading_validation import check_round_trip, training_band
-from mriforge.infrastructure.training.utils.kspace_masks import (
+from spectramr.core.cascading_validation import check_round_trip, training_band
+from spectramr.infrastructure.training.utils.kspace_masks import (
     create_kspace_mask_generator,
 )
 

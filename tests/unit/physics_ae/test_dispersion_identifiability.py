@@ -1,6 +1,6 @@
 r"""Unit tests for the DL-BAE dispersion-latent Bloch autoencoder.
 
-Targets ``mriforge.models.physics_ae.disp_bloch_ae``.
+Targets ``spectramr.models.physics_ae.disp_bloch_ae``.
 
 The load-bearing property is **identifiability**: a :math:`P`-pool BPP model has
 :math:`2P+1` free constants per rate, so it needs :math:`M \ge 2P+1` distinct
@@ -17,7 +17,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.physics_ae.disp_bloch_ae import DispersionBlochAutoencoder
+from spectramr.models.physics_ae.disp_bloch_ae import DispersionBlochAutoencoder
 
 pytestmark = pytest.mark.unit
 

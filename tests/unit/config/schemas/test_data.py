@@ -10,7 +10,7 @@ under ``extra="forbid"``.
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     DataLoaderConfigSchema,
     MRIxFieldsDataConfigSchema,
@@ -74,8 +74,7 @@ class TestTargetMode:
 
     def test_phase_aligned_mean_accepted(self):
         assert (
-            DataConfigSchema(target_mode="phase_aligned_mean").target_mode
-            == "phase_aligned_mean"
+            DataConfigSchema(target_mode="phase_aligned_mean").target_mode == "phase_aligned_mean"
         )
 
     def test_unknown_mode_rejected(self):
@@ -87,10 +86,38 @@ class TestTargetMode:
         assert DataConfigSchema().nex_target_exclude_input is False
 
     def test_nex_target_exclude_input_opt_in(self):
-        assert (
-            DataConfigSchema(nex_target_exclude_input=True).nex_target_exclude_input
-            is True
-        )
+        assert DataConfigSchema(nex_target_exclude_input=True).nex_target_exclude_input is True
+
+    # --- use_repetitions: the route decides (2026-09-02, cohort review T0.1) ---
+
+    def test_use_repetitions_defaults_to_none_so_the_route_decides(self):
+        """None, not False: the m4raw route averages repetitions by default and
+        46 corpus arms never declare the knob. A False default wired as-is would
+        have flipped them to single-rep targets."""
+        assert DataConfigSchema().use_repetitions is None
+
+    @pytest.mark.parametrize("declared", [True, False])
+    def test_use_repetitions_explicit_value_is_kept(self, declared):
+        assert DataConfigSchema(use_repetitions=declared).use_repetitions is declared
+
+    # --- nex_fallback: what a <3-rep group does under leave-one-out ---
+
+    def test_nex_fallback_defaults_to_error(self):
+        assert DataConfigSchema().nex_fallback == "error"
+
+    def test_nex_fallback_all_reps_requires_leave_one_out(self):
+        """The knob is read only under leave-one-out; declaring it with the
+        all-reps reference is an unread knob (non-negotiable 8) -> refuse."""
+        with pytest.raises(ValidationError, match="nex_fallback is read only"):
+            DataConfigSchema(nex_fallback="all_reps")
+
+    def test_nex_fallback_all_reps_accepted_under_leave_one_out(self):
+        cfg = DataConfigSchema(nex_target_exclude_input=True, nex_fallback="all_reps")
+        assert cfg.nex_fallback == "all_reps"
+
+    def test_nex_fallback_unknown_value_rejected(self):
+        with pytest.raises(ValidationError):
+            DataConfigSchema(nex_target_exclude_input=True, nex_fallback="warn")
 
     def test_max_prefetch_respects_ge_2(self):
         with pytest.raises(ValidationError):
@@ -103,9 +130,7 @@ class TestBidirectionalMode:
     def test_default_is_ulf_to_hf(self):
         assert DataConfigSchema().pairing.bidirectional_mode == "ulf_to_hf"
 
-    @pytest.mark.parametrize(
-        "mode", ["ulf_to_hf", "hf_to_ulf", "hf_to_hf", "ulf_to_ulf"]
-    )
+    @pytest.mark.parametrize("mode", ["ulf_to_hf", "hf_to_ulf", "hf_to_hf", "ulf_to_ulf"])
     def test_valid_modes_accepted(self, mode):
         assert DataConfigSchema(bidirectional_mode=mode).pairing.bidirectional_mode == mode
 
@@ -122,11 +147,9 @@ def test_mrixfields_rescale_per_image_defaults_off() -> None:
     off. Pinned here because flipping it silently changes the reference every
     MRIxFields metric grades against.
     """
-    from mriforge.config.schemas.data import DataConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema
 
-    assert (
-        MRIxFieldsDataConfigSchema.model_fields["rescale_per_image"].default is False
-    )
+    assert MRIxFieldsDataConfigSchema.model_fields["rescale_per_image"].default is False
     cfg = DataConfigSchema(data_dir="/tmp", dataset_type="mrixfields")
     assert cfg.mrixfields.rescale_per_image is False
     assert (
@@ -152,9 +175,12 @@ class TestKSpaceScaleDomain:
         assert DataConfigSchema().processing.kspace_scale_domain == "kspace"
 
     def test_accepts_image(self):
-        assert DataConfigSchema(
-            processing={"kspace_scale_domain": "image"}
-        ).processing.kspace_scale_domain == "image"
+        assert (
+            DataConfigSchema(
+                processing={"kspace_scale_domain": "image"}
+            ).processing.kspace_scale_domain
+            == "image"
+        )
 
     def test_rejects_unknown_domain(self):
         """Closed enum — a typo must fail at load time, not degrade silently."""
@@ -176,7 +202,7 @@ class TestNormalizationTypeLiteral:
     _SUPPORTED = ("none", "standard", "minmax", "percentile", "robust_percentile")
 
     def test_scalar_is_rejected_by_the_sub_block(self):
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
         with pytest.raises(ValidationError, match="normalization_type"):
             DataProcessingConfigSchema(normalization_type="scalar")
@@ -188,16 +214,10 @@ class TestNormalizationTypeLiteral:
 
     @pytest.mark.parametrize("value", _SUPPORTED)
     def test_supported_values_validate(self, value):
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
-        assert (
-            DataProcessingConfigSchema(normalization_type=value).normalization_type
-            == value
-        )
-        assert (
-            DataConfigSchema(normalization_type=value).processing.normalization_type
-            == value
-        )
+        assert DataProcessingConfigSchema(normalization_type=value).normalization_type == value
+        assert DataConfigSchema(normalization_type=value).processing.normalization_type == value
 
     def test_robust_percentile_is_still_accepted(self):
         """It has no dispatch branch either, but unlike ``'scalar'`` it FOLDS.
@@ -210,9 +230,7 @@ class TestNormalizationTypeLiteral:
         TestNormalizationTypeSchemaBuilderBridge``.
         """
         assert (
-            DataConfigSchema(
-                normalization_type="robust_percentile"
-            ).processing.normalization_type
+            DataConfigSchema(normalization_type="robust_percentile").processing.normalization_type
             == "robust_percentile"
         )
 
@@ -305,7 +323,7 @@ class TestNoUndeclaredDataBlockReads:
         import ast
         import pathlib
 
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         # Methods / properties / validators are legitimate non-field attributes.
         allowed = set(DataConfigSchema.model_fields) | {
@@ -313,7 +331,7 @@ class TestNoUndeclaredDataBlockReads:
         }
 
         offenders: dict[str, list[str]] = {}
-        for path in sorted(pathlib.Path("src/mriforge").rglob("*.py")):
+        for path in sorted(pathlib.Path("src/spectramr").rglob("*.py")):
             try:
                 tree = ast.parse(path.read_text(errors="ignore"))
             except SyntaxError:  # pragma: no cover - not expected in-tree
@@ -354,16 +372,14 @@ class TestNoUndeclaredDataBlockReads:
             "not declare them. Because the block is extra='ignore' a bare read "
             "raises AttributeError at runtime and a hasattr guard is silently "
             "False forever. Declare the field, or read the canonical one:\n  "
-            + "\n  ".join(
-                f"{k}: {sorted(set(v))}" for k, v in sorted(offenders.items())
-            )
+            + "\n  ".join(f"{k}: {sorted(set(v))}" for k, v in sorted(offenders.items()))
         )
 
     def test_multislice_enabled_is_declared_and_defaults_off(self) -> None:
         """Regression: two strategies documented this flag as 'an explicit config
         flag to avoid ambiguous shape heuristics' while it was undeclared, so the
         multi-slice branch could never run."""
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         assert "multislice_enabled" in DataConfigSchema.model_fields
         assert DataConfigSchema().multislice_enabled is False
@@ -380,34 +396,32 @@ class TestTransformSpecSchema:
         """One committed arm spells the key ``type:``; it must not validate."""
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import TransformSpecSchema
+        from spectramr.config.schemas.data import TransformSpecSchema
 
         with pytest.raises(ValidationError):
             TransformSpecSchema(type="scout_acquisition")
 
     def test_nested_kwargs_are_returned(self):
-        from mriforge.config.schemas.data import TransformSpecSchema
+        from spectramr.config.schemas.data import TransformSpecSchema
 
         spec = TransformSpecSchema(name="phase_residual", kwargs={"kernel_size": 9})
         assert spec.resolved_kwargs() == {"kernel_size": 9}
 
     def test_flat_kwargs_are_accepted(self):
         """Back-compat: the committed graph_encoding arms write kwargs flat."""
-        from mriforge.config.schemas.data import TransformSpecSchema
+        from spectramr.config.schemas.data import TransformSpecSchema
 
         spec = TransformSpecSchema(name="graph_encoding", k_neighbors=8, max_nodes=64)
         assert spec.resolved_kwargs() == {"k_neighbors": 8, "max_nodes": 64}
 
     def test_nested_kwargs_win_over_a_flat_collision(self):
-        from mriforge.config.schemas.data import TransformSpecSchema
+        from spectramr.config.schemas.data import TransformSpecSchema
 
-        spec = TransformSpecSchema(
-            name="phase_residual", kernel_size=3, kwargs={"kernel_size": 11}
-        )
+        spec = TransformSpecSchema(name="phase_residual", kernel_size=3, kwargs={"kernel_size": 11})
         assert spec.resolved_kwargs() == {"kernel_size": 11}
 
     def test_processing_block_accepts_a_list_of_specs(self):
-        from mriforge.config.schemas.data import DataProcessingConfigSchema
+        from spectramr.config.schemas.data import DataProcessingConfigSchema
 
         cfg = DataProcessingConfigSchema(
             transforms=[{"name": "phase_residual", "kwargs": {"kernel_size": 5}}]
@@ -420,19 +434,17 @@ class TestDatasetTypeVocabulary:
     """``CANONICAL_DATASET_TYPES`` / ``DATASET_TYPE_ALIASES`` are the SSOT."""
 
     def test_aliases_all_resolve_to_a_canonical_type(self):
-        from mriforge.config.schemas.data import (
+        from spectramr.config.schemas.data import (
             CANONICAL_DATASET_TYPES,
             DATASET_TYPE_ALIASES,
         )
 
         for alias, target in DATASET_TYPE_ALIASES.items():
-            assert (
-                target in CANONICAL_DATASET_TYPES
-            ), f"{alias} -> {target} not canonical"
+            assert target in CANONICAL_DATASET_TYPES, f"{alias} -> {target} not canonical"
 
     def test_no_alias_shadows_a_canonical_name(self):
         """An alias that is also canonical would fold a valid type away."""
-        from mriforge.config.schemas.data import (
+        from spectramr.config.schemas.data import (
             CANONICAL_DATASET_TYPES,
             DATASET_TYPE_ALIASES,
         )
@@ -443,7 +455,7 @@ class TestDatasetTypeVocabulary:
         """Canonical with no dataset class; 0 arms declared it."""
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         with pytest.raises(ValidationError):
             DataConfigSchema(dataset_type="graph_mri")
@@ -459,14 +471,14 @@ class TestDatasetTypeVocabulary:
         ],
     )
     def test_aliases_still_fold(self, alias, expected):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         assert DataConfigSchema(dataset_type=alias).dataset_type == expected
 
     def test_unknown_type_error_names_both_tables(self):
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         with pytest.raises(ValidationError) as exc:
             DataConfigSchema(dataset_type="nonsense")
@@ -485,7 +497,7 @@ class TestTemporalTargetPairingIsDeclared:
     def test_enabled_without_target_source_raises(self):
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         with pytest.raises(ValidationError) as exc:
             TemporalConfigSchema(enabled=True)
@@ -500,14 +512,14 @@ class TestTemporalTargetPairingIsDeclared:
         A required field here would have broken all of them; the guard is
         gated on ``enabled`` for that reason.
         """
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         assert TemporalConfigSchema().target_source is None
 
     def test_sibling_without_suffix_raises(self):
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         with pytest.raises(ValidationError, match="target_suffix"):
             TemporalConfigSchema(enabled=True, target_source="sibling")
@@ -516,12 +528,10 @@ class TestTemporalTargetPairingIsDeclared:
         """A suffix that is never read is a config the author misunderstood."""
         from pydantic import ValidationError
 
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         with pytest.raises(ValidationError, match="no sibling is ever read"):
-            TemporalConfigSchema(
-                enabled=True, target_source="self", target_suffix="_gt.nii.gz"
-            )
+            TemporalConfigSchema(enabled=True, target_source="self", target_suffix="_gt.nii.gz")
 
     @pytest.mark.parametrize(
         "kwargs",
@@ -531,7 +541,7 @@ class TestTemporalTargetPairingIsDeclared:
         ],
     )
     def test_coherent_declarations_construct(self, kwargs):
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         cfg = TemporalConfigSchema(enabled=True, **kwargs)
         assert cfg.target_source == kwargs["target_source"]
@@ -542,13 +552,13 @@ class TestTemporalTargetPairingIsDeclared:
         That made every non-ACDC layout -- and the ``.npy`` / ``.pt`` formats
         ``_load_4d_volume`` supports -- unreachable.
         """
-        from mriforge.config.schemas.data import TemporalConfigSchema
+        from spectramr.config.schemas.data import TemporalConfigSchema
 
         assert TemporalConfigSchema().glob_pattern == "**/*4d.nii.gz"
-        cfg = TemporalConfigSchema(
-            enabled=True, target_source="self", glob_pattern="**/*.npy"
-        )
+        cfg = TemporalConfigSchema(enabled=True, target_source="self", glob_pattern="**/*.npy")
         assert cfg.glob_pattern == "**/*.npy"
+
+
 class TestQuantitativeInputSourceIsDeclared:
     """``quantitative.input_source`` must be stated, never inferred (2026-08-05).
 
@@ -560,34 +570,30 @@ class TestQuantitativeInputSourceIsDeclared:
     """
 
     def test_enabled_without_input_source_raises(self):
-        from mriforge.config.schemas.data import QuantitativeConfigSchema
+        from spectramr.config.schemas.data import QuantitativeConfigSchema
 
         with pytest.raises(ValidationError, match="requires an explicit"):
             QuantitativeConfigSchema(enabled=True, target_maps=["t1", "t2"])
 
     @pytest.mark.parametrize("source", ["contrasts", "maps"])
     def test_declared_input_source_is_accepted(self, source):
-        from mriforge.config.schemas.data import QuantitativeConfigSchema
+        from spectramr.config.schemas.data import QuantitativeConfigSchema
 
-        cfg = QuantitativeConfigSchema(
-            enabled=True, target_maps=["t1", "t2"], input_source=source
-        )
+        cfg = QuantitativeConfigSchema(enabled=True, target_maps=["t1", "t2"], input_source=source)
         assert cfg.input_source == source
 
     def test_disabled_block_needs_no_declaration(self):
         """The default (disabled) block must stay constructible — 1000+ arms
         never mention `quantitative:` at all."""
-        from mriforge.config.schemas.data import QuantitativeConfigSchema
+        from spectramr.config.schemas.data import QuantitativeConfigSchema
 
         assert QuantitativeConfigSchema().input_source is None
 
     def test_unknown_input_source_is_rejected(self):
-        from mriforge.config.schemas.data import QuantitativeConfigSchema
+        from spectramr.config.schemas.data import QuantitativeConfigSchema
 
         with pytest.raises(ValidationError):
-            QuantitativeConfigSchema(
-                enabled=True, target_maps=["t1"], input_source="whatever"
-            )
+            QuantitativeConfigSchema(enabled=True, target_maps=["t1"], input_source="whatever")
 
 
 class TestLegacySizeKeyDoesNotFightTheDrain:
@@ -606,17 +612,13 @@ class TestLegacySizeKeyDoesNotFightTheDrain:
     """
 
     def test_a_drained_arm_with_a_legacy_size_key_still_loads(self):
-        cfg = DataConfigSchema(
-            image_size=256, sampling={"patch_size": [256, 256, 1]}
-        )
+        cfg = DataConfigSchema(image_size=256, sampling={"patch_size": [256, 256, 1]})
         assert tuple(cfg.sampling.patch_size) == (256, 256, 1)
 
     def test_the_same_shape_under_every_legacy_size_spelling(self):
         """All three names share the guard, so all three share the bug."""
         for legacy in ("img_size", "target_size", "image_size"):
-            cfg = DataConfigSchema(
-                **{legacy: 256}, sampling={"patch_size": [256, 256, 1]}
-            )
+            cfg = DataConfigSchema(**{legacy: 256}, sampling={"patch_size": [256, 256, 1]})
             assert tuple(cfg.sampling.patch_size) == (256, 256, 1), legacy
 
     def test_the_migration_still_happens_when_nothing_declares_patch_size(self):
@@ -630,7 +632,6 @@ class TestLegacySizeKeyDoesNotFightTheDrain:
         `patch_size` and `image_size` keeps `patch_size`."""
         cfg = DataConfigSchema(patch_size=[64, 64, 1], image_size=256)
         assert tuple(cfg.sampling.patch_size) == (64, 64, 1)
-
 
 
 class TestDataOutputDomainIsDrained:
@@ -673,7 +674,7 @@ class TestDataOutputDomainIsDrained:
         arms stop loading -- so pin the two postures apart here rather than
         leaving the distinction to a comment.
         """
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         assert RENAMES["data.output_domain"].posture == "raise"
         assert RENAMES["losses.output_domain"].posture == "fold"
@@ -723,3 +724,87 @@ class TestNumWorkersDocumentsItsMemoryCost:
         is that *some* field proves the accessor reports absence.
         """
         assert DataLoaderConfigSchema.model_fields["batch_size"].description is None
+
+
+class TestHeldOutTestIndex:
+    """``data.source.test_index_path`` (cohort review 2026-09-02, T0.3)."""
+
+    def test_defaults_to_none(self):
+        from spectramr.config.schemas.data import DataSourceConfigSchema
+
+        assert DataSourceConfigSchema().test_index_path is None
+
+    @pytest.mark.parametrize("twin", ["index_path", "validation_index_path"])
+    def test_test_index_equal_to_train_or_val_is_rejected(self, twin):
+        """The planted violation: a 'held-out' set that is the training set."""
+        from spectramr.config.schemas.data import DataSourceConfigSchema
+
+        with pytest.raises(ValidationError, match="cannot be the set"):
+            DataSourceConfigSchema(**{twin: "same.json", "test_index_path": "same.json"})
+
+    def test_distinct_test_index_is_kept(self):
+        from spectramr.config.schemas.data import DataSourceConfigSchema
+
+        src = DataSourceConfigSchema(
+            index_path="train.json", validation_index_path="val.json", test_index_path="test.json"
+        )
+        assert src.test_index_path == "test.json"
+
+
+class TestRepPairTargetMode:
+    """``target_mode: rep_pair`` is the leave-one-out pair by definition."""
+
+    def test_rep_pair_requires_the_input_to_be_excluded(self) -> None:
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        with pytest.raises(ValueError, match="rep_pair"):
+            DataConfigSchema(target_mode="rep_pair")
+
+    def test_rep_pair_with_exclusion_loads(self) -> None:
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        cfg = DataConfigSchema(target_mode="rep_pair", nex_target_exclude_input=True)
+        assert cfg.target_mode == "rep_pair"
+
+
+class TestSliceLevelRecords:
+    """``data.slice_level_records`` (#1757) is declared, off by default, and
+    read only by the m4raw route. ``DataConfigSchema`` is ``extra="ignore"``,
+    so an undeclared spelling would be swallowed silently: the field's
+    presence is itself the contract."""
+
+    def test_is_a_declared_field_that_defaults_off(self) -> None:
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        assert "slice_level_records" in DataConfigSchema.model_fields
+        assert DataConfigSchema().slice_level_records is False
+
+    def test_on_an_m4raw_arm_it_loads(self) -> None:
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        cfg = DataConfigSchema(dataset_type="m4raw", slice_level_records=True)
+        assert cfg.slice_level_records is True
+
+    def test_on_any_other_route_it_is_refused(self) -> None:
+        """Planted violation: the knob would be unread (non-negotiable 8)."""
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        with pytest.raises(ValueError, match="read only by dataset_type 'm4raw'"):
+            DataConfigSchema(dataset_type="kspace", slice_level_records=True)
+
+    def test_an_alias_of_m4raw_is_canonicalised_before_the_gate(self) -> None:
+        """``mode="after"``: the alias has become ``m4raw`` by the time the
+        route gate compares, so the spelling does not decide the verdict."""
+        from spectramr.config.schemas.data import DATASET_TYPE_ALIASES, DataConfigSchema
+
+        alias = next(k for k, v in DATASET_TYPE_ALIASES.items() if v == "m4raw")
+        cfg = DataConfigSchema(dataset_type=alias, slice_level_records=True)
+        assert cfg.dataset_type == "m4raw" and cfg.slice_level_records is True
+
+    def test_off_on_any_route_is_fine(self) -> None:
+        from spectramr.config.schemas.data import DataConfigSchema
+
+        assert (
+            DataConfigSchema(dataset_type="kspace", slice_level_records=False).slice_level_records
+            is False
+        )

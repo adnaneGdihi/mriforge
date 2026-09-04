@@ -20,8 +20,8 @@ import types
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
-from mriforge.models.losses.computers.base import LossOutput
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.models.losses.computers.base import LossOutput
 
 
 class _FakeLossComputer:

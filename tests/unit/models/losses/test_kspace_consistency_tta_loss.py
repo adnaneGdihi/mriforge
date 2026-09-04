@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.losses.kspace_consistency_tta_loss import KspaceConsistencyTTALoss
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.losses.kspace_consistency_tta_loss import KspaceConsistencyTTALoss
 
 
 def test_loss_uses_centered_fft2c_forward() -> None:

@@ -7,9 +7,9 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics import get_metric
-from mriforge.core.metrics.registry import MetricsRegistry
-from mriforge.core.metrics.srf_bound import (
+from spectramr.core.metrics import get_metric
+from spectramr.core.metrics.registry import MetricsRegistry
+from spectramr.core.metrics.srf_bound import (
     SyntheticToRealFidelityBound,
     radial_band_energies,
     w1_1d,

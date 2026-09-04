@@ -18,10 +18,10 @@ import pytest
 import torch
 from torch.utils.data import default_collate
 
-from mriforge.infrastructure.training.strategies.qspace_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.qspace_diffusion_strategy import (
     QSpaceDiffusionStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 
@@ -74,7 +74,7 @@ def _collated_bvectors_from_transform(
     tmp_path: Path, dirs_per_sample: list[torch.Tensor]
 ):
     """Transform each sample's sidecars, then collate the way the dataloader does."""
-    from mriforge.data.transforms.dwi_metadata import LoadDWIMetadata
+    from spectramr.data.transforms.dwi_metadata import LoadDWIMetadata
 
     load = LoadDWIMetadata()
     per_sample = []

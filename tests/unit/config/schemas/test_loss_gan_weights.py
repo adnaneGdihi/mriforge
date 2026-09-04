@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.loss import GANLossesConfig
+from spectramr.config.schemas.loss import GANLossesConfig
 
 
 class TestGANLossTranslationWeights:

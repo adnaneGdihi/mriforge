@@ -14,7 +14,7 @@ torch = pytest.importorskip("torch")
 np = pytest.importorskip("numpy")
 tio = pytest.importorskip("torchio")
 
-from mriforge.data.transforms.synthetic_ulf_simulator import (  # noqa: E402
+from spectramr.data.transforms.synthetic_ulf_simulator import (  # noqa: E402
     SimulateULFFromHF,
 )
 

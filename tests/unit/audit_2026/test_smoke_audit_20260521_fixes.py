@@ -22,8 +22,8 @@ from __future__ import annotations
 
 import pytest
 
-import mriforge.models.losses  # noqa: F401 — populate the loss registry
-from mriforge.models.losses.registry import LossRegistry
+import spectramr.models.losses  # noqa: F401 — populate the loss registry
+from spectramr.models.losses.registry import LossRegistry
 
 
 # ---------------------------------------------------------------------------
@@ -45,7 +45,7 @@ def test_concomitant_phase_residual_is_image_compatible() -> None:
 
 def test_loss_domain_block_match_accepts_concomitant_under_image() -> None:
     """The audit honours compatible_with, so an image_losses placement passes."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -66,8 +66,8 @@ def test_loss_domain_block_match_accepts_concomitant_under_image() -> None:
 
 
 def test_typed_training_block_coerces_dict() -> None:
-    from mriforge.config.schemas.training.vf_advanced import IBVFConfig
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.schemas.training.vf_advanced import IBVFConfig
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -86,8 +86,8 @@ def test_ib_vf_audit_does_not_crash_on_dict_block() -> None:
     """Loading an ib_vf YAML (ib_vf stays a dict) must not raise in the audit."""
     import warnings
 
-    from mriforge.config.settings import TrainingSettings
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.config.settings import TrainingSettings
+    from spectramr.infrastructure.validation.config_health_checker import (
         validate_config_health,
     )
 
@@ -124,7 +124,7 @@ def test_ib_vf_audit_does_not_crash_on_dict_block() -> None:
 def test_early_stop_monitor_candidates_cover_smoke_mismatches(
     monitor: str, emitted: str
 ) -> None:
-    from mriforge.pipelines.train import early_stop_monitor_candidates
+    from spectramr.pipelines.train import early_stop_monitor_candidates
 
     candidates = early_stop_monitor_candidates(monitor)
     assert candidates[0] == monitor, "exact monitor must be tried first"
@@ -136,7 +136,7 @@ def test_early_stop_monitor_candidates_cover_smoke_mismatches(
 
 def test_early_stop_exact_match_wins_over_alias() -> None:
     """If the validator emits the exact monitor, it must be chosen first."""
-    from mriforge.pipelines.train import early_stop_monitor_candidates
+    from spectramr.pipelines.train import early_stop_monitor_candidates
 
     candidates = early_stop_monitor_candidates("val_psnr")
     emitted = {"val_psnr", "val_psnr_2x", "psnr"}

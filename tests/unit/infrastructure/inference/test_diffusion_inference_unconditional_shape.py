@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.inference.diffusion_inference_strategy import (
+from spectramr.infrastructure.inference.diffusion_inference_strategy import (
     DiffusionInferenceStrategy,
 )
 

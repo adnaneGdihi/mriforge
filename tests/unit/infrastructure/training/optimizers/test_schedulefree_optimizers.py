@@ -16,7 +16,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.optimizers import (  # noqa: E402
+from spectramr.infrastructure.training.optimizers import (  # noqa: E402
     supports_schedule_free_modes,
 )
 
@@ -67,7 +67,7 @@ class TestScheduleFreePredicate:
         """
         import inspect
 
-        from mriforge.pipelines.training_loop import _set_optimizer_eval_mode
+        from spectramr.pipelines.training_loop import _set_optimizer_eval_mode
 
         source = inspect.getsource(_set_optimizer_eval_mode)
         assert "supports_schedule_free_modes" in source
@@ -78,7 +78,7 @@ class TestExtraBackedOptimizersFailLoudly:
 
     @pytest.mark.parametrize("name", ["schedulefree_adamw", "schedulefree_sgd"])
     def test_the_name_is_registered_even_without_the_extra(self, name: str) -> None:
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.infrastructure.training.optimizer_registry import (
             OptimizerRegistry,
         )
 
@@ -92,7 +92,7 @@ class TestExtraBackedOptimizersFailLoudly:
         so signature introspection would answer a different question on a
         machine with the extra than on one without.
         """
-        from mriforge.infrastructure.training.optimizer_registry import (
+        from spectramr.infrastructure.training.optimizer_registry import (
             accepted_optimizer_kwargs,
         )
 

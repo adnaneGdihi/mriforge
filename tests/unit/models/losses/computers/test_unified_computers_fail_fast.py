@@ -19,16 +19,16 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.builders import (  # noqa: E402
+from spectramr.infrastructure.training.builders import (  # noqa: E402
     loss_builder as loss_builder_mod,
 )
-from mriforge.models.losses.computers.unified_disentangled import (  # noqa: E402
+from spectramr.models.losses.computers.unified_disentangled import (  # noqa: E402
     UnifiedDisentangledLossComputer,
 )
-from mriforge.models.losses.computers.unified_gan import (  # noqa: E402
+from spectramr.models.losses.computers.unified_gan import (  # noqa: E402
     UnifiedGANLossComputer,
 )
-from mriforge.models.losses.computers.unified_vae import (  # noqa: E402
+from spectramr.models.losses.computers.unified_vae import (  # noqa: E402
     UnifiedVAELossComputer,
 )
 

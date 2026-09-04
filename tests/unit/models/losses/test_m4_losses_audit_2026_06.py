@@ -11,7 +11,7 @@ import inspect
 
 import torch
 
-from mriforge.models.losses.m4_losses import PMAGlobalLoss
+from spectramr.models.losses.m4_losses import PMAGlobalLoss
 
 
 def test_no_silent_ssim_fallback_and_hoisted_data_range() -> None:

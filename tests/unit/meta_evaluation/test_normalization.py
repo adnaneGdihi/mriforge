@@ -13,7 +13,7 @@ import math
 
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.normalization import (
+from spectramr.core.metrics.meta_evaluation.normalization import (
     direction_aware_minmax,
     normalize,
     percentile_rank,

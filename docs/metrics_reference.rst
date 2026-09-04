@@ -4,10 +4,28 @@
 Metrics Registry — Mathematical Reference
 ========================================
 
-.. sectionauthor:: MRIForge Research
+.. sectionauthor:: spectraMR Research
 
-The MRIForge framework provides **100+ registered metrics** accessible via
-the ``@register_metric`` decorator and ``MetricsRegistry`` singleton. The
+Metrics are registered with the ``@register_metric`` decorator and resolved
+through the ``MetricsRegistry`` singleton. The
+
+.. note::
+
+   **This page is hand-written and not exhaustive.** It documents 115 of the
+   211 metrics the registry holds, so a name's absence here is **not** evidence
+   that it does not exist -- check the registry before concluding one is
+   unavailable. Counts are deliberately not restated in the prose above: a frozen
+   number in a hand-maintained page drifts silently, and this one had -- it read "100+".
+
+   .. code-block:: python
+
+      from spectramr.core.metrics.registry import MetricsRegistry
+
+      MetricsRegistry.list_available()
+      len(MetricsRegistry.list_available())
+
+   Tracked as issue #1643 -- these pages should be generated from the
+   registries, the way ``docs/config_key_reference.rst`` already is.
 sim2rank sweep selects **121** of them (see
 :ref:`sim2rank-zero-metric-review`). On 2026-05-25 three registry metrics
 whose input contract is not a 2-D image pair were dropped from the sweep
@@ -21,6 +39,42 @@ plus ``name`` and ``higher_is_better`` properties.
 .. contents:: Table of Contents
    :depth: 2
    :local:
+
+Derived validation keys: the zero-filled baseline
+================================================
+
+Not every ``val_*`` key names a registered metric. The diffusion validation
+path emits three families per rung:
+
+``val_<k>``
+   the model's score on registered metric ``k``.
+
+``val_zf_<k>``
+   the same registered metric, computed on the **zero-filled baseline** --
+   the k-space the model was actually handed (``masked_input``), decompressed
+   and denormalised through the same seam as the prediction, then put through
+   the same ``validation.scoring.output_transform``. Restricted to ``psnr``
+   and ``hfen``, intersected with the metrics the arm already grades on: a
+   baseline for a metric the arm does not compute has nothing to be compared
+   against, and a second pass over a full metric set would double every
+   perceptual metric per rung per batch.
+
+``val_zf_delta_<k>``
+   the signed ``val_<k> - val_zf_<k>``. It is deliberately **not** oriented to
+   "positive is better": ``metric_higher_is_better`` resolves an unknown key
+   through the longest registered metric name inside it, so
+   ``val_zf_delta_hfen`` resolves via ``hfen`` to *lower is better* -- which is
+   correct for a raw difference and backwards for a gain.
+
+The baseline is derived from the *input*, never from the target. Validation
+masks the noisy single repetition the dataloader delivered, so a
+target-derived zero-filled reconstruction would be a noise-free idealisation
+no reconstructor can reach -- it would read higher than the model on a healthy
+run, which is the opposite of what a baseline is for.
+
+Arms that record no measurement -- every non-cold-diffusion arm -- emit none of
+these keys, on every batch and every rank. Absence is uniform by construction,
+because the distributed all-reduce packs ``sorted(keys)`` positionally.
 
 Strict-duplicate registration (post-2026-05-09 audit)
 =====================================================
@@ -42,7 +96,7 @@ guard makes that class of bug impossible.
 Two registered metrics regained visibility at the same audit pass:
 ``feature_fidelity_index`` and ``fabrication_rate`` — their host module
 ``hallucination_metrics`` was missing from
-``src/core/metrics/__init__.py`` so the decorators never fired.
+``src/spectramr/core/metrics/__init__.py`` so the decorators never fired.
 
 See ``TODO/audit/00_implementation_tracker.md`` and the regression tests
 under ``tests/unit/models/test_registry_strict_duplicates.py``.
@@ -66,7 +120,7 @@ A metric declares its direction in **exactly one** of two places:
   attribute or property). ~22 metrics do this.
 * **Centrally declared** — for the large family that subclass
   ``BaseMetric`` (which defines no direction), the value lives in
-  :data:`mriforge.core.metrics.metric_directions.METRIC_HIGHER_IS_BETTER`
+  :data:`spectramr.core.metrics.metric_directions.METRIC_HIGHER_IS_BETTER`
   and is injected onto the class by the ``@register_metric`` decorator at
   registration time.
 
@@ -93,8 +147,8 @@ direction.
 Perceptual-metric input finiteness guard
 ========================================
 
-Perceptual metrics (:class:`~mriforge.core.metrics.evaluation_metrics.LPIPS`,
-:class:`~mriforge.core.metrics.evaluation_metrics.FID`) range-normalise their
+Perceptual metrics (:class:`~spectramr.core.metrics.evaluation_metrics.LPIPS`,
+:class:`~spectramr.core.metrics.evaluation_metrics.FID`) range-normalise their
 inputs and expand them to three channels before a frozen VGG / Inception
 backbone. The historical normalisers used a silent ``torch.clamp``, which
 leaves ``NaN`` / ``Inf`` **unchanged** — so a model that diverged and emitted
@@ -104,7 +158,7 @@ range error (the 2026-06-24 ``exp_hm_06`` / ``exp_hm_10`` Hyper-Mamba crash).
 
 The single source of truth for the *finiteness* half of the perceptual-metric
 input contract is
-:func:`mriforge.core.metrics.metric_input_prep.assert_finite_metric_input`.
+:func:`spectramr.core.metrics.metric_input_prep.assert_finite_metric_input`.
 ``LPIPS`` and ``FID`` call it at the metric boundary, **before** any shape
 handling or feature accumulation, and it raises a precise, actionable error
 that names the metric, the offending field (``preds`` / ``target``), and the
@@ -131,7 +185,7 @@ torchmetrics is genuinely optional (undeclared conflicts: it requires
 metrics do **not** fabricate a ``0.0`` — they record ``NaN`` ("not computed").
 Two refinements make that failure mode safe:
 
-* **LPIPS has a fallback.** :class:`~mriforge.core.metrics.evaluation_metrics.LPIPS`
+* **LPIPS has a fallback.** :class:`~spectramr.core.metrics.evaluation_metrics.LPIPS`
   falls back to the ``lpips`` package (AlexNet, the reference impl already used by
   the ``lpips_alex`` challenge metric) when torchmetrics is unavailable, so
   ``val_lpips`` is a real number rather than a run-long ``NaN``. A one-time warning
@@ -139,7 +193,7 @@ Two refinements make that failure mode safe:
   VGG backbone). ``ms_ssim`` / ``uqi`` / ``kid`` / ``fid`` have no fallback and still
   raise → ``NaN``.
 * **Fail-fast at config-health.**
-  :meth:`~mriforge.infrastructure.validation.config_health_checker.ConfigHealthChecker.check_metric_backend_available`
+  :meth:`~spectramr.infrastructure.validation.config_health_checker.ConfigHealthChecker.check_metric_backend_available`
   raises (severity ``error``) at pre-flight audit if a requested ``validation.metrics``
   entry has no importable backend and no fallback — a broken env fails at startup, not
   after wasting a 150k-iter run. The ``static_normalize`` step also clamps ``x*2-1`` to
@@ -149,14 +203,26 @@ Two refinements make that failure mode safe:
   ``test_computer.py`` (``test_repeated_metric_failure_warns_once``).
 
 The durable resolution on the cluster is an env re-sync:
-``pip install -e ".[dev]"`` (with ``huggingface-hub<1.0``).
+``pip install -e ".[dev]"``.
+
+.. note::
+
+   This specific conflict is **resolved**. It was caused by ``torchmetrics``
+   failing to import under ``huggingface-hub>=1.0``, and the standing advice
+   here used to be to pin ``huggingface-hub<1.0``. Re-measured 2026-08-29:
+   ``torchmetrics 1.9.0`` imports cleanly against ``huggingface-hub 1.27.0``,
+   so that pin would now *downgrade* a working environment. The failure mode
+   the section describes — a dependency that is installed and
+   version-satisfied yet raises on import — is real and still worth
+   understanding; only the pin is obsolete. ``verify_dependencies.py
+   --import-check`` is what detects it.
 
 Usage
 =====
 
 .. code-block:: python
 
-   from mriforge.core.metrics.registry import get_metric, compute_metric
+   from spectramr.core.metrics.registry import get_metric, compute_metric
 
    psnr = get_metric("psnr")
    score = psnr(prediction, target)
@@ -195,13 +261,13 @@ Both maps now derive from a single function:
 
 .. code-block:: python
 
-   from mriforge.core.metrics.flag_map import schema_flag_to_metric
+   from spectramr.core.metrics.flag_map import schema_flag_to_metric
 
    schema_flag_to_metric()   # {flag: metric_name} for every metric-selecting flag
 
 Coverage comes from ``MetricsConfigSchema.model_fields`` rather than a literal, so
 a flag added to the schema is reachable by construction. Names still resolve
-through :func:`~mriforge.core.metrics.flag_map.metric_for_flag` (identity plus a
+through :func:`~spectramr.core.metrics.flag_map.metric_for_flag` (identity plus a
 one-entry alias table). The per-batch builder keeps its own narrower
 ``BUILDER_METRIC_FLAGS`` policy — it deliberately excludes offline / distribution
 metrics such as FID — but it takes its *names* from the same resolver.
@@ -507,7 +573,7 @@ A broader blind-IQA pass added classical computer-vision and MRI artifact
 measures that flag a specific degradation **without a clean reference**,
 complementing the learned blind metrics (BRISQUE, NIQE). All collapse complex /
 multi-coil input to a single grayscale channel
-(``mriforge.core.metrics.no_reference_extended``):
+(``spectramr.core.metrics.no_reference_extended``):
 
 .. list-table:: No-reference artifact-detection metrics
    :header-rows: 1
@@ -580,7 +646,7 @@ names that the plan claimed were unregistered. Two are genuine
      - lower = better
      - Region-restricted MSE over a banding ROI supplied via the
        ``region_mask`` / ``banding_mask`` kwarg
-       (``mriforge.core.metrics.region_metrics``). Without a mask it warns and
+       (``spectramr.core.metrics.region_metrics``). Without a mask it warns and
        returns a full-FOV MSE (an honest, flagged degradation).
 
 .. note::
@@ -591,7 +657,7 @@ names that the plan claimed were unregistered. Two are genuine
    quantities, *not* ``(prediction, target)`` metrics — registering them in the
    metric registry breaks the registry-wide finite-scalar contract
    (``tests/contracts/test_metric_registry.py``). They are reported through the
-   profiling path instead — :class:`mriforge.core.metrics.performance.PerformanceMetrics`
+   profiling path instead — :class:`spectramr.core.metrics.performance.PerformanceMetrics`
    already tracks ``parameters``, ``forward_time`` and ``throughput``. Method B's
    listing them under ``metrics:`` is a benign warn-skip; moving those two names
    to a reporting/profiling context is the recommended follow-up.
@@ -771,7 +837,7 @@ subband.
 HaarPSI (Haar Wavelet Perceptual Similarity)
 --------------------------------------------
 
-**Module:** ``mriforge.infrastructure.reporting.metrics.haarpsi``
+**Module:** ``spectramr.infrastructure.reporting.metrics.haarpsi``
 **Function:** ``haar_psi(pred, target, *, data_range, c, alpha)`` — **Higher is better** ✓
 
 Two-scale Haar wavelet decomposition with logit-weighted similarity:
@@ -788,7 +854,7 @@ MRI IQA correlates [Reisenhofer2018]_.
 
 .. code-block:: python
 
-   from mriforge.infrastructure.reporting.metrics.haarpsi import haar_psi
+   from spectramr.infrastructure.reporting.metrics.haarpsi import haar_psi
    import numpy as np
    score = haar_psi(pred_image, ref_image, data_range=1.0)  # float in [0, 1]
 
@@ -809,7 +875,7 @@ Deep perceptual distance using VGG features (same formulation as the loss):
    ImageNet-pretrained backbone that expects 3-channel RGB. Inputs
    with other channel counts (1-channel grayscale, 2/4-channel
    complex MRI, multi-coil) are routed through
-   :func:`mriforge.core.metrics.channel_adapter.adapt_to_rgb`. See the
+   :func:`spectramr.core.metrics.channel_adapter.adapt_to_rgb`. See the
    :ref:`channel_adapter` section below for the available modes and
    trade-offs.
 
@@ -841,12 +907,38 @@ Applies LoG filter before L2 comparison, emphasizing edge fidelity:
    \text{HFEN} = \frac{\|\text{LoG}(x) - \text{LoG}(\hat{x})\|_2}{\|\text{LoG}(x)\|_2}
 
 
+Cubical PH-W2 distance (topology)
+---------------------------------
+
+**Registry name:** ``cubical_ph_w2_distance`` (aliases ``ph_w2_distance``,
+``topology_w2``) — **Lower is better** ✗
+
+**Module:** :mod:`spectramr.core.metrics.quantitative.cubical_ph_w2_distance`
+
+The Wasserstein-2 distance between the sublevel-set cubical persistence
+diagrams of prediction and target, taken per ``(batch, channel)`` slice and
+averaged. It is the validation-side reading of the ``cubical_ph_w2`` loss:
+:class:`~spectramr.models.losses.cubical_ph_w2_loss.CubicalPHWassersteinLoss`
+owns the diagram routine and the matching, and the metric calls it without a
+gradient, so the validation number of an arm that trains on the term is
+its own objective. It is ``0`` at ``pred == target`` and bounded by the L2 error
+(Cohen-Steiner, :math:`W_2 \le \|\hat{x} - x\|_2`). Added for the
+``geomamba_ulf`` cohort (2026-09-03), whose claim is topological but whose arms
+selected on ``val_psnr`` alone.
+
+Needs the ``[topology]`` extra (``gudhi`` + ``POT``). Without it the
+constructor raises the loss's ``ImportError`` (it does not return ``0.0``),
+and the direction stays readable off the class, so ``val_cubical_ph_w2_distance``
+still resolves as lower-is-better for checkpoint selection on a box without
+the extra.
+
+
 .. _tissue_segmentation_metrics:
 
 Tissue-segmentation agreement (structural fidelity)
 ----------------------------------------------------
 
-**Module:** :mod:`mriforge.core.metrics.tissue_segmentation`
+**Module:** :mod:`spectramr.core.metrics.tissue_segmentation`
 
 These grade *image synthesis / translation* (e.g. ULF→HF field translation) on the
 question PSNR cannot answer: **does the synthesized image still support the same
@@ -858,7 +950,7 @@ the same deterministic segmenter** and measure whether the two label maps agree.
 is the standard downstream-task-consistency protocol (SynthSeg-Dice, as used by
 SynthSR / LF-SynthSR).
 
-:class:`~mriforge.core.metrics.tissue_segmentation.OtsuTissueSegmenter` computes an
+:class:`~spectramr.core.metrics.tissue_segmentation.OtsuTissueSegmenter` computes an
 Otsu brain mask and then a 3-class Otsu tissue partition *within* it (a CSF/GM/WM
 proxy). It is deterministic, pure-torch, and range-agnostic — the histogram spans the
 image's own ``[min, max]``, so it works on ``[-1, 1]``-normalised MRI. Any bias the
@@ -886,7 +978,7 @@ segmenter has cancels in the prediction-vs-target comparison.
        (MONAI-backed). Boundary-sensitive where Dice is area-sensitive.
 
 **Relationship to** ``synthseg_dice``. That metric's local backend
-(:class:`~mriforge.core.metrics.quantitative.segmentation.LabelDiceBackend`) bins by
+(:class:`~spectramr.core.metrics.quantitative.segmentation.LabelDiceBackend`) bins by
 intensity **quantile**, so its classes are equal-population *by construction*: it sees
 spatial arrangement only and is invariant to any monotone intensity change, and its
 class volumes can never disagree. The Otsu family derives thresholds from the
@@ -913,14 +1005,14 @@ The two are complementary — run both.
 **Degenerate inputs never yield NaN.** ``pipelines/train.py`` accumulates validation
 metrics with a bare running sum and no non-finite guard, so a single ``NaN`` would
 poison the metric for the whole evaluation pass. Slices whose *target* brain mask falls
-below :data:`~mriforge.core.metrics.tissue_segmentation.MIN_FOREGROUND_FRACTION` carry no
+below :data:`~spectramr.core.metrics.tissue_segmentation.MIN_FOREGROUND_FRACTION` carry no
 anatomy and are dropped from the batch average. For ``tissue_hd95``, a class present in
 the target but **absent from the prediction** scores the FOV diagonal (the worst
 distance the image admits) — averaging over only the finite entries would otherwise hand
 a fully collapsed prediction a distance of ``0.0``, i.e. a perfect score for the exact
 failure the metric exists to catch.
 
-.. automodule:: mriforge.core.metrics.tissue_segmentation
+.. automodule:: spectramr.core.metrics.tissue_segmentation
    :members:
    :undoc-members:
    :show-inheritance:
@@ -941,7 +1033,7 @@ ImageNet-pretrained backbones (VGG19 / InceptionV3) that expect a
   multi-contrast stacks.
 * **8 channels** — 4 coils × {real, imag}.
 
-The :func:`mriforge.core.metrics.channel_adapter.adapt_to_rgb` helper makes
+The :func:`spectramr.core.metrics.channel_adapter.adapt_to_rgb` helper makes
 the conversion explicit. Each metric class accepts a
 ``channel_mode`` constructor argument; the default ``"auto"`` is
 MRI-aware and never silently truncates channels.
@@ -984,9 +1076,9 @@ anti-patterns of the kind CLAUDE.md item #9 forbids.
 
 **API:**
 
-.. autofunction:: mriforge.core.metrics.channel_adapter.adapt_to_rgb
+.. autofunction:: spectramr.core.metrics.channel_adapter.adapt_to_rgb
 
-.. autoclass:: mriforge.core.metrics.channel_adapter.ChannelMode
+.. autoclass:: spectramr.core.metrics.channel_adapter.ChannelMode
    :members:
    :undoc-members:
 
@@ -994,7 +1086,7 @@ anti-patterns of the kind CLAUDE.md item #9 forbids.
 
 .. code-block:: python
 
-   from mriforge.core.metrics.evaluation_metrics import LPIPS
+   from spectramr.core.metrics.evaluation_metrics import LPIPS
 
    # Default — works for 1, 3, even-C MRI complex; raises on odd C != 1, 3
    metric = LPIPS(device="cuda:0")
@@ -1300,8 +1392,8 @@ distance, making HD95 clinically preferred for lesion segmentation challenges
 WMH Dice Evaluator
 -------------------
 
-**Class:** :class:`~mriforge.core.metrics.wmh_dice_evaluator.WMHDiceEvaluator` —
-**File:** ``src/core/metrics/wmh_dice_evaluator.py``
+**Class:** :class:`~spectramr.core.metrics.wmh_dice_evaluator.WMHDiceEvaluator` —
+**File:** ``src/spectramr/core/metrics/wmh_dice_evaluator.py``
 
 A downstream clinical evaluator that measures White-Matter-Hyperintensity (WMH)
 overlap between reconstructed FLAIR volumes and ground-truth WMH annotations.
@@ -1311,7 +1403,7 @@ wraps any ``WMHSegmenterAdapter``-compliant backend:
 
 .. code-block:: python
 
-   from mriforge.core.metrics.wmh_dice_evaluator import WMHDiceEvaluator, LazySegmenterAdapter
+   from spectramr.core.metrics.wmh_dice_evaluator import WMHDiceEvaluator, LazySegmenterAdapter
 
    # Diagnostic baseline (percentile thresholding — smoke tests only)
    evaluator = WMHDiceEvaluator(segmenter=LazySegmenterAdapter(percentile=0.97))
@@ -1446,7 +1538,7 @@ better than PSNR on k-space data. Configured via:
 Intraclass Correlation Coefficient (ICC)
 =========================================
 
-**File:** ``src/core/metrics/icc.py`` — **Higher is better** ✓
+**File:** ``src/spectramr/core/metrics/icc.py`` — **Higher is better** ✓
 
 Measures inter-rater or test-retest reliability of quantitative MRI
 parameter maps (T1, T2, PD):
@@ -1507,7 +1599,7 @@ better** ✓.
 qCRC lifts Conformal Risk Control [Angelopoulos2024]_ onto the *geodesic*
 error functional of quantitative ``(M0, T1, T2)`` maps on the Bloch
 relaxation manifold (see
-:class:`~mriforge.infrastructure.physics.manifolds.BlochRelaxationManifold`).
+:class:`~spectramr.infrastructure.physics.manifolds.BlochRelaxationManifold`).
 Instead of certifying coverage of pixel intensities, it certifies a
 geodesic tolerance for the *parameter map itself* via the nested
 geodesic prediction set
@@ -1541,6 +1633,38 @@ reconstruction certifies a zero radius. Calibration size: the slack
 
 .. [Angelopoulos2024] A. N. Angelopoulos, S. Bates, A. Fisch, L. Lei, and
    T. Schuster. "Conformal Risk Control." *ICLR*, 2024. arXiv:2208.02814.
+
+
+Empirical Coverage of a Reverse-Sample Ensemble
+-----------------------------------------------
+
+**Registry name:** ``empirical_coverage`` — **Higher is better** ✓
+
+The fraction of target pixels that fall inside the per-pixel interval
+:math:`\bar{x} \pm k\,\sigma` of an ensemble of ``N`` stochastic
+cold-diffusion reverse samples, where :math:`\bar{x}` is the pixelwise
+ensemble mean the validation path grades and :math:`\sigma` the pixelwise
+sample standard deviation over the members (carried on
+``MetricContext.ensemble_std``; ``k`` is the constructor argument, default
+2). The count is :func:`~spectramr.core.metrics.quantitative.conformal_risk.coverage_fraction`,
+the same function the qCRC coverage above uses at its calibrated radius, so
+the two numbers share one definition of "inside" (the boundary counts). It
+is not a certificate: without calibration there is no finite-sample
+guarantee, only the observed hit rate that a conformal claim is checked
+against. Without an ``ensemble_std`` the metric is declared not applicable
+(``NaN`` plus one warning) rather than reported as a number.
+
+The diffusion strategy produces it on a cold-diffusion arm that sets
+``validation.sampling.enable_multistep_cold: true`` and
+``validation.sampling.ensemble_samples: N`` (``2 <= N <= 4``) with
+``model.model_kwargs.sampler_sigma > 0``: the multi-step sampler runs ``N``
+times per input with one C6 noise stream per member (``seed_offset`` 0 to
+``N-1`` on ``sampler_seed``), the k-space mean goes on as the prediction,
+and ``val_ensemble_std_mean`` and ``val_empirical_coverage`` are written per
+rung (``validation.sampling.coverage_k`` sets ``k``), with their cascade
+``_mean`` like the other validation metrics. The load is refused when the
+declared sigma is 0 and the run is refused when the resolved sampler's sigma
+is 0, because ``N`` identical members would report a spread of zero.
 
 
 ---
@@ -1852,7 +1976,7 @@ Full Registry Table
 Perfusion & Dynamic Contrast-Enhanced Metrics
 ==============================================
 
-**File:** ``src/core/metrics/perfusion_metrics.py``
+**File:** ``src/spectramr/core/metrics/perfusion_metrics.py``
 
 These metrics evaluate DCE-MRI (Dynamic Contrast-Enhanced) and ASL
 (Arterial Spin Labelling) reconstruction quality through pharmacokinetic
@@ -1879,7 +2003,7 @@ elimination (**wash-out**) from tissue over a DCE time series.
 
 .. code-block:: python
 
-   from mriforge.core.metrics.perfusion_metrics import WashSlope
+   from spectramr.core.metrics.perfusion_metrics import WashSlope
 
    metric = WashSlope(temporal_resolution=2.0)   # seconds per frame
    result = metric(
@@ -1915,7 +2039,7 @@ where :math:`C_p(t)` is the arterial input function (AIF).
 
 .. code-block:: python
 
-   from mriforge.core.metrics.perfusion_metrics import KtransVeMetric
+   from spectramr.core.metrics.perfusion_metrics import KtransVeMetric
 
    metric = KtransVeMetric(temporal_resolution=2.0, extended_tofts=True)
    params = metric(tissue_curves, aif_curve)
@@ -1941,7 +2065,7 @@ signal enhancement derivative:
 MR Spectroscopy (MRS) Metrics
 =================================
 
-**File:** ``src/core/metrics/spectroscopy_metrics.py``
+**File:** ``src/spectramr/core/metrics/spectroscopy_metrics.py``
 
 
 SpectralLinewidth (FWHM)
@@ -1958,7 +2082,7 @@ Full Width at Half Maximum of spectral peaks (Hz). Narrower linewidth
 
 .. code-block:: python
 
-   from mriforge.core.metrics.spectroscopy_metrics import SpectralLinewidth
+   from spectramr.core.metrics.spectroscopy_metrics import SpectralLinewidth
 
    metric = SpectralLinewidth(spectral_resolution=1.0, peak_window_hz=50.0)
    fwhm = metric(spectrum)   # Tensor[batch, freq_points]
@@ -2016,7 +2140,7 @@ where :math:`\sigma_{noise}` is estimated from a signal-free spectral region.
 Fréchet Radiomic Distance (FRD) & Radiomic Feature Stability
 ===========================================================
 
-**File:** ``src/core/metrics/radiomic.py`` | **Dependency:** ``pip install pyradiomics``
+**File:** ``src/spectramr/core/metrics/radiomic.py`` | **Dependency:** ``pip install pyradiomics``
 
 Radiomic-based image quality metrics that avoid the ImageNet-centric
 bias of FID and LPIPS by using medically meaningful texture features.
@@ -2042,7 +2166,7 @@ from real images, and :math:`(\mu_g, \Sigma_g)` from reconstructions.
 
 .. code-block:: python
 
-   from mriforge.core.metrics.radiomic import FRDMetric
+   from spectramr.core.metrics.radiomic import FRDMetric
 
    frd = FRDMetric(feature_groups=["firstorder", "glcm", "gldm", "shape2D"])
    score = frd.compute(real_images, generated_images)
@@ -2072,7 +2196,7 @@ Mean ICC between original and reconstructed radiomic features:
 High-Frequency Error Norm (HFEN)
 ================================
 
-**File:** ``src/core/metrics/hfen.py``
+**File:** ``src/spectramr/core/metrics/hfen.py``
 
 **Registry key:** ``hfen`` | **Aliases:** ``HFEN``, ``HighFrequencyErrorNorm``
 
@@ -2095,7 +2219,7 @@ The LoG kernel:
 
 .. code-block:: python
 
-   from mriforge.core.metrics.hfen import HFENMetric
+   from spectramr.core.metrics.hfen import HFENMetric
 
    hfen = HFENMetric(sigma=1.5, kernel_size=15)
    score = hfen(pred, target)    # Tensor[B, 1, H, W]
@@ -2139,14 +2263,14 @@ rather than silently-wrong.
 The comparability guard
 -----------------------
 
-``mriforge.core.metrics._guards.field_comparability`` implements the precondition
+``spectramr.core.metrics._guards.field_comparability`` implements the precondition
 ``comparable(u, v) = same shape AND same kind AND same units``. A metric grades
 only when the verdict is ``ok``; otherwise it returns ``NaN`` (a *skip*, never a
 silent grade, never a hard raise that would break unrelated validation):
 
 .. code-block:: python
 
-   from mriforge.core.metrics._guards import field_comparability
+   from spectramr.core.metrics._guards import field_comparability
 
    verdict = field_comparability(
        estimate, reference,
@@ -2160,7 +2284,7 @@ silent grade, never a hard raise that would break unrelated validation):
 -----------------
 
 Absolute RMS error (Hz) between an estimated B0 field and a real reference
-(``mriforge.core.metrics.b0_field_rmse``; alias ``b0_rmse_hz``; lower is better).
+(``spectramr.core.metrics.b0_field_rmse``; alias ``b0_rmse_hz``; lower is better).
 A complex tensor is an image — not a real field — so it is reported as
 ``kind="image"`` and the guard skips it. The metric is the headline for the
 phase-cycled bSSFP arm ``exp_vf_29`` and fires in
@@ -2172,7 +2296,7 @@ for every B0 method that has a real reference.
 
 RMS error (cycles/FOV) between an estimated trajectory deviation ``Δk̂`` and the
 *measured* deviation ``Δk_true = k_measured - k_nominal``
-(``mriforge.core.metrics.k_space_trajectory_rmse``; alias ``traj_rmse``; lower is
+(``spectramr.core.metrics.k_space_trajectory_rmse``; alias ``traj_rmse``; lower is
 better). It reuses the same guard with ``kind="trajectory"``,
 ``units="cycles_per_fov"``: a Cartesian per-readout-line ``Δk [B, 2, H]`` graded
 against a spiral ``Δk(t) [n_samp, 2]`` is a shape mismatch and is skipped — the
@@ -2197,7 +2321,7 @@ facade:
 The model recovers ΔB0 from the banding via a frozen elliptical-signal-model
 phase-cycle DFT prior plus a learned residual; see the problem formulation in
 ``docs/superpowers/specs/2026-06-08-bssfp-banding-b0-vf29.md`` and the synthesis
-in ``mriforge.infrastructure.physics.multi_acquisition`` (``bssfp_banding`` /
+in ``spectramr.infrastructure.physics.multi_acquisition`` (``bssfp_banding`` /
 ``invert_bssfp_banding``).
 
 The trajectory metric is locked the same way:

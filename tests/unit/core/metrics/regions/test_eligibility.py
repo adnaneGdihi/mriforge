@@ -11,8 +11,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.outcome import NotApplicableReason  # noqa: E402
-from mriforge.core.metrics.regions.eligibility import (  # noqa: E402
+from spectramr.core.metrics.outcome import NotApplicableReason  # noqa: E402
+from spectramr.core.metrics.regions.eligibility import (  # noqa: E402
     ROI_POLICY,
     Normalisation,
     RoiPolicy,
@@ -20,8 +20,8 @@ from mriforge.core.metrics.regions.eligibility import (  # noqa: E402
     evaluate_eligibility,
     policy_for,
 )
-from mriforge.core.metrics.regions.types import RegionMask, RegionSource  # noqa: E402
-from mriforge.core.metrics.registry import MetricsRegistry  # noqa: E402
+from spectramr.core.metrics.regions.types import RegionMask, RegionSource  # noqa: E402
+from spectramr.core.metrics.registry import MetricsRegistry  # noqa: E402
 
 
 def _rect_region(h: int, w: int, region_id: str = "path:lesion#0") -> RegionMask:
@@ -70,7 +70,7 @@ class TestT1Coverage:
         auto-derived from the whole registry (which is larger than METRIC_SPECS), so
         covering an unswept context metric there is correct, not stale.
         """
-        from mriforge.core.metrics.regions import eligibility as elig
+        from spectramr.core.metrics.regions import eligibility as elig
         pytest.importorskip("scripts.sim2rank.metrics_list")  # not in the public export
         from scripts.sim2rank.metrics_list import METRIC_SPECS
 
@@ -231,8 +231,8 @@ class TestFloorsComeFromTheMetric:
 
     def test_every_declared_min_size_is_honoured_by_the_gate(self) -> None:
         """The floor is read OFF the metric class, so the two cannot drift apart."""
-        from mriforge.core.metrics.regions.eligibility import ROI_POLICY, RoiSupport
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.regions.eligibility import ROI_POLICY, RoiSupport
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         for key, policy in ROI_POLICY.items():
             if policy.support is not RoiSupport.CROP_THEN_COMPUTE:
@@ -259,7 +259,7 @@ class TestThePolicyTableIsNotFrozenAtImport:
     """
 
     def test_the_late_registering_context_metrics_are_in_the_table(self) -> None:
-        from mriforge.core.metrics.regions.eligibility import ROI_POLICY
+        from spectramr.core.metrics.regions.eligibility import ROI_POLICY
 
         # These four register AFTER this package is imported, so a table frozen at import
         # time did not contain them at all. Not "declined" -- absent, which made
@@ -273,7 +273,7 @@ class TestThePolicyTableIsNotFrozenAtImport:
 
     def test_a_class_declared_floor_survives_the_build(self) -> None:
         """The regression that matters: floor 0 means the gate lets a fabricator through."""
-        from mriforge.core.metrics.regions.eligibility import ROI_POLICY, min_side_for
+        from spectramr.core.metrics.regions.eligibility import ROI_POLICY, min_side_for
 
         assert min_side_for("iw_ssim") == 161
         assert ROI_POLICY["iw_ssim"].min_roi_side == 161, (
@@ -283,7 +283,7 @@ class TestThePolicyTableIsNotFrozenAtImport:
         )
 
     def test_the_table_rebuilds_when_the_registry_grows(self) -> None:
-        import mriforge.core.metrics.regions.eligibility as elig
+        import spectramr.core.metrics.regions.eligibility as elig
 
         elig._POLICY_TABLE = {}  # simulate a table built against an empty registry
         elig._BUILT_AT_REGISTRY_SIZE = 0
@@ -325,7 +325,7 @@ class TestTemporalSeriesGroup:
     """
 
     def test_both_are_declared_not_restrictable(self) -> None:
-        from mriforge.core.metrics.regions.eligibility import ROI_POLICY, RoiSupport
+        from spectramr.core.metrics.regions.eligibility import ROI_POLICY, RoiSupport
 
         for key in ("tsnr", "temporal_fidelity"):
             assert key in ROI_POLICY, f"{key} lost its ROI policy"
@@ -339,7 +339,7 @@ class TestTemporalSeriesGroup:
         wrong argument that happens to yield the right tier — and the next reader
         would believe it.
         """
-        from mriforge.core.metrics.regions import eligibility as elig
+        from spectramr.core.metrics.regions import eligibility as elig
 
         _, keys = elig._NOT_RESTRICTABLE_GROUPS["parametric_map"]
         assert "tsnr" not in keys and "temporal_fidelity" not in keys
@@ -396,6 +396,6 @@ class TestSecondPassDeclarations:
 
 
 def _map_tier_keys() -> set[str]:
-    from mriforge.core.metrics.regions import eligibility as elig
+    from spectramr.core.metrics.regions import eligibility as elig
 
     return set(elig._MAP_TIER)

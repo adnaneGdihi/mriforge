@@ -12,12 +12,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.losses.ambient_consistency_loss import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.losses.ambient_consistency_loss import (
     AmbientConsistencyLoss,
     ambient_consistency_residual,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 
 def _setup(h: int = 8, w: int = 8):

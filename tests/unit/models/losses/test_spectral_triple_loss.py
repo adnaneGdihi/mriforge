@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.spectral_triple import (
+from spectramr.infrastructure.physics.spectral_triple import (
     connes_distance_upper_bound,
     discrete_dirac_2d,
 )
-from mriforge.models.losses.spectral_triple_loss import SpectralTripleIntertwiningLoss
+from spectramr.models.losses.spectral_triple_loss import SpectralTripleIntertwiningLoss
 
 
 def test_dirac_2d_shape() -> None:

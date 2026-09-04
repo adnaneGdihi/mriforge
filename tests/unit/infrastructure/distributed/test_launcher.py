@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from mriforge.infrastructure.distributed.launcher import (
+from spectramr.infrastructure.distributed.launcher import (
     dispatch_for_campaign,
     launch_distributed,
 )
@@ -97,7 +97,7 @@ def _emitted_command() -> str:
 def test_the_emitted_command_launches_the_distributed_entry_point() -> None:
     """`train` never calls `setup_distributed`, so no process group exists."""
     cmd = _emitted_command()
-    assert "-m mriforge.cli train-distributed" in cmd, (
+    assert "-m spectramr.cli train-distributed" in cmd, (
         f"the launcher emits a subcommand that cannot open a process group: {cmd}"
     )
 
@@ -119,7 +119,7 @@ def test_the_subcommand_is_one_the_cli_actually_registers() -> None:
     """Pinned against the real parser, not a hard-coded string: the launcher and
     the CLI drifting apart is the whole defect, so a rename of either must fail
     here rather than ship a command line nobody runs locally."""
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     parser = build_parser()
     choices: set[str] = set()

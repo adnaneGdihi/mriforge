@@ -4,11 +4,11 @@ TASK III.2 – Physics SSOT fitness function.
 Enforces CLAUDE.md pitfall #2:
 
     No ``torch.fft.*`` calls outside
-    ``mriforge/infrastructure/physics/fft_ops.py``, EXCEPT:
+    ``spectramr/infrastructure/physics/fft_ops.py``, EXCEPT:
 
-    1. All files under ``mriforge/infrastructure/physics/**``  (blanket exempt).
+    1. All files under ``spectramr/infrastructure/physics/**``  (blanket exempt).
     2. Files in ``_fft_allowlist.txt`` — spectral-operator blocks
-       (FNO/Hyena/S4D/spectral/Toeplitz) under ``mriforge/models/blocks/``
+       (FNO/Hyena/S4D/spectral/Toeplitz) under ``spectramr/models/blocks/``
        that operate on *real-valued feature maps*.  These are LEGITIMATE
        uses that will never be flagged.
     3. Files in ``_known_violations.json["raw_torch_fft"]`` — pre-existing
@@ -37,7 +37,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 REPO_ROOT = Path(__file__).parent.parent.parent
-SRC_ROOT = REPO_ROOT / "src" / "mriforge"
+SRC_ROOT = REPO_ROOT / "src" / "spectramr"
 ALLOWLIST_FILE = Path(__file__).parent / "_fft_allowlist.txt"
 VIOLATIONS_FILE = Path(__file__).parent / "_known_violations.json"
 
@@ -45,7 +45,7 @@ _FFT_PATTERN = re.compile(r"\btorch\.fft\.")
 
 # Blanket-exempt subtrees (all files always allowed)
 BLANKET_EXEMPT_PREFIXES: list[str] = [
-    "mriforge/infrastructure/physics/",
+    "spectramr/infrastructure/physics/",
 ]
 
 
@@ -106,7 +106,7 @@ def test_no_new_raw_torch_fft_outside_physics_ssot() -> None:
     """Gate: fail on any NEW raw torch.fft.* usage outside allowed locations.
 
     Allowed locations (not flagged):
-      1. ``mriforge/infrastructure/physics/**``  — the SSOT (blanket exempt).
+      1. ``spectramr/infrastructure/physics/**``  — the SSOT (blanket exempt).
       2. Files in ``_fft_allowlist.txt`` — legitimate spectral-operator blocks
          operating on real-valued feature maps.
       3. Files in ``_known_violations.json["raw_torch_fft"]`` — pre-existing
@@ -119,7 +119,7 @@ def test_no_new_raw_torch_fft_outside_physics_ssot() -> None:
       - Add to ``_known_violations.json["raw_torch_fft"]`` temporarily.
 
     For new MRI k-space round-trips:
-      - Fix: use ``mriforge.infrastructure.physics.fft_ops.fft2c / ifft2c``.
+      - Fix: use ``spectramr.infrastructure.physics.fft_ops.fft2c / ifft2c``.
     """
     all_files = _scan_all_raw_fft_files()
     legitimate = _load_legitimate_allowlist()
@@ -135,7 +135,7 @@ def test_no_new_raw_torch_fft_outside_physics_ssot() -> None:
             "(not in _fft_allowlist.txt or _known_violations.json):\n"
             + "\n".join(f"  {v}" for v in new_violations)
             + "\n\nFix: route complex MRI k-space FFTs through "
-            "mriforge.infrastructure.physics.fft_ops (fft2c/ifft2c). "
+            "spectramr.infrastructure.physics.fft_ops (fft2c/ifft2c). "
             "If this is a spectral neural-operator block on real feature maps, "
             "add the file to tests/architecture/_fft_allowlist.txt."
         )

@@ -25,8 +25,8 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.config.schemas.checkpoint import CheckpointConfigSchema  # noqa: E402
-from mriforge.infrastructure.services.checkpoint_service import (  # noqa: E402
+from spectramr.config.schemas.checkpoint import CheckpointConfigSchema  # noqa: E402
+from spectramr.infrastructure.services.checkpoint_service import (  # noqa: E402
     CheckpointService,
 )
 
@@ -106,7 +106,7 @@ def test_saved_keys_carry_no_wrapper_prefix(tmp_path, fmt: str) -> None:
 
     The round-trip test above would also pass if the save side kept writing
     prefixed keys and the load side merely tolerated them. It must not: a
-    checkpoint is read by tools outside this repo's load path (``mriforge
+    checkpoint is read by tools outside this repo's load path (``spectramr
     export``, the campaign evaluator's ``strict=False`` load, manual
     ``torch.load`` inspection), and those cannot all be taught about prefixes.
     """
@@ -174,7 +174,7 @@ def test_ema_state_is_saved_unprefixed(tmp_path) -> None:
     """``ModelEma`` keeps its shadow under ``.module``, so an EMA state dict was
     ``module.``-prefixed on EVERY run, single-GPU and eager included. That is why
     the GAN inference strategy's ``use_ema`` path could never have worked."""
-    from mriforge.infrastructure.optimization.ema import ModelEma
+    from spectramr.infrastructure.optimization.ema import ModelEma
 
     service = _service(tmp_path, "pth")
     source = _distinctive(_Tiny())

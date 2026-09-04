@@ -6,7 +6,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.training.strategies.base import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.base import (  # noqa: E402
     BaseTrainingStrategy,
 )
 
@@ -28,8 +28,8 @@ def _capture_snapshot_kwargs(monkeypatch, tmp_path, tensors, **call_kwargs):
     """
     from types import SimpleNamespace
 
-    from mriforge.infrastructure.training import debug_snapshot as ds
-    from mriforge.infrastructure.training.utils import domain_inference as di
+    from spectramr.infrastructure.training import debug_snapshot as ds
+    from spectramr.infrastructure.training.utils import domain_inference as di
 
     seen: dict = {}
 
@@ -140,7 +140,7 @@ class TestCanonicalKeyContract:
     def test_the_diffusion_family_declares_the_carve_out(self) -> None:
         """Pins the contract at the class that needs it: `q_sample` degrades
         inside the step for every diffusion arm, cold or noise."""
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -154,7 +154,7 @@ class TestProvenanceIsBuiltOncePerStrategy:
         """Non-negotiable 9: snapshots fire inside the training step, and the
         walk touches the dataset wrapper chain and the whole module tree.
         Nothing it reads changes after the environment is built."""
-        from mriforge.infrastructure.training import snapshot_provenance as sp
+        from spectramr.infrastructure.training import snapshot_provenance as sp
 
         calls = {"n": 0}
 
@@ -173,7 +173,7 @@ class TestProvenanceIsBuiltOncePerStrategy:
 
     def test_a_failure_to_introspect_never_reaches_the_caller(self, monkeypatch, tmp_path) -> None:
         """A diagnostic must never be the reason a training run dies."""
-        from mriforge.infrastructure.training import snapshot_provenance as sp
+        from spectramr.infrastructure.training import snapshot_provenance as sp
 
         def _boom(*_args, **_kwargs):
             raise RuntimeError("dataset exploded")
@@ -190,7 +190,7 @@ class TestProvenanceIsBuiltOncePerStrategy:
         subsequent snapshot: the exact per-step cost the cache exists to avoid
         (non-negotiable 9), paid hardest by the runs already in trouble.
         """
-        from mriforge.infrastructure.training import snapshot_provenance as sp
+        from spectramr.infrastructure.training import snapshot_provenance as sp
 
         calls = {"n": 0}
 
@@ -215,7 +215,7 @@ class TestProvenanceNamesTheSplitItCameFrom:
     ) -> None:
         from types import SimpleNamespace
 
-        from mriforge.infrastructure.training import snapshot_provenance as sp
+        from spectramr.infrastructure.training import snapshot_provenance as sp
 
         seen = []
 
@@ -271,7 +271,7 @@ class TestProvenanceNamesTheSplitItCameFrom:
         at the call, not on the emitter."""
         import inspect
 
-        from mriforge.infrastructure.training.strategies import (
+        from spectramr.infrastructure.training.strategies import (
             virtual_fiducial_strategy as vf,
         )
 
@@ -361,3 +361,27 @@ class TestModelOutputScaleContextIsDeferred:
         extra = json.loads((snap / "snapshot.json").read_text())["extra"]
         assert extra["abs_max_model_output"] == 3.0
         assert extra["abs_max_target"] == 12.0
+
+
+class TestDeclaredMetricKeys:
+    """#1682 -- the producer-declared CSV column hook.
+
+    Base must declare NOTHING. The hook exists so a strategy that renames
+    between knob and metric can bridge that rename itself; a base that declared
+    anything would promise columns for strategies that never stamp them, which
+    is the always-empty-column direction the header builder already rejected.
+    """
+
+    def test_base_declares_nothing(self):
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+
+        assert BaseTrainingStrategy.declared_metric_keys(object()) == frozenset()
+
+    def test_hook_returns_a_set_not_a_list(self):
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+
+        result = BaseTrainingStrategy.declared_metric_keys(object())
+        assert isinstance(result, frozenset), (
+            "the header builder does `expected_loss_keys.update(...)`; a str "
+            "return would silently splat into single characters"
+        )

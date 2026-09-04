@@ -5,7 +5,7 @@ Unit tests for Q-KAN.
 import pytest
 import torch
 
-from mriforge.models.edge.quantization import QKANLayer, SplineQuantizer
+from spectramr.models.edge.quantization import QKANLayer, SplineQuantizer
 
 
 @pytest.fixture

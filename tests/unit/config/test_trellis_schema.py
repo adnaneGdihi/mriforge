@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.trellis import (
+from spectramr.config.schemas.trellis import (
     TrellisConfigSchema,
     TrellisDecoderConfigSchema,
     TrellisEncoderConfigSchema,

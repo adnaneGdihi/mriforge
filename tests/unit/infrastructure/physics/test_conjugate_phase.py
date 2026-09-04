@@ -1,6 +1,6 @@
 """Tests for ``ConjugatePhaseReconstructor``.
 
-Targets ``mriforge.infrastructure.physics.conjugate_phase``. Conjugate Phase
+Targets ``spectramr.infrastructure.physics.conjugate_phase``. Conjugate Phase
 Reconstruction (CPR) corrects for B₀-induced phase distortion via
 multi-frequency interpolation. The reconstructor is a deterministic
 algorithm with no learnable parameters — easy to test against the
@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.conjugate_phase import (
+from spectramr.infrastructure.physics.conjugate_phase import (
     ConjugatePhaseReconstructor,
 )
 

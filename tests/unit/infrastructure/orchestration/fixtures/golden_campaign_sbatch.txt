@@ -21,26 +21,26 @@ echo "=========================================="
 # ── Environment ──
 module load torchvision 2>/dev/null || true
 
-if [[ -f "/scratch/myalloc/mriforge/.venv/bin/activate" ]]; then
-    source "/scratch/myalloc/mriforge/.venv/bin/activate"
+if [[ -f "/scratch/myalloc/spectramr/.venv/bin/activate" ]]; then
+    source "/scratch/myalloc/spectramr/.venv/bin/activate"
 fi
 
-export PYTHONPATH=/scratch/myalloc/mriforge:${PYTHONPATH}
+export PYTHONPATH=/scratch/myalloc/spectramr:${PYTHONPATH}
 # Bytecode cache: write .pyc to NODE-LOCAL scratch rather than disabling
-# it. With ~1000 mriforge.* modules, disabling the cache forced a full
+# it. With ~1000 spectramr.* modules, disabling the cache forced a full
 # source recompile on EVERY array task — a large, repeated startup tax on
 # shared cluster filesystems. Redirecting the cache to per-node local disk
 # means each node compiles once and reuses the cache on subsequent tasks
 # (and avoids shared-FS __pycache__ write contention). Re-measure with
 # "python -X importtime" cold vs warm on a compute node.
-export PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/${USER}/mriforge_pycache"
-# The clinical-use disclaimer is a UserWarning emitted at ``import mriforge``.
+export PYTHONPYCACHEPREFIX="${TMPDIR:-/tmp}/${USER}/spectramr_pycache"
+# The clinical-use disclaimer is a UserWarning emitted at ``import spectramr``.
 # It advertises this knob as the way to silence it "in batch jobs", but no
 # submitter ever set it, so every job log opened with the same paragraph
 # (once per process — audit and train are separate processes).
-export MRIFORGE_SUPPRESS_CLINICAL_WARNING=1
+export SPECTRAMR_SUPPRESS_CLINICAL_WARNING=1
 
-cd /scratch/myalloc/mriforge
+cd /scratch/myalloc/spectramr
 
 echo "Python: $(which python) ($(python --version))"
 echo "PyTorch: $(python -c 'import torch; print(torch.__version__)')"
@@ -56,10 +56,10 @@ echo ""
 NUM_GPUS=2
 NUM_NODES=1
 if [[ "${NUM_GPUS}" -gt 1 || "${NUM_NODES}" -gt 1 ]]; then
-    TRAIN_CMD="torchrun --nproc_per_node=${NUM_GPUS} --nnodes=${NUM_NODES} --rdzv_backend=c10d --rdzv_endpoint=${SLURMD_NODENAME:-127.0.0.1}:29500 -m mriforge.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
+    TRAIN_CMD="torchrun --nproc_per_node=${NUM_GPUS} --nnodes=${NUM_NODES} --rdzv_backend=c10d --rdzv_endpoint=${SLURMD_NODENAME:-127.0.0.1}:29500 -m spectramr.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
 else
     export CUDA_VISIBLE_DEVICES=0
-    TRAIN_CMD="python -m mriforge.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
+    TRAIN_CMD="python -m spectramr.cli train --config \"experiments/inprogress/x.yaml\" --resume auto -O training.output_dir=experiments/results/campaigns/demo/exp_demo -O checkpoint.inject_as=model.pretrained"
 fi
 
 echo "Config: experiments/inprogress/x.yaml"
@@ -101,7 +101,7 @@ if [[ ${TRAIN_EXIT_CODE} -eq 0 ]]; then
     if [[ -n "${CHECKPOINT}" && -f "${CHECKPOINT}" && -n "${MANIFEST}" ]]; then
         INFER_OUT="experiments/results/campaigns/demo/exp_demo/inference_test_split"
         mkdir -p "${INFER_OUT}"
-        python -m mriforge.cli predict \
+        python -m spectramr.cli predict \
             --model "${CHECKPOINT}" \
             --input "${MANIFEST}" \
             --output "${INFER_OUT}"

@@ -19,7 +19,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.io_strategies import (
+from spectramr.data.io_strategies import (
     AutoDetectStrategy,
     BartCflStrategy,
     BaseIOStrategy,
@@ -137,9 +137,7 @@ class TestFastMRIH5Strategy:
 
             mock_file.__getitem__ = MagicMock(
                 side_effect=lambda key: {
-                    "kspace": MagicMock(
-                        __getitem__=MagicMock(return_value=mock_kspace.numpy())
-                    ),
+                    "kspace": MagicMock(__getitem__=MagicMock(return_value=mock_kspace.numpy())),
                     "reconstruction_rss": MagicMock(
                         __getitem__=MagicMock(return_value=mock_rss.numpy())
                     ),
@@ -173,9 +171,7 @@ class TestFastMRIH5Strategy:
 
             mock_file.__getitem__ = MagicMock(
                 side_effect=lambda key: {
-                    "kspace": MagicMock(
-                        __getitem__=MagicMock(return_value=real_kspace.numpy())
-                    ),
+                    "kspace": MagicMock(__getitem__=MagicMock(return_value=real_kspace.numpy())),
                 }.get(key)
             )
             mock_file.__contains__ = MagicMock(side_effect=lambda key: key == "kspace")
@@ -217,9 +213,7 @@ class TestFastMRIH5Strategy:
 
             mock_file.__getitem__ = MagicMock(
                 side_effect=lambda key: {
-                    "kspace": MagicMock(
-                        __getitem__=MagicMock(return_value=mock_kspace.numpy())
-                    ),
+                    "kspace": MagicMock(__getitem__=MagicMock(return_value=mock_kspace.numpy())),
                 }.get(key)
             )
             mock_file.__contains__ = MagicMock(side_effect=lambda key: key == "kspace")
@@ -359,7 +353,7 @@ class TestIOStrategyFactory:
         # The factory pattern varies by implementation
         # This assumes IOStrategyFactory.get() or similar
         try:
-            from mriforge.data.io_strategies import IOStrategyFactory
+            from spectramr.data.io_strategies import IOStrategyFactory
 
             strategy = IOStrategyFactory.get("fastmri_h5")
             assert isinstance(strategy, FastMRIH5Strategy)
@@ -386,9 +380,7 @@ class TestIOStrategyIntegration:
 
             mock_file.__getitem__ = MagicMock(
                 side_effect=lambda key: {
-                    "kspace": MagicMock(
-                        __getitem__=MagicMock(return_value=mock_kspace.numpy())
-                    ),
+                    "kspace": MagicMock(__getitem__=MagicMock(return_value=mock_kspace.numpy())),
                     "reconstruction_rss": MagicMock(
                         __getitem__=MagicMock(return_value=mock_rss.numpy())
                     ),
@@ -462,9 +454,7 @@ def _write_bart(directory, name: str, arr: np.ndarray):
     ``.cfl`` path.
     """
     dims = list(arr.shape)
-    (directory / f"{name}.hdr").write_text(
-        "# Dimensions\n" + " ".join(str(d) for d in dims) + "\n"
-    )
+    (directory / f"{name}.hdr").write_text("# Dimensions\n" + " ".join(str(d) for d in dims) + "\n")
     arr.astype(np.complex64).flatten(order="F").tofile(directory / f"{name}.cfl")
     return directory / f"{name}.cfl"
 
@@ -475,9 +465,9 @@ class TestBartCflStrategy:
     def test_reads_complex_array_with_bart_dims(self, tmp_path) -> None:
         """A ``.cfl``/``.hdr`` pair round-trips to a complex tensor + dim vector."""
         rng = np.random.default_rng(0)
-        arr = (
-            rng.standard_normal((2, 3, 1, 2)) + 1j * rng.standard_normal((2, 3, 1, 2))
-        ).astype(np.complex64)
+        arr = (rng.standard_normal((2, 3, 1, 2)) + 1j * rng.standard_normal((2, 3, 1, 2))).astype(
+            np.complex64
+        )
         cfl = _write_bart(tmp_path, "k", arr)
 
         out = BartCflStrategy().load(str(cfl))
@@ -552,10 +542,8 @@ def _write_mrd(path, n_acq=4, n_coil=2, n_samp=8, traj_dim=2):
     arr = np.empty(n_acq, dtype=acq_dt)
     for i in range(n_acq):
         arr["head"][i] = (n_samp, n_coil, traj_dim)
-        arr["data"][i] = (np.arange(2 * n_coil * n_samp, dtype=np.float32) + i)
-        arr["traj"][i] = np.linspace(
-            -np.pi, np.pi, max(traj_dim * n_samp, 0), dtype=np.float32
-        )
+        arr["data"][i] = np.arange(2 * n_coil * n_samp, dtype=np.float32) + i
+        arr["traj"][i] = np.linspace(-np.pi, np.pi, max(traj_dim * n_samp, 0), dtype=np.float32)
     xml = (
         '<?xml version="1.0"?>'
         '<ismrmrdHeader xmlns="http://www.ismrm.org/ISMRMRD">'
@@ -566,8 +554,7 @@ def _write_mrd(path, n_acq=4, n_coil=2, n_samp=8, traj_dim=2):
     with h5py.File(path, "w") as f:
         g = f.create_group("dataset")
         g.create_dataset("data", data=arr)
-        g.create_dataset("xml", data=np.array([xml], dtype=object),
-                         dtype=h5py.string_dtype())
+        g.create_dataset("xml", data=np.array([xml], dtype=object), dtype=h5py.string_dtype())
 
 
 class TestIsmrmrdStrategy:
@@ -743,7 +730,7 @@ def _write_twix_vd(path, *, field=2.89362, coils=4, n_samp=32, n_acq=2) -> np.nd
 
 
 class TestTwixStrategy:
-    """Siemens TWIX ``.dat`` reader — delegates to ``mriforge.data.twix.read_twix``."""
+    """Siemens TWIX ``.dat`` reader — delegates to ``spectramr.data.twix.read_twix``."""
 
     def test_reads_kspace_as_complex_torch_tensor(self, tmp_path) -> None:
         p = tmp_path / "meas.dat"
@@ -783,7 +770,7 @@ class TestLoadTensorFromFileDtype:
     """dtype guard for the module-level ``load_tensor_from_file`` (2026-07-02)."""
 
     def test_npy_real_float64_downcast(self, tmp_path) -> None:
-        from mriforge.data.io_strategies import load_tensor_from_file
+        from spectramr.data.io_strategies import load_tensor_from_file
 
         p = tmp_path / "x.npy"
         np.save(p, np.ones((3, 3), dtype=np.float64))
@@ -791,7 +778,7 @@ class TestLoadTensorFromFileDtype:
         assert t.dtype == torch.float32
 
     def test_npy_complex_preserved(self, tmp_path) -> None:
-        from mriforge.data.io_strategies import load_tensor_from_file
+        from spectramr.data.io_strategies import load_tensor_from_file
 
         p = tmp_path / "xc.npy"
         np.save(p, np.ones((3, 3), dtype=np.complex128))
@@ -799,7 +786,7 @@ class TestLoadTensorFromFileDtype:
         assert torch.is_complex(t)
 
     def test_npy_float32_unchanged(self, tmp_path) -> None:
-        from mriforge.data.io_strategies import load_tensor_from_file
+        from spectramr.data.io_strategies import load_tensor_from_file
 
         p = tmp_path / "x32.npy"
         np.save(p, np.ones((3, 3), dtype=np.float32))
@@ -892,8 +879,157 @@ class TestLoadReferenceVolumeSkipsKspace:
 
     def test_the_reference_keeps_slices_on_axis_zero(self, tmp_path) -> None:
         """reconstruction_rss is [S, H, W] on disk and load({"slice_index": i}) indexes
-        axis 0. mriforge.data.nifti_export writes its NIfTIs on that contract."""
+        axis 0. spectramr.data.nifti_export writes its NIfTIs on that contract."""
         p = self._h5(tmp_path)
         vol = FastMRIH5Strategy.load_reference_volume(p)["data"]
         one = FastMRIH5Strategy().load(str(p), {"slice_index": 1})["data"]
         assert torch.equal(vol[1], one)
+
+
+class TestReadH5Kspace:
+    """``read_h5_kspace`` is the one HDF5 k-space read both routes call (#1757):
+    ``FastMRIH5Strategy.load`` and the M4Raw loader."""
+
+    @staticmethod
+    def _file(tmp_path, arr):
+        import h5py
+
+        p = tmp_path / "k.h5"
+        with h5py.File(str(p), "w") as f:
+            f.create_dataset("kspace", data=arr)
+        return p
+
+    @staticmethod
+    def _arr():
+        rng = np.random.default_rng(0)
+        return (rng.standard_normal((4, 2, 8, 8)) + 1j * rng.standard_normal((4, 2, 8, 8))).astype(
+            np.complex64
+        )
+
+    def test_whole_read_is_the_array(self, tmp_path) -> None:
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        arr = self._arr()
+        with h5py.File(str(self._file(tmp_path, arr)), "r") as f:
+            assert np.array_equal(read_h5_kspace(f["kspace"]), arr)
+
+    def test_slice_read_is_that_slice_with_the_axis_dropped(self, tmp_path) -> None:
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        arr = self._arr()
+        with h5py.File(str(self._file(tmp_path, arr)), "r") as f:
+            out = read_h5_kspace(f["kspace"], 2)
+        assert out.shape == (2, 8, 8)
+        assert np.array_equal(out, arr[2])
+
+    def test_out_of_range_raises_naming_the_count(self, tmp_path) -> None:
+        """Planted violation: h5py's own error names no slice count."""
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        with (
+            h5py.File(str(self._file(tmp_path, self._arr())), "r") as f,
+            pytest.raises(IndexError, match=r"slice_index=4.*4 slice"),
+        ):
+            read_h5_kspace(f["kspace"], 4)
+
+    def test_negative_index_is_refused(self, tmp_path) -> None:
+        """A negative index would wrap to the last slice and read as success."""
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        with (
+            h5py.File(str(self._file(tmp_path, self._arr())), "r") as f,
+            pytest.raises(IndexError, match="slice_index=-1"),
+        ):
+            read_h5_kspace(f["kspace"], -1)
+
+    def test_non_integer_index_is_refused(self, tmp_path) -> None:
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        with (
+            h5py.File(str(self._file(tmp_path, self._arr())), "r") as f,
+            pytest.raises(TypeError),
+        ):
+            read_h5_kspace(f["kspace"], 1.5)  # type: ignore[arg-type]
+
+    def test_numpy_integer_index_is_accepted(self, tmp_path) -> None:
+        import h5py
+
+        from spectramr.data.io_strategies import read_h5_kspace
+
+        arr = self._arr()
+        with h5py.File(str(self._file(tmp_path, arr)), "r") as f:
+            assert np.array_equal(read_h5_kspace(f["kspace"], np.int64(1)), arr[1])
+
+    def test_fastmri_strategy_reads_one_slice_of_a_real_file(self, tmp_path) -> None:
+        """The slice-aware branch of ``FastMRIH5Strategy.load`` on disk, not a
+        mock: the slice, the dropped axis, and the stamped ``slice_index``."""
+        arr = self._arr()
+        path = self._file(tmp_path, arr)
+        whole = FastMRIH5Strategy().load(str(path))
+        assert tuple(whole["kspace"].shape) == (4, 2, 8, 8)
+        one = FastMRIH5Strategy().load(str(path), metadata={"slice_index": 3})
+        assert tuple(one["kspace"].shape) == (2, 8, 8)
+        assert np.array_equal(one["kspace"].numpy(), arr[3])
+        assert one["metadata"]["slice_index"] == 3
+
+    def test_fastmri_strategy_out_of_range_slice_raises(self, tmp_path) -> None:
+        path = self._file(tmp_path, self._arr())
+        with pytest.raises(IndexError, match="4 slice"):
+            FastMRIH5Strategy().load(str(path), metadata={"slice_index": 7})
+
+
+class TestLoadH5DatasetIfPresent:
+    """A strict named read: the dataset asked for, or ``None``, never another one."""
+
+    def test_returns_the_named_dataset(self, tmp_path) -> None:
+        h5py = pytest.importorskip("h5py")
+        from spectramr.data.io_strategies import load_h5_dataset_if_present
+
+        p = tmp_path / "case.h5"
+        mask = np.zeros((8, 8), dtype=bool)
+        mask[:, ::2] = True
+        with h5py.File(p, "w") as f:
+            f.create_dataset("kspace", data=np.ones((2, 8, 8), dtype=np.float32))
+            f.create_dataset("mask", data=mask)
+        out = load_h5_dataset_if_present(p, "mask")
+        assert out is not None and out.dtype == torch.bool
+        assert torch.equal(out, torch.from_numpy(mask))
+
+    def test_an_absent_key_is_none_even_when_other_keys_exist(self, tmp_path) -> None:
+        """The hazard ``load_tensor_from_file(h5_keys=...)`` has: it would return 'kspace'."""
+        h5py = pytest.importorskip("h5py")
+        from spectramr.data.io_strategies import load_h5_dataset_if_present, load_tensor_from_file
+
+        p = tmp_path / "case.h5"
+        with h5py.File(p, "w") as f:
+            f.create_dataset("kspace", data=np.ones((2, 8, 8), dtype=np.float32))
+        assert load_h5_dataset_if_present(p, "mask") is None
+        # The preference reader falls back to the first key; that is why it is
+        # the wrong tool for a sidecar.
+        assert load_tensor_from_file(p, h5_keys=("mask",)).shape == (2, 8, 8)
+
+    def test_a_non_hdf5_path_is_none_without_touching_the_file(self, tmp_path) -> None:
+        from spectramr.data.io_strategies import load_h5_dataset_if_present
+
+        assert load_h5_dataset_if_present(tmp_path / "does_not_exist.npy", "mask") is None
+        assert load_h5_dataset_if_present(tmp_path / "vol.nii.gz", "mask") is None
+
+    def test_float64_is_downcast_like_every_other_reader(self, tmp_path) -> None:
+        h5py = pytest.importorskip("h5py")
+        from spectramr.data.io_strategies import load_h5_dataset_if_present
+
+        p = tmp_path / "case.hdf5"
+        with h5py.File(p, "w") as f:
+            f.create_dataset("mask", data=np.ones((4, 4), dtype=np.float64))
+        out = load_h5_dataset_if_present(p, "mask")
+        assert out is not None and out.dtype == torch.float32

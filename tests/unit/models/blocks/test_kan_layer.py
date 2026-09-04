@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.kan_layer import KANMLP, KANLayer
+from spectramr.models.blocks.kan_layer import KANMLP, KANLayer
 
 
 class TestKANLayer:

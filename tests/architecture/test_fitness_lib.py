@@ -34,8 +34,8 @@ pytestmark = pytest.mark.architecture
 @pytest.mark.parametrize(
     ("entry", "expected"),
     [
-        ("src/mriforge/bootstrap.py (336 loc)", "src/mriforge/bootstrap.py"),
-        ("src/mriforge/bootstrap.py  # 336 loc", "src/mriforge/bootstrap.py"),
+        ("src/spectramr/bootstrap.py (336 loc)", "src/spectramr/bootstrap.py"),
+        ("src/spectramr/bootstrap.py  # 336 loc", "src/spectramr/bootstrap.py"),
         ("AdversarialRobustnessStrategy (depth 4)", "AdversarialRobustnessStrategy"),
         ("AdversarialRobustnessStrategy  # depth 4", "AdversarialRobustnessStrategy"),
         ("src/x.py::list_features (6 branches)", "src/x.py::list_features"),
@@ -55,22 +55,22 @@ def test_baseline_identity_keeps_signature_param_tuples_whole() -> None:
 def test_growing_a_baselined_file_is_not_a_new_violation(tmp_path, monkeypatch) -> None:
     """The exact #629 failure: bootstrap.py 336 -> 371 LOC must stay silent."""
     monkeypatch.setattr("tests.architecture._fitness_lib.BASELINE_DIR", tmp_path)
-    monkeypatch.delenv("MRIFORGE_UPDATE_ARCH_BASELINE", raising=False)
+    monkeypatch.delenv("SPECTRAMR_UPDATE_ARCH_BASELINE", raising=False)
     (tmp_path / "b.txt").write_text(
-        "# header\nsrc/mriforge/bootstrap.py  # 336 loc\n", encoding="utf-8"
+        "# header\nsrc/spectramr/bootstrap.py  # 336 loc\n", encoding="utf-8"
     )
 
-    assert ratchet("b.txt", {"src/mriforge/bootstrap.py (371 loc)"}) == set()
+    assert ratchet("b.txt", {"src/spectramr/bootstrap.py (371 loc)"}) == set()
 
 
 def test_a_previously_unseen_file_is_still_reported(tmp_path, monkeypatch) -> None:
     """The ratchet must not go blind — a new path is still a new violation."""
     monkeypatch.setattr("tests.architecture._fitness_lib.BASELINE_DIR", tmp_path)
-    monkeypatch.delenv("MRIFORGE_UPDATE_ARCH_BASELINE", raising=False)
-    (tmp_path / "b.txt").write_text("src/mriforge/bootstrap.py  # 336 loc\n", encoding="utf-8")
+    monkeypatch.delenv("SPECTRAMR_UPDATE_ARCH_BASELINE", raising=False)
+    (tmp_path / "b.txt").write_text("src/spectramr/bootstrap.py  # 336 loc\n", encoding="utf-8")
 
-    assert ratchet("b.txt", {"src/mriforge/brand_new.py (900 loc)"}) == {
-        "src/mriforge/brand_new.py (900 loc)"
+    assert ratchet("b.txt", {"src/spectramr/brand_new.py (900 loc)"}) == {
+        "src/spectramr/brand_new.py (900 loc)"
     }
 
 
@@ -79,10 +79,10 @@ def test_written_baseline_round_trips_through_the_ratchet(tmp_path, monkeypatch)
     monkeypatch.setattr("tests.architecture._fitness_lib.BASELINE_DIR", tmp_path)
     current = {"src/a.py (400 loc)", "src/b.py (500 loc)"}
 
-    monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
+    monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
     assert ratchet("b.txt", current) == set()
 
-    monkeypatch.delenv("MRIFORGE_UPDATE_ARCH_BASELINE")
+    monkeypatch.delenv("SPECTRAMR_UPDATE_ARCH_BASELINE")
     assert ratchet("b.txt", current) == set()
     # ...and still nothing new once the measurements move.
     assert ratchet("b.txt", {"src/a.py (401 loc)", "src/b.py (499 loc)"}) == set()
@@ -91,7 +91,7 @@ def test_written_baseline_round_trips_through_the_ratchet(tmp_path, monkeypatch)
 def test_write_baseline_demotes_the_measurement_to_a_comment(tmp_path, monkeypatch) -> None:
     """Storing ``# 400 loc`` is what makes the number visibly non-load-bearing."""
     monkeypatch.setattr("tests.architecture._fitness_lib.BASELINE_DIR", tmp_path)
-    monkeypatch.setenv("MRIFORGE_UPDATE_ARCH_BASELINE", "1")
+    monkeypatch.setenv("SPECTRAMR_UPDATE_ARCH_BASELINE", "1")
 
     ratchet("b.txt", {"src/a.py (400 loc)"}, header="h")
 

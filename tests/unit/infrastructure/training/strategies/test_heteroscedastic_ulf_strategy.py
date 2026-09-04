@@ -8,7 +8,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.training.strategies.heteroscedastic_ulf_strategy import (
+from spectramr.infrastructure.training.strategies.heteroscedastic_ulf_strategy import (
     HeteroscedasticULFStrategy,
     compute_heteroscedastic_ulf_losses,
 )
@@ -121,7 +121,7 @@ def test_gaussian_nll_metric_scores_noop_transformed_head() -> None:
     score (val_gaussian_nll is actually emitted, not the -14 PSNR fallback)."""
     import math
 
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     strat = object.__new__(HeteroscedasticULFStrategy)
     strat.config = types.SimpleNamespace(validation=None, data=None)
@@ -133,7 +133,7 @@ def test_gaussian_nll_metric_scores_noop_transformed_head() -> None:
 
 
 def test_strategy_registered_in_factory() -> None:
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "heteroscedastic_ulf" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
 
@@ -142,7 +142,7 @@ def test_hoult_sigma_clamped_to_data_scale() -> None:
     # Regression for the review's CRITICAL scale bug: at 0.1T the raw Hoult std is
     # ~19.2 (absolute units), meaningless on [0,1] data. It MUST be clamped to
     # max_sigma so the variance anchor stays on the data scale.
-    from mriforge.infrastructure.training.strategies.heteroscedastic_ulf_strategy import (
+    from spectramr.infrastructure.training.strategies.heteroscedastic_ulf_strategy import (
         _hoult_sigma_per_sample,
     )
 
@@ -172,7 +172,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(HeteroscedasticULFStrategy)

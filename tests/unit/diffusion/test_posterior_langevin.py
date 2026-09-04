@@ -16,7 +16,7 @@ class DummyScoreModel(nn.Module):
 class TestPosteriorLangevinEnsemble:
     @pytest.fixture
     def ensemble(self):
-        from mriforge.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
+        from spectramr.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
         score = DummyScoreModel()
         return PosteriorLangevinEnsemble(
             score_model=score, num_samples=4, num_steps=5, sde_type="vp",
@@ -53,7 +53,7 @@ class TestPosteriorLangevinEnsemble:
         assert result.samples.shape[0] == 2
 
     def test_ve_schedule(self):
-        from mriforge.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
+        from spectramr.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
         ensemble = PosteriorLangevinEnsemble(
             score_model=DummyScoreModel(), num_samples=2, num_steps=3, sde_type="ve",
         )
@@ -62,7 +62,7 @@ class TestPosteriorLangevinEnsemble:
         assert result.mean.shape == (1, 1, 8, 8)
 
     def test_batched_mode(self):
-        from mriforge.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
+        from spectramr.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
         ensemble = PosteriorLangevinEnsemble(
             score_model=DummyScoreModel(), num_samples=3, num_steps=3,
             sde_type="vp", batched=True,
@@ -72,7 +72,7 @@ class TestPosteriorLangevinEnsemble:
         assert result.samples.shape == (3, 2, 1, 8, 8)
 
     def test_with_dc_projector(self):
-        from mriforge.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
+        from spectramr.models.diffusion.posterior_langevin import PosteriorLangevinEnsemble
 
         class IdentityDC(nn.Module):
             def forward(self, x, kspace, mask):

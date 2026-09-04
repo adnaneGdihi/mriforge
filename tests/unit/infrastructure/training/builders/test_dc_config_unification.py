@@ -30,7 +30,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.builders.generator_kwargs import (
+from spectramr.infrastructure.builders.generator_kwargs import (
     resolve_generator_kwargs,
 )
 

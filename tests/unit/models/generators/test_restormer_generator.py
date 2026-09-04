@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generators.restormer_generator import (  # noqa: E402
+from spectramr.models.generators.restormer_generator import (  # noqa: E402
     RestormerGenerator,
 )
 

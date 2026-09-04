@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.conditioning import ConditioningConfig
+from spectramr.config.schemas.conditioning import ConditioningConfig
 
 
 def test_defaults_disabled_and_empty() -> None:
@@ -55,20 +55,20 @@ def test_frozen() -> None:
 
 def test_literal_sources_match_conditioner_registry() -> None:
     """The schema's allowed sources must equal the registered conditioner keys."""
-    import mriforge.models.conditioning  # noqa: F401  (populates registry)
-    from mriforge.models.conditioning.encoders import _CONDITIONER_REGISTRY
+    import spectramr.models.conditioning  # noqa: F401  (populates registry)
+    from spectramr.models.conditioning.encoders import _CONDITIONER_REGISTRY
 
     assert set(ConditioningConfig.allowed_sources()) == set(_CONDITIONER_REGISTRY)
 
 
 def test_model_schema_has_conditioning_default() -> None:
-    from mriforge.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
 
     assert ModelConfigSchema().conditioning.enabled is False
 
 
 def test_model_schema_accepts_conditioning_block() -> None:
-    from mriforge.config.schemas.model import ModelConfigSchema
+    from spectramr.config.schemas.model import ModelConfigSchema
 
     m = ModelConfigSchema(
         conditioning={"enabled": True, "sources": ["severity_vec"]}

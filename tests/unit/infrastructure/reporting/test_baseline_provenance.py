@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.reporting.metadata import baseline_provenance
-from mriforge.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
+from spectramr.infrastructure.reporting.metadata import baseline_provenance
+from spectramr.models.baselines import BaselineAdapter, CoilHandling, FFTNorm
 
 
 class _ExampleBaselineAdapter(BaselineAdapter):
@@ -63,7 +63,7 @@ def test_provenance_returns_none_for_absent_vendored_repo() -> None:
 
 def test_provenance_picks_up_vendored_cdiffmr_commit_sha() -> None:
     """When ``external/baselines/cdiffmr/`` is vendored, its commit SHA shows up."""
-    from mriforge.models.baselines.cdiffmr import CDiffMRBaseline
+    from spectramr.models.baselines.cdiffmr import CDiffMRBaseline
 
     prov = baseline_provenance(CDiffMRBaseline)
     # Vendored — must produce a 40-char hex SHA, not None.
@@ -74,7 +74,7 @@ def test_provenance_picks_up_vendored_cdiffmr_commit_sha() -> None:
 
 def test_provenance_picks_up_vendored_fdb_commit_sha() -> None:
     """When ``external/baselines/fdb/`` is vendored, its commit SHA shows up."""
-    from mriforge.models.baselines.fdb import FDBBaseline
+    from spectramr.models.baselines.fdb import FDBBaseline
 
     prov = baseline_provenance(FDBBaseline)
     assert prov["upstream_commit"] is not None

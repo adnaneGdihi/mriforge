@@ -13,7 +13,7 @@ import json
 
 import pytest
 
-from mriforge.data.datasets.quantitative_dataset import load_quantitative_manifest
+from spectramr.data.datasets.quantitative_dataset import load_quantitative_manifest
 
 
 def _good_records():
@@ -73,7 +73,7 @@ def test_load_volume_reads_dicom_directory(tmp_path, monkeypatch):
     """A DICOM-stack *directory* (NIST-MRF .IMA maps) routes through
     DicomStrategy and yields a [1, X, Y, Z] tensor."""
     torch = pytest.importorskip("torch")
-    from mriforge.data.datasets import quantitative_dataset as qd
+    from spectramr.data.datasets import quantitative_dataset as qd
 
     d = tmp_path / "MRF_7SLICE_5MM_T1_MAP_MASKED_0011"
     d.mkdir()
@@ -85,7 +85,7 @@ def test_load_volume_reads_dicom_directory(tmp_path, monkeypatch):
 
     monkeypatch.setattr(qd, "_load_volume", qd._load_volume)  # ensure real fn
     monkeypatch.setattr(
-        "mriforge.data.io_strategies.DicomStrategy", lambda: _FakeDicom()
+        "spectramr.data.io_strategies.DicomStrategy", lambda: _FakeDicom()
     )
     vol = qd._load_volume(d)
     assert vol.dim() == 4 and vol.shape[0] == 1  # [1, X, Y, Z]
@@ -131,7 +131,7 @@ def _corpus(tmp_path, *, self_paired: bool):
 
 
 def _cfg(**over):
-    from mriforge.config.schemas.data import QuantitativeConfigSchema
+    from spectramr.config.schemas.data import QuantitativeConfigSchema
 
     base = {"enabled": True, "target_maps": MAPS, "input_source": "maps"}
     base.update(over)
@@ -139,7 +139,7 @@ def _cfg(**over):
 
 
 def _dataset(tmp_path, *, self_paired=True, **over):
-    from mriforge.data.datasets.quantitative_dataset import QuantitativeMapDataset
+    from spectramr.data.datasets.quantitative_dataset import QuantitativeMapDataset
 
     return QuantitativeMapDataset(
         index=_corpus(tmp_path, self_paired=self_paired),
@@ -165,7 +165,7 @@ class TestTargetIsEmitted:
         # Give each map a distinct constant so the stacking order is visible.
         for value, m in enumerate(MAPS, start=1):
             np.save(index[0]["map_paths"][m], np.full((4, 4, 2), float(value), "float32"))
-        from mriforge.data.datasets.quantitative_dataset import QuantitativeMapDataset
+        from spectramr.data.datasets.quantitative_dataset import QuantitativeMapDataset
 
         subject = QuantitativeMapDataset(index=index, quantitative_config=_cfg())[0]
         target = subject["target"].data
@@ -239,13 +239,13 @@ class TestSelfPairingIsOrderInsensitive:
         return index
 
     def test_permuted_self_pairing_is_still_recognised(self, tmp_path):
-        from mriforge.data.datasets.quantitative_dataset import _input_is_the_maps
+        from spectramr.data.datasets.quantitative_dataset import _input_is_the_maps
 
         assert _input_is_the_maps(self._permuted_index(tmp_path)[0], MAPS)
 
     def test_permuted_maps_manifest_constructs(self, tmp_path):
         pytest.importorskip("torchio")
-        from mriforge.data.datasets.quantitative_dataset import QuantitativeMapDataset
+        from spectramr.data.datasets.quantitative_dataset import QuantitativeMapDataset
 
         ds = QuantitativeMapDataset(
             index=self._permuted_index(tmp_path),
@@ -255,7 +255,7 @@ class TestSelfPairingIsOrderInsensitive:
 
     def test_permuted_maps_manifest_is_still_rejected_under_contrasts(self, tmp_path):
         pytest.importorskip("torchio")
-        from mriforge.data.datasets.quantitative_dataset import QuantitativeMapDataset
+        from spectramr.data.datasets.quantitative_dataset import QuantitativeMapDataset
 
         with pytest.raises(ValueError, match="train the identity"):
             QuantitativeMapDataset(
@@ -270,7 +270,7 @@ class TestSelfPairingIsOrderInsensitive:
         torch = pytest.importorskip("torch")
         pytest.importorskip("torchio")
         np = pytest.importorskip("numpy")
-        from mriforge.data.datasets.quantitative_dataset import QuantitativeMapDataset
+        from spectramr.data.datasets.quantitative_dataset import QuantitativeMapDataset
 
         index = self._permuted_index(tmp_path)
         for value, m in enumerate(MAPS, start=1):

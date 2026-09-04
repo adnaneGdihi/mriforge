@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.koopman_operator import closure_residual_norm
+from spectramr.infrastructure.physics.koopman_operator import closure_residual_norm
 
 
 def test_closure_residual_normalization_matches_doc() -> None:

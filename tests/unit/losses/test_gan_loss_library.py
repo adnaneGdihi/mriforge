@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.gan_loss_library import (
+from spectramr.models.losses.gan_loss_library import (
     HingeLoss,
     LSGANLoss,
     RALSGANLoss,
@@ -19,7 +19,7 @@ from mriforge.models.losses.gan_loss_library import (
     WGANLoss,
     get_gan_loss,
 )
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.registry import create_loss
 
 # ---------------------------------------------------------------------------
 # Fixtures

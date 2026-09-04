@@ -10,11 +10,11 @@ import torchio as tio
 from pydantic import ValidationError
 from torch.utils.data import Dataset
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     LatentDiffusionConfigSchema,
 )
-from mriforge.data.builders.lazy_encode import LazyEncodeWrapper
+from spectramr.data.builders.lazy_encode import LazyEncodeWrapper
 
 
 # ── Schema validation ───────────────────────────────────────────────────────

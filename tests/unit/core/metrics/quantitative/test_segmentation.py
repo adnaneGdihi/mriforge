@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative.segmentation import (
+from spectramr.core.metrics.quantitative.segmentation import (
     LabelDiceBackend,
     SynthSegBackend,
     dice_score,

@@ -18,7 +18,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.universal_reconstruction_strategy import (
+from spectramr.infrastructure.training.strategies.universal_reconstruction_strategy import (
     UniversalReconstructionStrategy,
 )
 

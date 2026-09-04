@@ -15,7 +15,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
     ColdDiffusionInferenceStrategy,
 )
 
@@ -162,7 +162,7 @@ class TestStepCallback:
         assert all("step_callback" not in seen for seen in model.seen_kwargs)
 
     def test_trajectory_monitor_plugs_in_as_the_callback(self):
-        from mriforge.core.metrics.trajectory_metrics import TrajectoryMonitor
+        from spectramr.core.metrics.trajectory_metrics import TrajectoryMonitor
 
         measurement, mask = _measurement()
         monitor = TrajectoryMonitor(measurement, mask)
@@ -267,7 +267,7 @@ class _DDPLike(nn.Module):
 
 def _run(model, *, in_channels: int, config_in_channels=None, size: int = 16):
     """Drive two reverse steps and hand back the model."""
-    from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
         ColdDiffusionInferenceStrategy,
     )
 
@@ -321,8 +321,7 @@ def test_internal_dc_backbone_is_sampled_at_its_built_width(in_channels):
     _run(model, in_channels=in_channels, config_in_channels=in_channels)
     assert model.widths, "the model was never called"
     assert set(model.widths) == {in_channels}, (
-        f"internal-DC backbone sampled at {set(model.widths)}, not its built "
-        f"width {in_channels}"
+        f"internal-DC backbone sampled at {set(model.widths)}, not its built width {in_channels}"
     )
 
 
@@ -378,7 +377,7 @@ def test_a_stack_that_is_not_the_trained_width_raises():
     arrives, so without this guard a mismatch is squeezed through an untrained
     1x1 convolution and merely reconstructs badly (#1326).
     """
-    from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
         ColdDiffusionInferenceStrategy,
     )
 
@@ -390,7 +389,7 @@ def test_a_stack_that_is_not_the_trained_width_raises():
 @pytest.mark.unit
 def test_the_width_guard_stays_out_of_the_odd_channel_case():
     """An odd ``in_channels`` has no ``2 * C`` trained width to assert."""
-    from mriforge.infrastructure.inference.cold_diffusion_inference_strategy import (
+    from spectramr.infrastructure.inference.cold_diffusion_inference_strategy import (
         ColdDiffusionInferenceStrategy,
     )
 
@@ -406,7 +405,7 @@ def test_the_configured_estimation_method_reaches_the_sampler(monkeypatch):
     ``power_iter`` at this call site made the arm's declared method a silent
     no-op at sampling time (non-negotiable 8 / pitfall #15).
     """
-    from mriforge.infrastructure.inference import cold_diffusion_inference_strategy as mod
+    from spectramr.infrastructure.inference import cold_diffusion_inference_strategy as mod
 
     seen: list[tuple] = []
     real = mod.estimate_smaps
@@ -439,3 +438,75 @@ def test_the_configured_estimation_method_reaches_the_sampler(monkeypatch):
     # Calibration must crop to the dense center: sampling only ever sees the
     # undersampled input, so the aliased periphery would poison the maps.
     assert kwargs["acs_only"] is True
+
+
+# ---------------------------------------------------------------------------
+# physics.data_consistency.apply_at_predict: the loop already pins the
+# measured bins (``pred_x0 * (1 - m) + input * m`` at every step), so the base
+# hook must record that and not project a second time.
+# ---------------------------------------------------------------------------
+
+
+def _knob_on_strategy(monkeypatch, model=None):
+    from spectramr.infrastructure.inference import predict_data_consistency as pdc
+    from spectramr.models.capabilities import ModelCapabilities
+
+    caps = ModelCapabilities(output_domain="kspace")
+    monkeypatch.setitem(pdc.MODEL_REGISTRY, "stub_cold", {"capabilities": caps})
+    monkeypatch.setattr(pdc, "get_model_capabilities", lambda n: caps if n == "stub_cold" else None)
+    return ColdDiffusionInferenceStrategy(
+        model or _RecordingModel(),
+        torch.device("cpu"),
+        {
+            "training": {"diffusion": {"timesteps": 8, "sampling_steps": 4}},
+            "physics": {"data_consistency": {"apply_at_predict": True}},
+            "model": {"model_type": "stub_cold"},
+            "data": {"dataset_type": "kspace"},
+        },
+    )
+
+
+class TestPredictDataConsistencyLedger:
+    def test_the_loop_records_its_pin_and_the_hook_does_not_project_again(self, monkeypatch):
+        strategy = _knob_on_strategy(monkeypatch)
+        assert strategy.predict_dc is not None
+        projections: list[int] = []
+        real = strategy.predict_dc.project
+        monkeypatch.setattr(
+            strategy.predict_dc, "project", lambda *a, **k: projections.append(1) or real(*a, **k)
+        )
+        measurement, mask = _measurement()
+
+        out = strategy.infer(measurement.clone(), mask=mask, measured_kspace=measurement)
+
+        assert projections == [], "cold diffusion pinned the bins itself"
+        on = mask.bool().expand_as(out)
+        assert torch.equal(out[on], measurement[on]), "the loop's own pin holds on the output"
+        prov = strategy.predict_dc_provenance()
+        assert prov["applied_by"] == {"ColdDiffusionInferenceStrategy.run_inference": 1}
+        assert prov["skipped_already_applied"] == 1
+
+    def test_measured_kspace_never_reaches_the_model(self, monkeypatch):
+        """The loop forwards ``dict(kwargs)`` into the model; the base pops this one."""
+        model = _RecordingModel()
+        strategy = _knob_on_strategy(monkeypatch, model)
+        measurement, mask = _measurement()
+        strategy.infer(measurement.clone(), mask=mask, measured_kspace=measurement)
+        assert model.seen_kwargs
+        assert all("measured_kspace" not in seen for seen in model.seen_kwargs)
+
+    def test_without_a_mask_the_loop_pins_nothing_and_the_hook_raises(self, monkeypatch):
+        from spectramr.domain.exceptions import ConfigurationError
+
+        strategy = _knob_on_strategy(monkeypatch)
+        measurement, _mask = _measurement()
+        with pytest.raises(ConfigurationError, match="carries no mask"):
+            strategy.infer(measurement.clone(), measured_kspace=measurement)
+
+    def test_off_knob_is_byte_identical(self):
+        measurement, mask = _measurement()
+        strategy = _bare_strategy()
+        assert strategy.predict_dc is None
+        a = _bare_strategy().run_inference(measurement.clone(), mask=mask)
+        b = strategy.run_inference(measurement.clone(), mask=mask)
+        assert torch.equal(a, b)

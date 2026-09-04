@@ -13,17 +13,17 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.loop_state import LoopState
-from mriforge.infrastructure.training.strategies.bloch_synth_strategy import (
+from spectramr.infrastructure.training.loop_state import LoopState
+from spectramr.infrastructure.training.strategies.bloch_synth_strategy import (
     BlochSynthesisStrategy,
     _IntensitySoftSegmenter,
 )
-from mriforge.models.generators.relaxometry_encoder import RelaxometryEncoder
-from mriforge.models.losses.bloch_synth_losses import (
+from spectramr.models.generators.relaxometry_encoder import RelaxometryEncoder
+from spectramr.models.losses.bloch_synth_losses import (
     BlochSourceConsistencyLoss,
     DispersionPriorLoss,
 )
-from mriforge.models.losses.dice_anatomy_loss import SegmentationDiceLoss
+from spectramr.models.losses.dice_anatomy_loss import SegmentationDiceLoss
 
 
 def test_intensity_soft_segmenter_shape() -> None:
@@ -140,23 +140,21 @@ def test_validation_forward_requires_target_field() -> None:
 
 
 def test_segmentation_dice_declared_as_inline_managed() -> None:
-    from mriforge.infrastructure.training.strategies.bloch_synth_strategy import (
+    from spectramr.infrastructure.training.strategies.bloch_synth_strategy import (
         BlochSynthesisStrategy,
     )
-    from mriforge.infrastructure.training.strategies.loss_folding import (
-        inline_managed_with,
+    from spectramr.infrastructure.training.strategies.loss_folding import (
+        declared_inline_losses,
     )
 
-    extra = BlochSynthesisStrategy._INLINE_MANAGED_EXTRA
-    assert "segmentation_dice" in extra
+    inline = declared_inline_losses(BlochSynthesisStrategy)
+    assert inline is not None and "segmentation_dice" in inline
     # Declaring it on image_losses must not make the fold apply it a second time.
-    assert "segmentation_dice" in inline_managed_with(*extra)
+    assert BlochSynthesisStrategy.folds_image_losses is True
 
 
 def test_seg_consistency_alias_does_not_canonicalise_to_the_registered_name() -> None:
     """Why the rule had to be retargeted rather than the alias declared."""
-    from mriforge.models.losses.weights import canonical_loss_name
+    from spectramr.models.losses.weights import canonical_loss_name
 
-    assert canonical_loss_name("seg_consistency") != canonical_loss_name(
-        "segmentation_dice"
-    )
+    assert canonical_loss_name("seg_consistency") != canonical_loss_name("segmentation_dice")

@@ -1,6 +1,6 @@
 """Tests for ``ReportingSettings``.
 
-Targets ``mriforge.config.schemas.reporting``. v6.0 reporting-pipeline
+Targets ``spectramr.config.schemas.reporting``. v6.0 reporting-pipeline
 configuration: enable/disable, task preset, optional figure / table /
 metric / cohort overrides, fail-on-error policy.
 
@@ -17,8 +17,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.enums import ReportStyle, ReportTask
-from mriforge.config.schemas.reporting import ReportingSettings
+from spectramr.config.schemas.enums import ReportStyle, ReportTask
+from spectramr.config.schemas.reporting import ReportingSettings
 
 # ---------------------------------------------------------------------------
 # Enums (Task 2.1)
@@ -283,7 +283,7 @@ class TestPerCaseMetricsWasRenamed:
 
     def test_the_rename_is_registered_in_the_ssot(self):
         """RENAMES is where a reader looks up a retired spelling."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         record = RENAMES["reporting.per_case_metrics"]
         assert record.canonical == "reporting.per_call_metrics"

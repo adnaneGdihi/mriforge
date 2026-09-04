@@ -22,7 +22,7 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.stochastic_interpolants_strategy import (
+from spectramr.infrastructure.training.strategies.stochastic_interpolants_strategy import (
     StochasticInterpolantsStrategy,
 )
 

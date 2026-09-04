@@ -12,7 +12,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -141,7 +141,7 @@ def test_metric_channel_fid_still_strict_on_2_channel() -> None:
 def test_paradigm_required_pass_when_vae_field_present() -> None:
     cfg = types.SimpleNamespace(
         training=types.SimpleNamespace(
-            strategy_class="mriforge.infrastructure.training.strategies.vae.VAEStrategy",
+            strategy_class="spectramr.infrastructure.training.strategies.vae.VAEStrategy",
             training_mode="vae",
             vae=types.SimpleNamespace(kl_beta_end=1.0),
         )

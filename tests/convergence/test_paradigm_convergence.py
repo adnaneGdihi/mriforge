@@ -222,7 +222,7 @@ def _make_mock_config_convergence(strategy_key: str, device: torch.device) -> Ma
 def _make_env_convergence(
     strategy_key: str, device: torch.device
 ) -> MagicMock:
-    from mriforge.infrastructure.training.builders.optimization_builder import (
+    from spectramr.infrastructure.training.builders.optimization_builder import (
         OptimizationBuilder,
     )
 
@@ -325,7 +325,7 @@ def test_paradigm_convergence(paradigm: str) -> None:
 
     # --- strategy ---
     try:
-        from mriforge.infrastructure.training.strategy_factory import (  # noqa: PLC0415
+        from spectramr.infrastructure.training.strategy_factory import (  # noqa: PLC0415
             TrainingStrategyFactory,
         )
 

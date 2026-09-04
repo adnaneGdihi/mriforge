@@ -25,10 +25,10 @@ import torch
 # Constants
 # ---------------------------------------------------------------------------
 
-# The package moved to `src/mriforge/` in the 2026-05 refactor, so every path
+# The package moved to `src/spectramr/` in the 2026-05 refactor, so every path
 # built from this constant pointed at a directory that no longer exists and
 # the reads failed with FileNotFoundError before any assertion ran.
-SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "mriforge"
+SRC_ROOT = Path(__file__).resolve().parents[2] / "src" / "spectramr"
 
 # Files that were fixed in the audit (C1)
 FFT_FIXED_FILES = [
@@ -97,7 +97,7 @@ class TestNoRawFFTInModels:
         assert not hits, (
             f"{filepath.name} contains raw torch.fft calls: "
             + ", ".join(f"line {ln}: torch.fft.{name}" for ln, name in hits)
-            + " — use fft2c/ifft2c from mriforge.infrastructure.physics.fft_ops"
+            + " — use fft2c/ifft2c from spectramr.infrastructure.physics.fft_ops"
         )
 
     def test_no_raw_fft2_in_any_generator(self):
@@ -152,7 +152,7 @@ class TestFFTConsistencyInFixedGenerators:
 
     def test_fft_ifft_roundtrip(self):
         """fft2c → ifft2c should be identity (Parseval)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         x = torch.randn(2, 32, 32, dtype=torch.complex64)
         x_recon = ifft2c(fft2c(x))
@@ -160,7 +160,7 @@ class TestFFTConsistencyInFixedGenerators:
 
     def test_ifft2c_produces_centered_result(self):
         """ifft2c must produce DC-centered output (unlike raw torch.fft.ifft2)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         # Create a DC-only signal (all energy at center)
         img = torch.zeros(1, 32, 32, dtype=torch.complex64)
@@ -178,7 +178,7 @@ class TestFFTConsistencyInFixedGenerators:
 
     def test_parseval_energy_conservation(self):
         """Energy must be preserved through fft2c (Parseval's theorem)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c
 
         x = torch.randn(4, 64, 64, dtype=torch.complex64)
         kspace = fft2c(x)
@@ -198,10 +198,10 @@ class TestFFTConsistencyInFixedGenerators:
 
 
 class TestConfigLayerImportHierarchy:
-    """The config layer must not import from mriforge.models at module load time."""
+    """The config layer must not import from spectramr.models at module load time."""
 
     def test_config_builder_no_module_level_models_import(self):
-        """config_builder.py must not import from mriforge.models at the top level."""
+        """config_builder.py must not import from spectramr.models at the top level."""
         config_builder_path = SRC_ROOT / "config" / "config_builder.py"
         content = config_builder_path.read_text()
 
@@ -210,31 +210,31 @@ class TestConfigLayerImportHierarchy:
         violations = []
         for node in ast.iter_child_nodes(tree):
             if isinstance(node, ast.ImportFrom):
-                if node.module and node.module.startswith("mriforge.models"):
+                if node.module and node.module.startswith("spectramr.models"):
                     violations.append(
                         f"Line {node.lineno}: from {node.module} import ..."
                     )
             elif isinstance(node, ast.Import):
                 for alias in node.names:
-                    if alias.name.startswith("mriforge.models"):
+                    if alias.name.startswith("spectramr.models"):
                         violations.append(
                             f"Line {node.lineno}: import {alias.name}"
                         )
 
         assert not violations, (
-            "config_builder.py has top-level imports from mriforge.models "
+            "config_builder.py has top-level imports from spectramr.models "
             "(violates import hierarchy):\n"
             + "\n".join(f"  - {v}" for v in violations)
         )
 
     def test_config_builder_importable(self):
         """config_builder.py must be importable without errors."""
-        module = importlib.import_module("mriforge.config.config_builder")
+        module = importlib.import_module("spectramr.config.config_builder")
         assert hasattr(module, "ConfigBuilder")
 
     def test_config_builder_instantiable(self):
         """ConfigBuilder must be instantiable (lazy imports resolve)."""
-        from mriforge.config.config_builder import ConfigBuilder
+        from spectramr.config.config_builder import ConfigBuilder
 
         builder = ConfigBuilder()
         assert builder is not None
@@ -251,7 +251,7 @@ class TestStrategyRegistrationCompleteness:
 
     @pytest.fixture(scope="class")
     def factory_paths(self):
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
         return dict(TrainingStrategyFactory.STRATEGY_CLASS_PATHS)
 
@@ -271,7 +271,7 @@ class TestStrategyRegistrationCompleteness:
         module_path, class_name = path.rsplit(".", 1)
         module = importlib.import_module(module_path)
         cls = getattr(module, class_name)
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         assert issubclass(cls, BaseTrainingStrategy)
 
@@ -281,7 +281,7 @@ class TestStrategyRegistrationCompleteness:
         module_path, class_name = path.rsplit(".", 1)
         module = importlib.import_module(module_path)
         cls = getattr(module, class_name)
-        from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+        from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
         assert issubclass(cls, BaseTrainingStrategy)
 
@@ -361,11 +361,11 @@ class TestDeadStubFilesRemoved:
     def test_no_imports_reference_deleted_stubs(self):
         """No source file should import from deleted stub modules."""
         deleted_modules = [
-            "mriforge.models.html_report_generator",
-            "mriforge.models.stability_analysis",
-            "mriforge.models.weight_initialization",
-            "mriforge.infrastructure.services.generation_3d_services",
-            "mriforge.data.datasets.wrappers",
+            "spectramr.models.html_report_generator",
+            "spectramr.models.stability_analysis",
+            "spectramr.models.weight_initialization",
+            "spectramr.infrastructure.services.generation_3d_services",
+            "spectramr.data.datasets.wrappers",
         ]
         violations = []
         for py_file in SRC_ROOT.rglob("*.py"):
@@ -393,7 +393,7 @@ class TestModelsLayerFFTCompliance:
     """Scan the entire models/ directory for raw torch.fft.fft2/ifft2 usage.
 
     The models layer must delegate all 2D k-space FFT operations to
-    mriforge.infrastructure.physics.fft_ops (fft2c, ifft2c).
+    spectramr.infrastructure.physics.fft_ops (fft2c, ifft2c).
 
     Acceptable patterns in models/:
     - torch.fft.fftfreq (frequency grid computation)
@@ -417,7 +417,7 @@ class TestModelsLayerFFTCompliance:
         assert not violations, (
             "Raw torch.fft.fft2/ifft2/fftn/ifftn found in models/ layer:\n"
             + "\n".join(f"  - {v}" for v in violations)
-            + "\n\nUse fft2c/ifft2c from mriforge.infrastructure.physics.fft_ops"
+            + "\n\nUse fft2c/ifft2c from spectramr.infrastructure.physics.fft_ops"
         )
 """Unit tests for the symmetrize_kspace method after dead code removal."""
 
@@ -427,7 +427,7 @@ class TestSymmetrizeKspaceAfterFix:
 
     def test_symmetrize_produces_real_image(self):
         """Symmetrized k-space should IFFT to a real-valued image."""
-        from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
+        from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
 
         z = torch.randn(2, 2, 32, 32)
         sym_z = ColdDiffusion.symmetrize_kspace(z)
@@ -436,7 +436,7 @@ class TestSymmetrizeKspaceAfterFix:
         assert sym_z.shape == z.shape
 
         # IFFT of symmetrized k-space should have near-zero imaginary part
-        from mriforge.infrastructure.physics.fft_ops import ifft2c
+        from spectramr.infrastructure.physics.fft_ops import ifft2c
 
         z_c = torch.complex(sym_z[:, 0], sym_z[:, 1])
         img = ifft2c(z_c)
@@ -447,7 +447,7 @@ class TestSymmetrizeKspaceAfterFix:
 
     def test_symmetrize_preserves_batch_dim(self):
         """Batch dimension must be preserved."""
-        from mriforge.models.diffusion.cold_diffusion import ColdDiffusion
+        from spectramr.models.diffusion.cold_diffusion import ColdDiffusion
 
         for batch_size in [1, 4, 8]:
             z = torch.randn(batch_size, 2, 16, 16)
@@ -461,7 +461,7 @@ class TestESPIRiTBlockAfterFFTFix:
 
     def test_espirit_output_shape(self):
         """ESPIRiT block must produce correctly shaped sensitivity maps."""
-        from mriforge.models.generators.vf_architecture_blocks import DirichletESPIRiTBlock
+        from spectramr.models.generators.vf_architecture_blocks import DirichletESPIRiTBlock
 
         block = DirichletESPIRiTBlock(kernel_size=4)
         kspace = torch.randn(1, 4, 32, 32, dtype=torch.cfloat)
@@ -470,7 +470,7 @@ class TestESPIRiTBlockAfterFFTFix:
 
     def test_espirit_normalized_output(self):
         """ESPIRiT maps should be approximately unit-normalized (RSS ≈ 1)."""
-        from mriforge.models.generators.vf_architecture_blocks import DirichletESPIRiTBlock
+        from spectramr.models.generators.vf_architecture_blocks import DirichletESPIRiTBlock
 
         block = DirichletESPIRiTBlock(kernel_size=4)
         kspace = torch.randn(1, 4, 32, 32, dtype=torch.cfloat)
@@ -485,13 +485,13 @@ class TestSIRENVarNetAfterFFTFix:
 
     def test_siren_varnet_importable(self):
         """SIRENVarNetGenerator must be importable."""
-        from mriforge.models.generators.siren_varnet import SIRENVarNetGenerator
+        from spectramr.models.generators.siren_varnet import SIRENVarNetGenerator
 
         assert SIRENVarNetGenerator is not None
 
     def test_siren_varnet_forward_shape(self):
         """Forward pass must produce correct output shape."""
-        from mriforge.models.generators.siren_varnet import SIRENVarNetGenerator
+        from spectramr.models.generators.siren_varnet import SIRENVarNetGenerator
 
         model = SIRENVarNetGenerator(
             in_channels=2,
@@ -513,16 +513,16 @@ class TestPMAVarNetAfterFFTFix:
 
     def test_pma_varnet_importable(self):
         """PMAVarNet must be importable with fft2c/ifft2c."""
-        from mriforge.models.generators.pma_varnet import PMAVarNet
+        from spectramr.models.generators.pma_varnet import PMAVarNet
 
         assert PMAVarNet is not None
 
     def test_pma_varnet_imports_canonical_fft(self):
         """PMAVarNet module must import from fft_ops, not raw torch.fft."""
-        import mriforge.models.generators.pma_varnet as mod
+        import spectramr.models.generators.pma_varnet as mod
 
         source = Path(mod.__file__).read_text()
-        assert "from mriforge.infrastructure.physics.fft_ops import" in source
+        assert "from spectramr.infrastructure.physics.fft_ops import" in source
         assert "torch.fft.fft2" not in source
         assert "torch.fft.ifft2" not in source
 """Full test for config_builder lazy import pattern."""
@@ -548,10 +548,10 @@ class TestConfigBuilderLazyImport:
                     for alias in node.names:
                         top_level_imports.append(alias.name)
 
-        # None of the top-level imports should be from mriforge.models
-        models_imports = [i for i in top_level_imports if i.startswith("mriforge.models")]
+        # None of the top-level imports should be from spectramr.models
+        models_imports = [i for i in top_level_imports if i.startswith("spectramr.models")]
         assert not models_imports, (
-            f"Top-level imports from mriforge.models found: {models_imports}"
+            f"Top-level imports from spectramr.models found: {models_imports}"
         )
 
 

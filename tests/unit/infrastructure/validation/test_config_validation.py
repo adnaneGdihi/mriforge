@@ -14,8 +14,8 @@ because ``config/`` may not import ``infrastructure/`` (non-negotiable #5).
 
 import pytest
 
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
-from mriforge.infrastructure.validation.config_validation import (
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.infrastructure.validation.config_validation import (
     ConfigValidationError,
     ConfigValidator,
     _dispatchable_training_modes,
@@ -72,7 +72,7 @@ class TestDispatchableModes:
         messages = _validate_training_mode_dispatchable(
             _cfg(
                 "bogus_label",
-                strategy_class="mriforge.infrastructure.training.strategies.gan.GANTrainingStrategy",
+                strategy_class="spectramr.infrastructure.training.strategies.gan.GANTrainingStrategy",
             )
         )
         assert len(messages) == 1

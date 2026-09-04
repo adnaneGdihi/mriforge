@@ -1,4 +1,4 @@
-"""Tests for the manifest-vs-physical-tree dataset audit (:mod:`mriforge.data.eda.layout_audit`).
+"""Tests for the manifest-vs-physical-tree dataset audit (:mod:`spectramr.data.eda.layout_audit`).
 
 The audit reconciles each manifest's *declared* location against a ``tree -J`` snapshot of the
 real ``databases/`` directory. These tests pin the verdict for every physical state — present,
@@ -11,7 +11,7 @@ import json
 
 import pytest
 
-from mriforge.data.eda.layout_audit import (
+from spectramr.data.eda.layout_audit import (
     AuditResult,
     audit_entry,
     audit_manifests,
@@ -70,7 +70,7 @@ def test_classify_ext(name, kind):
 # --- tree_relative ------------------------------------------------------------------------
 @pytest.mark.parametrize("raw,expected", [
     ("databases/external/x/raw", "external/x/raw"),
-    ("/project/alpha_lab/researcher/mriforge/databases/m4raw/y", "m4raw/y"),
+    ("/project/alpha_lab/researcher/spectramr/databases/m4raw/y", "m4raw/y"),
     ("external/x", "external/x"),
     (None, None),
 ])
@@ -234,7 +234,7 @@ def test_format_markdown_groups_by_verdict(index):
         audit_entry(dataset_id="calgary", declared_root="external/calgary/raw",
                     status="not_downloaded", index=index),
     ]
-    from mriforge.data.eda.layout_audit import AuditReport
+    from spectramr.data.eda.layout_audit import AuditReport
     md = format_markdown(AuditReport(results=res))
     assert "# Dataset layout audit" in md
     assert "ABSENT" in md and "OK" in md

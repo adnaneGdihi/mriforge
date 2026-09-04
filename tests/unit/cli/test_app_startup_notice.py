@@ -1,4 +1,4 @@
-"""Tests for the CLI startup notice (:func:`mriforge.cli.app._emit_startup_notice`).
+"""Tests for the CLI startup notice (:func:`spectramr.cli.app._emit_startup_notice`).
 
 Performance follow-up (2026-06-19): a heavy verb (``train`` / ``audit`` / …) must
 import PyTorch + the model registry on first use — tens of seconds cold — during
@@ -6,7 +6,7 @@ which the terminal looked frozen ("after the import line it waits for a whole
 minute"). ``_emit_startup_notice`` prints one stderr line before dispatch so the
 wait is legible. These tests pin the gating: heavy verbs notify, light verbs and
 the batch-mode env switches stay silent, and the message never touches stdout
-(so ``audit --json | jq`` stays parseable). Importing ``mriforge.cli.app`` is
+(so ``audit --json | jq`` stays parseable). Importing ``spectramr.cli.app`` is
 torch-free, so this module runs anywhere.
 """
 
@@ -14,14 +14,14 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.cli.app import _HEAVY_STARTUP_COMMANDS, _emit_startup_notice
+from spectramr.cli.app import _HEAVY_STARTUP_COMMANDS, _emit_startup_notice
 
 
 @pytest.fixture(autouse=True)
 def _clear_quiet_env(monkeypatch):
     # Ensure neither suppression flag leaks in from the ambient environment.
-    monkeypatch.delenv("MRIFORGE_QUIET", raising=False)
-    monkeypatch.delenv("MRIFORGE_SUPPRESS_CLINICAL_WARNING", raising=False)
+    monkeypatch.delenv("SPECTRAMR_QUIET", raising=False)
+    monkeypatch.delenv("SPECTRAMR_SUPPRESS_CLINICAL_WARNING", raising=False)
     # Nor a torchrun rank from a surrounding job (see the rank tests below).
     monkeypatch.delenv("RANK", raising=False)
     monkeypatch.delenv("WORLD_SIZE", raising=False)
@@ -50,7 +50,7 @@ def test_light_or_missing_command_is_silent(command, capsys):
 
 
 @pytest.mark.parametrize(
-    "flag", ["MRIFORGE_QUIET", "MRIFORGE_SUPPRESS_CLINICAL_WARNING"]
+    "flag", ["SPECTRAMR_QUIET", "SPECTRAMR_SUPPRESS_CLINICAL_WARNING"]
 )
 def test_env_flag_suppresses_even_for_heavy_command(flag, monkeypatch, capsys):
     monkeypatch.setenv(flag, "1")
@@ -83,7 +83,7 @@ def test_rank_zero_still_notifies(monkeypatch, capsys):
 
 
 def test_light_verb_short_circuits_before_the_rank_lookup(monkeypatch, capsys):
-    """The rank check must not drag ``mriforge.core`` (torch) onto a light path.
+    """The rank check must not drag ``spectramr.core`` (torch) onto a light path.
 
     ``_HEAVY_STARTUP_COMMANDS`` is tested first precisely so a lightweight verb
     returns before the import. Pinned because reordering the gates would be an
@@ -95,7 +95,7 @@ def test_light_verb_short_circuits_before_the_rank_lookup(monkeypatch, capsys):
 
     src = inspect.getsource(_emit_startup_notice)
     heavy_check = src.index("_HEAVY_STARTUP_COMMANDS")
-    rank_import = src.index("from mriforge.core import env")
+    rank_import = src.index("from spectramr.core import env")
     assert heavy_check < rank_import, (
         "the heavy-verb guard must run before the rank lookup imports core.env"
     )
@@ -106,7 +106,7 @@ def test_light_verb_short_circuits_before_the_rank_lookup(monkeypatch, capsys):
 def test_heavy_set_matches_registered_subcommands():
     # Guard against drift: every name in the heavy set must be a real subcommand
     # the parser registers, so a rename cannot silently make the notice dead.
-    from mriforge.cli.app import build_parser
+    from spectramr.cli.app import build_parser
 
     parser = build_parser()
     subact = next(

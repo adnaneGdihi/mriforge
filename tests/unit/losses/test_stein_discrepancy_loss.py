@@ -12,11 +12,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.stein_discrepancy_loss import SteinDiscrepancyLoss
+from spectramr.models.losses.stein_discrepancy_loss import SteinDiscrepancyLoss
 
 
 def test_registered_in_loss_registry() -> None:
-    from mriforge.models.losses.registry import LossRegistry, create_loss
+    from spectramr.models.losses.registry import LossRegistry, create_loss
 
     assert "stein_discrepancy" in LossRegistry.list_available()
     loss = create_loss("stein_discrepancy")
@@ -24,14 +24,14 @@ def test_registered_in_loss_registry() -> None:
 
 
 def test_aliases_resolve() -> None:
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.registry import create_loss
 
     for alias in ("ksd", "kernelized_stein_discrepancy"):
         assert isinstance(create_loss(alias), SteinDiscrepancyLoss)
 
 
 def test_domain_metadata_is_image() -> None:
-    from mriforge.models.losses.registry import LossRegistry
+    from spectramr.models.losses.registry import LossRegistry
 
     assert LossRegistry._loss_domains["stein_discrepancy"]["domain"] == "image"
 
@@ -71,7 +71,7 @@ def test_discrepancy_larger_when_distributions_differ() -> None:
 
 def test_ksd_machinery_is_exercised(monkeypatch: pytest.MonkeyPatch) -> None:
     """The real kernelised_stein_discrepancy U-statistic must be called."""
-    import mriforge.models.losses.stein_discrepancy_loss as mod
+    import spectramr.models.losses.stein_discrepancy_loss as mod
 
     calls = {"n": 0}
     real = mod.kernelised_stein_discrepancy

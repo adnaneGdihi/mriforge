@@ -16,7 +16,7 @@ import pytest
 import torch
 
 # Test fixtures
-from mriforge.infrastructure.services.metrics_tracker import MetricsTracker
+from spectramr.infrastructure.services.metrics_tracker import MetricsTracker
 
 
 class MockTrainingStrategy:

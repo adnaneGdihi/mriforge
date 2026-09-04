@@ -15,7 +15,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.blocks.se3_lie_algebra_mamba import (
+from spectramr.models.blocks.se3_lie_algebra_mamba import (
     DEFAULT_BIO_HARMONIC_FREQS,
     SE3LieAlgebraMambaBlock,
 )
@@ -242,7 +242,7 @@ def test_deterministic_seeding() -> None:
 
 def test_uses_framework_mamba_primitive(block: SE3LieAlgebraMambaBlock) -> None:
     """Integration: the scalar SSM is the framework MambaBlock primitive."""
-    from mriforge.models.blocks.mamba_block import MambaBlock
+    from spectramr.models.blocks.mamba_block import MambaBlock
 
     assert isinstance(block.scalar_ssm, MambaBlock)
 

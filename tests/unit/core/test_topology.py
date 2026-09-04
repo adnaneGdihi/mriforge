@@ -24,7 +24,7 @@ from dataclasses import FrozenInstanceError
 
 import pytest
 
-from mriforge.core.topology import (
+from spectramr.core.topology import (
     EXECUTION_MODES,
     RunTopology,
     TopologyResolutionError,
@@ -132,8 +132,8 @@ def test_slurm_nnodes_outranks_the_derived_division():
 @pytest.mark.parametrize(
     ("env", "exists", "expected", "source"),
     [
-        ({"MRIFORGE_LAUNCH_BACKEND": "slurm"}, lambda p: False, "slurm",
-         "env:MRIFORGE_LAUNCH_BACKEND"),
+        ({"SPECTRAMR_LAUNCH_BACKEND": "slurm"}, lambda p: False, "slurm",
+         "env:SPECTRAMR_LAUNCH_BACKEND"),
         ({"SLURM_JOB_ID": "1"}, lambda p: False, "slurm", "env:SLURM_JOB_ID"),
         ({"APPTAINER_CONTAINER": "/x.sif"}, lambda p: False, "apptainer",
          "env:APPTAINER_CONTAINER"),
@@ -151,9 +151,9 @@ def test_execution_mode_covers_every_launcher(env, exists, expected, source):
 
 
 def test_launcher_declaration_outranks_a_container_probe():
-    """``mriforge launch`` said slurm; running inside a container must not relabel it."""
+    """``spectramr launch`` said slurm; running inside a container must not relabel it."""
     t = _resolve(
-        {"MRIFORGE_LAUNCH_BACKEND": "slurm", "APPTAINER_CONTAINER": "/x.sif"},
+        {"SPECTRAMR_LAUNCH_BACKEND": "slurm", "APPTAINER_CONTAINER": "/x.sif"},
         exists=lambda p: p == "/.dockerenv",
     )
     assert t.execution_mode == "slurm"
@@ -170,7 +170,7 @@ def test_launcher_declaration_outranks_a_container_probe():
         {"WORLD_SIZE": "2", "RANK": "5"},  # rank outside its world
         {"WORLD_SIZE": "2", "LOCAL_WORLD_SIZE": "4"},  # node bigger than the job
         {"WORLD_SIZE": "4", "LOCAL_WORLD_SIZE": "2", "LOCAL_RANK": "3"},
-        {"MRIFORGE_LAUNCH_BACKEND": "kubernetes"},  # not in the closed set
+        {"SPECTRAMR_LAUNCH_BACKEND": "kubernetes"},  # not in the closed set
     ],
 )
 def test_inconsistent_environment_raises(env):
@@ -320,7 +320,7 @@ def test_the_default_gpu_probe_is_the_core_one():
     """
     from unittest.mock import patch
 
-    with patch("mriforge.core.topology.visible_gpu_count", return_value=7) as probe:
+    with patch("spectramr.core.topology.visible_gpu_count", return_value=7) as probe:
         t = resolve_run_topology({"WORLD_SIZE": "1", "RANK": "0"}, cpu_probe=_probe(16))
     probe.assert_called_once_with()
     assert t.visible_gpus == 7

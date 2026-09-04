@@ -6,8 +6,8 @@ from types import SimpleNamespace
 
 # Import the model so it is registered when the single-model guard queries the
 # registry (get_model_class).
-import mriforge.models.generators.field_cocycle_generator  # noqa: F401
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+import spectramr.models.generators.field_cocycle_generator  # noqa: F401
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 def _checker() -> ConfigHealthChecker:

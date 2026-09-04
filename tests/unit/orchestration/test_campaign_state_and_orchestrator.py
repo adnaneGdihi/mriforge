@@ -26,20 +26,20 @@ from pathlib import Path
 import pytest
 import yaml
 
-from mriforge.infrastructure.orchestration.ablation_config_generator import (
+from spectramr.infrastructure.orchestration.ablation_config_generator import (
     AblationConfigGenerator,
     _get_nested,
     _set_nested,
 )
-from mriforge.infrastructure.orchestration.campaign_state import (
+from spectramr.infrastructure.orchestration.campaign_state import (
     CampaignState,
     ExperimentStatus,
 )
-from mriforge.infrastructure.orchestration.slurm_backend import (
+from spectramr.infrastructure.orchestration.slurm_backend import (
     JobStatus,
     SLURMBackend,
 )
-from mriforge.config.schemas.campaign import AblationAxisSchema
+from spectramr.config.schemas.campaign import AblationAxisSchema
 
 # ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -325,7 +325,7 @@ class TestCampaignOrchestratorStateMachine:
             [str(tmp_path / "arm_0.yaml"), str(tmp_path / "arm_1.yaml")],
         )
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -345,7 +345,7 @@ class TestCampaignOrchestratorStateMachine:
             [str(tmp_path / "arm_0.yaml"), str(tmp_path / "arm_1_MISSING.yaml")],
         )
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -363,7 +363,7 @@ class TestCampaignOrchestratorStateMachine:
             tmp_path, [str(tmp_path / "arm_0.yaml")]
         )
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -383,7 +383,7 @@ class TestCampaignOrchestratorStateMachine:
             [str(tmp_path / "arm_0.yaml"), str(tmp_path / "arm_1.yaml")],
         )
 
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
 
@@ -403,7 +403,7 @@ class TestCampaignOrchestratorStateMachine:
 
     def test_topological_sort_linear(self) -> None:
         """_topological_sort returns a linear chain A → B → C in correct order."""
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
         from types import SimpleNamespace
@@ -419,7 +419,7 @@ class TestCampaignOrchestratorStateMachine:
 
     def test_topological_sort_cycle_raises(self) -> None:
         """A cycle in stage_group dependencies raises ValueError."""
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
         from types import SimpleNamespace
@@ -433,7 +433,7 @@ class TestCampaignOrchestratorStateMachine:
             CampaignOrchestrator._topological_sort(groups)
 
     def test_selector_matches_name(self) -> None:
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
         from types import SimpleNamespace
@@ -443,7 +443,7 @@ class TestCampaignOrchestratorStateMachine:
         assert not CampaignOrchestrator._selector_matches("name=other_exp", exp)
 
     def test_selector_matches_role(self) -> None:
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
         from types import SimpleNamespace
@@ -453,7 +453,7 @@ class TestCampaignOrchestratorStateMachine:
         assert not CampaignOrchestrator._selector_matches("role=variant", exp)
 
     def test_selector_invalid_form_raises(self) -> None:
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             CampaignOrchestrator,
         )
         from types import SimpleNamespace
@@ -464,7 +464,7 @@ class TestCampaignOrchestratorStateMachine:
 
     def test_parse_elapsed_hms(self) -> None:
         """_parse_elapsed handles HH:MM:SS format."""
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             _parse_elapsed,
         )
 
@@ -473,7 +473,7 @@ class TestCampaignOrchestratorStateMachine:
 
     def test_parse_elapsed_day_hms(self) -> None:
         """_parse_elapsed handles D-HH:MM:SS format."""
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             _parse_elapsed,
         )
 
@@ -481,7 +481,7 @@ class TestCampaignOrchestratorStateMachine:
         assert _parse_elapsed("2-12:00:00") == pytest.approx(2 * 86400 + 12 * 3600)
 
     def test_parse_elapsed_invalid_returns_none(self) -> None:
-        from mriforge.infrastructure.orchestration.campaign_orchestrator import (
+        from spectramr.infrastructure.orchestration.campaign_orchestrator import (
             _parse_elapsed,
         )
 

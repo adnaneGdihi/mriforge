@@ -1,12 +1,12 @@
-"""Tests for the NRMetricConfig schema (mriforge.config.schemas.nr_metrics)."""
+"""Tests for the NRMetricConfig schema (spectramr.config.schemas.nr_metrics)."""
 
 from __future__ import annotations
 
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.metrics import MetricsConfigSchema
-from mriforge.config.schemas.nr_metrics import NRMetricConfig
+from spectramr.config.schemas.metrics import MetricsConfigSchema
+from spectramr.config.schemas.nr_metrics import NRMetricConfig
 
 
 def test_defaults() -> None:

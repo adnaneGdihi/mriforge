@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.cli.regulatory import _cmd_bundle, _cmd_status, _cmd_verify, main
+from spectramr.cli.regulatory import _cmd_bundle, _cmd_status, _cmd_verify, main
 
 
 class _NS:
@@ -98,10 +98,10 @@ def test_main_dispatches_subcommands(tmp_path) -> None:
     assert rc == 0
 
 
-def test_regulatory_attached_to_top_level_mriforge_cli(tmp_path, monkeypatch) -> None:
-    """The ``regulatory`` subcommand is reachable via the ``mriforge``
-    console-script (i.e. ``mriforge.cli.app:main``), not only via
-    ``python -m mriforge.cli.regulatory``.
+def test_regulatory_attached_to_top_level_spectramr_cli(tmp_path, monkeypatch) -> None:
+    """The ``regulatory`` subcommand is reachable via the ``spectramr``
+    console-script (i.e. ``spectramr.cli.app:main``), not only via
+    ``python -m spectramr.cli.regulatory``.
 
     Regression for the 2026-05-28 registration-audit gap:
     ``regulatory.py`` was imported and unit-tested but never attached
@@ -113,18 +113,18 @@ def test_regulatory_attached_to_top_level_mriforge_cli(tmp_path, monkeypatch) ->
 
     monkeypatch.setattr(
         "sys.argv",
-        ["mriforge", "regulatory", "status", "--badge-path", str(badge)],
+        ["spectramr", "regulatory", "status", "--badge-path", str(badge)],
     )
-    from mriforge.cli.app import main as app_main
+    from spectramr.cli.app import main as app_main
 
     rc = app_main()
     assert rc == 0
 
 
 def test_regulatory_subcommand_appears_in_help(capsys, monkeypatch) -> None:
-    """``mriforge --help`` must advertise the ``regulatory`` subcommand."""
-    monkeypatch.setattr("sys.argv", ["mriforge", "--help"])
-    from mriforge.cli.app import main as app_main
+    """``spectramr --help`` must advertise the ``regulatory`` subcommand."""
+    monkeypatch.setattr("sys.argv", ["spectramr", "--help"])
+    from spectramr.cli.app import main as app_main
 
     with pytest.raises(SystemExit) as exc:
         app_main()

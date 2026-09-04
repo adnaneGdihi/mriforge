@@ -1,6 +1,6 @@
 r"""Tests for ``CalibratedHallucinationDetector``.
 
-Targets ``mriforge.infrastructure.calibration.chd`` — ULF radiologist-
+Targets ``spectramr.infrastructure.calibration.chd`` — ULF radiologist-
 acceptance roadmap PR-21 (R2).
 
 Plan acceptance criterion (§"Tests"):
@@ -24,7 +24,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.chd import (
+from spectramr.infrastructure.calibration.chd import (
     CalibratedHallucinationDetector,
     dkw_slack,
 )

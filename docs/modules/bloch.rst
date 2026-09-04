@@ -3,7 +3,7 @@
 Differentiable Bloch Simulation
 ===============================
 
-**File Path:** ``src/infrastructure/physics/bloch_simulation.py``
+**File Path:** ``src/spectramr/infrastructure/physics/bloch_simulation.py``
 
 High-Level Logic
 ----------------
@@ -29,6 +29,6 @@ This formulation is differentiable with respect to :math:`M_0, T_1, T_2`.
 Class Breakdown
 ---------------
 
-.. autoclass:: mriforge.infrastructure.physics.bloch_simulation.DifferentiableBlochSimulator
+.. autoclass:: spectramr.infrastructure.physics.bloch_simulation.DifferentiableBlochSimulator
    :members:
    :undoc-members:

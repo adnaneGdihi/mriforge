@@ -24,7 +24,7 @@ def test_siren_gradient_flow():
     print("\n=== Testing SIREN Gradient Flow ===")
 
     try:
-        from mriforge.models.blocks.pinn_nerf_block import PINNNeRFBlock
+        from spectramr.models.blocks.pinn_nerf_block import PINNNeRFBlock
     except ImportError as e:
         print(f"  ⚠️  Could not import PINNNeRFBlock: {e}")
         return None
@@ -83,7 +83,7 @@ def test_maxwell_regularizer():
     print("\n=== Testing Maxwell Regularizer ===")
 
     try:
-        from mriforge.infrastructure.physics.pinn import MaxwellRegularizer
+        from spectramr.infrastructure.physics.pinn import MaxwellRegularizer
     except ImportError as e:
         print(f"  ⚠️  Could not import MaxwellRegularizer: {e}")
         return None
@@ -120,7 +120,7 @@ def test_siren_activation():
     print("\n=== Testing SIREN Activation Range ===")
 
     try:
-        from mriforge.models.blocks.pinn_nerf_block import Sine
+        from spectramr.models.blocks.pinn_nerf_block import Sine
     except ImportError as e:
         print(f"  ⚠️  Could not import Sine: {e}")
         return None

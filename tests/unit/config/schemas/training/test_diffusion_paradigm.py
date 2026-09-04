@@ -15,11 +15,11 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.enums import (
+from spectramr.config.schemas.enums import (
     DIFFUSION_PARADIGM_ALIASES,
     DiffusionParadigm,
 )
-from mriforge.config.schemas.training.base import (
+from spectramr.config.schemas.training.base import (
     ChiSquareParams,
     ColdParams,
     DDIMParams,

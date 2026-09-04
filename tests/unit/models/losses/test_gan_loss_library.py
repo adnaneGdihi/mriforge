@@ -1,6 +1,6 @@
 """Tests for adversarial loss strategies.
 
-Targets ``mriforge.models.losses.gan_loss_library``. Each adversarial loss
+Targets ``spectramr.models.losses.gan_loss_library``. Each adversarial loss
 strategy implements ``compute_generator_loss`` + ``compute_discriminator_loss``.
 
 Categories:
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.gan_loss_library import (
+from spectramr.models.losses.gan_loss_library import (
     AdversarialLossStrategy,
     HingeLoss,
     LSGANLoss,
@@ -169,7 +169,7 @@ def test_hinge_g_loss_lower_for_higher_d_output() -> None:
 
 def test_gan_strategies_registered() -> None:
     """All four strategies are in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     available = set(list_available())
     expected = {"gan_standard", "gan_lsgan", "gan_wgan", "gan_hinge"}
@@ -185,7 +185,7 @@ def test_gradient_penalty_name_no_longer_aliases_r1() -> None:
     removed so the ambiguous name fails loud instead of returning the wrong
     regulariser.
     """
-    from mriforge.models.losses.registry import (
+    from spectramr.models.losses.registry import (
         LossRegistry,
         create_loss,
         is_registered,
@@ -208,8 +208,8 @@ def test_r1_and_wgan_gp_are_numerically_distinct() -> None:
     """
     import torch.nn as nn
 
-    from mriforge.models.losses.gan_loss_library import gradient_penalty_loss
-    from mriforge.models.losses.registry import create_loss
+    from spectramr.models.losses.gan_loss_library import gradient_penalty_loss
+    from spectramr.models.losses.registry import create_loss
 
     torch.manual_seed(0)
 
@@ -237,7 +237,7 @@ def test_r1_and_wgan_gp_are_numerically_distinct() -> None:
 
 
 def _composite(**overrides):
-    from mriforge.models.losses.gan_loss_library import CompositeGANLoss
+    from spectramr.models.losses.gan_loss_library import CompositeGANLoss
 
     kwargs = {
         "adv_strategy": StandardGANLoss(),
@@ -254,7 +254,7 @@ def _composite(**overrides):
 
 def test_composite_positive_ssim_lambdas_build_real_sublosses() -> None:
     """lambda_ssim/lambda_ms_ssim > 0 construct real, non-None sub-losses."""
-    from mriforge.models.losses.ssim_loss import MSSSIMLoss, SSIMLoss
+    from spectramr.models.losses.ssim_loss import MSSSIMLoss, SSIMLoss
 
     loss = _composite(lambda_ssim=0.5, lambda_ms_ssim=0.3)
     assert isinstance(loss.ssim_loss, SSIMLoss)
@@ -266,7 +266,7 @@ def test_composite_positive_ssim_lambdas_build_real_sublosses() -> None:
 
 def test_composite_positive_lpips_lambda_builds_non_none(monkeypatch) -> None:
     """lambda_lpips > 0 wires a non-None LPIPS loss (stubbed: no weights DL)."""
-    import mriforge.models.losses.lpips_loss as lpips_mod
+    import spectramr.models.losses.lpips_loss as lpips_mod
 
     class _StubLPIPS(torch.nn.Module):
         def __init__(self, net: str = "alex", verbose: bool = False) -> None:
@@ -293,7 +293,7 @@ def test_composite_ssim_import_failure_raises(monkeypatch) -> None:
     """Simulated ssim_loss ImportError must raise, not zero lambda_ssim."""
     import sys
 
-    monkeypatch.setitem(sys.modules, "mriforge.models.losses.ssim_loss", None)
+    monkeypatch.setitem(sys.modules, "spectramr.models.losses.ssim_loss", None)
     with pytest.raises(ImportError, match="lambda_ssim"):
         _composite(lambda_ssim=0.5)
 
@@ -301,7 +301,7 @@ def test_composite_ssim_import_failure_raises(monkeypatch) -> None:
 def test_composite_ms_ssim_import_failure_raises(monkeypatch) -> None:
     import sys
 
-    monkeypatch.setitem(sys.modules, "mriforge.models.losses.ssim_loss", None)
+    monkeypatch.setitem(sys.modules, "spectramr.models.losses.ssim_loss", None)
     with pytest.raises(ImportError, match="lambda_ms_ssim"):
         _composite(lambda_ms_ssim=0.3)
 
@@ -312,6 +312,6 @@ def test_composite_lpips_import_failure_raises_with_install_hint(
     """Simulated lpips ImportError must raise with an install hint."""
     import sys
 
-    monkeypatch.setitem(sys.modules, "mriforge.models.losses.lpips_loss", None)
+    monkeypatch.setitem(sys.modules, "spectramr.models.losses.lpips_loss", None)
     with pytest.raises(ImportError, match="pip install lpips"):
         _composite(lambda_lpips=0.8)

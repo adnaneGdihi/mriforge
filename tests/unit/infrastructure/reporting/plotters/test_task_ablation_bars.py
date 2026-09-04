@@ -9,7 +9,7 @@ matplotlib.use("Agg", force=True)  # headless: never open a display backend
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting.plotters import get, list_available, task_ablation_bars
+from spectramr.infrastructure.reporting.plotters import get, list_available, task_ablation_bars
 
 
 def _frame() -> pd.DataFrame:

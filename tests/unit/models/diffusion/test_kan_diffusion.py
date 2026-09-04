@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.diffusion.diffusion_parts.kan_diffusion import DiffusionKAN
+from spectramr.models.diffusion.diffusion_parts.kan_diffusion import DiffusionKAN
 
 
 class TestKANDiffusion:

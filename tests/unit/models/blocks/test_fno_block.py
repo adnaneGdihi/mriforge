@@ -1,6 +1,6 @@
 """Tests for ``SpectralConv2d`` and ``FNOBlock``.
 
-Targets ``mriforge.models.blocks.fno_block``.
+Targets ``spectramr.models.blocks.fno_block``.
 
 Categories:
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.blocks.fno_block import FNOBlock, SpectralConv2d
+from spectramr.models.blocks.fno_block import FNOBlock, SpectralConv2d
 
 
 # ---------------------------------------------------------------------------

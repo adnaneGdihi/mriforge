@@ -1,4 +1,4 @@
-"""Unit tests for mriforge/tools/index_datasets.py.
+"""Unit tests for spectramr/tools/index_datasets.py.
 
 Regression coverage for the header-parse fix: the ISMRMRD-header block used to
 probe a nonexistent ``f.dataset`` attribute, which raised ``AttributeError`` on
@@ -24,7 +24,7 @@ import h5py
 import numpy as np
 import pytest
 
-from mriforge.tools.index_datasets import create_index
+from spectramr.tools.index_datasets import create_index
 
 pytestmark = pytest.mark.unit
 
@@ -66,7 +66,7 @@ def test_create_index_does_not_raise_attribute_error_and_records_entry(tmp_path)
     # Capture everything the tool prints so we can prove no file was skipped
     # due to AttributeError (the old bug path printed "Skipping ...: ...").
     with patch(
-        "mriforge.tools.index_datasets.print",
+        "spectramr.tools.index_datasets.print",
         side_effect=lambda *a, **k: captured.append(" ".join(str(x) for x in a)),
     ):
         # Must not raise.
@@ -103,7 +103,7 @@ def test_create_index_parses_ismrmrd_header_metadata(tmp_path):
     _make_h5(data_root / "sample.h5", with_xml=True)
     out = tmp_path / "index.pkl"
 
-    with patch("mriforge.tools.index_datasets.print"):
+    with patch("spectramr.tools.index_datasets.print"):
         create_index(
             data_root=str(data_root),
             output_path=str(out),
@@ -133,7 +133,7 @@ def test_create_index_kspace_without_xml_still_indexed(tmp_path):
 
     captured: list[str] = []
     with patch(
-        "mriforge.tools.index_datasets.print",
+        "spectramr.tools.index_datasets.print",
         side_effect=lambda *a, **k: captured.append(" ".join(str(x) for x in a)),
     ):
         create_index(

@@ -34,10 +34,10 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.config.schemas.training.privacy import PrivacyConfig
-from mriforge.domain.exceptions import ConfigurationError
-from mriforge.infrastructure.training.strategies.federated_dp_conformal_strategy import (
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.config.schemas.training.privacy import PrivacyConfig
+from spectramr.domain.exceptions import ConfigurationError
+from spectramr.infrastructure.training.strategies.federated_dp_conformal_strategy import (
     FederatedDPConformalULFStrategy,
 )
 from tests.utils.config_block_stub import block_stub

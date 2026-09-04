@@ -24,7 +24,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.layers.kan.kan_convs.wav_kan import (
+from spectramr.models.layers.kan.kan_convs.wav_kan import (
     WavKANConv2DLayer,
     WavKANConvNDLayer,
 )

@@ -16,7 +16,7 @@ pytest.importorskip("torch")
 
 import torch
 
-from mriforge.infrastructure.validation.operator_id_probe import operator_id_forward_probe
+from spectramr.infrastructure.validation.operator_id_probe import operator_id_forward_probe
 
 
 def _config(operator_id: dict | None, patch=(16, 16, 1)):
@@ -68,8 +68,8 @@ def test_probe_detects_broken_adjoint(monkeypatch):
     # Inject a generator whose adjoint is wrong; the probe must catch it.
     # The probe does `from ...degradation_generators import build_generators`
     # at call time, so patching the source module's attribute is what takes.
-    import mriforge.infrastructure.physics.degradation_generators as gen_mod
-    from mriforge.infrastructure.physics.magnus_exponential import LinearOperator
+    import spectramr.infrastructure.physics.degradation_generators as gen_mod
+    from spectramr.infrastructure.physics.magnus_exponential import LinearOperator
 
     real_build = gen_mod.build_generators
 

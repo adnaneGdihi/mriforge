@@ -1,4 +1,4 @@
-"""Light-seam unit tests for :mod:`mriforge.pipelines.train`.
+"""Light-seam unit tests for :mod:`spectramr.pipelines.train`.
 
 Only pure-Python helpers that do NOT require a real dataset, GPU,
 or the DI container are tested here. Specifically:
@@ -30,7 +30,7 @@ import pytest
 # ---------------------------------------------------------------------------
 
 
-from mriforge.pipelines.train import early_stop_monitor_candidates  # noqa: E402
+from spectramr.pipelines.train import early_stop_monitor_candidates  # noqa: E402
 
 
 class TestEarlyStopMonitorCandidates:
@@ -151,7 +151,7 @@ class TestEarlyStopMonitorCandidates:
         controller cannot import leftward from pipelines/); train.py re-exports
         only the public ``early_stop_monitor_candidates``.
         """
-        from mriforge.infrastructure.services.metric_keys import (  # noqa: PLC0415
+        from spectramr.infrastructure.services.metric_keys import (  # noqa: PLC0415
             _CASCADE_SUFFIXES,
         )
 
@@ -176,7 +176,7 @@ class TestEarlyStopMonitorCandidates:
 def test_run_training_pipeline_exposes_its_documented_call_contract() -> None:
     import inspect
 
-    from mriforge.pipelines.train import run_training_pipeline
+    from spectramr.pipelines.train import run_training_pipeline
 
     params = inspect.signature(run_training_pipeline).parameters
     assert callable(run_training_pipeline)
@@ -189,7 +189,7 @@ def test_run_training_pipeline_exposes_its_documented_call_contract() -> None:
 def test_run_inference_pipeline_exposes_its_documented_call_contract() -> None:
     import inspect
 
-    from mriforge.pipelines.infer import run_inference_pipeline
+    from spectramr.pipelines.infer import run_inference_pipeline
 
     params = inspect.signature(run_inference_pipeline).parameters
     assert callable(run_inference_pipeline)
@@ -208,7 +208,7 @@ def test_run_inference_pipeline_exposes_its_documented_call_contract() -> None:
 # ---------------------------------------------------------------------------
 
 
-from mriforge.pipelines.train import _is_epoch_boundary  # noqa: E402
+from spectramr.pipelines.train import _is_epoch_boundary  # noqa: E402
 
 
 class TestIsEpochBoundary:
@@ -246,10 +246,10 @@ class TestIsEpochBoundary:
 import torch  # noqa: E402
 from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts  # noqa: E402
 
-from mriforge.infrastructure.training.scheduler_system import (  # noqa: E402
+from spectramr.infrastructure.training.scheduler_system import (  # noqa: E402
     WarmupScheduler,
 )
-from mriforge.pipelines.train import _resync_scheduler_base_lrs  # noqa: E402
+from spectramr.pipelines.train import _resync_scheduler_base_lrs  # noqa: E402
 
 
 class TestResyncSchedulerBaseLrs:
@@ -303,7 +303,7 @@ class TestResyncSchedulerBaseLrs:
 # ---------------------------------------------------------------------------
 
 
-from mriforge.pipelines.train import (  # noqa: E402
+from spectramr.pipelines.train import (  # noqa: E402
     _VALIDATION_FORWARD_FIELDS,
     select_validation_extra_fields,
 )
@@ -416,7 +416,7 @@ class TestBatchDataReachesAStrategyThatDeclaresIt:
         """
         import inspect
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -435,7 +435,7 @@ class TestBatchDataReachesAStrategyThatDeclaresIt:
         """
         import inspect
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -458,7 +458,7 @@ class TestBatchDataReachesAStrategyThatDeclaresIt:
 # ---------------------------------------------------------------------------
 
 
-from mriforge.pipelines.train import ema_should_update  # noqa: E402
+from spectramr.pipelines.train import ema_should_update  # noqa: E402
 
 
 class TestEmaShouldUpdate:
@@ -499,7 +499,7 @@ class TestRestoreBestWeightsWiring:
         import inspect
 
         # The loop body moved to pipelines/training_loop.py (WS-3 PR-2).
-        from mriforge.pipelines import training_loop
+        from spectramr.pipelines import training_loop
 
         src = inspect.getsource(training_loop._execute_training_loop)
         # (1) the best path is tracked, (2) gated on the flag, (3) reloaded.
@@ -531,7 +531,7 @@ def test_tb_writer_created_only_on_rank_zero():
     """
     import inspect  # noqa: PLC0415
 
-    from mriforge.pipelines import train  # noqa: PLC0415
+    from spectramr.pipelines import train  # noqa: PLC0415
 
     src = inspect.getsource(train.run_training_pipeline)
     assert "is_rank_zero=_is_rank_zero" in src, (
@@ -543,7 +543,7 @@ def test_tb_writer_created_only_on_rank_zero():
 def test_validation_image_save_gated_on_main_rank():
     import inspect  # noqa: PLC0415
 
-    from mriforge.pipelines import train  # noqa: PLC0415
+    from spectramr.pipelines import train  # noqa: PLC0415
 
     src = inspect.getsource(train._run_validation)
     assert "RankUtility.is_main_rank()" in src

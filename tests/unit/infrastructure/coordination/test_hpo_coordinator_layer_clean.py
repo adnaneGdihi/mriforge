@@ -1,7 +1,7 @@
 """Regression test for the audit-17-F5 fix.
 
 ``src/infrastructure/coordination/hpo_coordinator.py`` used to import
-``from mriforge.pipelines.hpo import subprocess_training_objective`` —
+``from spectramr.pipelines.hpo import subprocess_training_objective`` —
 infrastructure reaching upward into pipelines, which is a
 CLAUDE.md layer-direction violation. The factory is now injected by
 the caller (application/use_cases/hpo_use_case.py); the coordinator
@@ -14,14 +14,14 @@ from pathlib import Path
 
 import pytest
 
-import mriforge
+import spectramr
 
 # Derived from the package, not from a path literal. The 2026-05 refactor
-# moved the tree to ``src/mriforge/`` and every hardcoded ``parents[N] / "src"``
+# moved the tree to ``src/spectramr/`` and every hardcoded ``parents[N] / "src"``
 # silently started pointing at a directory that does not exist -- 5 of cluster
 # job 8004252's failures, all reading as FileNotFoundError rather than as the
-# stale constant they were. ``mriforge.__file__`` cannot go stale on a move.
-_PKG = Path(mriforge.__file__).resolve().parent
+# stale constant they were. ``spectramr.__file__`` cannot go stale on a move.
+_PKG = Path(spectramr.__file__).resolve().parent
 
 
 def test_hpo_coordinator_does_not_import_from_pipelines() -> None:
@@ -31,15 +31,15 @@ def test_hpo_coordinator_does_not_import_from_pipelines() -> None:
         / "coordination"
         / "hpo_coordinator.py"
     ).read_text()
-    assert "from mriforge.pipelines" not in src, (
+    assert "from spectramr.pipelines" not in src, (
         "hpo_coordinator.py reintroduced an upward import from "
-        "mriforge.pipelines. The objective factory must be injected via "
+        "spectramr.pipelines. The objective factory must be injected via "
         "the `objective_factory=` parameter — see audit 17 F5."
     )
 
 
 def test_hpo_coordinator_requires_objective_factory(tmp_path) -> None:
-    from mriforge.infrastructure.coordination.hpo_coordinator import HPOCoordinator
+    from spectramr.infrastructure.coordination.hpo_coordinator import HPOCoordinator
 
     # Make a config_path that exists so we get past the FileNotFoundError
     # check and hit the actual objective_factory guard.
@@ -67,5 +67,5 @@ def test_hpo_use_case_injects_subprocess_factory() -> None:
         / "use_cases"
         / "hpo_use_case.py"
     ).read_text()
-    assert "from mriforge.pipelines.hpo import subprocess_training_objective" in src
+    assert "from spectramr.pipelines.hpo import subprocess_training_objective" in src
     assert "objective_factory=subprocess_training_objective" in src

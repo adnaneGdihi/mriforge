@@ -1,4 +1,4 @@
-from mriforge.infrastructure.distributed import (
+from spectramr.infrastructure.distributed import (
     DistributedAuditResult,
     DistributedLossAudit,
     DistributedMetricsCollector,

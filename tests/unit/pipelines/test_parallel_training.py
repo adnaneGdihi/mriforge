@@ -6,7 +6,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.pipelines.parallel import is_rank_zero, unwrap_model
+from spectramr.pipelines.parallel import is_rank_zero, unwrap_model
 
 
 # ---------------------------------------------------------------------------
@@ -108,22 +108,22 @@ class TestModuleSurfaceAfterTheMove:
     """``pipelines.parallel`` keeps only what still belongs in the pipeline layer."""
 
     def test_apply_parallelism_is_gone(self) -> None:
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         assert not hasattr(parallel_mod, "apply_parallelism")
 
     def test_unwrap_model_and_is_rank_zero_survive(self) -> None:
-        import mriforge.pipelines.parallel as parallel_mod
+        import spectramr.pipelines.parallel as parallel_mod
 
         assert set(parallel_mod.__all__) == {"is_rank_zero", "unwrap_model"}
 
     def test_unwrap_model_is_the_core_ssot_not_a_second_copy(self) -> None:
-        from mriforge.core.module_utils import unwrap_model as canonical
+        from spectramr.core.module_utils import unwrap_model as canonical
 
         assert unwrap_model is canonical
 
     def test_the_strategies_are_reachable_from_the_registry_instead(self) -> None:
-        from mriforge.infrastructure.distributed.strategy_registry import (
+        from spectramr.infrastructure.distributed.strategy_registry import (
             list_parallel_strategies,
         )
 

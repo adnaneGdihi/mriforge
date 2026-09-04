@@ -7,7 +7,7 @@ import torch.nn as nn
 # Add src to path
 sys.path.append(str(Path(__file__).parents[2]))
 
-from mriforge.data.transforms.graph_encoding import GraphBatchEncoder
+from spectramr.data.transforms.graph_encoding import GraphBatchEncoder
 
 
 def test_graph_training_logic():

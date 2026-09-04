@@ -1,4 +1,4 @@
-"""Unit tests for :class:`mriforge.exports.onnx.onnx_exporter.ONNXExporter`.
+"""Unit tests for :class:`spectramr.exports.onnx.onnx_exporter.ONNXExporter`.
 
 Regression coverage for the WS-8 fix: ``ONNXExporter.export`` used to fabricate a
 ``torch.zeros(1, 1)`` dummy when ``input_sample`` was ``None``, which traced the
@@ -14,7 +14,7 @@ from unittest.mock import patch
 import pytest
 import torch
 
-from mriforge.exports.onnx.onnx_exporter import ONNXExporter
+from spectramr.exports.onnx.onnx_exporter import ONNXExporter
 
 pytestmark = pytest.mark.unit
 

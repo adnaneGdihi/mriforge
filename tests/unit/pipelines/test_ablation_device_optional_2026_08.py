@@ -1,6 +1,6 @@
 """D01#4 (callee half): ablation must be able to represent "no device requested".
 
-``mriforge ablation`` parses ``--device`` with ``default=None``, but the CLI then
+``spectramr ablation`` parses ``--device`` with ``default=None``, but the CLI then
 did ``or "cuda"`` before calling in, because every function on the ablation path
 was typed ``device: str = "cuda"``. Removing the CLI fallback without widening
 the callees would have replaced a hardcoded device with a lie in the signature.
@@ -14,8 +14,8 @@ import inspect
 
 import pytest
 
-from mriforge.pipelines import ablation as ablation_mod
-from mriforge.pipelines.train import run_training_pipeline
+from spectramr.pipelines import ablation as ablation_mod
+from spectramr.pipelines.train import run_training_pipeline
 
 
 @pytest.mark.parametrize(
@@ -48,7 +48,7 @@ def test_train_and_score_forwards_none_unchanged(monkeypatch):
         seen["device"] = device
         return {"success": False, "error": "stopped before training"}
 
-    import mriforge.pipelines.train as train_mod
+    import spectramr.pipelines.train as train_mod
 
     monkeypatch.setattr(train_mod, "run_training_pipeline", _fake_run_training_pipeline)
 
@@ -63,7 +63,7 @@ def test_train_and_score_forwards_an_explicit_device(monkeypatch):
         seen["device"] = device
         return {"success": False, "error": "stopped before training"}
 
-    import mriforge.pipelines.train as train_mod
+    import spectramr.pipelines.train as train_mod
 
     monkeypatch.setattr(train_mod, "run_training_pipeline", _fake_run_training_pipeline)
 

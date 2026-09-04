@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.fisher_rao_geodesic_strategy import (
+from spectramr.infrastructure.training.strategies.fisher_rao_geodesic_strategy import (
     FisherRaoGeodesicStrategy,
     compute_fisher_rao_loss,
 )
-from mriforge.models.generators.fisher_rao_geodesic_net import FisherRaoGeodesicNet
+from spectramr.models.generators.fisher_rao_geodesic_net import FisherRaoGeodesicNet
 
 
 def _net() -> FisherRaoGeodesicNet:
@@ -51,7 +51,7 @@ def test_loss_reduces() -> None:
 
 
 def test_compute_losses_accepts_canonical_trainingbatch() -> None:
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(FisherRaoGeodesicStrategy)
@@ -108,8 +108,8 @@ def test_validation_forward_raises_without_both_fields() -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "fisher_rao_geodesic" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "fisher_rao_geodesic" in TrainingStrategyConfigSchema.model_fields
@@ -119,7 +119,7 @@ def test_strategy_registered_and_config_mounted() -> None:
 
 
 def test_contrast_id_threaded_to_model() -> None:
-    from mriforge.infrastructure.training.strategies.fisher_rao_geodesic_strategy import (
+    from spectramr.infrastructure.training.strategies.fisher_rao_geodesic_strategy import (
         compute_fisher_rao_loss,
     )
 

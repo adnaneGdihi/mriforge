@@ -19,13 +19,13 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
-from mriforge.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
-from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.diffusion import DiffusionTrainingStrategy
+from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
-from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
 # ═══════════════════════════════════════════════════════════════════════════
 # SECTION 1: SRP (Single Responsibility Principle) Tests

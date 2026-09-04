@@ -14,14 +14,14 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
     apply_degradation,
     degrade_pulsatile_motion,
     degrade_slice_thickness_pve,
     degrade_susceptibility,
     degrade_t2star_blur,
 )
-from mriforge.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_simulator import (  # noqa: E402
     simulate_rigid_motion_kspace,
 )
 

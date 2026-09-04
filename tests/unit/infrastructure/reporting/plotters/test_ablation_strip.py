@@ -8,7 +8,7 @@ to that helper and renders for a small multi-seed cohort.
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import ablation_strip
+from spectramr.infrastructure.reporting.plotters import ablation_strip
 
 
 def _cohort() -> pd.DataFrame:
@@ -49,7 +49,7 @@ def test_ablation_strip_uses_student_t_helper(monkeypatch, tmp_path):
     # Wiring guard: the plotter must compute its CI through t_ci_half_width
     # (the fix), not an inline z=1.96 expression.
     calls = {"n": 0}
-    import mriforge.infrastructure.reporting.plotters.ablation_strip as mod
+    import spectramr.infrastructure.reporting.plotters.ablation_strip as mod
 
     real = mod.t_ci_half_width
 

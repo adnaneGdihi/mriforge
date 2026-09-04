@@ -1,6 +1,6 @@
 """Tests for ``ScoutAcquisitionTransform``.
 
-Targets ``mriforge.data.transforms.scout_acquisition`` — SCAS / idea 5
+Targets ``spectramr.data.transforms.scout_acquisition`` — SCAS / idea 5
 §5.2 of ``TODO/integration_plan_ulf_cheap_fast_mri.md``.
 
 Plan acceptance criterion (§5.6):
@@ -25,7 +25,7 @@ import pytest
 import torch
 import torchio as tio
 
-from mriforge.data.transforms.scout_acquisition import ScoutAcquisitionTransform
+from spectramr.data.transforms.scout_acquisition import ScoutAcquisitionTransform
 
 
 # ---------------------------------------------------------------------------
@@ -189,7 +189,7 @@ def test_scout_acquisition_is_registered_under_its_config_name() -> None:
     Before the registry it existed on disk with no way to be constructed from
     any config, so the consumer chain that reads its output was dead at link 0.
     """
-    from mriforge.data.transforms.registry import get_transform
+    from spectramr.data.transforms.registry import get_transform
 
     entry = get_transform("scout_acquisition")
     assert entry.cls is ScoutAcquisitionTransform

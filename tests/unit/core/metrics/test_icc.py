@@ -1,6 +1,6 @@
 """Tests for Intraclass Correlation Coefficient (ICC).
 
-Targets ``mriforge.core.metrics.icc``. ICC measures reliability across raters
+Targets ``spectramr.core.metrics.icc``. ICC measures reliability across raters
 / scanners; used for radiomic-stability evaluation. Verifies the
 oneway-random and twoway-mixed formulae against analytical expectations
 on synthetic data.
@@ -12,7 +12,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.core.metrics.icc import ICCMetric
+from spectramr.core.metrics.icc import ICCMetric
 
 
 def test_perfect_agreement_yields_icc_near_one() -> None:

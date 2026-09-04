@@ -30,8 +30,8 @@ from types import SimpleNamespace
 import pytest
 import torch
 
-import mriforge.infrastructure.training.utils.domain_inference as di_mod
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+import spectramr.infrastructure.training.utils.domain_inference as di_mod
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):

@@ -1,18 +1,18 @@
 import pytest
 import torch
 
-from mriforge.config.schemas.model import ModelConfigSchema
-from mriforge.config.schemas.optimization import OptimizationConfigSchema
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.schemas.training.pipeline import (
+from spectramr.config.schemas.model import ModelConfigSchema
+from spectramr.config.schemas.optimization import OptimizationConfigSchema
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.pipeline import (
     ActionSchema,
     MultiStageSchema,
     MultiTrainingConfigSchema,
     StageEnvironmentSchema,
     TrainingStateSchema,
 )
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.pipeline_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.pipeline_strategy import (
     MultiTrainingStrategy,
 )
 

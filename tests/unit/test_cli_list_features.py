@@ -11,7 +11,7 @@ sys.path.insert(0, str(project_root))
 
 import argparse
 
-from mriforge.cli import list_features
+from spectramr.cli import list_features
 
 
 class TestListFeaturesCommand:

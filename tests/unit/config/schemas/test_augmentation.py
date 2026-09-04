@@ -1,6 +1,6 @@
 """Tests for ``AugmentationConfigSchema``.
 
-Targets ``mriforge.config.schemas.augmentation``. Pydantic v2 schema for
+Targets ``spectramr.config.schemas.augmentation``. Pydantic v2 schema for
 TorchIO-style augmentation toggles + probabilities. Validates
 [0, 1] probability bounds, ``ge=0`` for std/alpha/sigma, and
 ``frozen=True``.
@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
 
 
 # ---------------------------------------------------------------------------

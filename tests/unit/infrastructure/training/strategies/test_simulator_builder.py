@@ -14,9 +14,9 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.schemas.data import DataConfigSchema  # noqa: E402
-from mriforge.config.schemas.physics import DigitalTwinConfig  # noqa: E402
-from mriforge.infrastructure.training.strategies.simulator_builder import (  # noqa: E402
+from spectramr.config.schemas.data import DataConfigSchema  # noqa: E402
+from spectramr.config.schemas.physics import DigitalTwinConfig  # noqa: E402
+from spectramr.infrastructure.training.strategies.simulator_builder import (  # noqa: E402
     build_simulator_from_config,
     undersampling_mask_kwargs,
 )
@@ -135,7 +135,7 @@ def test_mask_kwarg_activates_data_consistency() -> None:
     the cascade contribution until trained, so an untrained end-to-end forward
     cannot observe the effect.)
     """
-    from mriforge.models.generators.vf_reconstruction_generators import _HardDCLayer
+    from spectramr.models.generators.vf_reconstruction_generators import _HardDCLayer
 
     torch.manual_seed(0)
     layer = _HardDCLayer()

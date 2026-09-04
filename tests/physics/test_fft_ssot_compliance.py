@@ -2,7 +2,7 @@
 
 CLAUDE.md pitfall #2 forbids raw ``torch.fft.fft2`` / ``torch.fft.ifft2`` (and
 their N-dim / 1-D variants) on complex MRI k-space. Use
-``mriforge.infrastructure.physics.fft_ops.fft2c`` / ``ifft2c`` instead — they
+``spectramr.infrastructure.physics.fft_ops.fft2c`` / ``ifft2c`` instead — they
 handle centering, ``norm="ortho"``, and AMP-safe FP32 context together.
 
 This test AST-walks every ``src/`` module and partitions raw ``torch.fft.*``
@@ -37,7 +37,7 @@ import pytest
 
 
 def _find_repo_root(start: Path) -> Path:
-    """Walk up from ``start`` to the directory that owns ``src/mriforge``.
+    """Walk up from ``start`` to the directory that owns ``src/spectramr``.
 
     This deliberately replaces the depth-coded ``Path(__file__).parents[3]``
     this module used while it lived under ``tests/unit/physics/``. That form
@@ -50,7 +50,7 @@ def _find_repo_root(start: Path) -> Path:
     reds complained about "missing files", whose obvious repair is to delete
     the budget entries, which would have made the guard permanently blind.
 
-    Anchoring on ``src/mriforge`` rather than on ``pyproject.toml`` or ``.git``
+    Anchoring on ``src/spectramr`` rather than on ``pyproject.toml`` or ``.git``
     is deliberate too: ``.git`` is a *file* inside a git worktree, and a bare
     ``src`` marker would happily bind to some *other* checkout's ``src/`` at
     the wrong depth -- a wrong tree scanned in silence, which is strictly
@@ -60,11 +60,11 @@ def _find_repo_root(start: Path) -> Path:
     unlocatable corpus is a state to report, never one to infer.
     """
     for candidate in (start, *start.parents):
-        if (candidate / "src" / "mriforge").is_dir():
+        if (candidate / "src" / "spectramr").is_dir():
             return candidate
     raise RuntimeError(
         f"Cannot locate the repository root above {start}: no ancestor owns "
-        "src/mriforge. This guard scans the real corpus and must never fall "
+        "src/spectramr. This guard scans the real corpus and must never fall "
         "back to a default root -- a guard that scans nothing passes."
     )
 
@@ -83,66 +83,66 @@ FORBIDDEN_FNS: frozenset[str] = frozenset({"fft", "ifft", "fft2", "ifft2", "fftn
 
 # Architecturally justified — should not grow.
 INTENTIONAL_EXEMPT: dict[str, str] = {
-    "src/mriforge/infrastructure/physics/fft_ops.py": (
+    "src/spectramr/infrastructure/physics/fft_ops.py": (
         "SSOT implementation — defines fft2c / ifft2c / volume helpers."
     ),
-    "src/mriforge/infrastructure/physics/conformal_geometry.py": (
+    "src/spectramr/infrastructure/physics/conformal_geometry.py": (
         "Beltrami PDE solver — spectral derivatives on unit-square grid, "
         "paired with torch.fft.fftfreq multipliers in the unshifted "
         "(corner-DC) layout. Not an MRI k-space round-trip; fft2c would "
         "silently break the multiplier algebra."
     ),
-    "src/mriforge/infrastructure/sensors/adapters/respiratory.py": (
+    "src/spectramr/infrastructure/sensors/adapters/respiratory.py": (
         "1D temporal respiratory-waveform low/band-pass filter, not MRI "
         "k-space. Operates on sensor time-series."
     ),
-    "src/mriforge/core/metrics/no_reference_extended.py": (
+    "src/spectramr/core/metrics/no_reference_extended.py": (
         "Power-spectrum NR feature on a real grayscale image (forward FFT only, "
         "no k-space round-trip / reconstruction). The file's own docstring notes "
         "this; fft2c centering is irrelevant to a |spectrum|^2 feature."
     ),
-    "src/mriforge/core/metrics/nr_texture.py": (
+    "src/spectramr/core/metrics/nr_texture.py": (
         "Log-Gabor phase-congruency filter bank: fft2 -> multiply by a log-Gabor "
         "filter defined in the corner-DC fftfreq layout -> ifft2. fft2c (centered) "
         "would break the filter's DC handling (log_gabor[0, 0]) and radius algebra, "
         "like the conformal_geometry exemption. Real-image feature, not k-space."
     ),
-    "src/mriforge/infrastructure/physics/signal_models/spectroscopy.py": (
+    "src/spectramr/infrastructure/physics/signal_models/spectroscopy.py": (
         "1-D FID -> spectrum along the time axis. Only the OUTPUT is shifted: an "
         "FID's origin really is index 0, so the input ifftshift that fft2c applies "
         "to an image (origin at N // 2) would mis-centre it. norm='ortho' and the "
         "disabled autocast mirror fft_ops. Not a 2-D k-space round-trip."
     ),
-    "src/mriforge/infrastructure/physics/dct_ops.py": (
+    "src/spectramr/infrastructure/physics/dct_ops.py": (
         "DCT-II/III construction via FFT (even-mirror reorder + twiddle factors). A "
         "real-valued cosine transform, not a complex MRI k-space round-trip; fft2c "
         "is inapplicable (it would destroy the DCT's reorder/twiddle algebra)."
     ),
-    "src/mriforge/infrastructure/physics/galois_unwrap.py": (
+    "src/spectramr/infrastructure/physics/galois_unwrap.py": (
         "Spectral Poisson solver for least-squares phase unwrapping (cosine-"
         "eigenvalue discrete Laplacian on an even-extended grid). A PDE solve, not a "
         "k-space round-trip — fft2c's centering would break the eigenvalue "
         "multiplier algebra (cf. conformal_geometry)."
     ),
-    "src/mriforge/infrastructure/physics/helmholtz_hodge.py": (
+    "src/spectramr/infrastructure/physics/helmholtz_hodge.py": (
         "Spectral Poisson solve Delta u = rhs on a periodic 3-D grid (sin^2-"
         "eigenvalue Laplacian via fftfreq), for the Helmholtz-Hodge decomposition. A "
         "PDE solver like conformal_geometry; fft2c would break the eigenvalue algebra."
     ),
-    "src/mriforge/models/losses/phase_stego_score.py": (
+    "src/spectramr/models/losses/phase_stego_score.py": (
         "Phase-only forward map FFT(exp(i*arg(x))) for a steganography-detection "
         "statistic — a forward transform of the phase unit vector with no "
         "reconstruction / k-space round-trip. Centering is irrelevant to the "
         "spectral-energy statistic the score consumes."
     ),
-    "src/mriforge/core/metrics/srf_bound.py": (
+    "src/spectramr/core/metrics/srf_bound.py": (
         "Radial power-spectrum band energies of a REAL magnitude image (forward "
         "FFT only, no reconstruction). It does its own fftshift and builds the "
         "radius from the matching fftshift(fftfreq) grid, so the layout is "
         "self-consistent; ortho-norm would only rescale a log1p band feature. "
         "Same class as the no_reference_extended / nr_texture exemptions."
     ),
-    "src/mriforge/infrastructure/physics/acquisition_codesign.py": (
+    "src/spectramr/infrastructure/physics/acquisition_codesign.py": (
         "1-D LOUPE-style sampling co-design on synthetic [N, W] rows: "
         "ifft(mask*gain * fft(x)) along a single axis. The mask is LEARNED over "
         "raw column indices, so no absolute k-space position is assumed and the "
@@ -157,24 +157,24 @@ INTENTIONAL_EXEMPT: dict[str, str] = {
 # fft_ops.fft2c / ifft2c, delete its entry — the test then enforces that
 # it stays at zero.
 LEGACY_EXEMPT_BUDGET: dict[str, int] = {
-    "src/mriforge/infrastructure/physics/coil_sensitivity.py": 1,
-    "src/mriforge/infrastructure/physics/dc_navigator.py": 2,
+    "src/spectramr/infrastructure/physics/coil_sensitivity.py": 1,
+    "src/spectramr/infrastructure/physics/dc_navigator.py": 2,
     # digital_twin_extensions.py fully migrated to fft_ops.fft2c / ifft2c (0 raw
     # torch.fft.* calls) — stale budget entry removed per the "drop the entry"
     # contract of test_legacy_budget_entries_still_violate.
-    "src/mriforge/infrastructure/physics/dipole.py": 2,
-    "src/mriforge/infrastructure/physics/forward_operator.py": 8,
-    "src/mriforge/infrastructure/physics/implementations/fft_operator.py": 8,
-    "src/mriforge/infrastructure/physics/motion_correction.py": 3,
-    "src/mriforge/infrastructure/physics/motion_simulation.py": 1,
-    "src/mriforge/infrastructure/physics/qsm.py": 6,
+    "src/spectramr/infrastructure/physics/dipole.py": 2,
+    "src/spectramr/infrastructure/physics/forward_operator.py": 8,
+    "src/spectramr/infrastructure/physics/implementations/fft_operator.py": 8,
+    "src/spectramr/infrastructure/physics/motion_correction.py": 3,
+    "src/spectramr/infrastructure/physics/motion_simulation.py": 1,
+    "src/spectramr/infrastructure/physics/qsm.py": 6,
     # ulf_forward_operator.py fully migrated to fft_ops (0 raw torch.fft.* calls)
     # — stale budget entry removed per test_legacy_budget_entries_still_violate.
-    "src/mriforge/infrastructure/physics/vf_corrections.py": 7,
-    "src/mriforge/infrastructure/physics/vf_field_extraction.py": 5,
-    "src/mriforge/infrastructure/physics/vf_operators_extended.py": 1,
-    "src/mriforge/models/generators/aftnet_generator.py": 3,
-    "src/mriforge/models/generators/vf_field_generators.py": 3,
+    "src/spectramr/infrastructure/physics/vf_corrections.py": 7,
+    "src/spectramr/infrastructure/physics/vf_field_extraction.py": 5,
+    "src/spectramr/infrastructure/physics/vf_operators_extended.py": 1,
+    "src/spectramr/models/generators/aftnet_generator.py": 3,
+    "src/spectramr/models/generators/vf_field_generators.py": 3,
 }
 
 
@@ -248,7 +248,7 @@ def scanned_file_count(src_dir: Path) -> int:
 def test_no_new_raw_torch_fft_outside_ssot() -> None:
     """No new file may introduce a raw ``torch.fft.{fft,ifft,fft2,ifft2,fftn,ifftn}`` call.
 
-    Use ``mriforge.infrastructure.physics.fft_ops.fft2c`` / ``ifft2c`` for MRI
+    Use ``spectramr.infrastructure.physics.fft_ops.fft2c`` / ``ifft2c`` for MRI
     k-space round-trips. If a new exemption is genuinely needed (new
     spectral PDE solver), add it to ``INTENTIONAL_EXEMPT`` with a written
     reason.
@@ -257,7 +257,7 @@ def test_no_new_raw_torch_fft_outside_ssot() -> None:
     assert not violations, (
         "Raw torch.fft.* calls found in a file that is not in the SSOT, "
         "an intentional exemption, or the legacy budget. Use "
-        "mriforge.infrastructure.physics.fft_ops.fft2c / ifft2c for MRI k-space "
+        "spectramr.infrastructure.physics.fft_ops.fft2c / ifft2c for MRI k-space "
         "round-trips, or add a justified entry to INTENTIONAL_EXEMPT.\n\n"
         + "\n".join(f"  - {v}" for v in violations)
     )
@@ -397,18 +397,18 @@ def test_a_planted_raw_fft_in_an_unexcused_file_is_found(tmp_path: Path) -> None
     root = _tree(
         tmp_path,
         {
-            "src/mriforge/models/newcomer.py": (
+            "src/spectramr/models/newcomer.py": (
                 "import torch\n\n\ndef go(x):\n    return torch.fft.fft2(x)\n"
             )
         },
     )
     found = scan_for_unbudgeted(root / "src", root, {}, {})
-    assert found == ["src/mriforge/models/newcomer.py:5  torch.fft.fft2"], found
+    assert found == ["src/spectramr/models/newcomer.py:5  torch.fft.fft2"], found
 
 
 def test_an_excused_file_is_not_reported_under_either_list(tmp_path: Path) -> None:
     """Both excuse lists must actually excuse -- otherwise the guard is noise."""
-    rel = "src/mriforge/models/newcomer.py"
+    rel = "src/spectramr/models/newcomer.py"
     root = _tree(
         tmp_path,
         {rel: "import torch\n\n\ndef go(x):\n    return torch.fft.fft2(x)\n"},
@@ -427,7 +427,7 @@ def test_the_spectral_carve_out_is_not_flagged(tmp_path: Path) -> None:
     root = _tree(
         tmp_path,
         {
-            "src/mriforge/models/fno.py": (
+            "src/spectramr/models/fno.py": (
                 "import torch\n\n\ndef go(x):\n"
                 "    y = torch.fft.rfft2(x)\n"
                 "    y = torch.fft.fftshift(y)\n"
@@ -440,7 +440,7 @@ def test_the_spectral_carve_out_is_not_flagged(tmp_path: Path) -> None:
 
 def test_a_budgeted_file_that_grew_is_found(tmp_path: Path) -> None:
     """The ratchet direction: a legacy file may shrink, never grow."""
-    rel = "src/mriforge/legacy.py"
+    rel = "src/spectramr/legacy.py"
     root = _tree(
         tmp_path,
         {
@@ -483,7 +483,7 @@ def test_the_aliased_call_shape_is_out_of_scope_by_construction(
     root = _tree(
         tmp_path,
         {
-            "src/mriforge/aliased.py": (
+            "src/spectramr/aliased.py": (
                 "import numpy as np\n\n\ndef go(x):\n    return np.fft.fft2(x)\n"
             )
         },
@@ -493,7 +493,7 @@ def test_the_aliased_call_shape_is_out_of_scope_by_construction(
 
 def test_the_repo_root_is_found_by_anchor_not_by_depth(tmp_path: Path) -> None:
     """Relocating this file must not silently re-root the scan."""
-    root = _tree(tmp_path, {"src/mriforge/__init__.py": ""})
+    root = _tree(tmp_path, {"src/spectramr/__init__.py": ""})
     deep = root / "tests" / "a" / "b" / "c" / "test_x.py"
     deep.parent.mkdir(parents=True, exist_ok=True)
     deep.write_text("")
@@ -504,13 +504,13 @@ def test_the_repo_root_is_found_by_anchor_not_by_depth(tmp_path: Path) -> None:
 
 
 def test_a_bare_src_directory_does_not_capture_the_root(tmp_path: Path) -> None:
-    """Anchoring on ``src/mriforge`` and not on ``src`` alone.
+    """Anchoring on ``src/spectramr`` and not on ``src`` alone.
 
     A nearer directory that merely owns *a* ``src/`` would bind first and the
     guard would scan the wrong tree in silence -- strictly worse than scanning
     none, because the vacuity floor above would not catch it either.
     """
-    root = _tree(tmp_path, {"src/mriforge/__init__.py": ""})
+    root = _tree(tmp_path, {"src/spectramr/__init__.py": ""})
     decoy = root / "vendor"
     (decoy / "src").mkdir(parents=True)
     probe = decoy / "tests" / "test_x.py"

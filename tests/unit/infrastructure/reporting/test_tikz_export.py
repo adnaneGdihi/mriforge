@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting import tikz_export
+from spectramr.infrastructure.reporting import tikz_export
 
 
 def _frame() -> pd.DataFrame:
@@ -47,7 +47,7 @@ def test_curve_to_tikz_writes_standalone_and_snippet(tmp_path):
 
 
 def test_curve_to_tikz_escapes_latex_specials():
-    from mriforge.infrastructure.reporting.tikz_export import _tex_escape
+    from spectramr.infrastructure.reporting.tikz_export import _tex_escape
 
     assert _tex_escape("val_ssim") == r"val\_ssim"
     assert _tex_escape("50%") == r"50\%"
@@ -90,7 +90,7 @@ def test_export_tikz_figures_empty_frame(tmp_path):
 
 
 def test_coords_drop_nan_and_inf():
-    from mriforge.infrastructure.reporting.tikz_export import _coords
+    from spectramr.infrastructure.reporting.tikz_export import _coords
 
     s = pd.Series([1.0, np.nan, np.inf, 2.0], index=[0, 1, 2, 3])
     coords = _coords(s)

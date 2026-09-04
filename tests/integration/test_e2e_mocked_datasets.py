@@ -39,7 +39,7 @@ class TestE2ETrainingWithMockedDatasets:
         # (Previously called the now-removed ``create_training_config``
         # factory — see D2 / audit-04 F-S-010.) Loading via
         # ``TrainingSettings.from_yaml`` is the SSOT entry point.
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         config_path = Path("experiments/training/experiment_01_baseline_gan.yaml")
         if not config_path.exists():

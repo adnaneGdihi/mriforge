@@ -15,7 +15,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.data.nifti_export import (
+from spectramr.data.nifti_export import (
     PROVENANCE_FILENAME,
     SLICE_AXIS,
     ExportVerificationError,
@@ -189,7 +189,7 @@ class TestTheWrittenFileIsTheVolumeThatWasWritten:
         """THE round-trip. RegionMaskCache indexes vol[slice_index] and the graded image
         is reconstruction_rss[i]; if the exported volume put slices anywhere but axis 0,
         every tissue mask would be a cut through the wrong plane -- silently."""
-        from mriforge.data.io_strategies import NiftiStrategy
+        from spectramr.data.io_strategies import NiftiStrategy
 
         vol = self.marked_volume()
         out = tmp_path / "v.nii.gz"

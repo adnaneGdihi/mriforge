@@ -10,7 +10,7 @@ dropped by ``extra="ignore"``, which made the #534 mask fix inert behind a wall
 of passing audits).
 
 So the attribute name is spelled once, in
-:mod:`mriforge.domain.workflows.declaration`, and
+:mod:`spectramr.domain.workflows.declaration`, and
 :class:`TestEveryWorkflowCheckStillFires` asserts the property that a missed
 site would break: **declaring a regime must change what a check answers.**
 "Skipped" and "passed" are the same boolean, so comparing verdicts would not
@@ -23,9 +23,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.schemas.enums import Regime, SignalDomain, Task
-from mriforge.config.schemas.workflow import WorkflowConfigSchema
-from mriforge.domain.workflows.declaration import (
+from spectramr.config.schemas.enums import Regime, SignalDomain, Task
+from spectramr.config.schemas.workflow import WorkflowConfigSchema
+from spectramr.domain.workflows.declaration import (
     declared_regime,
     declared_signal_domain,
     declared_spatial_rank,
@@ -91,7 +91,7 @@ class TestAccessors:
         """
         import inspect
 
-        from mriforge.domain.workflows import declaration
+        from spectramr.domain.workflows import declaration
 
         body = "".join(
             line
@@ -134,7 +134,7 @@ class TestEveryWorkflowCheckStillFires:
 
     @pytest.fixture
     def checker(self):
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 

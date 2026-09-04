@@ -57,7 +57,7 @@ jobs:
 
       - name: Run release test lane
         env:
-          MRIFORGE_SUPPRESS_CLINICAL_WARNING: "1"
+          SPECTRAMR_SUPPRESS_CLINICAL_WARNING: "1"
         run: make test-release
 
       - name: Upload coverage

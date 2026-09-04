@@ -17,7 +17,7 @@ inputs. This test pins (2).
 """
 from __future__ import annotations
 
-SRC = "src/mriforge/models/generators/kspace_cold_diffusion_generator.py"
+SRC = "src/spectramr/models/generators/kspace_cold_diffusion_generator.py"
 ANCHOR = "[KSpaceColdDiffusionGenerator] interleaved Re/Im layout"
 
 

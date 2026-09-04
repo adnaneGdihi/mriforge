@@ -1,6 +1,6 @@
 """Fourier-bridge contract for the self-bridging physics losses.
 
-Targets ``mriforge.models.losses.physics_losses``:
+Targets ``spectramr.models.losses.physics_losses``:
 
 - ``DifferentiableFourierBridge`` — k-space -> image projection used by the losses
   below AND by ``LossBuilder``'s list-based wrapper. It has no domain detection:
@@ -22,12 +22,12 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.fft_ops import fft2c
-from mriforge.models.losses.physics_losses import (
+from spectramr.infrastructure.physics.fft_ops import fft2c
+from spectramr.models.losses.physics_losses import (
     ComplexGradientLoss,
     DifferentiableFourierBridge,
 )
-from mriforge.models.losses.registry import LossRegistry
+from spectramr.models.losses.registry import LossRegistry
 
 COILS = 4  # matches the kspace_filling cohort (model.in_channels: 8 real)
 SHAPE = (2, COILS, 16, 16)

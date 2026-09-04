@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.equivariance_conformal import (
+from spectramr.config.schemas.training.equivariance_conformal import (
     EquivarianceConformalConfig,
     TrainingConfigEquivarianceConformal,
 )

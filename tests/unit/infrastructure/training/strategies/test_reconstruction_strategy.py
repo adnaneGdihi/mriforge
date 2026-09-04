@@ -27,8 +27,8 @@ from unittest.mock import MagicMock, patch
 
 import torch
 
-from mriforge.infrastructure.training.builders.environment import TrainingEnvironment
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.builders.environment import TrainingEnvironment
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 from tests.utils.mock_environment import create_mock_training_env
@@ -243,7 +243,7 @@ class TestReconstructionStrategy(unittest.TestCase):
         with patch.object(
             ReconstructionTrainingStrategy, "_setup_strategy_specific_components"
         ):
-            with patch("mriforge.infrastructure.physics.pinn.get_pde"):
+            with patch("spectramr.infrastructure.physics.pinn.get_pde"):
                 strategy = ReconstructionTrainingStrategy(env=self.mock_env)
                 self.assertTrue(hasattr(strategy, "pinn_module"))
 
@@ -354,8 +354,8 @@ def test_reconstruction_delegates_scheduled_weights_to_base_seam():
     Source-level pin (a full forward OOM-kills a dev box)."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies import reconstruction
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies import reconstruction
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     impl_src = inspect.getsource(
         reconstruction.ReconstructionTrainingStrategy._compute_losses_impl
@@ -367,7 +367,7 @@ def test_reconstruction_delegates_scheduled_weights_to_base_seam():
 
 
 def test_reconstruction_strategy_supports_domain_conditioning_sources():
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -380,7 +380,7 @@ def test_reconstruction_strategy_supports_domain_conditioning_sources():
 def test_generate_predictions_applies_input_conditioning(monkeypatch):
     import torch
 
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -434,7 +434,7 @@ def test_batch_context_propagates_scanner_site_and_contrast_idx_alias():
 
     import torch
 
-    from mriforge.infrastructure.training.strategies.reconstruction import (
+    from spectramr.infrastructure.training.strategies.reconstruction import (
         ReconstructionTrainingStrategy,
     )
 
@@ -502,7 +502,7 @@ def test_apply_builder_image_losses_folds_weighted_terms():
     """env.losses modules are folded with their declared weight and recorded per name."""
     import types as _types
 
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     strat = object.__new__(ReconstructionTrainingStrategy)
     strat.env = _types.SimpleNamespace(losses={"charbonnier": CharbonnierLoss()})
@@ -531,7 +531,7 @@ def test_apply_builder_image_losses_honors_scheduled_override():
     (pitfall #16 at the schedule layer)."""
     import types as _types
 
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     strat = object.__new__(ReconstructionTrainingStrategy)
     strat.env = _types.SimpleNamespace(losses={"charbonnier": CharbonnierLoss()})
@@ -560,7 +560,7 @@ def test_apply_builder_image_losses_empty_overrides_uses_static():
     declared weight — byte-identical to the pre-schedule behavior."""
     import types as _types
 
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
 
     strat = object.__new__(ReconstructionTrainingStrategy)
     strat.env = _types.SimpleNamespace(losses={"charbonnier": CharbonnierLoss()})
@@ -599,8 +599,8 @@ def test_apply_builder_image_losses_skips_inline_l1():
     seam without rewriting every arm/ablation YAML that still carries [{l1,1.0}]."""
     import types as _types
 
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(ReconstructionTrainingStrategy)
     strat.env = _types.SimpleNamespace(losses={"l1": CharbonnierLoss(), "hfen": HFENLoss()})

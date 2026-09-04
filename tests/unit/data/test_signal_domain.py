@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.signal_domain import KSPACE_DATASET_TYPES, is_kspace_dataset_type
+from spectramr.data.signal_domain import KSPACE_DATASET_TYPES, is_kspace_dataset_type
 
 
 @pytest.mark.parametrize(
@@ -48,7 +48,7 @@ def test_spec_card_uses_this_and_does_not_keep_its_own_copy() -> None:
     behaviour is how they drift."""
     import inspect
 
-    from mriforge.infrastructure.validation import spec_card
+    from spectramr.infrastructure.validation import spec_card
 
     source = inspect.getsource(spec_card)
     assert "is_kspace_dataset_type" in source

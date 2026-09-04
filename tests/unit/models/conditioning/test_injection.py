@@ -11,8 +11,8 @@ import pytest
 torch = pytest.importorskip("torch")
 import torch.nn as nn  # noqa: E402
 
-from mriforge.models.conditioning import ConditioningContext  # noqa: E402
-from mriforge.models.conditioning.injection import (  # noqa: E402
+from spectramr.models.conditioning import ConditioningContext  # noqa: E402
+from spectramr.models.conditioning.injection import (  # noqa: E402
     AdaptiveConditioner,
     ConditioningInjector,
 )
@@ -61,7 +61,7 @@ def test_adaptive_conditioner_encode_exposes_vector() -> None:
 
 
 def test_adaptive_conditioner_from_config() -> None:
-    from mriforge.config.schemas.conditioning import ConditioningConfig
+    from spectramr.config.schemas.conditioning import ConditioningConfig
 
     cfg = ConditioningConfig(
         enabled=True,
@@ -76,7 +76,7 @@ def test_adaptive_conditioner_from_config() -> None:
 
 
 def test_adaptive_conditioner_from_disabled_config_returns_none() -> None:
-    from mriforge.config.schemas.conditioning import ConditioningConfig
+    from spectramr.config.schemas.conditioning import ConditioningConfig
 
     assert AdaptiveConditioner.from_config(ConditioningConfig(), num_features=8) is None
 
@@ -84,7 +84,7 @@ def test_adaptive_conditioner_from_disabled_config_returns_none() -> None:
 def test_adaptive_conditioner_from_config_film_injection_modulates() -> None:
     """The advertised injection='film' knob is read and builds a working
     conditioner that modulates (default-path, numerics unchanged)."""
-    from mriforge.config.schemas.conditioning import ConditioningConfig
+    from spectramr.config.schemas.conditioning import ConditioningConfig
 
     cfg = ConditioningConfig(
         enabled=True,
@@ -107,7 +107,7 @@ def test_adaptive_conditioner_from_config_rejects_unknown_injection() -> None:
     ``model_construct`` bypasses the schema Literal so the runtime guard in
     ``from_config`` is the thing under test.
     """
-    from mriforge.config.schemas.conditioning import ConditioningConfig
+    from spectramr.config.schemas.conditioning import ConditioningConfig
 
     cfg = ConditioningConfig.model_construct(
         enabled=True,

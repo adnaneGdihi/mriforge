@@ -8,7 +8,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.adapters.channels import MagnitudeFromComplex
+from spectramr.data.adapters.channels import MagnitudeFromComplex
 
 
 def test_even_channels_reduce_to_magnitude() -> None:

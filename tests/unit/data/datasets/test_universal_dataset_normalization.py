@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.data.datasets.universal_dataset import UniversalMRIDataset
+from spectramr.data.datasets.universal_dataset import UniversalMRIDataset
 
 
 def test_normalize_kspace_without_a_transform_raises() -> None:
@@ -40,7 +40,7 @@ def test_subject_builder_no_longer_takes_normalization_params() -> None:
     """
     import inspect
 
-    from mriforge.data.builders.torchio_subject_builder import FastMRISubjectBuilder
+    from spectramr.data.builders.torchio_subject_builder import FastMRISubjectBuilder
 
     params = inspect.signature(FastMRISubjectBuilder.__init__).parameters
     for gone in ("normalize_kspace", "kspace_percentile", "log_scaling"):

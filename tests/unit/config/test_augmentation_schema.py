@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.augmentation import AugmentationConfigSchema
+from spectramr.config.schemas.augmentation import AugmentationConfigSchema
 
 
 class TestAugmentationConfigSchema:

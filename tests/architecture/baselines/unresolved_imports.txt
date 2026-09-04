@@ -1,0 +1,17 @@
+# Intra-package `from X import Y` where X does not define Y.
+#
+# Each line raises ImportError the moment it executes — at RUNTIME when the
+# import is function-local, which is why no gate caught them. Each needs a
+# one-line fix, after which it must be DELETED from this file
+# (test_baseline_has_no_stale_entries enforces that direction).
+#
+# This baseline only ever shrinks. Never regenerate it to make the gate green
+# (CLAUDE.md non-negotiable 20).
+#
+#
+# --- open defects, tracked in #1642 -------------------------------------
+# physics_builder: the ImportError is caught, logged as a WARNING, and training
+# continues with parallel imaging declared but NO coil-sensitivity estimator.
+src/spectramr/infrastructure/training/builders/physics_builder.py:159 from spectramr.infrastructure.physics.coil_sensitivity import ESPIRiTSensitivity
+# trellis: registers fine, raises at construction — advertised but unbuildable.
+src/spectramr/models/trellis/sparse_structure_flow.py:211 from spectramr.models.blocks.trellis_transformer import ModulatedTransformerCrossBlock

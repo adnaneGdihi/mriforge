@@ -10,14 +10,14 @@ import torch
 
 class TestGradientReversalLayer:
     def test_forward_identity(self):
-        from mriforge.models.losses.domain_adversarial_grl import GradientReversalLayer
+        from spectramr.models.losses.domain_adversarial_grl import GradientReversalLayer
         grl = GradientReversalLayer(alpha=1.0)
         x = torch.randn(2, 8)
         y = grl(x)
         assert torch.allclose(y, x), "Forward should be identity"
 
     def test_backward_negates(self):
-        from mriforge.models.losses.domain_adversarial_grl import GradientReversalLayer
+        from spectramr.models.losses.domain_adversarial_grl import GradientReversalLayer
         grl = GradientReversalLayer(alpha=1.0)
         x = torch.randn(2, 4, requires_grad=True)
         y = grl(x)
@@ -29,7 +29,7 @@ class TestGradientReversalLayer:
         )
 
     def test_alpha_scaling(self):
-        from mriforge.models.losses.domain_adversarial_grl import GradientReversalLayer
+        from spectramr.models.losses.domain_adversarial_grl import GradientReversalLayer
         grl = GradientReversalLayer(alpha=0.5)
         x = torch.randn(2, 4, requires_grad=True)
         y = grl(x)
@@ -39,7 +39,7 @@ class TestGradientReversalLayer:
 
 class TestDomainAdversarialLoss:
     def test_output_keys(self):
-        from mriforge.models.losses.domain_adversarial_grl import DomainAdversarialLoss
+        from spectramr.models.losses.domain_adversarial_grl import DomainAdversarialLoss
         dal = DomainAdversarialLoss(latent_dim=16)
         z = torch.randn(4, 16)
         labels = torch.tensor([[0], [0], [1], [1]]).float()
@@ -48,7 +48,7 @@ class TestDomainAdversarialLoss:
         assert "domain_acc" in out
 
     def test_loss_is_scalar(self):
-        from mriforge.models.losses.domain_adversarial_grl import DomainAdversarialLoss
+        from spectramr.models.losses.domain_adversarial_grl import DomainAdversarialLoss
         dal = DomainAdversarialLoss(latent_dim=16)
         z = torch.randn(4, 16)
         labels = torch.tensor([[0], [0], [1], [1]]).float()
@@ -56,7 +56,7 @@ class TestDomainAdversarialLoss:
         assert out["domain_loss"].ndim == 0
 
     def test_4d_input(self):
-        from mriforge.models.losses.domain_adversarial_grl import DomainAdversarialLoss
+        from spectramr.models.losses.domain_adversarial_grl import DomainAdversarialLoss
         dal = DomainAdversarialLoss(latent_dim=16)
         z = torch.randn(2, 16, 8, 8)  # Feature map
         labels = torch.tensor([[0], [1]]).float()
@@ -64,7 +64,7 @@ class TestDomainAdversarialLoss:
         assert out["domain_loss"].ndim == 0
 
     def test_anneal_alpha(self):
-        from mriforge.models.losses.domain_adversarial_grl import DomainAdversarialLoss
+        from spectramr.models.losses.domain_adversarial_grl import DomainAdversarialLoss
         dal = DomainAdversarialLoss(latent_dim=16)
         a0 = dal.anneal_alpha(0.0)
         a1 = dal.anneal_alpha(1.0)
@@ -79,7 +79,7 @@ class TestDomainAdversarialLoss:
 
 class TestSpectralBandSplitLoss:
     def test_output_keys(self):
-        from mriforge.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
+        from spectramr.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
         sbs = SpectralBandSplitLoss()
         pred = torch.randn(1, 1, 16, 16)
         src = torch.randn(1, 1, 16, 16)
@@ -90,7 +90,7 @@ class TestSpectralBandSplitLoss:
         assert "spectral_total" in out
 
     def test_perfect_match_zero_loss(self):
-        from mriforge.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
+        from spectramr.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
         sbs = SpectralBandSplitLoss()
         img = torch.randn(1, 1, 16, 16)
         out = sbs(img, img, img)
@@ -98,7 +98,7 @@ class TestSpectralBandSplitLoss:
         assert out["loss_high"].item() < 1e-5
 
     def test_unpaired_mode(self):
-        from mriforge.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
+        from spectramr.models.losses.spectral_band_split_loss import SpectralBandSplitLoss
         sbs = SpectralBandSplitLoss()
         pred = torch.randn(1, 1, 16, 16)
         src = torch.randn(1, 1, 16, 16)
@@ -106,7 +106,7 @@ class TestSpectralBandSplitLoss:
         assert out["loss_high"].item() == 0.0
 
     def test_masks_complement(self):
-        from mriforge.models.losses.spectral_band_split_loss import _build_frequency_mask
+        from spectramr.models.losses.spectral_band_split_loss import _build_frequency_mask
         m_low = _build_frequency_mask((16, 16), 0.3, torch.device("cpu"), "low")
         m_high = _build_frequency_mask((16, 16), 0.3, torch.device("cpu"), "high")
         # Low + high should cover everything
@@ -120,14 +120,14 @@ class TestSpectralBandSplitLoss:
 
 class TestB0HyperNetwork:
     def test_output_shape(self):
-        from mriforge.models.generators.b0_hypernetwork import B0HyperNetwork
+        from spectramr.models.generators.b0_hypernetwork import B0HyperNetwork
         hyper = B0HyperNetwork(target_param_count=1000, hidden_dim=64, num_layers=2)
         b0 = torch.tensor([0.064])
         weights = hyper(b0)
         assert weights.shape == (1, 1000)
 
     def test_different_b0_different_weights(self):
-        from mriforge.models.generators.b0_hypernetwork import B0HyperNetwork
+        from spectramr.models.generators.b0_hypernetwork import B0HyperNetwork
         hyper = B0HyperNetwork(target_param_count=500, hidden_dim=64, num_layers=2)
         w_ulf = hyper(torch.tensor([0.064]))
         w_3t = hyper(torch.tensor([3.0]))
@@ -135,7 +135,7 @@ class TestB0HyperNetwork:
         assert diff > 0.1, "Different B₀ should produce different weights"
 
     def test_continuous_interpolation(self):
-        from mriforge.models.generators.b0_hypernetwork import B0HyperNetwork
+        from spectramr.models.generators.b0_hypernetwork import B0HyperNetwork
         hyper = B0HyperNetwork(target_param_count=500, hidden_dim=64, num_layers=2)
         b0_values = torch.linspace(0.064, 3.0, 10)
         weights = []
@@ -152,7 +152,7 @@ class TestB0HyperNetwork:
         )
 
     def test_differentiable(self):
-        from mriforge.models.generators.b0_hypernetwork import B0HyperNetwork
+        from spectramr.models.generators.b0_hypernetwork import B0HyperNetwork
         hyper = B0HyperNetwork(target_param_count=500, hidden_dim=64, num_layers=2)
         b0 = torch.tensor([1.5], requires_grad=True)
         w = hyper(b0)
@@ -160,7 +160,7 @@ class TestB0HyperNetwork:
         assert b0.grad is not None, "Gradients should flow through B₀"
 
     def test_batch_b0(self):
-        from mriforge.models.generators.b0_hypernetwork import B0HyperNetwork
+        from spectramr.models.generators.b0_hypernetwork import B0HyperNetwork
         hyper = B0HyperNetwork(target_param_count=500, hidden_dim=64, num_layers=2)
         b0 = torch.tensor([0.064, 1.5, 3.0])
         w = hyper(b0)

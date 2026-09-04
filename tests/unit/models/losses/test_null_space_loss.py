@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.null_space_loss import NullSpaceContentLoss
-from mriforge.models.losses.registry import create_loss, is_registered
+from spectramr.models.losses.null_space_loss import NullSpaceContentLoss
+from spectramr.models.losses.registry import create_loss, is_registered
 
 
 def _mask() -> torch.Tensor:
@@ -97,7 +97,7 @@ class TestRegistration:
         assert isinstance(loss_fn, NullSpaceContentLoss)
 
     def test_composes_with_other_kspace_losses(self):
-        from mriforge.models.losses.registry import create_composite_loss
+        from spectramr.models.losses.registry import create_composite_loss
 
         composite = create_composite_loss(
             {"l1": {"weight": 1.0}, "null_space_content": {"weight": 0.25}}

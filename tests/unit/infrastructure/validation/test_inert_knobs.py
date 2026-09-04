@@ -1,6 +1,6 @@
 """Unit tests for the declared-but-unread model-knob detector.
 
-Pairs with ``src/mriforge/infrastructure/validation/inert_knobs.py``.
+Pairs with ``src/spectramr/infrastructure/validation/inert_knobs.py``.
 
 The detector's whole value is its *precision*: a false positive sends an author
 to delete a live knob, which is strictly worse than the defect it reports. Most
@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.infrastructure.validation.inert_knobs import (
+from spectramr.infrastructure.validation.inert_knobs import (
     DELIBERATELY_UNREAD,
     InertKnob,
     find_inert_declared_knobs,
@@ -145,7 +145,7 @@ def test_regression_kspace_cold_diffusion_swallows_four_knobs():
     module tree and forward output bit-identical. If a fix lands, this test
     fails loudly and should be updated — that is the point.
     """
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceColdDiffusionGenerator,
     )
 

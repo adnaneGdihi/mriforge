@@ -3,7 +3,7 @@
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.ambient import AmbientTrainingConfigSchema
+from spectramr.config.schemas.training.ambient import AmbientTrainingConfigSchema
 
 
 def test_defaults():
@@ -35,13 +35,13 @@ def test_rejects_out_of_range_theta():
 
 
 def test_mounts_on_training_schema():
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     assert "ambient" in TrainingStrategyConfigSchema.model_fields
 
 
 def test_ambient_key_registered_and_resolvable():
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

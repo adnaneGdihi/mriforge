@@ -46,7 +46,7 @@ def _mask(b: int, h: int, w: int, accel: int = 4) -> torch.Tensor:
 @pytest.mark.physics
 def test_canary_data_consistency_imports():
     """All exported symbols import cleanly."""
-    from mriforge.infrastructure.physics.data_consistency import (
+    from spectramr.infrastructure.physics.data_consistency import (
         DataConsistencyLayer,
         AdaptiveDataConsistency,
         HardDataConsistency,
@@ -67,7 +67,7 @@ def test_canary_data_consistency_imports():
 @pytest.mark.physics
 def test_canary_data_consistency_layer_forward():
     """DataConsistencyLayer forward pass with complex inputs."""
-    from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
+    from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
     dc = DataConsistencyLayer()
     b, c, h, w = 1, 1, 16, 16
     pred = _img(b, c, h, w, complex_=True)
@@ -89,7 +89,7 @@ def test_canary_data_consistency_layer_forward():
     ids=["b1c1-16", "b2c1-32", "b1c1-rect"],
 )
 def test_hard_dc_shape(b, c, h, w):
-    from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
     dc = HardDataConsistency()
     pred = _img(b, c, h, w, complex_=True)
     meas = _img(b, c, h, w, complex_=True, seed=2)
@@ -103,8 +103,8 @@ def test_hard_dc_shape(b, c, h, w):
 def test_hard_dc_sampled_lines_replaced():
     """Hard DC must replace sampled k-space with measurements exactly
     (no blending) when mask=1 at sampled locations."""
-    from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
+    from spectramr.infrastructure.physics.fft_ops import fft2c
     dc = HardDataConsistency(train_noise_level=0.0, eval_noise_level=0.0)
     dc.eval()
     b, c, h, w = 1, 1, 16, 16
@@ -114,7 +114,7 @@ def test_hard_dc_sampled_lines_replaced():
     mask = torch.ones(b, 1, h, w)
     out = dc(pred, kspace_obs=meas, mask=mask)
     # With all-ones mask and zero noise, output should match IFFT(meas kspace)
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
     expected = ifft2c(meas)
     assert torch.allclose(out.abs(), expected.abs(), atol=1e-4)
 
@@ -130,7 +130,7 @@ def test_hard_dc_sampled_lines_replaced():
     ids=["b1c1-16", "b2c1-32"],
 )
 def test_soft_dc_shape(b, c, h, w):
-    from mriforge.infrastructure.physics.data_consistency import SoftDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import SoftDataConsistency
     dc = SoftDataConsistency(lambda_init=10.0)
     pred = _img(b, c, h, w, complex_=True)
     meas = _img(b, c, h, w, complex_=True, seed=3)
@@ -143,7 +143,7 @@ def test_soft_dc_shape(b, c, h, w):
 @pytest.mark.physics
 def test_soft_dc_lambda_is_learnable():
     """SoftDataConsistency lambda_param is a trainable Parameter."""
-    from mriforge.infrastructure.physics.data_consistency import SoftDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import SoftDataConsistency
     dc = SoftDataConsistency(lambda_init=5.0, learnable=True)
     params = list(dc.parameters())
     assert len(params) >= 1
@@ -157,7 +157,7 @@ def test_soft_dc_lambda_is_learnable():
 @pytest.mark.physics
 def test_target_aware_fsdc_shape():
     """TA-FSDC returns same [B, C_total, H, W] as input k-space."""
-    from mriforge.infrastructure.physics.data_consistency import TargetAwareFSDC
+    from spectramr.infrastructure.physics.data_consistency import TargetAwareFSDC
     b, c_total, h, w = 1, 8, 16, 16
     ta = TargetAwareFSDC(target_channels=4)
     kpred = torch.randn(b, c_total, h, w)
@@ -171,7 +171,7 @@ def test_target_aware_fsdc_shape():
 @pytest.mark.physics
 def test_target_aware_fsdc_hann_taper():
     """TA-FSDC with acs_taper='hann' runs without error."""
-    from mriforge.infrastructure.physics.data_consistency import TargetAwareFSDC
+    from spectramr.infrastructure.physics.data_consistency import TargetAwareFSDC
     b, c_total, h, w = 1, 4, 16, 16
     ta = TargetAwareFSDC(target_channels=2, acs_taper="hann")
     kpred = torch.randn(b, c_total, h, w)
@@ -188,7 +188,7 @@ def test_target_aware_fsdc_hann_taper():
 @pytest.mark.physics
 @pytest.mark.parametrize("patch_size", [1, 3, 5])
 def test_dc_passthrough_center_patch_shape(patch_size):
-    from mriforge.infrastructure.physics.data_consistency import dc_passthrough_center_patch
+    from spectramr.infrastructure.physics.data_consistency import dc_passthrough_center_patch
     b, c, h, w = 1, 2, 16, 16
     x = torch.randn(b, c, h, w)
     meas = torch.randn(b, c, h, w)
@@ -201,7 +201,7 @@ def test_dc_passthrough_center_patch_shape(patch_size):
 @pytest.mark.physics
 def test_dc_passthrough_noop_when_none():
     """dc_passthrough_center_patch is a no-op when measured or mask is None."""
-    from mriforge.infrastructure.physics.data_consistency import dc_passthrough_center_patch
+    from spectramr.infrastructure.physics.data_consistency import dc_passthrough_center_patch
     x = torch.randn(1, 2, 16, 16)
     out = dc_passthrough_center_patch(x, None, None, patch_size=3)
     assert torch.equal(out, x)
@@ -213,7 +213,7 @@ def test_dc_passthrough_noop_when_none():
 
 @pytest.mark.physics
 def test_conformal_dc_shape():
-    from mriforge.infrastructure.physics.data_consistency import ConformalDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import ConformalDataConsistency
     dc = ConformalDataConsistency(alpha=1.0)
     b, c, h, w = 1, 1, 16, 16
     recon = torch.randn(b, c, h, w)
@@ -232,7 +232,7 @@ def test_conformal_dc_shape():
 @pytest.mark.physics
 def test_data_consistency_function():
     """data_consistency() convenience function returns correct shape."""
-    from mriforge.infrastructure.physics.data_consistency import data_consistency
+    from spectramr.infrastructure.physics.data_consistency import data_consistency
     b, c, h, w = 1, 1, 16, 16
     x = _img(b, c, h, w, complex_=True)
     k_meas = _img(b, c, h, w, complex_=True, seed=7)
@@ -248,7 +248,7 @@ def test_data_consistency_function():
 @pytest.mark.physics
 def test_data_consistency_edge_all_zero_mask():
     """With all-zero mask the output should not be modified by measurements."""
-    from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
+    from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
     dc = DataConsistencyLayer(train_noise_level=0.0, eval_noise_level=0.0)
     dc.eval()
     b, c, h, w = 1, 1, 16, 16
@@ -263,7 +263,7 @@ def test_data_consistency_edge_all_zero_mask():
 @pytest.mark.physics
 def test_data_consistency_edge_complex_input_preserved():
     """Complex input produces complex output."""
-    from mriforge.infrastructure.physics.data_consistency import DataConsistencyLayer
+    from spectramr.infrastructure.physics.data_consistency import DataConsistencyLayer
     dc = DataConsistencyLayer()
     b, c, h, w = 1, 1, 16, 16
     pred = _img(b, c, h, w, complex_=True)
@@ -280,6 +280,6 @@ def test_data_consistency_edge_complex_input_preserved():
 @pytest.mark.physics
 def test_target_aware_fsdc_raises_invalid_taper():
     """TargetAwareFSDC must raise ValueError for unsupported acs_taper values."""
-    from mriforge.infrastructure.physics.data_consistency import TargetAwareFSDC
+    from spectramr.infrastructure.physics.data_consistency import TargetAwareFSDC
     with pytest.raises(ValueError, match="acs_taper"):
         TargetAwareFSDC(target_channels=4, acs_taper="blackman")

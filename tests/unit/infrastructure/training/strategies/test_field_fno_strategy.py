@@ -6,11 +6,11 @@ import types
 
 import torch
 
-from mriforge.infrastructure.training.strategies.field_fno_strategy import (
+from spectramr.infrastructure.training.strategies.field_fno_strategy import (
     FieldFNOStrategy,
     compute_field_fno_loss,
 )
-from mriforge.models.generators.field_conditioned_fno import FieldConditionedFNO
+from spectramr.models.generators.field_conditioned_fno import FieldConditionedFNO
 
 
 def _net() -> FieldConditionedFNO:
@@ -122,7 +122,7 @@ def test_score_fno_self_gates_on_bad_input() -> None:
 def test_validation_step_merges_field_sensitivity_witness(monkeypatch) -> None:
     # The witness must reach the returned metrics dict — the seam the run actually reads.
     # Stub the parent validation_step (resolved by super() via the MRO) to isolate the merge.
-    import mriforge.infrastructure.training.strategies.field_fno_strategy as mod
+    import spectramr.infrastructure.training.strategies.field_fno_strategy as mod
 
     monkeypatch.setattr(
         mod.ReconstructionTrainingStrategy,
@@ -141,8 +141,8 @@ def test_validation_step_merges_field_sensitivity_witness(monkeypatch) -> None:
 
 
 def test_strategy_registered_and_config_mounted() -> None:
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-    from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
 
     assert "field_fno" in TrainingStrategyFactory.STRATEGY_CLASS_PATHS
     assert "field_fno" in TrainingStrategyConfigSchema.model_fields
@@ -156,7 +156,7 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
     # never exercised this path. The guard must accept any mapping exposing .get.
     import types
 
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(_batch())
     strat = object.__new__(FieldFNOStrategy)
@@ -171,9 +171,9 @@ def test_compute_losses_accepts_canonical_trainingbatch() -> None:
 def test_builder_image_losses_folded_via_seam() -> None:
     """Declarative image losses (hfen/ms_ssim) are folded onto the inline L1 via the
     loss-SSOT seam; the inline l1 placeholder is skipped (no double-count)."""
-    from mriforge.data.batch_types import BatchAdapter
-    from mriforge.models.losses.charbonnier_loss import CharbonnierLoss
-    from mriforge.models.losses.hfen_loss import HFENLoss
+    from spectramr.data.batch_types import BatchAdapter
+    from spectramr.models.losses.charbonnier_loss import CharbonnierLoss
+    from spectramr.models.losses.hfen_loss import HFENLoss
 
     strat = object.__new__(FieldFNOStrategy)
     strat.env = types.SimpleNamespace(

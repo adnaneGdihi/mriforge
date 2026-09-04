@@ -23,10 +23,10 @@ Environment
 Most documented environment variables are read by nothing in this package
 --------------------------------------------------------------------------
 
-:doc:`environment_variables` documents **71** variables in the ``MRIFORGE_*`` /
+:doc:`environment_variables` documents **71** variables in the ``SPECTRAMR_*`` /
 ``SIM2RANK_*`` families. **48 of those names appear nowhere in the shipped
 package at all** -- 36 ``SIM2RANK_*`` belonging to the meta-evaluation batch
-pipeline, and 12 ``MRIFORGE_*`` test- and CI-harness knobs. Nothing here can read
+pipeline, and 12 ``SPECTRAMR_*`` test- and CI-harness knobs. Nothing here can read
 them, so setting one has no effect.
 
 This is absence rather than inertness, and the distinction matters: the 48 are
@@ -42,8 +42,8 @@ they are a description of the maintainers' cluster workflow, not an interface.
 
 To re-measure, from the root of a checkout::
 
-    grep -rhoE '\b(MRIFORGE|SIM2RANK)_[A-Z0-9_]{2,}' docs | sort -u > /tmp/documented
-    grep -rhoE '\b(MRIFORGE|SIM2RANK)_[A-Z0-9_]{2,}' src  | sort -u > /tmp/present
+    grep -rhoE '\b(SPECTRAMR|SIM2RANK)_[A-Z0-9_]{2,}' docs | sort -u > /tmp/documented
+    grep -rhoE '\b(SPECTRAMR|SIM2RANK)_[A-Z0-9_]{2,}' src  | sort -u > /tmp/present
     comm -23 /tmp/documented /tmp/present | wc -l      # -> 48
 
 Documentation
@@ -72,7 +72,7 @@ Configuration
 Unknown keys inside an ``extra="ignore"`` block are dropped in silence
 ----------------------------------------------------------------------
 
-The configuration schema is mostly strict: of the 338 schema classes reachable
+The configuration schema is mostly strict: of the 339 schema classes reachable
 from a config, **252 are** ``extra="forbid"`` and reject an unknown
 key outright. But **66 are** ``extra="ignore"``, and inside one of those a key
 the schema does not declare is discarded with no error and no warning. The YAML
@@ -96,8 +96,8 @@ To re-measure the class counts above:
 
    import typing
    from pydantic import BaseModel
-   from mriforge.config.schemas import training as training_schemas
-   from mriforge.config.settings import TrainingSettings
+   from spectramr.config.schemas import training as training_schemas
+   from spectramr.config.settings import TrainingSettings
 
    def models_in(annotation):
        """Unwrap typing constructs to a fixed point.
@@ -137,17 +137,25 @@ To re-measure the class counts above:
    print(sum(counts.values()), counts)
    print(sorted(m.__name__ for m in seen if m.model_config.get("extra") == "allow"))
 
-Twenty schema classes accept *any* key
---------------------------------------
+Twenty-one schema classes accept *any* key
+------------------------------------------
 
 ``extra="allow"`` is the opposite hazard: the key is not dropped, it is kept —
 as an untyped extra field that nothing validates and nothing reads. A typo
 becomes a carried value rather than an error.
 
-Twenty classes reachable from a config are ``extra="allow"``:
+One of them is open by design: ``TrainingSettings.metadata`` accepts any key
+because the corpus carries roughly 60 free-form ones (``note``, ``group``,
+``marker_source``, ...) that are prose for a human reader, and rejecting them
+would fail the config-load gate on most arms for no gain. Its ``status`` field
+is closed, which is the half that matters: a free-text status is how ~190 arms
+came to admit an unimplemented mechanism in words nothing read.
+
+Twenty-one classes reachable from a config are ``extra="allow"``:
 
 * ``AdapterStepSchema``
 * ``ColdParams`` [#du]_
+* ``ExperimentMetadataSchema``
 * ``KSDAuditConfigSchema``
 * ``LatentDiffusionParams`` [#du]_
 * ``LatentTrainingConfigSchema``
@@ -176,7 +184,7 @@ Twenty classes reachable from a config are ``extra="allow"``:
    a field of anything. A walk seeded only from ``TrainingSettings`` never
    arrives at one, which is why a later version of this page listed eight. The
    dispatch table is ``_MODE_DISPATCH`` in
-   ``mriforge/config/schemas/training/__init__.py``; a mode with no entry there
+   ``spectramr/config/schemas/training/__init__.py``; a mode with no entry there
    loads through the default schema, which is already counted above.
 
 These are deliberately open — they carry strategy- and transform-specific
@@ -189,17 +197,56 @@ knob is carried silently instead of rejected.
 ``config/presets/`` cannot load its own presets
 -----------------------------------------------
 
-The ``mriforge.config.presets`` subsystem is importable and documented, and
+The ``spectramr.config.presets`` subsystem is importable and documented, and
 resolves nothing. ``discover_and_register_presets()`` returns ``0`` and
 ``get_baseline_presets()`` returns ``[]``, because discovery defaults to an
 experiments directory and globs ``experiment_*.yaml`` while the three shipped
 presets are named ``baseline_*.yaml``. The example in
-``mriforge/config/presets/cli.py``'s own docstring raises ``KeyError``.
+``spectramr/config/presets/cli.py``'s own docstring raises ``KeyError``.
 
 Do not build on this module. Load configuration from a YAML file instead, which
 is the path everything else uses.
 
 Tracked as issue #1563.
+
+Continuous integration does not run
+-----------------------------------
+
+``.github/workflows/`` ships and **does** execute here. This section previously said
+the opposite -- "none of it executes, GitHub Actions is disabled for this project" --
+which was true when this repository was created and is no longer: Actions is enabled,
+and ``pr-required.yml`` (8 jobs, 13 guard scripts, the architecture fitness functions
+and the YAML-audit tier) fires on real pull requests.
+
+Read the correction rather than only the conclusion, because the retired sentence was
+load-bearing in one dangerous place: it described ``release.yml`` as "tag-triggered and
+equally inert, so a first publish needs ``python -m build && twine upload`` by hand".
+``release.yml`` triggers on ``push:`` of a ``v*`` tag and publishes to PyPI through
+Trusted Publishing. With Actions enabled, **pushing a version tag publishes** -- it is
+not a local, reversible act, and PyPI never re-issues a filename it has already seen.
+Push the commit first, confirm the lane is green, and tag only when you intend to
+release.
+
+Note which repository each statement is about. Actions is disabled on the private
+research repository, which is why ``make gate`` exists there: it *derives* the local
+lane by parsing ``pr-required.yml`` rather than restating it. That is a property of
+that tree, not of this one, and a claim carried across the two is how this section
+came to be wrong. ``tests/unit/ci/test_workflow_triggers.py`` takes the workflows as
+its subject in both.
+
+This is stated here rather than left to be inferred from a badge. Run the lane
+yourself:
+
+.. code-block:: console
+
+   $ make gate                                    # the whole lane
+   $ make gate GATE_ARGS="--list"                 # what it derived, without running
+   $ make gate GATE_ARGS="--jobs guards --quiet"  # one job
+
+It reports three states and never folds the third into the first: ``PASS``,
+``FAIL`` (exit 1) and ``UNRUNNABLE`` (exit 2, a required tool is absent). An
+unrunnable step is not a pass -- which is the same distinction the next entry on
+this page makes about a green ``audit``.
 
 Auditing
 ========
@@ -207,7 +254,7 @@ Auditing
 A green ``audit`` does not mean every check ran
 -----------------------------------------------
 
-``mriforge audit`` runs about 150 config checks. On any given arm a number of them
+``spectramr audit`` runs about 150 config checks. On any given arm a number of them
 do not run -- 17 of 144 on the arm sampled below. A check that declined to run is
 reported with ``passed: true`` at ``severity: info``, does not affect the exit
 code, and **is printed with the same green tick as a check that passed**:
@@ -243,7 +290,7 @@ To see which checks declined on your own arm:
 
 .. code-block:: console
 
-   $ mriforge audit <arm>.yaml | grep -i skip
+   $ spectramr audit <arm>.yaml | grep -i skip
 
 A tick beside the word *skipping* is a check that did not run. That is not the
 same as a check that passed.
@@ -264,21 +311,21 @@ already installed. Install it as a second step:
 
 Without it, Mamba models **fail loudly** rather than degrading. The Gated-Conv +
 GRU fallback exists only for CPU/CI wiring tests and is opt-in through
-``MRIFORGE_ALLOW_MAMBA_FALLBACK``; it is not an approximation of the Mamba path
+``SPECTRAMR_ALLOW_MAMBA_FALLBACK``; it is not an approximation of the Mamba path
 and must not be used for results.
 
 Some optional features have no ``pip install`` route
 ----------------------------------------------------
 
-MRIForge declares seventeen optional-dependency extras, and the pattern is
+spectraMR declares seventeen optional-dependency extras, and the pattern is
 consistent: a feature that needs a package outside the core install gets an
 extra, and its runtime guard raises a clean ``ImportError`` naming that package.
-``pip install "mriforge[iqa]"`` enables the closed-form perceptual metrics,
+``pip install "spectramr[iqa]"`` enables the closed-form perceptual metrics,
 ``[topology]`` enables the persistent-homology losses, and so on.
 
 **Twenty optional packages are guarded in the source but appear in no extra.**
 The guard half works — you get an accurate error naming the package — but there
-is no ``mriforge[...]`` group that installs it, ``[all]`` included. You have to
+is no ``spectramr[...]`` group that installs it, ``[all]`` included. You have to
 install it yourself.
 
 Four registered component names are affected. Each is present in its registry, so
@@ -351,7 +398,7 @@ is possible; reading a known-good arm that produced a published result is not.
 The two remaining files under ``experiments/templates/`` are withheld on purpose
 rather than overlooked: a template is *copied*, so one that does not parse is
 worse than an absent one -- the reader's first act inherits the defect. Both were
-measured with ``mriforge audit``, not assumed.
+measured with ``spectramr audit``, not assumed.
 
 **Consequence:** a handful of test gates in the private tree exist to check that
 corpus, and cannot be meaningful without it. They are removed here rather than

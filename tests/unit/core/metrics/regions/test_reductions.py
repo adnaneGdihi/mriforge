@@ -19,11 +19,11 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.regions.reductions import (  # noqa: E402
+from spectramr.core.metrics.regions.reductions import (  # noqa: E402
     MAP_REDUCERS,
     masked_mean,
 )
-from mriforge.core.metrics.registry import get_metric  # noqa: E402
+from spectramr.core.metrics.registry import get_metric  # noqa: E402
 
 
 @pytest.fixture

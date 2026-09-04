@@ -22,8 +22,8 @@ import types
 import pytest
 import torch
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.strategies.stargan_v2_strategy import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.strategies.stargan_v2_strategy import (
     StarGANv2TrainingStrategy,
 )
 
@@ -81,10 +81,10 @@ def _make_strategy(
     strat.config = config
     gen = disc = opt_g = opt_d = None
     if wire_optimizers:
-        from mriforge.models.discriminators.stargan_v2_discriminator import (
+        from spectramr.models.discriminators.stargan_v2_discriminator import (
             StarGANv2Discriminator,
         )
-        from mriforge.models.generators.stargan_v2 import StarGANv2Generator
+        from spectramr.models.generators.stargan_v2 import StarGANv2Generator
 
         gen = StarGANv2Generator(img_channels=1, style_dim=64)
         disc = StarGANv2Discriminator(img_channels=1, num_domains=5)
@@ -409,7 +409,7 @@ def test_r1_enabled_when_enable_r1_true() -> None:
 # --------------------------------------------------------------------------- #
 def test_strategy_registered_in_factory() -> None:
     """The ``stargan_v2`` short-name resolves via the strategy factory."""
-    from mriforge.infrastructure.training.strategy_factory import (
+    from spectramr.infrastructure.training.strategy_factory import (
         TrainingStrategyFactory,
     )
 

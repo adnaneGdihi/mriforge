@@ -326,7 +326,7 @@ class TestMetricsList:
         """
         pytest.importorskip("scripts.sim2rank.metrics_list")  # not in the public export
         from scripts.sim2rank.metrics_list import METRIC_KEYS
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         all_registered = set(MetricsRegistry.list_available())
         included = set(METRIC_KEYS)
@@ -624,7 +624,7 @@ class TestSweepMetricsAreMeasurable:
     def test_added_metric_is_finite_and_moves_with_severity(self, key: str) -> None:
         import math
 
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         if key == "lpips_alex":
             # optional dep (pyproject [eval]); a .[test]-only env should skip,

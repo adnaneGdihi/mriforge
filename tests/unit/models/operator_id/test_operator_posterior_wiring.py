@@ -5,8 +5,8 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.operator_id import OperatorIDConfig
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.config.schemas.training.operator_id import OperatorIDConfig
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 # --- config knob -------------------------------------------------------------
@@ -82,7 +82,7 @@ def test_strategy_consumes_laplace_posterior():
     (not a dead knob, pitfall #15) — asserted from source."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies.operator_id_bch_strategy import (
+    from spectramr.infrastructure.training.strategies.operator_id_bch_strategy import (
         OperatorIdBCHTrainingStrategy,
     )
 

@@ -13,7 +13,7 @@ matplotlib.use("Agg")
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import computational_profile
+from spectramr.infrastructure.reporting.plotters import computational_profile
 
 
 def _run_facts_frame() -> pd.DataFrame:

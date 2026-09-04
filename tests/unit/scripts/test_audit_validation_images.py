@@ -73,7 +73,7 @@ class TestValidationFlags:
 
     def test_every_label_resolves_to_a_declared_schema_path(self) -> None:
         """Ratchet: a future rename must break this, not go quietly None."""
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         mod = _module()
         arms = tracked_yamls(DRAINED_COHORT)

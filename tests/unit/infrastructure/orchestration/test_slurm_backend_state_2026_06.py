@@ -8,7 +8,7 @@ cancelled job was re-queried forever and ``all_terminal`` never went True.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.orchestration.slurm_backend import JobStatus
+from spectramr.infrastructure.orchestration.slurm_backend import JobStatus
 
 
 def _status(state):

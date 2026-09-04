@@ -1,6 +1,6 @@
 """Tests for ``WelfordStatistics``.
 
-Targets ``mriforge.shared.utils.welford``. Welford's online algorithm
+Targets ``spectramr.shared.utils.welford``. Welford's online algorithm
 computes mean / variance / std in a single pass with O(1) memory
 overhead — a load-bearing primitive for any cross-batch normalisation
 or running-stats accumulation.
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.shared.utils.welford import WelfordStatistics
+from spectramr.shared.utils.welford import WelfordStatistics
 
 
 # ---------------------------------------------------------------------------

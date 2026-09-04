@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.data.transforms.physics_sync`.
+"""Tests for :mod:`spectramr.data.transforms.physics_sync`.
 
 Pins the ``fft_norm`` knob contract: ``fft2c`` from
 ``infrastructure.physics.fft_ops`` is always ortho-normalised, so the
@@ -13,7 +13,7 @@ import pytest
 torch = pytest.importorskip("torch")
 tio = pytest.importorskip("torchio")
 
-from mriforge.data.transforms.physics_sync import PhysicsSynchronization  # noqa: E402
+from spectramr.data.transforms.physics_sync import PhysicsSynchronization  # noqa: E402
 
 
 def test_default_fft_norm_is_ortho() -> None:
@@ -65,7 +65,7 @@ class TestItRefusesToTreatKspaceAsAnImage:
         """`input` + a distinct `kspace` cannot be disambiguated by key name."""
         import torch
 
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         subject = self._subject(
             input=torch.rand(1, 8, 8, 1), kspace=torch.rand(2, 8, 8, 1)
@@ -79,7 +79,7 @@ class TestItRefusesToTreatKspaceAsAnImage:
         """"Ambiguous" invites a coin flip. Naming the consequence does not."""
         import torch
 
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         with pytest.raises(ValueError) as exc:
             PhysicsSynchronization()(
@@ -95,7 +95,7 @@ class TestItRefusesToTreatKspaceAsAnImage:
         """The caller knows what the transform cannot infer."""
         import torch
 
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         subject = self._subject(
             mri=torch.rand(1, 8, 8, 1), kspace=torch.rand(2, 8, 8, 1)
@@ -107,7 +107,7 @@ class TestItRefusesToTreatKspaceAsAnImage:
         """The behaviour the transform exists for is unchanged."""
         import torch
 
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         out = PhysicsSynchronization()(self._subject(input=torch.rand(1, 8, 8, 1)))
         assert "kspace" in out
@@ -117,7 +117,7 @@ class TestItRefusesToTreatKspaceAsAnImage:
         one, so it should be the last resort, not the first guess."""
         import inspect
 
-        from mriforge.data.transforms.physics_sync import PhysicsSynchronization
+        from spectramr.data.transforms.physics_sync import PhysicsSynchronization
 
         src = inspect.getsource(PhysicsSynchronization.apply_transform)
         code = "\n".join(
@@ -134,7 +134,7 @@ class TestTheBuilderSkipsItOnKspaceArms:
     def test_kspace_arm_gets_no_physics_sync(self) -> None:
         import inspect
 
-        from mriforge.data.builders.torchio_transform_builder import (
+        from spectramr.data.builders.torchio_transform_builder import (
             TorchIOTransformBuilder,
         )
 
@@ -144,7 +144,7 @@ class TestTheBuilderSkipsItOnKspaceArms:
     def test_the_gate_uses_the_shared_predicate(self) -> None:
         """Not a local re-derivation — `data/signal_domain.py` is the one home,
         and `spec_card` reads the same fact."""
-        from mriforge.data.signal_domain import is_kspace_dataset_type
+        from spectramr.data.signal_domain import is_kspace_dataset_type
 
         assert is_kspace_dataset_type("m4raw")
         assert not is_kspace_dataset_type("nifti_paired")

@@ -1,6 +1,6 @@
 """Tests for ``PerCallMetricSink``.
 
-Targets ``mriforge.infrastructure.reporting.cases.metric_sink``: enable gate,
+Targets ``spectramr.infrastructure.reporting.cases.metric_sink``: enable gate,
 scalar-only filtering, stable column order, memory cap, and CSV round-trip.
 """
 
@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
+from spectramr.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
 
 
 def test_disabled_sink_is_noop(tmp_path):
@@ -201,11 +201,11 @@ def test_every_declared_context_column_is_actually_emitted():
     """
     import inspect
 
-    from mriforge.infrastructure.reporting.cases.metric_sink import CONTEXT_COLUMNS
-    from mriforge.infrastructure.training.strategies.diffusion import (
+    from spectramr.infrastructure.reporting.cases.metric_sink import CONTEXT_COLUMNS
+    from spectramr.infrastructure.training.strategies.diffusion import (
         DiffusionTrainingStrategy,
     )
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 

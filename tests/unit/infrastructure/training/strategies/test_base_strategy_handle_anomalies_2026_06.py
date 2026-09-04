@@ -19,7 +19,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):

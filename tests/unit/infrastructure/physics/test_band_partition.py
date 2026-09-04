@@ -16,7 +16,7 @@ torch = pytest.importorskip("torch")
 
 from torch.nn.functional import avg_pool2d, interpolate  # noqa: E402
 
-from mriforge.infrastructure.physics.band_partition import (  # noqa: E402
+from spectramr.infrastructure.physics.band_partition import (  # noqa: E402
     acquisition_rho,
     band_edges,
     band_masks,
@@ -24,10 +24,10 @@ from mriforge.infrastructure.physics.band_partition import (  # noqa: E402
     band_transfer,
     super_nyquist_band_indices,
 )
-from mriforge.infrastructure.physics.subpixel_registration import (  # noqa: E402
+from spectramr.infrastructure.physics.subpixel_registration import (  # noqa: E402
     fourier_shift,
 )
-from mriforge.infrastructure.physics.virtual_fiducial import (  # noqa: E402
+from spectramr.infrastructure.physics.virtual_fiducial import (  # noqa: E402
     VirtualFiducial,
 )
 

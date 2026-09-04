@@ -1,14 +1,14 @@
 # Write an experiment YAML
 
-Every experiment in MRIForge is one YAML file. The schema is the canonical
+Every experiment in spectraMR is one YAML file. The schema is the canonical
 v6.0 layout — frozen Pydantic v2 models defined in
-`src/mriforge/config/schemas/`. The audit ladder catches mistakes before
+`src/spectramr/config/schemas/`. The audit ladder catches mistakes before
 training starts.
 
 This page is the short, opinionated walkthrough. The dry exhaustive
 reference is at [YAML schema](../reference/yaml_schema.md). For
 multi-experiment campaigns see
-[campaigns_user_guide](https://github.com/adnaneGdihi/mriforge/blob/main/docs/campaigns_user_guide.rst).
+[campaigns_user_guide](https://github.com/adnaneGdihi/spectramr/blob/main/docs/campaigns_user_guide.rst).
 
 ## Where the file lives
 
@@ -21,7 +21,7 @@ multi-experiment campaigns see
 | `experiments/templates/` | Copy-paste starting points. |
 
 The promotion path is **always** `inprogress → active`, never the other
-direction. See the [four-step paradigm recipe](https://github.com/adnaneGdihi/mriforge/blob/main/CONTRIBUTING.md#adding-a-new-training-paradigm-four-step-recipe).
+direction. See the [four-step paradigm recipe](https://github.com/adnaneGdihi/spectramr/blob/main/CONTRIBUTING.md#adding-a-new-training-paradigm-four-step-recipe).
 
 ## The 12 required blocks
 
@@ -54,7 +54,7 @@ checkpoint:
 data:
   coil_processing_mode: rss          # or 'sense', 'as_is'
   dataset_type: nifti_paired         # see schema for full list
-  data_root: ${MRIFORGE_DATA_ROOT}/processed/ulf_to_hf_ldm/train
+  data_root: ${SPECTRAMR_DATA_ROOT}/processed/ulf_to_hf_ldm/train
   patch_size: [256, 256, 1]
   batch_size: 2
   num_workers: 4
@@ -95,7 +95,7 @@ optimization:
 
 training:
   training_mode: <registered_mode>
-  strategy_class: mriforge.infrastructure.training.strategies.<...>
+  strategy_class: spectramr.infrastructure.training.strategies.<...>
   epochs: 100
   device: cuda
   seed: 42
@@ -165,7 +165,7 @@ mrf:
   n_timepoints: 1000
   sar_max_w_per_kg: 4.0
   gradient_slew_rate_t_per_m_per_s: 200.0
-  phantom_calibration_path: ${MRIFORGE_DATA_ROOT}/calibration/phantom.h5
+  phantom_calibration_path: ${SPECTRAMR_DATA_ROOT}/calibration/phantom.h5
 ```
 
 The required subset depends on which MRF audit-plan validators are wired
@@ -200,24 +200,24 @@ epoch 1.
 ### 7. Strategy class + `training_mode` must agree
 
 `training_mode` is matched against `TRAINING_MODE_CONSTRAINTS` in
-`src/mriforge/config/validation_constants.py`. Adding a new strategy
+`src/spectramr/config/validation_constants.py`. Adding a new strategy
 means adding **three** entries: `STRATEGY_CLASS_PATHS`,
 `VALID_TRAINING_MODES`, and `TRAINING_MODE_CONSTRAINTS`. See
 [add_paradigm](add_paradigm.md#2-register-the-dispatch-key).
 
-### 8. Use `${MRIFORGE_DATA_ROOT}` for data paths
+### 8. Use `${SPECTRAMR_DATA_ROOT}` for data paths
 
 Never hardcode a cluster path. The audit's `hardcoded_cluster_paths`
 check rejects any data field starting with `/project/<user>/` or
 `/scratch/<user>/` *unless* that prefix matches your own
-`MRIFORGE_DATA_ROOT` / `PROJECT_ROOT` env var (see
+`SPECTRAMR_DATA_ROOT` / `PROJECT_ROOT` env var (see
 [CLUSTER_DATA_LAYOUT.md](../CLUSTER_DATA_LAYOUT.md)).
 
 ## Validate before launching
 
 ```bash
-mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml             # Tier 0+1, ~100ms
-mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml --probe     # adds Tier 2 (~30s, GPU)
+spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml             # Tier 0+1, ~100ms
+spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml --probe     # adds Tier 2 (~30s, GPU)
 ```
 
 `--strict` (default in the smoke wrapper) exits non-zero on any warning.
@@ -228,10 +228,10 @@ mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml --probe     # adds T
 |---|---|---|
 | `extra="forbid"` | YAML has a key the schema doesn't know | Either drop the key, or add it to the appropriate sub-schema |
 | `ValidationError: training_mode` | Typo in the alias | Check `VALID_TRAINING_MODES` |
-| `paradigm_required_fields` | Diffusion paradigm missing `training.diffusion` block | Add it (gotcha #1) |
-| `domain_alignment` | RSS + 2-channel mismatch | Fix `model.in_channels` (gotcha #3) |
-| `loss_domain_block_match` | Loss in wrong block | Move it (gotcha #2) |
-| `hardcoded_cluster_paths` | Literal `/project/...` in YAML | Use `${MRIFORGE_DATA_ROOT}` (gotcha #8) |
+| `paradigm_required_fields` | Diffusion paradigm missing `training.diffusion` block | Add it (gotcha 1) |
+| `domain_alignment` | RSS + 2-channel mismatch | Fix `model.in_channels` (gotcha 3) |
+| `loss_domain_block_match` | Loss in wrong block | Move it (gotcha 2) |
+| `hardcoded_cluster_paths` | Literal `/project/...` in YAML | Use `${SPECTRAMR_DATA_ROOT}` (gotcha 8) |
 
 ## Reference YAMLs to copy from
 

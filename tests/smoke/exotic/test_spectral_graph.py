@@ -9,7 +9,7 @@ Verifies:
 import pytest
 import torch
 
-from mriforge.models.topological.spectral_graph import CoilGraph, SpectralGraphTransformer
+from spectramr.models.topological.spectral_graph import CoilGraph, SpectralGraphTransformer
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

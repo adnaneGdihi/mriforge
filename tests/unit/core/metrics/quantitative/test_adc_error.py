@@ -5,7 +5,7 @@ import math
 
 import torch
 
-from mriforge.core.metrics.quantitative.adc_error import ADCMeanAbsoluteError
+from spectramr.core.metrics.quantitative.adc_error import ADCMeanAbsoluteError
 
 
 def test_zero_error_for_identical_maps() -> None:
@@ -37,6 +37,6 @@ def test_lower_is_better() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.core.metrics.registry import MetricsRegistry
+    from spectramr.core.metrics.registry import MetricsRegistry
 
     assert MetricsRegistry.is_registered("adc_mae")

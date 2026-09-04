@@ -19,7 +19,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.blocks.mamba_block import MambaBlock  # noqa: E402
+from spectramr.models.blocks.mamba_block import MambaBlock  # noqa: E402
 from tests.utils.optional_backends import (  # noqa: E402
     HAS_MAMBA_SSM,
     HAS_TORCH_FIDELITY,
@@ -36,7 +36,7 @@ def test_mamba_probe_agrees_with_what_the_block_dispatches_to(monkeypatch) -> No
     block's two-step import, and a duplicated decision is one that can disagree.
     Constructing the block is the arbiter.
     """
-    monkeypatch.delenv("MRIFORGE_ALLOW_MAMBA_FALLBACK", raising=False)
+    monkeypatch.delenv("SPECTRAMR_ALLOW_MAMBA_FALLBACK", raising=False)
 
     if not HAS_MAMBA_SSM:
         # No kernel -> fail loud, no CUDA involved. The marker must stay quiet.

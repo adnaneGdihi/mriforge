@@ -12,7 +12,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.epi_forward import (
+from spectramr.infrastructure.physics.epi_forward import (
     apply_epi_distortion,
     b0_to_displacement,
     beltrami_from_b0,
@@ -97,7 +97,7 @@ class TestBeltramiFromB0:
     def test_agrees_with_wirtinger_form_on_pure_b0(self) -> None:
         # The specialised one-axial closed form must agree with the general
         # Wirtinger construction on a pure-B0 field varying only along PE.
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         h = w = 48
         yy, _ = torch.meshgrid(
@@ -128,7 +128,7 @@ class TestUnifiedBeltramiB0GNL:
     def test_identity_when_no_distortion(self) -> None:
         import torch
 
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         b0, gnl = self._scene()
         mu = beltrami_from_b0_and_gnl(torch.zeros_like(b0), torch.zeros_like(gnl))
@@ -137,7 +137,7 @@ class TestUnifiedBeltramiB0GNL:
     def test_unifies_both_sources(self) -> None:
         import torch
 
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         b0, gnl = self._scene()
         mu_b0 = beltrami_from_b0_and_gnl(b0, torch.zeros_like(gnl))
@@ -148,8 +148,8 @@ class TestUnifiedBeltramiB0GNL:
         assert float((mu_both - mu_b0).abs().max()) > 1e-3  # GNL genuinely unifies in
 
     def test_quasiconformal_and_solver_compatible(self) -> None:
-        from mriforge.infrastructure.physics.conformal_geometry import LinearBeltramiSolver
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.conformal_geometry import LinearBeltramiSolver
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         b0, gnl = self._scene()
         mu = beltrami_from_b0_and_gnl(b0, gnl)
@@ -164,7 +164,7 @@ class TestUnifiedBeltramiB0GNL:
         # KNOWN value (not just non-zero), so a sign/convention error in d_z / d_zbar would fail.
         import torch
 
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         c = 0.2
         h = w = 48
@@ -181,7 +181,7 @@ class TestUnifiedBeltramiB0GNL:
         import pytest
         import torch
 
-        from mriforge.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
+        from spectramr.infrastructure.physics.epi_forward import beltrami_from_b0_and_gnl
 
         with pytest.raises(ValueError):
             beltrami_from_b0_and_gnl(torch.zeros(1, 1, 8, 8), torch.zeros(1, 1, 8, 8))  # gnl needs 2 ch

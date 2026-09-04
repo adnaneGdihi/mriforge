@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.generators.latent_diffusion_generator import (
+from spectramr.models.generators.latent_diffusion_generator import (
     LatentDiffusionGenerator,
     LatentDiffusionGeneratorConfig,
 )
@@ -46,11 +46,11 @@ class MockCLIPTokenizer:
 def mock_transformers():
     with (
         patch(
-            "mriforge.models.generators.latent_diffusion_generator.CLIPTextModel",
+            "spectramr.models.generators.latent_diffusion_generator.CLIPTextModel",
             MockCLIPTextModel,
         ),
         patch(
-            "mriforge.models.generators.latent_diffusion_generator.CLIPTokenizer",
+            "spectramr.models.generators.latent_diffusion_generator.CLIPTokenizer",
             MockCLIPTokenizer,
         ),
     ):

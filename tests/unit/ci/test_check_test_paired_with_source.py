@@ -57,20 +57,20 @@ def _commit(repo: Path, *rel_paths: str) -> str:
 
 def test_source_without_test_fails(repo: Path) -> None:
     base = _git(repo, "rev-parse", "HEAD")
-    head = _commit(repo, "src/mriforge/core/thing.py")
+    head = _commit(repo, "src/spectramr/core/thing.py")
     assert gate.main(["--base", base, "--head", head]) == 1
 
 
 def test_source_with_test_passes(repo: Path) -> None:
     base = _git(repo, "rev-parse", "HEAD")
-    head = _commit(repo, "src/mriforge/core/thing.py", "tests/unit/core/test_thing.py")
+    head = _commit(repo, "src/spectramr/core/thing.py", "tests/unit/core/test_thing.py")
     assert gate.main(["--base", base, "--head", head]) == 0
 
 
 def test_init_only_change_passes(repo: Path) -> None:
     """__init__.py is re-exports; it carries no behavior to test."""
     base = _git(repo, "rev-parse", "HEAD")
-    head = _commit(repo, "src/mriforge/core/__init__.py")
+    head = _commit(repo, "src/spectramr/core/__init__.py")
     assert gate.main(["--base", base, "--head", head]) == 0
 
 
@@ -87,10 +87,10 @@ def test_staged_mode_still_works_with_nothing_staged(repo: Path) -> None:
 
 
 def test_staged_mode_catches_unpaired_source(repo: Path) -> None:
-    path = repo / "src" / "mriforge" / "core" / "thing.py"
+    path = repo / "src" / "spectramr" / "core" / "thing.py"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("x = 1\n")
-    _git(repo, "add", "src/mriforge/core/thing.py")
+    _git(repo, "add", "src/spectramr/core/thing.py")
     assert gate.main([]) == 1
 
 

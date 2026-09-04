@@ -11,7 +11,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.spectral.kan_inr import KANINR
+from spectramr.models.spectral.kan_inr import KANINR
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

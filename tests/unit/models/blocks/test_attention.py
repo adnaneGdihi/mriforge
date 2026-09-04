@@ -13,7 +13,7 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.models.blocks.attention import (
+from spectramr.models.blocks.attention import (
     KernelizedAttention,
     LinearAttention,
     WindowAttention,
@@ -140,7 +140,7 @@ def _kspace_feature(seed: int = 0, C: int = 32, H: int = 32, W: int = 32) -> tor
 
 def test_identity_at_init_is_bit_exact() -> None:
     """Not "close to" identity: the output must BE the input at step 0."""
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
 
     x = _kspace_feature()
     wrapped = IdentityAtInitAttention(ChannelAttention(x.shape[1])).eval()
@@ -154,7 +154,7 @@ def test_identity_at_init_is_bit_exact() -> None:
 
 def test_gamma_one_reproduces_the_raw_block() -> None:
     """No expressivity is given up: gamma interpolates identity -> native block."""
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
 
     torch.manual_seed(3)
     inner = ChannelAttention(32)
@@ -173,7 +173,7 @@ def test_gamma_receives_gradient_so_it_leaves_zero() -> None:
     The loss must not be purely quadratic in the block's own output -- for a
     multiplicative zero scale that gives exactly 0 and says nothing.
     """
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
 
     torch.manual_seed(0)
     wrapped = IdentityAtInitAttention(ChannelAttention(16))
@@ -193,8 +193,8 @@ def test_t_emb_is_forwarded_by_signature_not_by_class_tuple() -> None:
     block's timestep conditioning -- and the same trap waits for any future
     time-conditioned block. Detection is by signature instead.
     """
-    from mriforge.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
-    from mriforge.models.blocks.dual_domain_attention_kan import (
+    from spectramr.models.blocks.attention import ChannelAttention, IdentityAtInitAttention
+    from spectramr.models.blocks.dual_domain_attention_kan import (
         KANGatedDualDomainAttention,
     )
 
@@ -215,7 +215,7 @@ def test_t_emb_is_forwarded_by_signature_not_by_class_tuple() -> None:
 def test_shape_changing_inner_raises_rather_than_broadcasting() -> None:
     """A block that alters the feature shape is a wiring error, not something to
     silently broadcast against the residual (pitfall #9)."""
-    from mriforge.models.blocks.attention import IdentityAtInitAttention
+    from spectramr.models.blocks.attention import IdentityAtInitAttention
 
     class _Shrinks(nn.Module):
         def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -232,7 +232,7 @@ def test_cross_contrast_olmpa_is_identity_at_init() -> None:
     Without the zero output scale it emitted 150-190x the target's norm across
     seeds, so the bottleneck carried almost pure attention output at step 0.
     """
-    from mriforge.models.blocks.attention import CrossContrastOLMPA
+    from spectramr.models.blocks.attention import CrossContrastOLMPA
 
     for seed in range(3):
         torch.manual_seed(seed)
@@ -244,7 +244,7 @@ def test_cross_contrast_olmpa_is_identity_at_init() -> None:
 
 
 def test_cross_contrast_olmpa_out_scale_trains_off_zero() -> None:
-    from mriforge.models.blocks.attention import CrossContrastOLMPA
+    from spectramr.models.blocks.attention import CrossContrastOLMPA
 
     torch.manual_seed(0)
     block = CrossContrastOLMPA(in_channels=8, num_contrasts=1, phase_safe_dim=8)
@@ -273,7 +273,7 @@ class TestPhaseSafeDualAttentionReductionIsLive:
         return block.query_proj[0].out_channels
 
     def test_reduction_changes_the_projection_width(self):
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         wide = PhaseSafeDualAttention(in_channels=8, num_heads=1, reduction=1)
         narrow = PhaseSafeDualAttention(in_channels=8, num_heads=1, reduction=4)
@@ -283,21 +283,21 @@ class TestPhaseSafeDualAttentionReductionIsLive:
 
     def test_default_reduction_is_unchanged_so_checkpoints_still_load(self):
         """reduction=1 must give the pre-fix width, or every state_dict breaks."""
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         block = PhaseSafeDualAttention(in_channels=4, num_heads=1, reduction=1)
         assert self._hidden_dim(block) == 8  # in_channels * 2, as before
 
     def test_reduction_never_collapses_the_projection_to_zero(self):
         """The floor is 1 channel, not 0 -- Conv2d(out_channels=0) is invalid."""
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         block = PhaseSafeDualAttention(in_channels=1, num_heads=1, reduction=64)
         assert self._hidden_dim(block) == 1
 
     def test_a_reduction_below_one_raises_rather_than_degrading(self):
         """Non-negotiable #3: an illegal value raises, it does not fall back."""
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         with pytest.raises(ValueError, match="reduction must be >= 1"):
             PhaseSafeDualAttention(in_channels=8, num_heads=1, reduction=0)

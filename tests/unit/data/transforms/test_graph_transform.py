@@ -8,8 +8,8 @@ registry like everything else, so the special case is gone.
 
 from __future__ import annotations
 
-from mriforge.data.transforms.graph_transform import GraphEncodingTransform
-from mriforge.data.transforms.registry import build_transform, get_transform
+from spectramr.data.transforms.graph_transform import GraphEncodingTransform
+from spectramr.data.transforms.registry import build_transform, get_transform
 
 
 def test_graph_encoding_is_registered() -> None:

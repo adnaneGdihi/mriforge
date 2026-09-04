@@ -13,8 +13,8 @@ References:
 import pytest
 import torch
 
-from mriforge.core.metrics.evaluation_metrics import PSNR, RobustMRI_PSNR
-from mriforge.core.metrics.outcome import MetricNotApplicableError
+from spectramr.core.metrics.evaluation_metrics import PSNR, RobustMRI_PSNR
+from spectramr.core.metrics.outcome import MetricNotApplicableError
 
 
 class TestRobustMRIPSNR:
@@ -199,7 +199,7 @@ class TestRobustMRIPSNR:
 
     def test_energy_conservation_after_fft_ifft(self):
         """Test that FFT-IFFT roundtrip preserves energy (verifying Fix #1 in review)."""
-        from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+        from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 
         # Create image with known energy
         image = torch.randn(1, 1, 64, 64, dtype=torch.complex64) * 100

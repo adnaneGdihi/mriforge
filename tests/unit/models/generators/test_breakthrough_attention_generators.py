@@ -1,7 +1,7 @@
 """Smoke tests for the 5 breakthrough attention generators (P6–P10).
 
 Each generator wraps one of the new attention blocks in
-:mod:`mriforge.models.blocks` and is registered via ``@register_model`` so the
+:mod:`spectramr.models.blocks` and is registered via ``@register_model`` so the
 audit-ladder schema can resolve it by name. The tests verify:
 
 1. The model is reachable through ``MODEL_REGISTRY`` by its registered name.
@@ -14,14 +14,14 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.breakthrough_attention_generators import (
+from spectramr.models.generators.breakthrough_attention_generators import (
     BlochLRSAttentionUNet,
     LanczosAttentionUNet,
     MPSAttentionUNet,
     TJLMRFEstimator,
     ToeplitzAttentionUNet,
 )
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.registry import MODEL_REGISTRY
 
 _RECON_GENERATORS = [
     ("toeplitz_attention_unet", ToeplitzAttentionUNet),

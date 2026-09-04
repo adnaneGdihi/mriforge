@@ -68,13 +68,13 @@ def _mock_settings(**overrides) -> SimpleNamespace:
 def test_paradigm_required_fires_for_pinn_without_losses_block() -> None:
     """When the strategy looks like PINN but ``losses.pinn`` is None,
     ``check_paradigm_required_fields`` must emit a failing result."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
     checker = ConfigHealthChecker()
     cfg = _mock_settings(
-        strategy_class="mriforge.infrastructure.training.strategies.pinn_strategy.PINNStrategy",
+        strategy_class="spectramr.infrastructure.training.strategies.pinn_strategy.PINNStrategy",
         training_mode="pinn",
         losses_pinn=None,
     )
@@ -90,13 +90,13 @@ def test_paradigm_required_fires_for_pinn_without_losses_block() -> None:
 
 def test_paradigm_required_passes_when_pinn_block_present() -> None:
     """Positive case: PINN strategy WITH losses.pinn block passes."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
     checker = ConfigHealthChecker()
     cfg = _mock_settings(
-        strategy_class="mriforge.infrastructure.training.strategies.pinn_strategy.PINNStrategy",
+        strategy_class="spectramr.infrastructure.training.strategies.pinn_strategy.PINNStrategy",
         training_mode="pinn",
         losses_pinn=SimpleNamespace(lambda_pde=0.1),  # any non-None
     )
@@ -118,7 +118,7 @@ def test_discriminator_without_gan_losses_fires() -> None:
     """When ``model.discriminator_component`` is set but
     ``losses.gan.enable_adversarial`` is missing/false, the new
     check must fail."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -136,7 +136,7 @@ def test_discriminator_without_gan_losses_fires() -> None:
 
 
 def test_discriminator_with_gan_losses_passes() -> None:
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -151,7 +151,7 @@ def test_discriminator_with_gan_losses_passes() -> None:
 
 def test_no_discriminator_returns_pass() -> None:
     """When no discriminator is declared, the check is a no-op pass."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -165,7 +165,7 @@ def test_legacy_model_discriminator_layout_also_triggers() -> None:
     """The legacy ``model.discriminator`` (without _component suffix)
     must also be detected. Pinned so future schema migrations don't
     silently break the legacy path."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
@@ -185,13 +185,13 @@ def test_legacy_model_discriminator_layout_also_triggers() -> None:
 
 def test_diffusion_without_training_diffusion_block_fires() -> None:
     """Sanity-check the pre-existing diffusion paradigm requirement."""
-    from mriforge.infrastructure.validation.config_health_checker import (
+    from spectramr.infrastructure.validation.config_health_checker import (
         ConfigHealthChecker,
     )
 
     checker = ConfigHealthChecker()
     cfg = _mock_settings(
-        strategy_class="mriforge.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
+        strategy_class="spectramr.infrastructure.training.strategies.diffusion.DiffusionTrainingStrategy",
         training_mode="diffusion",
         diffusion=None,
     )

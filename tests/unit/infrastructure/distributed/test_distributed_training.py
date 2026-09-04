@@ -4,7 +4,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.distributed.distributed_training import (
+from spectramr.infrastructure.distributed.distributed_training import (
     DistributedLossAudit,
     DistributedMetricsCollector,
     DistributedTrainingContext,
@@ -17,7 +17,7 @@ from mriforge.infrastructure.distributed.distributed_training import (
 @pytest.fixture
 def mock_dist():
     """Mock torch.distributed"""
-    with mock.patch("mriforge.infrastructure.distributed.distributed_training.dist") as m:
+    with mock.patch("spectramr.infrastructure.distributed.distributed_training.dist") as m:
         m.is_available.return_value = True
         m.is_initialized.return_value = True
         yield m
@@ -25,7 +25,7 @@ def mock_dist():
 
 def test_rank_utility_single_process():
     """Test RankUtility without distributed environment."""
-    with mock.patch("mriforge.infrastructure.distributed.distributed_training.dist") as m:
+    with mock.patch("spectramr.infrastructure.distributed.distributed_training.dist") as m:
         m.is_available.return_value = False
         m.is_initialized.return_value = False
 
@@ -96,7 +96,7 @@ def test_distributed_metrics_collector():
     assert collector.local_metrics["loss"] == [1.0, 3.0]
 
     with mock.patch(
-        "mriforge.infrastructure.distributed.distributed_training.dist.is_initialized",
+        "spectramr.infrastructure.distributed.distributed_training.dist.is_initialized",
         return_value=False,
     ):
         snapshot = collector.synchronize_metrics()
@@ -193,7 +193,7 @@ def test_distributed_loss_audit_invalid_loss():
 
 def test_distributed_training_context():
     """Test DistributedTrainingContext context manager."""
-    with mock.patch("mriforge.infrastructure.distributed.distributed_training.dist") as m:
+    with mock.patch("spectramr.infrastructure.distributed.distributed_training.dist") as m:
         m.is_available.return_value = True
         m.is_initialized.return_value = False
 
@@ -211,7 +211,7 @@ def test_wrap_model_distributed_no_dist():
     assert wrapped is model
 
 
-@mock.patch("mriforge.infrastructure.distributed.distributed_training.DDP")
+@mock.patch("spectramr.infrastructure.distributed.distributed_training.DDP")
 def test_wrap_model_distributed_with_dist(mock_ddp, mock_dist):
     """Test wrap_model_distributed when dist is active."""
     model = DummyModel()
@@ -234,14 +234,14 @@ def test_get_local_rank_falls_back_to_modulo_device_count(monkeypatch, mock_dist
     monkeypatch.delenv("LOCAL_RANK", raising=False)
     mock_dist.get_rank.return_value = 5  # global rank on node 1 (4 GPUs/node)
     with mock.patch(
-        "mriforge.infrastructure.distributed.distributed_training.torch.cuda"
+        "spectramr.infrastructure.distributed.distributed_training.torch.cuda"
     ) as mock_cuda:
         mock_cuda.is_available.return_value = True
         mock_cuda.device_count.return_value = 4
         assert RankUtility.get_local_rank() == 1  # 5 % 4, NOT 5
 
 
-@mock.patch("mriforge.infrastructure.distributed.distributed_training.DDP")
+@mock.patch("spectramr.infrastructure.distributed.distributed_training.DDP")
 def test_wrap_model_uses_local_rank_for_device_ids(mock_ddp, mock_dist, monkeypatch):
     """DDP must receive the node-local device index, not the global rank."""
     monkeypatch.setenv("LOCAL_RANK", "3")
@@ -254,7 +254,7 @@ def test_broadcast_object_noop_single_process():
     """Outside a process group, broadcast_object returns the object unchanged
     (so the single-process training path is unaffected)."""
     with mock.patch(
-        "mriforge.infrastructure.distributed.distributed_training.dist"
+        "spectramr.infrastructure.distributed.distributed_training.dist"
     ) as m:
         m.is_available.return_value = False
         m.is_initialized.return_value = False

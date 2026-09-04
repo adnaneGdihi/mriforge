@@ -21,7 +21,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.cli.app import (
+from spectramr.cli.app import (
     _load_clean_volumes,
     _load_clean_volumes_from_h5,
     _load_clean_volumes_from_pt,
@@ -29,7 +29,7 @@ from mriforge.cli.app import (
     _synthesize_phantom_volumes,
     meta_evaluate,
 )
-from mriforge.core.compute_device import AcceleratorRequiredError
+from spectramr.core.compute_device import AcceleratorRequiredError
 
 
 def test_missing_input_directory_raises_file_not_found(tmp_path: Path) -> None:
@@ -119,11 +119,11 @@ def test_h5_loader_tags_volumes_with_subject_and_contrast(
         return None, None, x_gt_mag, torch.tensor(1.0)
 
     monkeypatch.setattr(
-        "mriforge.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
+        "spectramr.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
         fake_discover,
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
+        "spectramr.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
         fake_pseudo_gt,
     )
 
@@ -161,11 +161,11 @@ def test_h5_loader_contrast_whitelist_filters_groups(
             groups.append([p])
 
     monkeypatch.setattr(
-        "mriforge.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
+        "spectramr.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
         lambda data_dir, max_subjects=5, max_contrasts=3: groups,
     )
     monkeypatch.setattr(
-        "mriforge.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
+        "spectramr.infrastructure.physics.m4raw_pseudo_gt.synthesize_pseudo_gt",
         lambda group, device=torch.device("cpu"): (
             None,
             None,
@@ -198,7 +198,7 @@ def test_loader_dispatches_pt_before_h5(
         raise AssertionError("H5 path must not run when .pt files exist")
 
     monkeypatch.setattr(
-        "mriforge.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
+        "spectramr.data.datasets.m4raw_repetition_groups.discover_repetition_groups",
         trip,
     )
 
@@ -309,7 +309,7 @@ def test_meta_evaluate_tiers_writes_report_and_persists_model(tmp_path: Path) ->
     result = json.loads((tmp_path / "summary.json").read_text())
     model = result["aggregator_model"]
     assert model is not None and "weights" in model
-    from mriforge.application.use_cases.nr_validation.aggregator import (
+    from spectramr.application.use_cases.nr_validation.aggregator import (
         NRQualityIndexModel,
     )
 
@@ -321,7 +321,7 @@ def test_meta_evaluate_tiers_all_expands(tmp_path: Path) -> None:
     """``--tiers all`` expands to every advertised tier."""
     import json
 
-    from mriforge.application.use_cases.nr_metric_validation_use_case import (
+    from spectramr.application.use_cases.nr_metric_validation_use_case import (
         HARNESS_TIERS,
     )
 
@@ -428,7 +428,7 @@ def test_simulator_runs_end_to_end_on_cuda() -> None:
     when fed a CUDA clean — this is the property the simulator patches
     in this PR are protecting (CPU-pinned helpers used to cross-device
     crash on the first multiply)."""
-    from mriforge.core.metrics.meta_evaluation.simulator import (
+    from spectramr.core.metrics.meta_evaluation.simulator import (
         SimulatorConfig,
         run_simulator,
     )

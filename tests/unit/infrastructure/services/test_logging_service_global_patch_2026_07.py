@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging as std_logging
 
-from mriforge.infrastructure.services.logging_service import (
+from spectramr.infrastructure.services.logging_service import (
     _TRUE_GETLOGGER,
     LoggingService,
     _GlobalLevelFilter,

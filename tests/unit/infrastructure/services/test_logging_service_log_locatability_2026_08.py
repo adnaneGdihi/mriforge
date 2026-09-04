@@ -27,7 +27,7 @@ import warnings
 
 import pytest
 
-from mriforge.infrastructure.services.logging_service import LoggingService
+from spectramr.infrastructure.services.logging_service import LoggingService
 
 
 def _service(name: str) -> LoggingService:

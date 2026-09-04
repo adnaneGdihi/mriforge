@@ -1,6 +1,6 @@
 """Tests for B1+ (transmit-field) mapping primitives.
 
-Targets ``mriforge.infrastructure.physics.b1_plus_mapping``. Verifies the
+Targets ``spectramr.infrastructure.physics.b1_plus_mapping``. Verifies the
 double-angle and Bloch-Siegert estimators recover known B1+ values on
 synthetic inputs, and that shape mismatches fail loud.
 """
@@ -12,7 +12,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.b1_plus_mapping import (
+from spectramr.infrastructure.physics.b1_plus_mapping import (
     BlochSiegertB1Plus,
     DoubleAngleB1Plus,
     apply_b1_correction,

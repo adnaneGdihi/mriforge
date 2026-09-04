@@ -8,7 +8,7 @@ correction off (pitfall #16).
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 
 class _SSDU:
@@ -21,7 +21,7 @@ class _Training:
     def __init__(self, training_mode="ssdu", ssdu_block=True, **ssdu_kw):
         self.training_mode = training_mode
         self.strategy_class = (
-            "mriforge.infrastructure.training.strategies."
+            "spectramr.infrastructure.training.strategies."
             "ssdu_strategy.SSDUReconstructionStrategy"
         )
         self.ssdu = _SSDU(**ssdu_kw) if ssdu_block else None
@@ -39,7 +39,7 @@ def _c():
 # --- selection density -------------------------------------------------------
 def test_density_not_applicable_for_non_ssdu_arm():
     cfg = _Config(training_mode="reconstruction", ssdu_block=False)
-    cfg.training.strategy_class = "mriforge.x.Y"
+    cfg.training.strategy_class = "spectramr.x.Y"
     r = _c().check_ssdu_selection_density_range(cfg)
     assert r.passed and r.severity == "info"
 

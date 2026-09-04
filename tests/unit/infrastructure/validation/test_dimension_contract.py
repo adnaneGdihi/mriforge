@@ -17,7 +17,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 from tests.utils.config_block_stub import block_stub
 
 
@@ -29,8 +29,8 @@ def _cfg(model_type):
 
 @pytest.fixture(scope="module")
 def registry():
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY, get_model_capabilities
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY, get_model_capabilities
 
     populate_model_registry()
     return MODEL_REGISTRY, get_model_capabilities
@@ -105,7 +105,7 @@ def cc():
 
 
 def test_model_contract_status_all_undeclared(cc):
-    from mriforge.models.capabilities import ModelCapabilities
+    from spectramr.models.capabilities import ModelCapabilities
 
     status = cc.model_contract_status(ModelCapabilities())
     assert status == {
@@ -116,7 +116,7 @@ def test_model_contract_status_all_undeclared(cc):
 
 
 def test_model_contract_status_partial(cc):
-    from mriforge.models.capabilities import ModelCapabilities
+    from spectramr.models.capabilities import ModelCapabilities
 
     caps = ModelCapabilities(spatial_dims=(2,), input_domain="kspace")
     status = cc.model_contract_status(caps)

@@ -1,6 +1,6 @@
 """Tests for ``ModuleABCMeta``.
 
-Targets ``mriforge.shared.utils.metaclass``. Thin marker class combining
+Targets ``spectramr.shared.utils.metaclass``. Thin marker class combining
 ``ABCMeta`` with the ``torch.nn.Module`` metaclass for abstract Module
 subclasses.
 """
@@ -11,7 +11,7 @@ from abc import ABCMeta, abstractmethod
 
 import pytest
 
-from mriforge.shared.utils.metaclass import ModuleABCMeta
+from spectramr.shared.utils.metaclass import ModuleABCMeta
 
 
 def test_module_abc_meta_inherits_from_abc_meta() -> None:

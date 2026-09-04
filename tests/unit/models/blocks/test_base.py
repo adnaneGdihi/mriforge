@@ -1,6 +1,6 @@
 """Tests for ``BaseGANBlock``.
 
-Targets ``mriforge.models.blocks.base``. Abstract base class for GAN blocks
+Targets ``spectramr.models.blocks.base``. Abstract base class for GAN blocks
 that combines ``nn.Module`` with the project's ``IModel`` interface.
 """
 
@@ -10,7 +10,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.blocks.base import BaseGANBlock
+from spectramr.models.blocks.base import BaseGANBlock
 
 
 # ---------------------------------------------------------------------------

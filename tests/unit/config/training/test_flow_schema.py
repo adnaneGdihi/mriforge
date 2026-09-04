@@ -1,4 +1,4 @@
-from mriforge.config.schemas.training.flow import FlowConfig, TrainingConfigFlow
+from spectramr.config.schemas.training.flow import FlowConfig, TrainingConfigFlow
 
 
 class TestFlowConfig:

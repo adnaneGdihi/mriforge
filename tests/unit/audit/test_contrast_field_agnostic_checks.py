@@ -18,7 +18,7 @@ import pytest
 
 pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.config_health_checker import ConfigHealthChecker
+from spectramr.infrastructure.validation.config_health_checker import ConfigHealthChecker
 
 pytestmark = pytest.mark.unit
 

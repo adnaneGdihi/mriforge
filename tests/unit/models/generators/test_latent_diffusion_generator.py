@@ -14,7 +14,7 @@ import sys
 import pytest
 import torch
 
-from mriforge.models.generators.latent_diffusion_generator import (
+from spectramr.models.generators.latent_diffusion_generator import (
     AutoencoderKL,
     LatentDiffusionGenerator,
     LatentDiffusionGeneratorConfig,
@@ -175,7 +175,7 @@ def test_contrast_guidance_is_inert_at_init_because_adagn_is_zero_init():
     before filing the bug; ``test_contrast_guidance_changes_output`` below is the
     check that actually has power.
     """
-    from mriforge.models.blocks.normalization import AdaptiveGroupNorm
+    from spectramr.models.blocks.normalization import AdaptiveGroupNorm
 
     gen = _contrast_gen()
     agn = [m for m in gen.modules() if isinstance(m, AdaptiveGroupNorm)]
@@ -199,7 +199,7 @@ def test_contrast_guidance_changes_output():
     """
     import torch.nn as nn
 
-    from mriforge.models.blocks.normalization import AdaptiveGroupNorm
+    from spectramr.models.blocks.normalization import AdaptiveGroupNorm
 
     gen = _contrast_gen()
     torch.manual_seed(7)
@@ -276,8 +276,8 @@ def test_registry_declares_2d_only_for_both_names():
     both names are asserted here — a future split of the two registrations must
     keep them in agreement.
     """
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     for name in ("latent_gan_generator", "latent_diffusion"):
@@ -426,7 +426,7 @@ def test_beta_schedule_kwarg_is_honoured():
 
 def _stage1_checkpoint(tmp_path, key: str = "generator"):
     """Write a checkpoint shaped exactly like CheckpointDirector.save()."""
-    from mriforge.models.generators.autoencoder_pretrain_generator import (
+    from spectramr.models.generators.autoencoder_pretrain_generator import (
         AutoencoderPretrainGenerator,
     )
 
@@ -555,7 +555,7 @@ class TestValidationSamplerSteps:
         # dropped and validation silently runs the full chain.
         import inspect
 
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             _SAMPLER_STEP_PARAM_NAMES,
         )
 
@@ -626,7 +626,7 @@ def test_encode_to_latent_matches_the_encode_stage1_trained() -> None:
     """The stage-2 latent must be the stage-1 encoder's mean, up to standardisation."""
     import torch
 
-    from mriforge.models.generators.latent_diffusion_generator import (
+    from spectramr.models.generators.latent_diffusion_generator import (
         LatentDiffusionGenerator,
     )
 
@@ -654,7 +654,7 @@ def test_quant_conv_receives_no_gradient_from_the_stage1_objective() -> None:
     """Pins WHY the fix is required rather than just the fix."""
     import torch
 
-    from mriforge.models.generators.autoencoder_pretrain_generator import (
+    from spectramr.models.generators.autoencoder_pretrain_generator import (
         AutoencoderPretrainGenerator,
     )
 

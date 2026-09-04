@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.physics.adjoint_sequence import (
+from spectramr.infrastructure.physics.adjoint_sequence import (
     jacobian_rank_augmentation_test,
     optimise_sequence_adjoint,
     steady_state_ir_se_signal,

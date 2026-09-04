@@ -10,14 +10,14 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.meta_evaluation.rankers import sfa as sfa_mod
-from mriforge.core.metrics.meta_evaluation.rankers.sfa import (
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.meta_evaluation.rankers import sfa as sfa_mod
+from spectramr.core.metrics.meta_evaluation.rankers.sfa import (
     SFAConfig,
     SFARanker,
     _resolve_needs,
 )
-from mriforge.core.metrics.meta_evaluation.types import (
+from spectramr.core.metrics.meta_evaluation.types import (
     DegradationSample,
     MetricEvaluationDataset,
     MetricSet,
@@ -39,7 +39,7 @@ def _dataset_with_assets():
         torch.linspace(-1, 1, h), torch.linspace(-1, 1, w), indexing="ij"
     )
     phantom = torch.exp(-(yy**2 + xx**2) / 0.3).clamp(0, 1)[None, None].float()
-    from mriforge.infrastructure.physics.asset_preparation import prepare_metric_context
+    from spectramr.infrastructure.physics.asset_preparation import prepare_metric_context
 
     smaps = torch.ones(1, c, h, w, dtype=torch.complex64) / (c**0.5)
     asset = prepare_metric_context(
@@ -64,7 +64,7 @@ def _dataset_with_assets():
 
 
 def test_sfa_forwards_context_only_for_context_needing_metrics(monkeypatch):
-    from mriforge.core.metrics import get_metric
+    from spectramr.core.metrics import get_metric
 
     dataset, asset = _dataset_with_assets()
     captured: dict[int, object] = {}

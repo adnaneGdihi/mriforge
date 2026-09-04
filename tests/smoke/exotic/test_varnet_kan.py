@@ -11,7 +11,7 @@ import torch
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from mriforge.models.spectral.varnet_kan import Conv2DKAN, SplineBasis, VarNetKAN
+from spectramr.models.spectral.varnet_kan import Conv2DKAN, SplineBasis, VarNetKAN
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

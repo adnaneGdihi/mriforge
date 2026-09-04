@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.inference.diffusion_inference_strategy import (
+from spectramr.infrastructure.inference.diffusion_inference_strategy import (
     DiffusionInferenceStrategy,
 )
 
@@ -51,8 +51,8 @@ class TestDiffusionInferenceStrategy(unittest.TestCase):
         # We need to mock performance_optimizer.run_optimized_inference to avoid actual model call issues if shapes mismatch
 
         strategy.performance_optimizer = MagicMock()
-        strategy.performance_optimizer.run_optimized_inference.return_value = (
-            torch.zeros(1, 1, 32, 32)
+        strategy.performance_optimizer.run_optimized_inference.return_value = torch.zeros(
+            1, 1, 32, 32
         )
 
         # Override config for smaller image to speed up
@@ -60,9 +60,7 @@ class TestDiffusionInferenceStrategy(unittest.TestCase):
 
         # Prepare input noise for unconditional inference
         input_noise = torch.randn(1, 1, 32, 32)
-        output = strategy.run_inference(
-            input_tensor=input_noise, batch_size=1, unconditional=True
-        )
+        output = strategy.run_inference(input_tensor=input_noise, batch_size=1, unconditional=True)
         self.assertIsInstance(output, torch.Tensor)
         # Output is (1, 1, 32, 32)
         self.assertEqual(output.shape, (1, 1, 32, 32))
@@ -78,8 +76,8 @@ if __name__ == "__main__":
 
 import inspect  # noqa: E402
 
-from mriforge.infrastructure.inference import diffusion_inference_strategy as _dis  # noqa: E402
-from mriforge.infrastructure.inference.diffusion_inference_strategy import (  # noqa: E402
+from spectramr.infrastructure.inference import diffusion_inference_strategy as _dis  # noqa: E402
+from spectramr.infrastructure.inference.diffusion_inference_strategy import (  # noqa: E402
     _resolve_diffusion_config,
 )
 
@@ -94,11 +92,7 @@ class TestResolveDiffusionConfig(unittest.TestCase):
         self.assertEqual(out["beta_schedule"], "cosine")
 
     def test_falls_back_to_training_diffusion_with_key_mapping(self):
-        cfg = {
-            "training": {
-                "diffusion": {"sampling_steps": 28, "noise_schedule": "cosine"}
-            }
-        }
+        cfg = {"training": {"diffusion": {"sampling_steps": 28, "noise_schedule": "cosine"}}}
         out = _resolve_diffusion_config(cfg)
         # sampling_steps → num_inference_steps; noise_schedule → beta_schedule
         self.assertEqual(out["num_inference_steps"], 28)
@@ -129,3 +123,90 @@ class TestEtaWiredIntoReverseStep(unittest.TestCase):
         src = inspect.getsource(_dis.DiffusionInferenceStrategy)
         # The stochastic term is gated by self.eta now, not a bare sqrt(beta).
         self.assertIn("self.eta * torch.sqrt(beta_t) * noise", src)
+
+
+class TestPredictDataConsistencyLedger(unittest.TestCase):
+    """The reverse loop's own hard DC is recorded so the base hook skips."""
+
+    def _strategy(self, apply_at_predict: bool):
+        from unittest.mock import patch
+
+        from spectramr.infrastructure.inference import predict_data_consistency as pdc
+        from spectramr.models.capabilities import ModelCapabilities
+
+        caps = ModelCapabilities(output_domain="kspace")
+        self._patches = [
+            patch.dict(pdc.MODEL_REGISTRY, {"stub_diff": {"capabilities": caps}}),
+            patch.object(
+                pdc, "get_model_capabilities", lambda n: caps if n == "stub_diff" else None
+            ),
+        ]
+        for p in self._patches:
+            p.start()
+            self.addCleanup(p.stop)
+        config = {
+            "diffusion": {
+                "num_inference_steps": 3,
+                "beta_schedule": "linear",
+                "beta_start": 0.0001,
+                "beta_end": 0.02,
+                "in_channels": 2,
+                "image_size": 8,
+            },
+            "physics": {
+                "data_consistency": {
+                    "enabled": True,
+                    "method": "hard",
+                    "apply_at_predict": apply_at_predict,
+                }
+            },
+            "model": {"model_type": "stub_diff"},
+        }
+        strategy = DiffusionInferenceStrategy(MockModel(), torch.device("cpu"), config)
+        strategy.performance_optimizer = MagicMock()
+        strategy._predict_noise = lambda x_t, t, conditioning, **kw: torch.zeros_like(x_t)
+        return strategy
+
+    def test_the_loop_notes_its_projection(self):
+        strategy = self._strategy(True)
+        self.assertIsNotNone(strategy.predict_dc)
+        self.assertIsNotNone(strategy.dc_layer)
+        conditioning = torch.randn(1, 2, 8, 8)
+        mask = torch.zeros(1, 1, 8, 8)
+        mask[..., ::2] = 1.0
+        applied: list[int] = []
+        real = strategy.dc_layer
+
+        def _spy(**kwargs):
+            applied.append(1)
+            return real(**kwargs)
+
+        strategy.dc_layer = _spy
+        strategy.predict_dc.begin()
+        out = strategy.run_inference(conditioning, conditional=True, mask=mask)
+        self.assertEqual(len(applied), 3, "one hard-DC application per reverse step")
+        self.assertTrue(strategy.predict_dc.applied_this_call)
+        self.assertEqual(
+            strategy.predict_dc_provenance()["applied_by"],
+            {"DiffusionInferenceStrategy.run_inference": 1},
+        )
+        projected = strategy._project_onto_measurement(out, mask=mask, measured_kspace=conditioning)
+        self.assertIs(projected, out)
+
+    def test_without_a_mask_the_loop_applies_nothing_and_notes_nothing(self):
+        strategy = self._strategy(True)
+        strategy.predict_dc.begin()
+        strategy.run_inference(torch.randn(1, 2, 8, 8), conditional=True)
+        self.assertFalse(strategy.predict_dc.applied_this_call)
+
+    def test_off_knob_records_nothing(self):
+        strategy = self._strategy(False)
+        self.assertIsNone(strategy.predict_dc)
+        self.assertEqual(strategy.predict_dc_provenance(), {"apply_at_predict": False})
+
+    def test_hard_dc_arms_can_be_constructed_at_all(self):
+        """``self.logger`` was never bound: every ``enabled: true, method: hard``
+        arm raised AttributeError in ``__init__`` before this ledger existed, so
+        the in-loop DC path was unreachable from ``spectramr infer``."""
+        strategy = self._strategy(False)
+        self.assertIsNotNone(strategy.dc_layer)

@@ -1,6 +1,6 @@
 """Tests for ``DifferentiableBlochLayer`` and ``SPGRBlochSimulator``.
 
-Targets ``mriforge.infrastructure.physics.differentiable_bloch``. This module
+Targets ``spectramr.infrastructure.physics.differentiable_bloch``. This module
 is **load-bearing** for the ULF radiologist-acceptance roadmap (every
 inverse-Bloch / Bloch-consistent SSDU / cycle-Bloch path consumes the
 forward operator here), so the property tests verify both numerical
@@ -23,7 +23,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.differentiable_bloch import (
+from spectramr.infrastructure.physics.differentiable_bloch import (
     DifferentiableBlochLayer,
     SPGRBlochSimulator,
 )

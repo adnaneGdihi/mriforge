@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.relaxometry_encoder import RelaxometryEncoder
+from spectramr.models.generators.relaxometry_encoder import RelaxometryEncoder
 
 
 def test_forward_multicontrast_to_single_image() -> None:
@@ -71,7 +71,7 @@ def test_disabled_residual_returns_zero() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.registry import get_model_class
+    from spectramr.models.registry import get_model_class
 
     assert get_model_class("relaxometry_encoder") is RelaxometryEncoder
 

@@ -15,7 +15,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.config.schemas.physics import (  # noqa: E402
+from spectramr.config.schemas.physics import (  # noqa: E402
     BandProbeConfig,
     MultiAcquisitionConfig,
     RelaxometricCalibrationConfig,
@@ -27,11 +27,11 @@ from mriforge.config.schemas.physics import (  # noqa: E402
 # #520) while it hand-listed them; a stub cannot drift from what it is built
 # from. See issue #501 section 1.
 _MACQ_DEFAULTS = MultiAcquisitionConfig(enabled=True, method="afi")
-from mriforge.infrastructure.training.strategies.multi_acquisition_strategy import (
+from spectramr.infrastructure.training.strategies.multi_acquisition_strategy import (
     ConcreteMultiAcquisitionStrategy,
 )
-from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
-from mriforge.models.registry import get_model_class
+from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
+from spectramr.models.registry import get_model_class
 
 # (method, arm model, in channels, out channels, target channels, extra kwargs)
 CASES = [
@@ -155,7 +155,7 @@ def _disk_kspace(
     ``amplitude`` sets the image-domain intensity, standing in for the arbitrary
     scanner/normalisation scale a real loaded target carries.
     """
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     yy, xx = torch.meshgrid(torch.arange(h), torch.arange(w), indexing="ij")
     r = ((yy - (h - 1) / 2) ** 2 + (xx - (w - 1) / 2) ** 2).sqrt()
@@ -509,7 +509,7 @@ def test_real_field_seam_reads_training_batch_not_only_dict() -> None:
     real-B0/B1 arm silently self-graded on the synthesised field. The seam must
     read the field from a ``TrainingBatch`` whose ``b0_map`` lives in metadata
     (where ``BatchAdapter.from_dict`` stores all non-core keys)."""
-    from mriforge.data.batch_types import BatchAdapter
+    from spectramr.data.batch_types import BatchAdapter
 
     tb = BatchAdapter.from_dict(
         {
@@ -899,7 +899,7 @@ def test_no_kappa_reported_when_calibration_is_off() -> None:
 
 
 def _conformal_strategy(n_strata: int = 4):
-    from mriforge.config.schemas.physics import AnchorConformalConfig
+    from spectramr.config.schemas.physics import AnchorConformalConfig
 
     st = _strategy(
         "subvoxel_sr",
@@ -980,7 +980,7 @@ def test_calibration_never_touches_the_anatomy_target() -> None:
 
 
 def _psf_strategy(source: str = "measured", true_sigma: float | None = 2.4):
-    from mriforge.config.schemas.physics import ForwardPsfConfig
+    from spectramr.config.schemas.physics import ForwardPsfConfig
 
     st = _strategy(
         "subvoxel_sr",

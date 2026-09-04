@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.field_physics_score_unet import FieldPhysicsEmbeddedScoreUNet
+from spectramr.models.generators.field_physics_score_unet import FieldPhysicsEmbeddedScoreUNet
 
 
 def _net(**kw) -> FieldPhysicsEmbeddedScoreUNet:
@@ -102,8 +102,8 @@ def test_cond_image_explicitly_ignored() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "field_physics_score_unet" in MODEL_REGISTRY

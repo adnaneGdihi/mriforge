@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.models.generators.field_cocycle_generator import FieldCocycleGenerator
+from spectramr.models.generators.field_cocycle_generator import FieldCocycleGenerator
 
 
 def test_forward_preserves_shape() -> None:
@@ -28,7 +28,7 @@ def test_encode_stamps_canonical_repr() -> None:
 
 
 def test_registered_with_unified_capability() -> None:
-    from mriforge.models.registry import get_model_class
+    from spectramr.models.registry import get_model_class
 
     cls = get_model_class("field_cocycle_generator")
     assert getattr(cls, "is_unified_single_model", False) is True

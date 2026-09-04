@@ -15,7 +15,7 @@ from typing import ClassVar
 
 import pytest
 
-from mriforge.config.schemas.renames import RenameRecord
+from spectramr.config.schemas.renames import RenameRecord
 
 _MOD_PATH = (
     Path(__file__).resolve().parents[3] / "scripts" / "ci" / "migrate_config_keys.py"
@@ -526,7 +526,7 @@ class TestSupersededBy:
         then SKIPs, inverting the documented precedence with no error. That is
         exactly what happened on the first attempt.
         """
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         order = list(RENAMES)
         for legacy, rec in RENAMES.items():
@@ -541,7 +541,7 @@ class TestSupersededBy:
         """One rule, not a validator and a fixer that agree until they don't."""
         import inspect
 
-        from mriforge.config.schemas import validation as v
+        from spectramr.config.schemas import validation as v
 
         src = inspect.getsource(v.ValidationConfigSchema._resolve_batch_size_duplicate)
         assert "superseded_by" in src and "RENAMES" in src, (

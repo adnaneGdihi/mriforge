@@ -6,7 +6,7 @@ matplotlib.use("Agg")
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting._training_curves import (
+from spectramr.infrastructure.reporting._training_curves import (
     ema, plot_training_curves, _should_use_log,
 )
 

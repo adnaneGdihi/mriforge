@@ -29,7 +29,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.geometric.b0_estimator import B0Estimator  # noqa: E402
+from spectramr.models.geometric.b0_estimator import B0Estimator  # noqa: E402
 
 
 def _tiny_model() -> B0Estimator:

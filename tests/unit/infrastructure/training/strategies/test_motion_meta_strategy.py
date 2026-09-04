@@ -21,7 +21,7 @@ from types import SimpleNamespace
 
 import torch
 
-from mriforge.infrastructure.training.strategies.motion_meta_strategy import (
+from spectramr.infrastructure.training.strategies.motion_meta_strategy import (
     ConcreteMotionMetaTrainingStrategy,
 )
 
@@ -34,7 +34,7 @@ from mriforge.infrastructure.training.strategies.motion_meta_strategy import (
 # taking every unrelated test with it.
 _SRC_PATH = (
     pathlib.Path(__file__).resolve().parents[5]
-    / "src/mriforge/infrastructure/training/strategies/motion_meta_strategy.py"
+    / "src/spectramr/infrastructure/training/strategies/motion_meta_strategy.py"
 )
 _SRC = _SRC_PATH.read_text(encoding="utf-8")
 
@@ -75,7 +75,7 @@ def test_inherited_seam_iffts_svd_kspace_target() -> None:
         ),
         physics=SimpleNamespace(kspace=SimpleNamespace(enable_kspace_recon=False)),
     )
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
 
     kspace = torch.randn(2, 1, 16, 16, dtype=torch.complex64)
     out = s._ensure_image_domain_target(kspace)

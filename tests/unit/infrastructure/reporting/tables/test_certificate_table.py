@@ -11,7 +11,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure.reporting.tables.certificate_table import (
+from spectramr.infrastructure.reporting.tables.certificate_table import (
     build_certificate_rows,
     render_latex,
     render_markdown,

@@ -15,7 +15,7 @@ from unittest.mock import MagicMock
 import pytest
 import torch
 
-from mriforge.infrastructure.training.optimizers.amp_policy import AMPPolicy
+from spectramr.infrastructure.training.optimizers.amp_policy import AMPPolicy
 
 pytestmark = pytest.mark.unit
 

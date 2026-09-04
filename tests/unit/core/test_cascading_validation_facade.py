@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.core import cascade_levels, cascade_round_trip
-from mriforge.core import cascading_validation as cv
+from spectramr.core import cascade_levels, cascade_round_trip
+from spectramr.core import cascading_validation as cv
 
 
 class TestFacadeIdentity:

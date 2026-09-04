@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.koopman_operator import (
+from spectramr.infrastructure.physics.koopman_operator import (
     closure_residual_norm,
     koopman_continuous_propagate,
     koopman_numerical_abscissa,

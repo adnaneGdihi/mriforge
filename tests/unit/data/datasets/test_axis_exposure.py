@@ -14,9 +14,9 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.data import DataConfigSchema
-from mriforge.config.schemas.enums import Axis
-from mriforge.data.datasets.axis_exposure import (
+from spectramr.config.schemas.data import DataConfigSchema
+from spectramr.config.schemas.enums import Axis
+from spectramr.data.datasets.axis_exposure import (
     _BART_ROLE_TO_AXIS,
     _BART_ROLES_WITHOUT_AXIS,
     DATASET_TYPE_AXES,
@@ -240,7 +240,7 @@ class TestSignalDomains:
     def test_values_are_frozensets_of_known_domain_literals(self) -> None:
         from typing import get_args
 
-        from mriforge.models.capabilities import Domain
+        from spectramr.models.capabilities import Domain
 
         known = set(get_args(Domain))
         for dataset_type, domains in DATASET_TYPE_SIGNAL_DOMAINS.items():
@@ -311,7 +311,7 @@ class TestBartRoleAdapterCoverage:
         new role simply produces no axis, the arm's exposure quietly shrinks, and
         every existing test still passes.
         """
-        from mriforge.config.schemas.data import _BART_DIM_ROLES
+        from spectramr.config.schemas.data import _BART_DIM_ROLES
 
         covered = set(_BART_ROLE_TO_AXIS) | set(_BART_ROLES_WITHOUT_AXIS)
         assert covered == set(_BART_DIM_ROLES), (
@@ -417,7 +417,7 @@ class TestTheDeclaredRouteCannotBeSilentlyDisabled:
         )
 
     def test_the_bart_block_still_has_the_dim_map(self) -> None:
-        from mriforge.config.schemas.data import BartConfigSchema
+        from spectramr.config.schemas.data import BartConfigSchema
 
         for field in ("enabled", "bart_dim_map"):
             assert field in BartConfigSchema.model_fields, (
@@ -457,15 +457,15 @@ class TestResolveAxesFor:
 
     def test_declaration_outranks_the_type_annotation(self) -> None:
         """An arm that declares echo beats a dataset_type annotated as empty."""
-        from mriforge.config.schemas.enums import Axis
-        from mriforge.data.datasets.axis_exposure import resolve_axes_for
+        from spectramr.config.schemas.enums import Axis
+        from spectramr.data.datasets.axis_exposure import resolve_axes_for
 
         cfg = self._cfg(dataset_type="image", dim_map={"echo": 6}, bart_enabled=True)
         assert resolve_axes_for(cfg) == frozenset({Axis.ECHO})
 
     def test_falls_back_to_the_annotation_when_nothing_is_declared(self) -> None:
-        from mriforge.config.schemas.enums import Axis
-        from mriforge.data.datasets.axis_exposure import resolve_axes_for
+        from spectramr.config.schemas.enums import Axis
+        from spectramr.data.datasets.axis_exposure import resolve_axes_for
 
         assert resolve_axes_for(self._cfg(dataset_type="cine")) == frozenset(
             {Axis.TEMPORAL}
@@ -480,20 +480,20 @@ class TestResolveAxesFor:
         needs one. Collapsing them would silently turn every unannotated arm
         into a claim that it carries nothing.
         """
-        from mriforge.data.datasets.axis_exposure import resolve_axes_for
+        from spectramr.data.datasets.axis_exposure import resolve_axes_for
 
         assert resolve_axes_for(self._cfg(dataset_type="synthetic")) is None
         assert resolve_axes_for(self._cfg(dataset_type=None)) is None
 
     def test_an_annotated_type_with_no_axes_is_empty_not_none(self) -> None:
-        from mriforge.data.datasets.axis_exposure import resolve_axes_for
+        from spectramr.data.datasets.axis_exposure import resolve_axes_for
 
         assert resolve_axes_for(self._cfg(dataset_type="image")) == frozenset()
 
     def test_it_agrees_with_the_two_routes_it_composes(self) -> None:
         """Parametrised over the whole table rather than one example, so a new
         row cannot land with the composition disagreeing about it."""
-        from mriforge.data.datasets.axis_exposure import (
+        from spectramr.data.datasets.axis_exposure import (
             DATASET_TYPE_AXES,
             exposed_axes_for,
             resolve_axes_for,
@@ -507,7 +507,7 @@ class TestResolveAxesFor:
         """The point of extracting it. A re-inlined composition reads the same."""
         import inspect
 
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -538,7 +538,7 @@ class TestResolveAxesFor:
 class TestCoilModeOverridesTheTypeRow:
     @staticmethod
     def _cfg(mode: str | None):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         kw = {"dataset_type": "kspace"}
         if mode is not None:
@@ -546,7 +546,7 @@ class TestCoilModeOverridesTheTypeRow:
         return DataConfigSchema(**kw)
 
     def test_an_image_mode_makes_a_kspace_arm_serve_images(self) -> None:
-        from mriforge.data.datasets.axis_exposure import resolve_signal_domains_for
+        from spectramr.data.datasets.axis_exposure import resolve_signal_domains_for
 
         assert resolve_signal_domains_for(self._cfg("rss_image")) == frozenset({"image"})
         assert resolve_signal_domains_for(self._cfg("magnitude")) == frozenset({"image"})
@@ -557,7 +557,7 @@ class TestCoilModeOverridesTheTypeRow:
         A genuine kspace-out arm feeding an image model is still a real mismatch,
         and this is the case that proves the fix did not just disarm the rule.
         """
-        from mriforge.data.datasets.axis_exposure import (
+        from spectramr.data.datasets.axis_exposure import (
             resolve_signal_domains_for,
             signal_domains_for,
         )
@@ -569,8 +569,8 @@ class TestCoilModeOverridesTheTypeRow:
 
     def test_the_mode_set_has_one_definition(self) -> None:
         """Two hand-maintained copies is how audit and runtime diverge."""
-        from mriforge.data.datasets import axis_exposure as data_side
-        from mriforge.infrastructure.training.utils import domain_inference as infra_side
+        from spectramr.data.datasets import axis_exposure as data_side
+        from spectramr.infrastructure.training.utils import domain_inference as infra_side
 
         assert (
             data_side.IMAGE_DOMAIN_COIL_MODES is infra_side.IMAGE_DOMAIN_COIL_MODES
@@ -583,8 +583,8 @@ class TestCoilModeOverridesTheTypeRow:
 
         import yaml
 
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.validation.config_health_checker import (
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.validation.config_health_checker import (
             ConfigHealthChecker,
         )
 
@@ -643,7 +643,7 @@ class TestTemporalRouteIsReachable:
 
     def test_fmri_is_a_selectable_dataset_type(self) -> None:
         """An annotation on a dataset_type no config can name would be inert."""
-        from mriforge.config.schemas.data import CANONICAL_DATASET_TYPES
+        from spectramr.config.schemas.data import CANONICAL_DATASET_TYPES
 
         assert "fmri" in CANONICAL_DATASET_TYPES
 
@@ -660,7 +660,7 @@ class TestTemporalRouteIsReachable:
         import numpy as np
         import pytest
 
-        from mriforge.data.datasets.fmri_dataset import (
+        from spectramr.data.datasets.fmri_dataset import (
             FMRIBoldSeriesDataset,
             build_fmri_index,
         )
@@ -679,7 +679,7 @@ class TestTemporalRouteIsReachable:
         """Frame order / count / TR are the difference from the `nifti` route."""
         import numpy as np
 
-        from mriforge.data.datasets.fmri_dataset import (
+        from spectramr.data.datasets.fmri_dataset import (
             FMRIBoldSeriesDataset,
             build_fmri_index,
         )
@@ -704,7 +704,7 @@ class TestTemporalRouteIsReachable:
 class TestPerArmAxisDeclaration:
     @staticmethod
     def _cfg(**kw):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         return DataConfigSchema(dataset_type=kw.pop("dataset_type", "quantitative"), **kw)
 
@@ -755,8 +755,8 @@ class TestPerArmAxisDeclaration:
 
     def test_it_unblocks_a_regime_that_had_no_declarable_arm(self) -> None:
         """End to end: the audit check is what this exists to satisfy."""
-        from mriforge.config.schemas.enums import Regime
-        from mriforge.domain.workflows import WORKFLOW_PROFILES
+        from spectramr.config.schemas.enums import Regime
+        from spectramr.domain.workflows import WORKFLOW_PROFILES
 
         required = WORKFLOW_PROFILES[Regime.QUANTITATIVE].required_axes
         # ANY of the required axes satisfies the regime -- mirror
@@ -809,7 +809,7 @@ class TestFmriPairingMustBeDeclared:
         import tempfile
         from pathlib import Path
 
-        from mriforge.data.datasets.fmri_dataset import (
+        from spectramr.data.datasets.fmri_dataset import (
             FMRIBoldSeriesDataset,
             build_fmri_index,
         )
@@ -824,7 +824,7 @@ class TestFmriPairingMustBeDeclared:
         import tempfile
         from pathlib import Path
 
-        from mriforge.data.datasets.fmri_dataset import (
+        from spectramr.data.datasets.fmri_dataset import (
             FMRIBoldSeriesDataset,
             build_fmri_index,
         )
@@ -844,7 +844,7 @@ class TestFmriPairingMustBeDeclared:
 
         import torch
 
-        from mriforge.data.datasets.fmri_dataset import (
+        from spectramr.data.datasets.fmri_dataset import (
             FMRIBoldSeriesDataset,
             build_fmri_index,
         )
@@ -861,7 +861,7 @@ class TestFmriPairingMustBeDeclared:
 
     def test_the_schema_offers_no_self_pairing_option(self) -> None:
         """A 'self' escape hatch would reintroduce the degenerate twin."""
-        from mriforge.config.schemas.data import FmriConfigSchema
+        from spectramr.config.schemas.data import FmriConfigSchema
 
         with pytest.raises(ValueError):
             FmriConfigSchema(enabled=True, target_source="self")
@@ -879,7 +879,7 @@ class TestTheCoilModeReadHasOneSpelling:
 
     @staticmethod
     def _schema(mode: str | None):
-        from mriforge.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.data import DataConfigSchema
 
         kw: dict = {"dataset_type": "kspace"}
         if mode is not None:
@@ -887,15 +887,15 @@ class TestTheCoilModeReadHasOneSpelling:
         return DataConfigSchema(**kw)
 
     def test_the_canonical_path_is_read(self) -> None:
-        from mriforge.data.datasets.axis_exposure import _coil_processing_mode
+        from spectramr.data.datasets.axis_exposure import _coil_processing_mode
 
         assert _coil_processing_mode(self._schema("rss_image")) == "rss_image"
 
     def test_the_legacy_flat_spelling_folds_rather_than_being_read(self) -> None:
         """Declaring the legacy name still works -- via the FOLD, not via a
         second read. This is why deleting the fallback changes no behaviour."""
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.data.datasets.axis_exposure import _coil_processing_mode
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.data.datasets.axis_exposure import _coil_processing_mode
 
         cfg = DataConfigSchema(dataset_type="kspace", coil_processing_mode="rss_image")
         assert cfg.coils.processing_mode == "rss_image"
@@ -912,7 +912,7 @@ class TestTheCoilModeReadHasOneSpelling:
         deleting the flat fallback is safe: there was never a loaded config for
         which the canonical read came back empty and the fallback could fire.
         """
-        from mriforge.data.datasets.axis_exposure import _coil_processing_mode
+        from spectramr.data.datasets.axis_exposure import _coil_processing_mode
 
         assert self._schema(None).coils.processing_mode == "none"
         assert _coil_processing_mode(self._schema(None)) == "none"
@@ -922,6 +922,6 @@ class TestTheCoilModeReadHasOneSpelling:
         or `resolve_signal_domains_for` raises instead of falling through."""
         import types
 
-        from mriforge.data.datasets.axis_exposure import _coil_processing_mode
+        from spectramr.data.datasets.axis_exposure import _coil_processing_mode
 
         assert _coil_processing_mode(types.SimpleNamespace()) == ""

@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.infrastructure.validation.phase3_probes import (  # noqa: E402
+from spectramr.infrastructure.validation.phase3_probes import (  # noqa: E402
     has_invariant_probe,
     run_invariant_probe,
 )
@@ -23,30 +23,30 @@ from mriforge.infrastructure.validation.phase3_probes import (  # noqa: E402
 def _build(model_type):
     """Build a small instance of each probed model + a matching input."""
     if model_type == "glow":
-        from mriforge.models.generative.glow import Glow
+        from spectramr.models.generative.glow import Glow
 
         return Glow(num_scales=2, num_steps=2, hidden_channels=16), torch.randn(2, 1, 16, 16)
     if model_type == "equivariant_flow":
-        from mriforge.models.generative.equivariant_flow import EquivariantFlow
+        from spectramr.models.generative.equivariant_flow import EquivariantFlow
 
         return EquivariantFlow(), torch.randn(2, 1, 16, 16)
     if model_type == "divergence_free_flow":
-        from mriforge.models.generative.divergence_free_flow import DivergenceFreeFlow
+        from spectramr.models.generative.divergence_free_flow import DivergenceFreeFlow
 
         return DivergenceFreeFlow(), torch.randn(2, 2, 16, 16)  # 2-component velocity state
     if model_type == "hyperspherical_vae":
-        from mriforge.models.vae.hyperspherical_vae import HypersphericalVAE
+        from spectramr.models.vae.hyperspherical_vae import HypersphericalVAE
 
         return HypersphericalVAE(latent_dim=8), torch.randn(2, 1, 32, 32)
     if model_type == "hierarchical_vq_vae":
-        from mriforge.models.vq.hierarchical_vq_vae import HierarchicalVQVAE
+        from spectramr.models.vq.hierarchical_vq_vae import HierarchicalVQVAE
 
         return (
             HierarchicalVQVAE(codebook_size_top=64, codebook_size_bot=64),
             torch.randn(2, 1, 32, 32),
         )
     if model_type == "blurring_diffusion":
-        from mriforge.models.diffusion.blurring_diffusion import BlurringDiffusion
+        from spectramr.models.diffusion.blurring_diffusion import BlurringDiffusion
 
         return BlurringDiffusion(image_size=16, num_timesteps=100), torch.randn(2, 1, 16, 16)
     raise AssertionError(model_type)
@@ -85,7 +85,7 @@ def test_no_probe_for_unrelated_model() -> None:
 def test_probe_rejects_broken_invariant() -> None:
     """A Glow whose inverse is corrupted must FAIL the round-trip probe —
     proving the probe detects violations, not just rubber-stamps."""
-    from mriforge.models.generative.glow import Glow
+    from spectramr.models.generative.glow import Glow
 
     torch.manual_seed(0)
     model = Glow(num_scales=2, num_steps=2, hidden_channels=16).eval()

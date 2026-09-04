@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.complex_unet import ComplexUNet
+from spectramr.models.generators.complex_unet import ComplexUNet
 
 
 def test_complex_unet_shapes():
@@ -115,7 +115,7 @@ class TestKSpaceFeatureNorm:
         assert all(isinstance(n, nn.Identity) for n in self._norms(model))
 
     def test_rms_builds_complexrmsnorm_at_every_stage(self):
-        from mriforge.models.layers.complex_norm import ComplexRMSNorm
+        from spectramr.models.layers.complex_norm import ComplexRMSNorm
 
         model = ComplexUNet(
             in_channels=4,
@@ -167,7 +167,7 @@ if __name__ == "__main__":
 
 _BLOCK_ATTENTION_TYPES = sorted(
     __import__(
-        "mriforge.models.blocks.attention_domains", fromlist=["x"]
+        "spectramr.models.blocks.attention_domains", fromlist=["x"]
     ).COMPLEX_UNET_BLOCK_ATTENTION
 )
 
@@ -193,7 +193,7 @@ def test_every_attention_type_is_identity_at_init(attention_type: str) -> None:
     """
     import torch
 
-    from mriforge.models.generators.complex_unet import ComplexUNet
+    from spectramr.models.generators.complex_unet import ComplexUNet
 
     torch.manual_seed(7)
     model = ComplexUNet(
@@ -250,7 +250,7 @@ def test_t_emb_reaches_time_conditioned_attention() -> None:
     """
     import torch
 
-    from mriforge.models.generators.complex_unet import ComplexUNet
+    from spectramr.models.generators.complex_unet import ComplexUNet
 
     torch.manual_seed(7)
     model = ComplexUNet(
@@ -389,7 +389,7 @@ class TestPhaseEquivariance:
         reading constructor arguments, because the defaults are set in several
         different call sites.
         """
-        from mriforge.models.layers.complex_conv import ComplexConv2d
+        from spectramr.models.layers.complex_conv import ComplexConv2d
 
         model = self._model("none")
         convs = [m for m in model.modules() if isinstance(m, ComplexConv2d)]

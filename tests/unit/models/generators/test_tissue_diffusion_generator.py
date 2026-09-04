@@ -3,7 +3,7 @@
 import pytest
 import torch
 
-from mriforge.models.generators.tissue_diffusion_generator import TissueDiffusionGenerator
+from spectramr.models.generators.tissue_diffusion_generator import TissueDiffusionGenerator
 
 
 class TestTissueDiffusionGenerator:
@@ -76,7 +76,7 @@ class TestTissueDiffusionGenerator:
 
     def test_model_registration(self):
         """Model should be registered as 'tissue_diffusion_mri'."""
-        from mriforge.models.registry import MODEL_REGISTRY
+        from spectramr.models.registry import MODEL_REGISTRY
 
         assert "tissue_diffusion_mri" in MODEL_REGISTRY
 

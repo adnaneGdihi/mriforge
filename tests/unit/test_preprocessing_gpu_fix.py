@@ -14,7 +14,7 @@ SRC_DIR = REPO_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from mriforge.domain.entities.optional_imports import OptionalDependencies
+from spectramr.domain.entities.optional_imports import OptionalDependencies
 
 OPTIONAL = OptionalDependencies()
 

@@ -5,7 +5,7 @@ module-level ``_CALLABLE_KWARG_CACHE`` dict so that subsequent calls
 for the same callable + argument bypass ``inspect.signature()``.
 """
 
-from mriforge.infrastructure.training.strategies.base import (
+from spectramr.infrastructure.training.strategies.base import (
     _CALLABLE_KWARG_CACHE,
     _callable_accepts_kwarg,
 )

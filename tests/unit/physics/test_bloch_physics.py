@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
+from spectramr.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
 
 
 class TestBlochPhysics:

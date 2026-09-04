@@ -15,7 +15,7 @@ metadata:
   name: Failing — learning_rate_positive (negative lr)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   max_iterations: 10
   device: cuda
   task: reconstruction

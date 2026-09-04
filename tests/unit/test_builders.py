@@ -9,8 +9,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders import (
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders import (
     LossBuilder,
     ModelBuilder,
     OptimizationBuilder,

@@ -95,7 +95,7 @@ class TestCheckpointSavesScalerState:
         self, pipeline_with_scaler: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Checkpoint file must contain 'scaler_state' when scaler is set."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -122,7 +122,7 @@ class TestCheckpointSavesScalerState:
         self, pipeline: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Checkpoint must NOT contain 'scaler_state' when scaler is None."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -152,7 +152,7 @@ class TestCheckpointRestoresScalerState:
         self, pipeline_with_scaler: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Scaler state_dict must match after save→load roundtrip."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -211,7 +211,7 @@ class TestCheckpointSavesCounterState:
         self, pipeline: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Checkpoint must contain 'counter_state' when set."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -245,7 +245,7 @@ class TestBackwardCompatibility:
         self, pipeline_with_scaler: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Loading an old checkpoint without scaler_state must not crash."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -284,7 +284,7 @@ class TestBackwardCompatibility:
         self, pipeline: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """Loading an old checkpoint without counter_state must not crash."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 
@@ -325,7 +325,7 @@ class TestCheckpointStartIteration:
         self, pipeline: _FakePipeline, tmp_checkpoint_dir: str
     ) -> None:
         """global_step must be recoverable after load_from()."""
-        from mriforge.infrastructure.builders.directors.checkpoint_director import (
+        from spectramr.infrastructure.builders.directors.checkpoint_director import (
             CheckpointDirector,
         )
 

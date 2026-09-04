@@ -70,7 +70,7 @@ def test_each_subject_is_graded_against_its_own_reference():
     # invariant the fix relies on: a subject matches its OWN clean reference and
     # NOT another subject's, so the reference choice is load-bearing and must be
     # per-subject.
-    from mriforge.cli.app import _resolve_device
+    from spectramr.cli.app import _resolve_device
     from scripts.sim2rank.ground_truth import synthesize_pseudo_gt
 
     # ``"cpu"``, not ``"auto"``. sim2rank's canonical execution backend IS
@@ -101,8 +101,8 @@ def test_each_subject_is_graded_against_its_own_reference():
 
 
 def test_native_path_uses_real_phase_and_coils():
-    from mriforge.cli.app import _resolve_device
-    from mriforge.infrastructure.physics.coil_sensitivity import coil_combine_sense
+    from spectramr.cli.app import _resolve_device
+    from spectramr.infrastructure.physics.coil_sensitivity import coil_combine_sense
     from scripts.sim2rank.degradation import DegradationSweep
     from scripts.sim2rank.engine import Sim2RankEngine
     from scripts.sim2rank.ground_truth import synthesize_pseudo_gt

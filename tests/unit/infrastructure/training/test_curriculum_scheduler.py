@@ -1,6 +1,6 @@
 """Unit tests for CurriculumScheduler and MotionFreezeCallback.
 
-Targets ``mriforge.infrastructure.training.curriculum_scheduler``.
+Targets ``spectramr.infrastructure.training.curriculum_scheduler``.
 
 Properties verified:
 - Phase epoch boundaries are computed correctly.
@@ -41,7 +41,7 @@ class _TinyModel(nn.Module):
 
 
 def test_canary_construct_and_phase_count() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     sched = CurriculumScheduler(total_epochs=100)
     assert len(sched.phases) == 3
@@ -67,7 +67,7 @@ def test_canary_construct_and_phase_count() -> None:
 def test_get_phase_epoch_boundaries(
     total_epochs, fractions, epoch, expected_phase
 ) -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler, TrainingPhase
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler, TrainingPhase
 
     sched = CurriculumScheduler(total_epochs=total_epochs, phase_fractions=fractions)
     pc = sched.get_phase(epoch)
@@ -80,7 +80,7 @@ def test_get_phase_epoch_boundaries(
 
 
 def test_configure_model_volume_only_phase() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     sched = CurriculumScheduler(total_epochs=100)
     model = _TinyModel()
@@ -97,7 +97,7 @@ def test_configure_model_volume_only_phase() -> None:
 
 
 def test_configure_model_joint_phase_all_trainable() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     sched = CurriculumScheduler(total_epochs=100)
     model = _TinyModel()
@@ -108,7 +108,7 @@ def test_configure_model_joint_phase_all_trainable() -> None:
 
 
 def test_configure_model_returns_lr_float() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     sched = CurriculumScheduler(total_epochs=100, base_lr=1e-4)
     model = _TinyModel()
@@ -123,7 +123,7 @@ def test_configure_model_returns_lr_float() -> None:
 
 
 def test_freeze_motion_sets_requires_grad_false() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import MotionFreezeCallback
+    from spectramr.infrastructure.training.curriculum_scheduler import MotionFreezeCallback
 
     cb = MotionFreezeCallback(motion_patterns=["deform"])
     model = _TinyModel()
@@ -134,7 +134,7 @@ def test_freeze_motion_sets_requires_grad_false() -> None:
 
 
 def test_unfreeze_motion_restores_grad() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import MotionFreezeCallback
+    from spectramr.infrastructure.training.curriculum_scheduler import MotionFreezeCallback
 
     cb = MotionFreezeCallback(motion_patterns=["deform"])
     model = _TinyModel()
@@ -151,7 +151,7 @@ def test_unfreeze_motion_restores_grad() -> None:
 
 
 def test_raises_if_fractions_do_not_sum_to_one() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     with pytest.raises(AssertionError):
         CurriculumScheduler(total_epochs=100, phase_fractions=(0.4, 0.4, 0.4))
@@ -163,7 +163,7 @@ def test_raises_if_fractions_do_not_sum_to_one() -> None:
 
 
 def test_epoch_beyond_total_returns_joint() -> None:
-    from mriforge.infrastructure.training.curriculum_scheduler import CurriculumScheduler
+    from spectramr.infrastructure.training.curriculum_scheduler import CurriculumScheduler
 
     sched = CurriculumScheduler(total_epochs=50)
     pc = sched.get_phase(1000)  # way beyond total

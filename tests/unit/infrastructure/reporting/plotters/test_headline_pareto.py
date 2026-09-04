@@ -8,7 +8,7 @@ frame, or one missing the cost axis, must return ``None`` rather than raise.
 import numpy as np
 import pandas as pd
 
-from mriforge.infrastructure.reporting.plotters import headline_pareto
+from spectramr.infrastructure.reporting.plotters import headline_pareto
 
 
 def _cohort() -> pd.DataFrame:
@@ -52,7 +52,7 @@ def test_headline_pareto_fires_from_real_run_artifacts(tmp_path):
     gap that kept this figure inert on real runs before 2026-07-01."""
     import json
 
-    from mriforge.infrastructure.reporting.aggregator import aggregate_many
+    from spectramr.infrastructure.reporting.aggregator import aggregate_many
 
     dirs = []
     for name, params, psnr in (("ours", 12_000_000, 28.4),

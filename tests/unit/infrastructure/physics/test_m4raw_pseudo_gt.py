@@ -13,9 +13,9 @@ from pathlib import Path
 import pytest
 import torch
 
-import mriforge.infrastructure.physics.coil_sensitivity as csm_mod
-import mriforge.infrastructure.physics.m4raw_pseudo_gt as pgt
-from mriforge.infrastructure.physics.m4raw_pseudo_gt import extract_contrast_label
+import spectramr.infrastructure.physics.coil_sensitivity as csm_mod
+import spectramr.infrastructure.physics.m4raw_pseudo_gt as pgt
+from spectramr.infrastructure.physics.m4raw_pseudo_gt import extract_contrast_label
 
 
 class TestExtractContrastLabel:
@@ -411,7 +411,7 @@ class TestReadAcquisitionParams:
         return path
 
     def test_parses_the_namespaced_tags_m4raw_writes(self, tmp_path) -> None:
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             read_acquisition_params,
         )
 
@@ -432,7 +432,7 @@ class TestReadAcquisitionParams:
 
     def test_parses_an_unnamespaced_header_too(self, tmp_path) -> None:
         """Other vendors write bare ``<TR>``; the regex must not require a prefix."""
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             read_acquisition_params,
         )
 
@@ -441,7 +441,7 @@ class TestReadAcquisitionParams:
 
     def test_absent_tag_is_omitted_not_defaulted(self, tmp_path) -> None:
         """A fabricated TR is worse than a missing one — the metric must see the gap."""
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             read_acquisition_params,
         )
 
@@ -452,7 +452,7 @@ class TestReadAcquisitionParams:
 
     def test_no_header_returns_the_honest_empty(self, tmp_path) -> None:
         """Keeps the metric ``not_applicable`` rather than feeding it invented physics."""
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             read_acquisition_params,
         )
 
@@ -480,7 +480,7 @@ class TestSliceOnlyRepReads:
         return data
 
     def test_the_header_probe_reports_the_shape_without_reading(self, tmp_path):
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             _kspace_shape_from_h5,
         )
 
@@ -494,7 +494,7 @@ class TestSliceOnlyRepReads:
         coercion cannot pass here while breaking one path."""
         import torch
 
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             _load_kspace_from_h5,
         )
 
@@ -507,7 +507,7 @@ class TestSliceOnlyRepReads:
             assert torch.equal(partial, full[idx]), f"slice {idx} diverged"
 
     def test_the_partial_read_drops_the_leading_axis(self, tmp_path):
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             _load_kspace_from_h5,
         )
 
@@ -521,7 +521,7 @@ class TestSliceOnlyRepReads:
         raise the same class the loader did so the caller's except arms fire."""
         h5py = pytest.importorskip("h5py")
 
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             _kspace_shape_from_h5,
         )
 
@@ -532,7 +532,7 @@ class TestSliceOnlyRepReads:
             _kspace_shape_from_h5(path)
 
     def test_a_missing_file_raises_filenotfounderror_on_the_probe(self, tmp_path):
-        from mriforge.infrastructure.physics.m4raw_pseudo_gt import (
+        from spectramr.infrastructure.physics.m4raw_pseudo_gt import (
             _kspace_shape_from_h5,
         )
 

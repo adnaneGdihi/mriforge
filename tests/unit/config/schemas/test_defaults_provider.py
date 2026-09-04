@@ -8,12 +8,13 @@ that omit the key, so nothing errors and nothing looks stale.
 
 from __future__ import annotations
 
-from mriforge.config.schemas.base import (
+from spectramr.config.schemas.base import (
     ACCEPTED_CONFIG_VERSIONS,
     CANONICAL_CONFIG_VERSION,
     LEGACY_CONFIG_VERSIONS,
 )
-from mriforge.config.schemas.defaults_provider import ConfigDefaultsProvider
+from spectramr.config.schemas.defaults_provider import ConfigDefaultsProvider
+from tests.unit.config.schemas.test_base import looks_like_a_config_tier
 
 
 def _base_defaults() -> dict:
@@ -42,7 +43,7 @@ def test_the_default_tracks_the_constant_rather_than_a_literal() -> None:
     stale the next time the canonical version changes — which is exactly how
     this module drifted in the first place.
     """
-    import mriforge.config.schemas.defaults_provider as provider
+    import spectramr.config.schemas.defaults_provider as provider
 
     source = provider.__dict__["CANONICAL_CONFIG_VERSION"]
     assert source == CANONICAL_CONFIG_VERSION
@@ -92,21 +93,29 @@ def test_the_declared_metadata_version_is_never_a_config_tier() -> None:
     """The regression that matters, stated independently of the value above.
 
     Whatever this block ever comes to hold, it must not be a *schema* version --
-    that conflation is the whole defect. Asserting `not in ACCEPTED | LEGACY`
-    would still pass on a tier that is merely unrecognised, so this checks the
-    shape: a config tier is what `CANONICAL_CONFIG_VERSION` looks like.
+    that conflation is the whole defect.
+
+    This said it checked the shape and then checked MEMBERSHIP, which is not the
+    same thing and is green on the value that motivated it. Verified by planting
+    it: with `"6.0"` restored, `assert version not in ACCEPTED | LEGACY` passes,
+    because PR #891 emptied the legacy set and the retired tier now belongs to no
+    set the code still holds. The membership form could only ever have caught
+    `1.0` -- the one tier that was never the bug.
+
+    So it now asserts the shape for real, through the predicate `test_base.py`
+    owns: a config tier is a bare dotted numeric string. One definition, two call
+    sites (non-negotiable 17) -- this invariant had two enforcers that disagreed
+    about `metadata.version` once already.
     """
     version = _metadata_defaults()["version"]
-    tiers = set(ACCEPTED_CONFIG_VERSIONS) | set(LEGACY_CONFIG_VERSIONS)
-    assert version not in tiers, (
-        f"the defaults provider declares the config tier {version!r} as author "
-        "metadata; `metadata.version` is the author's experiment revision"
+    assert not looks_like_a_config_tier(version), (
+        f"the defaults provider declares {version!r} as author metadata, and it "
+        "is spelled like a config tier; `metadata.version` is the author's "
+        "experiment revision"
     )
-    assert version != CANONICAL_CONFIG_VERSION, (
-        "even the *current* tier is wrong here -- it would make every arm claim "
-        "an author revision it never wrote, and the next bump would silently "
-        "rewrite it"
-    )
+    # Stated separately: even the *current* tier is wrong here -- it would make
+    # every arm claim an author revision it never wrote.
+    assert version != CANONICAL_CONFIG_VERSION
 
 
 def test_the_retired_tier_is_gone_from_the_defaults_entirely() -> None:

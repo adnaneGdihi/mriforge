@@ -1,6 +1,6 @@
 """Unit tests for loss extractor classes.
 
-Targets ``mriforge.infrastructure.training.utils.loss_extractors``:
+Targets ``spectramr.infrastructure.training.utils.loss_extractors``:
 - ``BaseLossExtractor.get_loss`` / ``get_loss_float``
 - ``GANLossExtractor``, ``VAELossExtractor``, ``VQVAELossExtractor``,
   ``DiffusionLossExtractor``, ``ReconstructionLossExtractor``,
@@ -38,7 +38,7 @@ def _t(v: float) -> torch.Tensor:
 
 
 def test_canary_base_extractor() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     ext = BaseLossExtractor({"my_loss": _t(3.0)})
     result = ext.get_loss("my_loss")
@@ -59,7 +59,7 @@ def test_canary_base_extractor() -> None:
     ],
 )
 def test_base_get_loss_presence(key, present, expected) -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     losses = {key: _t(5.0)} if present else {}
     ext = BaseLossExtractor(losses)
@@ -68,7 +68,7 @@ def test_base_get_loss_presence(key, present, expected) -> None:
 
 
 def test_base_get_loss_float_from_tensor() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     ext = BaseLossExtractor({"lx": _t(2.5)})
     f = ext.get_loss_float("lx")
@@ -77,7 +77,7 @@ def test_base_get_loss_float_from_tensor() -> None:
 
 
 def test_base_get_loss_float_from_float() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     ext = BaseLossExtractor({"lx": 9.9})
     f = ext.get_loss_float("lx")
@@ -85,7 +85,7 @@ def test_base_get_loss_float_from_float() -> None:
 
 
 def test_base_get_loss_float_default_for_missing() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     ext = BaseLossExtractor({})
     f = ext.get_loss_float("__missing__")
@@ -98,7 +98,7 @@ def test_base_get_loss_float_default_for_missing() -> None:
 
 
 def test_gan_extract_all_losses_keys() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import GANLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import GANLossExtractor
 
     losses = {
         "g_total_loss": _t(1.0),
@@ -121,7 +121,7 @@ def test_gan_extract_all_losses_keys() -> None:
 
 
 def test_gan_missing_keys_return_zero() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import GANLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import GANLossExtractor
 
     ext = GANLossExtractor({})
     assert float(ext.get_g_total_loss().item()) == pytest.approx(0.0)
@@ -134,7 +134,7 @@ def test_gan_missing_keys_return_zero() -> None:
 
 
 def test_vae_kl_and_reconstruction() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import VAELossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import VAELossExtractor
 
     losses = {
         "g_total_loss": _t(1.5),
@@ -148,7 +148,7 @@ def test_vae_kl_and_reconstruction() -> None:
 
 
 def test_vae_kl_weight_default_is_tensor() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import VAELossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import VAELossExtractor
 
     ext = VAELossExtractor({})
     w = ext.get_kl_weight()
@@ -162,7 +162,7 @@ def test_vae_kl_weight_default_is_tensor() -> None:
 
 @pytest.mark.parametrize("strategy_type", ["gan", "reconstruction", "diffusion", "vae", "vqvae", "mae"])
 def test_factory_returns_extractor_for_known_types(strategy_type: str) -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import (
+    from spectramr.infrastructure.training.utils.loss_extractors import (
         BaseLossExtractor,
         create_loss_extractor,
     )
@@ -172,7 +172,7 @@ def test_factory_returns_extractor_for_known_types(strategy_type: str) -> None:
 
 
 def test_factory_raises_for_unknown_type() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import create_loss_extractor
+    from spectramr.infrastructure.training.utils.loss_extractors import create_loss_extractor
 
     with pytest.raises(ValueError, match="Unknown strategy_type"):
         create_loss_extractor("__bogus__", {})
@@ -184,7 +184,7 @@ def test_factory_raises_for_unknown_type() -> None:
 
 
 def test_edge_none_losses_treated_as_empty() -> None:
-    from mriforge.infrastructure.training.utils.loss_extractors import BaseLossExtractor
+    from spectramr.infrastructure.training.utils.loss_extractors import BaseLossExtractor
 
     ext = BaseLossExtractor(None)  # type: ignore[arg-type]
     assert float(ext.get_loss("any_key").item()) == pytest.approx(0.0)

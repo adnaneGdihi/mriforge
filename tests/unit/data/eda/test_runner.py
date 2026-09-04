@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.data.eda.catalog import discover
-from mriforge.data.eda.runner import default_output_dir, run_all, run_dataset
+from spectramr.data.eda.catalog import discover
+from spectramr.data.eda.runner import default_output_dir, run_all, run_dataset
 
 
 def test_default_output_dir_is_timestamped():
@@ -131,7 +131,7 @@ def test_run_all_surfaces_read_failures_as_issues(
 def test_skipped_malformed_read_surfaces_as_issue():
     """The 1-D 'wrong-key' read note (loader._is_plane guard) is a genuine read degradation, so
     it must appear in coverage.json ``issues`` — not be swallowed (CLAUDE.md #10)."""
-    from mriforge.data.eda.runner import _issues
+    from spectramr.data.eda.runner import _issues
 
     notes = ["skipped malformed read (shape (150,)): scan0.h5", "harmless info note"]
     assert _issues(notes) == ["skipped malformed read (shape (150,)): scan0.h5"]

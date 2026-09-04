@@ -1,6 +1,6 @@
 """Tests for ``LesionWeightedLoss``.
 
-Targets ``mriforge.models.losses.lesion_weighted_loss``. Composable wrapper
+Targets ``spectramr.models.losses.lesion_weighted_loss``. Composable wrapper
 that boosts the per-voxel loss inside a known lesion mask.
 
 Categories:
@@ -22,7 +22,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.losses.lesion_weighted_loss import LesionWeightedLoss
+from spectramr.models.losses.lesion_weighted_loss import LesionWeightedLoss
 
 
 # ---------------------------------------------------------------------------
@@ -202,6 +202,6 @@ def test_gradient_flows_to_prediction() -> None:
 
 def test_registered() -> None:
     """``lesion_weighted`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "lesion_weighted" in list_available()

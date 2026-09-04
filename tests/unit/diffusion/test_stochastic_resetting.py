@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.diffusion.stochastic_resetting import (
+from spectramr.models.diffusion.stochastic_resetting import (
     apply_resetting,
     coefficient_of_variation,
     mfpt_with_resetting,

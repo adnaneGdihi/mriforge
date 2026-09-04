@@ -5,7 +5,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.models.generators.kspace_cold_diffusion_generator import (
+from spectramr.models.generators.kspace_cold_diffusion_generator import (
     KSpaceColdDiffusionGenerator,
 )
 
@@ -32,8 +32,8 @@ def test_generator_dc_methods_sourced_from_physics_ssot():
     frozenset, not a private literal copy (canonical-homes / SSOT). This keeps
     the model-internal DC builder and the reverse-diffusion sampler in lockstep
     (the 2026-07-05 ``dc_method='adaptive'`` divergence)."""
-    import mriforge.models.generators.kspace_cold_diffusion_generator as kcg
-    from mriforge.infrastructure.physics import data_consistency as dc
+    import spectramr.models.generators.kspace_cold_diffusion_generator as kcg
+    from spectramr.infrastructure.physics import data_consistency as dc
 
     assert kcg.VALID_DC_METHODS is dc.VALID_DC_METHODS
 
@@ -42,7 +42,7 @@ def test_generator_builds_noise_adaptive_dc_layer():
     """``dc_method='noise_adaptive'`` builds the Wiener NoiseAdaptiveDataConsistency
     layer (``dc_weight`` forwarded as the trust temperature β), and its trust
     telemetry is surfaced under ``noise_adaptive_trust/*`` tags."""
-    from mriforge.infrastructure.physics.data_consistency import (
+    from spectramr.infrastructure.physics.data_consistency import (
         NoiseAdaptiveDataConsistency,
     )
 
@@ -548,7 +548,7 @@ class TestPhaseSafeDualAttentionResidualContract:
     """
 
     def test_residual_and_value_come_from_x_kspace(self):
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         attn = PhaseSafeDualAttention(in_channels=2, num_heads=1, reduction=1).eval()
         x_kspace = torch.randn(2, 4, 16, 16)
@@ -567,7 +567,7 @@ class TestPhaseSafeDualAttentionResidualContract:
         runs in bounded memory and preserves spatial shape. Without the cap
         this allocates a ~17 GiB ``[1, 65536, 65536]`` matrix and OOMs.
         """
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         attn = PhaseSafeDualAttention(
             in_channels=4, num_heads=1, reduction=1, max_tokens=256
@@ -582,7 +582,7 @@ class TestPhaseSafeDualAttentionResidualContract:
     def test_attention_below_cap_uses_full_resolution(self):
         """Below the cap, attention runs at native resolution (no pooling),
         and the gamma=0 residual still yields an exact x_kspace passthrough."""
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         attn = PhaseSafeDualAttention(
             in_channels=2, num_heads=1, reduction=1, max_tokens=4096
@@ -594,7 +594,7 @@ class TestPhaseSafeDualAttentionResidualContract:
         assert torch.allclose(out, x, atol=1e-6)
 
     def test_invalid_max_tokens_raises(self):
-        from mriforge.models.blocks.attention import PhaseSafeDualAttention
+        from spectramr.models.blocks.attention import PhaseSafeDualAttention
 
         with pytest.raises(ValueError, match="max_tokens"):
             PhaseSafeDualAttention(in_channels=2, max_tokens=0)
@@ -727,6 +727,40 @@ class TestChannelAdapterWidthContract:
         model = self._build()
         assert model.expects_smaps_concat is True
         assert self._bridge(model).config.in_channels == 2 * model.in_channels
+
+    def test_backbone_in_channels_is_published_for_the_contract(self) -> None:
+        """The width the model-input contract compares against.
+
+        ``in_channels`` is the BARE measurement -- correct for the concat gate
+        in ``forward`` and for the validation sampler that re-enters un-doubled,
+        wrong as a description of what the backbone is handed on the training
+        path. The contract read ``in_channels`` and so reported a mismatch on
+        every conditioned arm; it now reads this attribute, which must agree
+        with the width the bridge was actually built at whichever way
+        ``expects_smaps_concat`` falls.
+        """
+        conditioned = self._build()
+        assert conditioned.backbone_in_channels == 2 * conditioned.in_channels
+        assert (
+            conditioned.backbone_in_channels
+            == self._bridge(conditioned).config.in_channels
+        )
+
+        plain = self._build(condition_with_smaps=False)
+        assert plain.backbone_in_channels == plain.in_channels
+        assert plain.backbone_in_channels == self._bridge(plain).config.in_channels
+
+    def test_the_contract_resolver_reads_the_published_width(self) -> None:
+        """Wiring, not just presence (CLAUDE.md #16): the attribute is only a
+        fix if the resolver that fires the warning actually reaches it."""
+        from spectramr.infrastructure.training.model_input_contract import (
+            resolve_model_in_channels,
+        )
+
+        model = self._build()
+        channels, source = resolve_model_in_channels(model)
+        assert source == "module.backbone_in_channels"
+        assert channels == 2 * model.in_channels
 
         plain = self._build(condition_with_smaps=False)
         assert plain.expects_smaps_concat is False
@@ -1008,10 +1042,10 @@ class TestWaveletGateDispatch:
     kwarg filter dropped it, so attn_kan_wavelet == attn_mlp_wavelet (facade)."""
 
     def test_gate_type_reaches_wavelet_block(self):
-        from mriforge.models.blocks.dual_domain_attention_kan import (
+        from spectramr.models.blocks.dual_domain_attention_kan import (
             WaveletFreqAttentionBlock,
         )
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceDownsampleBlock,
         )
 
@@ -1029,7 +1063,7 @@ class TestWaveletGateDispatch:
         assert block.attention.inner.gate_type == "mlp"
 
     def test_default_gate_type_is_kan(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceDownsampleBlock,
         )
 
@@ -1053,7 +1087,7 @@ class TestBlockActivationValidation:
     VALID_COMPLEX = ("complex", "modrelu")
 
     def test_unet_block_valid_activations_forward_finite(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUNetBlock,
         )
 
@@ -1065,7 +1099,7 @@ class TestBlockActivationValidation:
             assert torch.isfinite(out).all()
 
     def test_unet_block_unknown_activation_raises(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUNetBlock,
         )
 
@@ -1073,7 +1107,7 @@ class TestBlockActivationValidation:
             KSpaceUNetBlock(in_channels=8, out_channels=8, activation="silu")
 
     def test_unet_block_odd_channels_complex_raises(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUNetBlock,
         )
 
@@ -1081,7 +1115,7 @@ class TestBlockActivationValidation:
             KSpaceUNetBlock(in_channels=8, out_channels=3, activation="complex")
 
     def test_downsample_block_valid_activations_forward_finite(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceDownsampleBlock,
         )
 
@@ -1099,7 +1133,7 @@ class TestBlockActivationValidation:
             assert torch.isfinite(skip).all()
 
     def test_downsample_block_unknown_activation_raises(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceDownsampleBlock,
         )
 
@@ -1114,7 +1148,7 @@ class TestBlockActivationValidation:
 
     @pytest.mark.parametrize("name", VALID_COMPLEX)
     def test_downsample_block_odd_channels_complex_raises(self, name):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceDownsampleBlock,
         )
 
@@ -1128,7 +1162,7 @@ class TestBlockActivationValidation:
             )
 
     def test_upsample_block_valid_activations_forward_finite(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUpsampleBlock,
         )
 
@@ -1146,7 +1180,7 @@ class TestBlockActivationValidation:
             assert torch.isfinite(out).all()
 
     def test_upsample_block_unknown_activation_raises(self):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUpsampleBlock,
         )
 
@@ -1161,7 +1195,7 @@ class TestBlockActivationValidation:
 
     @pytest.mark.parametrize("name", VALID_COMPLEX)
     def test_upsample_block_odd_channels_complex_raises(self, name):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceUpsampleBlock,
         )
 
@@ -1333,7 +1367,7 @@ class TestKSpaceFeatureNormPlumbing:
     def test_rms_reaches_complex_unet_backbone(self):
         """The model_kwarg threads generator -> FourierBridgeNetwork -> ComplexUNet
         and materializes ComplexRMSNorm modules (the experiment_11 divergence fix)."""
-        from mriforge.models.layers.complex_norm import ComplexRMSNorm
+        from spectramr.models.layers.complex_norm import ComplexRMSNorm
 
         model = KSpaceColdDiffusionGenerator(
             in_channels=2,
@@ -1372,8 +1406,8 @@ def test_both_block_dispatches_wrap_attention_identity_at_init() -> None:
     only one of them is the easy mistake -- and it is exactly what happened with
     ``spatial``, which exists in the up dispatch alone.
     """
-    from mriforge.models.blocks.attention import IdentityAtInitAttention
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.blocks.attention import IdentityAtInitAttention
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceDownsampleBlock,
         KSpaceUpsampleBlock,
     )
@@ -1406,7 +1440,7 @@ def test_attention_type_none_is_not_wrapped() -> None:
     """The control must stay a bare Identity: energy_probe skips on isinstance."""
     from torch import nn
 
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceDownsampleBlock,
     )
 
@@ -1467,19 +1501,19 @@ class TestAccelerationConfigObjectContract:
         )
 
     def test_schema_object_matches_raw_dict(self) -> None:
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         config = AccelerationConfigSchema(**self.ACCEL)
         assert self._fingerprint(self._build(config)) == self._fingerprint(self._build(self.ACCEL))
 
     def test_model_dump_matches_raw_dict(self) -> None:
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         dumped = AccelerationConfigSchema(**self.ACCEL).model_dump()
         assert self._fingerprint(self._build(dumped)) == self._fingerprint(self._build(self.ACCEL))
 
     def test_min_center_fraction_reaches_the_degradation_operator(self) -> None:
-        from mriforge.config.schemas.acceleration import AccelerationConfigSchema
+        from spectramr.config.schemas.acceleration import AccelerationConfigSchema
 
         model = self._build(AccelerationConfigSchema(**self.ACCEL))
         assert model.kspace_process.min_center_fraction == 0.02
@@ -1492,7 +1526,7 @@ class TestAccelerationConfigObjectContract:
 
 
 def _tiny(**kw):
-    from mriforge.models.generators.kspace_cold_diffusion_generator import (
+    from spectramr.models.generators.kspace_cold_diffusion_generator import (
         KSpaceColdDiffusionGenerator,
     )
 
@@ -1534,7 +1568,7 @@ class TestAttentionDefaultIsBackboneAware:
         """
         import inspect
 
-        from mriforge.models.reconstruction.unet import ConfigurableResidualBlock
+        from spectramr.models.reconstruction.unet import ConfigurableResidualBlock
 
         block_default = (
             inspect.signature(ConfigurableResidualBlock.__init__)
@@ -1791,7 +1825,7 @@ class TestTheOneWidthResolver:
 
     @staticmethod
     def _gen(backbone_type: str):
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -1832,7 +1866,7 @@ class TestTheOneWidthResolver:
     def test_the_resolver_matches_the_real_backbone_width(
         self, backbone_type: str, doubled: bool
     ) -> None:
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             model_expects_smaps_concat,
         )
 
@@ -1846,7 +1880,7 @@ class TestTheOneWidthResolver:
     def test_the_resolved_contract_outranks_the_declaration(self) -> None:
         """A stub that declares conditioning and disowns the concat resolves to
         the concat's answer -- this is the divergence every blind site missed."""
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             model_expects_smaps_concat,
         )
 
@@ -1859,7 +1893,7 @@ class TestTheOneWidthResolver:
     def test_a_pre_contract_model_falls_back_to_its_declaration(self) -> None:
         """Models predating ``expects_smaps_concat`` keep their old answer; this
         is the one place in the codebase that substitution is allowed."""
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             model_expects_smaps_concat,
         )
 
@@ -1881,7 +1915,7 @@ class TestTheOneWidthResolver:
         strategy concatenated unconditionally and must keep answering True.
         Collapsing the two would silently change one of them.
         """
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             model_expects_smaps_concat,
         )
 
@@ -1918,7 +1952,7 @@ class TestSampleStartTimestepForwarding:
 
     @staticmethod
     def _patch(monkeypatch, sampler) -> None:
-        import mriforge.models.diffusion.samplers as samplers
+        import spectramr.models.diffusion.samplers as samplers
 
         monkeypatch.setattr(samplers, "get_sampler", lambda name, **kw: sampler)
 
@@ -1988,7 +2022,7 @@ class TestSampleStartTimestepForwarding:
 
         with caplog.at_level(
             logging.WARNING,
-            logger="mriforge.models.generators.kspace_cold_diffusion_generator",
+            logger="spectramr.models.generators.kspace_cold_diffusion_generator",
         ):
             self._generator().sample(measurement, mask=mask, start_timestep=7)
 
@@ -2099,7 +2133,7 @@ class TestRepetitionFusionCapabilityProbes:
     def test_supports_repetition_fusion_is_false_when_not_built(self) -> None:
         from types import SimpleNamespace
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -2111,7 +2145,7 @@ class TestRepetitionFusionCapabilityProbes:
         pass against a property hardwired to return False."""
         from types import SimpleNamespace
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -2127,7 +2161,7 @@ class TestRepetitionFusionCapabilityProbes:
         """
         from types import SimpleNamespace
 
-        from mriforge.models.generators.kspace_cold_diffusion_generator import (
+        from spectramr.models.generators.kspace_cold_diffusion_generator import (
             KSpaceColdDiffusionGenerator,
         )
 
@@ -2147,7 +2181,7 @@ class TestRepetitionFusionCapabilityProbes:
         import ast
         import inspect
 
-        from mriforge.models.generators import kspace_cold_diffusion_generator as mod
+        from spectramr.models.generators import kspace_cold_diffusion_generator as mod
 
         tree = ast.parse(inspect.getsource(mod))
         gen_cls = next(
@@ -2253,7 +2287,7 @@ def _dc_generator(**dc_kwargs):
 
 def test_hard_dc_layer_receives_the_declared_noise_levels():
     """Before #1525 these never arrived: the layer was built with a bare ``()``."""
-    from mriforge.infrastructure.physics.data_consistency import HardDataConsistency
+    from spectramr.infrastructure.physics.data_consistency import HardDataConsistency
 
     model = _dc_generator(
         dc_method="hard", train_noise_level=0.077, eval_noise_level=0.033
@@ -2299,3 +2333,250 @@ def test_unsupported_noise_type_raises_through_the_generator():
     """No silent fallback: an unreachable noise model must not degrade to Gaussian."""
     with pytest.raises(ValueError, match="unsupported noise_type"):
         _dc_generator(dc_method="hard", noise_type="rician")
+
+
+# --------------------------------------------------------------------------
+# `return_pre_dc`: exposing the pre-data-consistency proposal in eval mode.
+#
+# Under `dc_method: hard` the reverse process never evaluates the model at t=0,
+# and after DC at t=0 every bin is acquired, so the output IS the measurement.
+# The only measurable thing at the terminal rung is the proposal the network
+# makes BEFORE data consistency overwrites it -- which is also the only place a
+# gradient exists there (`lambda_pre_dc_kspace`). These pin that the flag hands
+# back that proposal and not the post-DC output, because the post-DC output
+# would score as a flawless reconstruction while measuring nothing.
+#
+# `eval_noise_level=0.0` throughout: hard DC otherwise adds N(0, 0.005) to the
+# measurement in eval, which makes these comparisons non-deterministic (#1689).
+# --------------------------------------------------------------------------
+
+
+def _pre_dc_generator():
+    return _dc_generator(dc_method="hard", eval_noise_level=0.0).eval()
+
+
+def _pre_dc_forward_kwargs(x: torch.Tensor) -> dict:
+    kwargs = _measurement_kwargs(x)
+    kwargs["mask"] = torch.ones_like(kwargs["mask"])  # t=0: every bin acquired
+    kwargs["kspace_measured"] = torch.randn_like(x)
+    kwargs["sensitivity_maps"] = torch.randn_like(x)
+    return kwargs
+
+
+def test_return_pre_dc_is_keyword_only_so_a_typo_cannot_vanish_into_kwargs():
+    import inspect
+
+    param = inspect.signature(KSpaceColdDiffusionGenerator.forward).parameters[
+        "return_pre_dc"
+    ]
+    assert param.kind is inspect.Parameter.KEYWORD_ONLY
+    assert param.default is False
+
+
+def test_generator_declares_that_it_exposes_pre_dc():
+    # The probe reads this off the CLASS to decide whether to emit its metric
+    # keys; `train.py:_all_reduce_val_metrics` packs sorted keys positionally,
+    # so that decision has to be rank-invariant.
+    assert KSpaceColdDiffusionGenerator.exposes_pre_dc is True
+
+
+def test_eval_forward_without_the_flag_still_returns_a_bare_tensor():
+    model = _pre_dc_generator()
+    x = torch.randn(1, 2, 16, 16)
+    with torch.no_grad():
+        out = model(x, torch.zeros(1, dtype=torch.long), **_pre_dc_forward_kwargs(x))
+    assert isinstance(out, torch.Tensor)
+
+
+def test_eval_forward_with_the_flag_returns_the_pair():
+    model = _pre_dc_generator()
+    x = torch.randn(1, 2, 16, 16)
+    with torch.no_grad():
+        out = model(
+            x,
+            torch.zeros(1, dtype=torch.long),
+            return_pre_dc=True,
+            **_pre_dc_forward_kwargs(x),
+        )
+    assert isinstance(out, tuple) and len(out) == 2
+    assert all(isinstance(t, torch.Tensor) for t in out)
+
+
+def test_pre_dc_element_is_not_the_post_dc_output():
+    """The pin that matters: element [1] must be the proposal, not the result.
+
+    With every bin acquired, hard DC replaces the whole prediction, so the two
+    are numerically far apart. Returning `x_out` twice -- the plausible wiring
+    mistake -- makes this assertion fail.
+    """
+    model = _pre_dc_generator()
+    x = torch.randn(1, 2, 16, 16)
+    with torch.no_grad():
+        post_dc, pre_dc = model(
+            x,
+            torch.zeros(1, dtype=torch.long),
+            return_pre_dc=True,
+            **_pre_dc_forward_kwargs(x),
+        )
+    assert pre_dc is not post_dc
+    assert not torch.allclose(pre_dc, post_dc), (
+        "pre-DC and post-DC are identical; the probe would report the "
+        "measurement back to itself as a perfect reconstruction"
+    )
+
+
+def test_post_dc_at_t0_reproduces_the_measurement_but_pre_dc_does_not():
+    """Names what each element means, rather than only that they differ.
+
+    At t=0 with a full mask, hard DC writes the measurement into every bin, so
+    the post-DC output IS the measurement. The pre-DC proposal is the network's
+    own answer and is not. This is what makes the terminal rung unmeasurable
+    post-DC and measurable pre-DC.
+    """
+    model = _pre_dc_generator()
+    x = torch.randn(1, 2, 16, 16)
+    kwargs = _pre_dc_forward_kwargs(x)
+    measured = kwargs["kspace_measured"]
+    with torch.no_grad():
+        post_dc, pre_dc = model(
+            x, torch.zeros(1, dtype=torch.long), return_pre_dc=True, **kwargs
+        )
+    post_err = (post_dc - measured).abs().max()
+    pre_err = (pre_dc - measured).abs().max()
+    assert post_err < pre_err, (
+        f"post-DC should track the measurement more closely than the raw "
+        f"proposal does (post={post_err:.4g}, pre={pre_err:.4g})"
+    )
+
+
+def test_training_mode_still_returns_the_pair_without_the_flag():
+    """The pre-existing training contract is unchanged by the new keyword."""
+    model = _dc_generator(dc_method="hard", eval_noise_level=0.0).train()
+    x = torch.randn(1, 2, 16, 16)
+    out = model(x, torch.zeros(1, dtype=torch.long), **_pre_dc_forward_kwargs(x))
+    assert isinstance(out, tuple) and len(out) == 2
+
+
+class TestSamplerDeterminismKnobs:
+    """``sampler_sigma`` / ``sampler_seed`` / ``selection_rule`` model_kwargs (issue #1286).
+
+    Read, validated at BUILD, stamped on the generator, and -- the half that was
+    missing -- forwarded to the ``cold_mri`` sampler so the reverse loop runs at
+    the sigma the YAML declares. ``seed_offset`` (the validation ensemble's
+    per-member stream) follows ``start_timestep``'s forwarding rule, except that a
+    non-zero offset the sampler cannot take RAISES.
+    """
+
+    @staticmethod
+    def _build(**kw) -> KSpaceColdDiffusionGenerator:
+        return KSpaceColdDiffusionGenerator(
+            in_channels=2,
+            out_channels=2,
+            base_channels=8,
+            num_layers=2,
+            attention_type="none",
+            kspace_log_scaled=False,
+            **kw,
+        )
+
+    @staticmethod
+    def _inputs() -> tuple[torch.Tensor, torch.Tensor]:
+        measurement = torch.randn(1, 2, 16, 16)
+        mask = torch.zeros(1, 1, 16, 16)
+        mask[..., ::2] = 1.0
+        return measurement * mask, mask
+
+    def test_defaults_are_the_deterministic_sampler(self) -> None:
+        model = self._build()
+        assert model.sampler_sigma == 0.0
+        assert model.sampler_seed is None
+        assert model._selection_rule == "fixed"
+
+    def test_knobs_are_read_and_stamped(self) -> None:
+        model = self._build(sampler_sigma=0.2, sampler_seed=5)
+        assert model.sampler_sigma == pytest.approx(0.2)
+        assert model.sampler_seed == 5
+
+    def test_negative_sigma_raises_at_build(self) -> None:
+        with pytest.raises(ValueError, match="sampler_sigma"):
+            self._build(sampler_sigma=-0.1)
+
+    def test_unknown_selection_rule_raises_at_build(self) -> None:
+        with pytest.raises(ValueError, match="selection_rule"):
+            self._build(selection_rule="greedy")
+
+    def test_knobs_reach_get_sampler_on_the_cold_mri_path(self, monkeypatch) -> None:
+        """The planted #1286 shape: the values must be IN the kwargs the registry gets."""
+        import spectramr.models.diffusion.samplers as samplers
+
+        seen: dict = {}
+
+        class _Sampler:
+            def sample(self, measurement, mask, **kwargs):
+                return measurement
+
+        def _fake_get_sampler(name, **kwargs):
+            seen["name"] = name
+            seen.update(kwargs)
+            return _Sampler()
+
+        monkeypatch.setattr(samplers, "get_sampler", _fake_get_sampler)
+        measurement, mask = self._inputs()
+
+        self._build(sampler_sigma=0.3, sampler_seed=9).sample(measurement, mask=mask)
+
+        assert seen["name"] == "cold_mri"
+        assert seen["sampler_sigma"] == pytest.approx(0.3)
+        assert seen["sampler_seed"] == 9
+        assert seen["selection_rule"] == "fixed"
+
+    def test_seed_offset_is_forwarded_when_the_sampler_declares_it(self, monkeypatch) -> None:
+        import spectramr.models.diffusion.samplers as samplers
+
+        received: list = []
+
+        class Accepting:
+            def sample(self, measurement, mask, seed_offset=0):
+                received.append(seed_offset)
+                return measurement
+
+        monkeypatch.setattr(samplers, "get_sampler", lambda name, **kw: Accepting())
+        measurement, mask = self._inputs()
+
+        self._build().sample(measurement, mask=mask, seed_offset=2)
+
+        assert received == [2]
+
+    def test_a_zero_offset_is_never_forwarded(self, monkeypatch) -> None:
+        """Member 0 and every single-sample call stay the legacy call, byte for byte."""
+        import spectramr.models.diffusion.samplers as samplers
+
+        seen: list = []
+
+        class Strict:
+            def sample(self, measurement, mask, **kwargs):
+                seen.append(dict(kwargs))
+                return measurement
+
+        monkeypatch.setattr(samplers, "get_sampler", lambda name, **kw: Strict())
+        measurement, mask = self._inputs()
+        model = self._build()
+
+        model.sample(measurement, mask=mask)
+        model.sample(measurement, mask=mask, seed_offset=0)
+
+        assert seen == [{}, {}]
+
+    def test_a_nonzero_offset_the_sampler_cannot_take_raises(self, monkeypatch) -> None:
+        """Warning here would make member 1 replay member 0's stream in silence."""
+        import spectramr.models.diffusion.samplers as samplers
+
+        class Legacy:
+            def sample(self, measurement, mask, start_timestep=None):
+                return measurement
+
+        monkeypatch.setattr(samplers, "get_sampler", lambda name, **kw: Legacy())
+        measurement, mask = self._inputs()
+
+        with pytest.raises(ValueError, match="seed_offset"):
+            self._build().sample(measurement, mask=mask, seed_offset=1)

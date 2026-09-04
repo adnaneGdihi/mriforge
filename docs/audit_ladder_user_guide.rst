@@ -41,14 +41,14 @@ them and stops at the first failure.
      - Typos, missing fields, illegal enum values, wrong types.
    * - **1**
      - Static cross-validation via
-       :class:`~mriforge.infrastructure.validation.config_health_checker.ConfigHealthChecker`.
+       :class:`~spectramr.infrastructure.validation.config_health_checker.ConfigHealthChecker`.
      - ~ 10–100 ms
      - Channel mismatch (model expects ≠ data provides), advertised-
        options violations (silent fallbacks), loss-domain misalignment,
        AMP + gradient-clipping interaction, registry lookup failures.
    * - **2**
      - Synthetic forward probe via
-       :func:`~mriforge.infrastructure.validation.forward_probe.synthetic_forward_probe`.
+       :func:`~spectramr.infrastructure.validation.forward_probe.synthetic_forward_probe`.
      - ~ 10–30 s (CPU)
      - Shape mismatches inside the model (linear-layer mat1×mat2),
        AMP / GradScaler double-unscale (real backward pass triggers it),
@@ -64,7 +64,7 @@ them and stops at the first failure.
 
    **Tier 2 builds the model training builds.** The probe resolves its
    constructor arguments through the same code the training path uses
-   (:func:`~mriforge.infrastructure.builders.generator_kwargs.resolve_full_generator_kwargs`),
+   (:func:`~spectramr.infrastructure.builders.generator_kwargs.resolve_full_generator_kwargs`),
    so contract-gated SSOT injections reach the probed model: the
    ``undersampling`` block as ``acceleration_config``,
    ``data.processing.enable_log_scaling`` as ``kspace_log_scaled``, and the
@@ -88,16 +88,16 @@ Audit a single experiment:
    source .venv/bin/activate
 
    # Tier 0+1 only (~100 ms): structural + static cross-checks
-   python -m mriforge.cli audit experiments/templates/comprehensive_config_template.yaml
+   python -m spectramr.cli audit experiments/templates/comprehensive_config_template.yaml
 
    # Add Tier-2 synthetic forward probe (~30 s on CPU)
-   python -m mriforge.cli audit experiments/templates/comprehensive_config_template.yaml --probe
+   python -m spectramr.cli audit experiments/templates/comprehensive_config_template.yaml --probe
 
    # Same, but on GPU (catches OOM at the configured batch size)
-   python -m mriforge.cli audit experiments/templates/comprehensive_config_template.yaml --probe --device cuda
+   python -m spectramr.cli audit experiments/templates/comprehensive_config_template.yaml --probe --device cuda
 
    # Structured JSON output for the campaign aggregator
-   python -m mriforge.cli audit experiments/templates/comprehensive_config_template.yaml --json
+   python -m spectramr.cli audit experiments/templates/comprehensive_config_template.yaml --json
 
 Exit codes:
 
@@ -163,7 +163,7 @@ or features. Under ``--strict`` every warning is promoted to an error.
    docstring and ``scripts/ci/cluster_verify.sh``'s comment had all said
    "``audit`` is ``--strict`` by default" for months; only argparse disagreed
    (``action="store_true"``, i.e. default ``False``), so an interactive
-   ``mriforge audit <arm>`` exited **1** on warnings and read as a soft pass.
+   ``spectramr audit <arm>`` exited **1** on warnings and read as a soft pass.
 
    Blast radius, measured before the flip over all 647 arms under
    ``experiments/inprogress`` (Tier 0+1, no probe): **507 pass / 3 warn /
@@ -348,7 +348,7 @@ Advisory (reported, never blocks)
     ``check_workflow_declared``: report now, ratchet to error once the corpus is
     drained. Closes issues #675 and #681.
 
-    It reads ``ExecutionLedger.current()``, which ``mriforge audit`` arms before
+    It reads ``ExecutionLedger.current()``, which ``spectramr audit`` arms before
     resolving the config. **If no ledger is armed the check says "NOT
     measured", never "none found"** — a check that cannot tell those apart is
     the silence it exists to break. If you resolve a config yourself and want
@@ -385,7 +385,7 @@ Advisory (reported, never blocks)
     the validating resolver is never called with it.
 
     **Not a duplicate of** ``scripts/ci/check_model_kwargs_are_read.py``. That
-    gate asks whether a key exists *anywhere* in ``src/mriforge`` — as a dict key
+    gate asks whether a key exists *anywhere* in ``src/spectramr`` — as a dict key
     or as any function's named parameter — and targets a name that exists
     NOWHERE (issue #1075). Its permissiveness is exactly what lets this class
     through: ``activation`` and ``use_complex_conv`` *are* named parameters of
@@ -475,7 +475,7 @@ Advisory (reported, never blocks)
     own header says "the only task on this cluster whose degradation is
     PHYSICALLY REAL... No acceleration, no physics block, no DC, no coil
     maps, no adapters" and it declares ``workflow.task: denoising``. Both
-    flagged arms already fail ``mriforge audit --strict`` today independent
+    flagged arms already fail ``spectramr audit --strict`` today independent
     of this check, via the pre-existing ``acceleration_present`` error (and,
     for ``exp_qm_02b_restore_on_real.yaml``, three further pre-existing
     errors — ``domain_alignment`` ×2, ``data_model_compatibility``,
@@ -497,15 +497,15 @@ Advisory (reported, never blocks)
 --------------------------------------
 
 The heading above says *reported*, and until 2026-08-20 that was only true of
-``mriforge audit``. The two surfaces render a report differently, and the
+``spectramr audit``. The two surfaces render a report differently, and the
 difference fell exactly on this tier:
 
-``mriforge audit``
+``spectramr audit``
     ``cli/app.py`` prints **every** result, and ``HealthCheckResult.__rich__``
     gives a passing one a green icon. Passing results also reach ``--json``
     (``report.to_dict``) and the ledger artifact.
 
-``mriforge train`` / ``train-distributed``
+``spectramr train`` / ``train-distributed``
     ``HealthCheckReport.log_summary`` rendered a result **only when it did not
     pass**. An advisory returns ``passed=True`` by design — that is the polarity
     that keeps it out of ``report.passed`` and ``report.warnings`` — so its text
@@ -581,7 +581,7 @@ Probe input: Shepp-Logan, not white noise
 =========================================
 
 The Tier-2 forward probe builds its dummy input from the existing
-:func:`mriforge.infrastructure.physics.signal_models.tse_b0_model.shepp_logan_2d`
+:func:`spectramr.infrastructure.physics.signal_models.tse_b0_model.shepp_logan_2d`
 phantom rather than ``torch.randn``. Two reasons:
 
 1. **Saved probe images are inspectable.** When the smoke wrapper
@@ -600,7 +600,7 @@ phantom rather than ``torch.randn``. Two reasons:
    phantom. They're invisible on noise.
 
 The phantom is wrapped by
-:func:`mriforge.infrastructure.validation.phantom_builder.synthetic_phantom`,
+:func:`spectramr.infrastructure.validation.phantom_builder.synthetic_phantom`,
 which handles 3-D ``(B, C, L)``, 4-D ``(B, C, H, W)`` and 5-D
 ``(B, C, D, H, W)`` shapes plus an optional ``add_phase=True`` for complex
 outputs (so real / imag tiled into the channel axis sees a non-trivial phase).
@@ -627,13 +627,13 @@ Opt out with ``--noise``:
 .. code-block:: bash
 
    # Phantom (default — recommended)
-   python -m mriforge.cli audit foo.yaml --probe
+   python -m spectramr.cli audit foo.yaml --probe
 
    # Pure white-noise input (legacy)
-   python -m mriforge.cli audit foo.yaml --probe --noise
+   python -m spectramr.cli audit foo.yaml --probe --noise
 
    # Save the probe input/output/target as inspectable PNG mosaics
-   python -m mriforge.cli audit foo.yaml --probe --save-probe-images /tmp/probe_pngs
+   python -m spectramr.cli audit foo.yaml --probe --save-probe-images /tmp/probe_pngs
 
 The image-save path tiles channels horizontally and shows the
 centre slice for 5-D volumes. Complex tensors are split into
@@ -673,22 +673,22 @@ the training run start only if it passed.
 .. code-block:: bash
 
    # Default: audit (Tier 0+1, --strict) → train only if the audit passed.
-   mriforge audit <arm>.yaml && \
-     mriforge train --config <arm>.yaml -O training.max_iterations=10 \
+   spectramr audit <arm>.yaml && \
+     spectramr train --config <arm>.yaml -O training.max_iterations=10 \
                     -O logging.log_interval=1
 
    # Audit only — skip train. ~100 ms per arm. The fast triage.
-   mriforge audit <arm>.yaml
+   spectramr audit <arm>.yaml
 
    # Audit + Tier-2 probe, then train. Catches more before real data is loaded.
-   mriforge audit <arm>.yaml --probe && \
-     mriforge train --config <arm>.yaml -O training.max_iterations=10
+   spectramr audit <arm>.yaml --probe && \
+     spectramr train --config <arm>.yaml -O training.max_iterations=10
 
    # Tolerate audit warnings rather than promoting them to errors.
-   mriforge audit <arm>.yaml --no-strict
+   spectramr audit <arm>.yaml --no-strict
 
    # Skip a cohort when sweeping a directory of arms.
-   mriforge audit <arm>.yaml --exclude 'vf/*'
+   spectramr audit <arm>.yaml --exclude 'vf/*'
 
 .. note::
 
@@ -718,14 +718,14 @@ fields (``data.data_root``, ``data.index_path``, ``data.validation_index_path``,
 The check exempts paths under the user's own cluster mount. Three
 mechanisms (any one is enough):
 
-1. **Explicit env-var** — set ``MRIFORGE_DATA_ROOT``, ``PROJECT_ROOT``,
-   or ``MRIFORGE_ROOT`` in your cluster ``.env``. Any path *under* one
+1. **Explicit env-var** — set ``SPECTRAMR_DATA_ROOT``, ``PROJECT_ROOT``,
+   or ``SPECTRAMR_ROOT`` in your cluster ``.env``. Any path *under* one
    of these is exempt:
 
    .. code-block:: bash
 
       # In your cluster .env:
-      export MRIFORGE_DATA_ROOT=/project/<allocation>/<your-account>/mriforge
+      export SPECTRAMR_DATA_ROOT=/project/<allocation>/<your-account>/spectramr
 
 2. **Auto-detect via cwd + $USER** (F5c, 2026-05-20) — when no env-var
    is set, the check inspects ``$USER`` and the current working
@@ -734,7 +734,7 @@ mechanisms (any one is enough):
    that subtree is treated as a configured root.
 
    Concretely: ``USER=<your-username>`` running from
-   ``/project/<allocation>/<user>/mriforge`` auto-exempts paths under
+   ``/project/<allocation>/<user>/spectramr`` auto-exempts paths under
    ``/project/<allocation>/<user>/`` without any ``.env`` edits. A
    colleague's leak (``/project/<allocation>/<other-account>/...``) still
    trips the check because the segment doesn't match ``$USER``.
@@ -854,7 +854,7 @@ values:
 
 .. code-block:: python
 
-   from mriforge.models.registry import register_model
+   from spectramr.models.registry import register_model
 
    @register_model(name="my_model", training_mode="reconstruction")
    class MyModel(nn.Module):
@@ -880,7 +880,7 @@ Cookbook
 
 .. code-block:: bash
 
-   python -m mriforge.cli audit experiments/inprogress/<paradigm>/<arm>.yaml
+   python -m spectramr.cli audit experiments/inprogress/<paradigm>/<arm>.yaml
 
 "Audit a whole directory of arms in under a minute"
 ---------------------------------------------------
@@ -888,7 +888,7 @@ Cookbook
 .. code-block:: bash
 
    find experiments/ -name '*.yaml' -print0 |
-     xargs -0 -n1 mriforge audit
+     xargs -0 -n1 spectramr audit
 
 "Catch AMP / shape bugs without launching real data"
 ----------------------------------------------------
@@ -896,7 +896,7 @@ Cookbook
 .. code-block:: bash
 
    find experiments/ -name '*.yaml' -print0 |
-     xargs -0 -n1 -I{} mriforge audit {} --probe
+     xargs -0 -n1 -I{} spectramr audit {} --probe
 
 "Aggregate audit JSON across the smoke run"
 -------------------------------------------
@@ -1052,7 +1052,7 @@ target_domain vs registered output_domain (E-VIZ2, 2026-06-16)
 ``ConfigHealthChecker.check_target_domain_matches_registered_output_domain``
 closes a gap the sibling ``check_model_loss_output_domain`` could not see.
 ``model.target_domain`` is **Priority-1** in
-:func:`mriforge.infrastructure.training.utils.domain_inference.infer_output_domain`
+:func:`spectramr.infrastructure.training.utils.domain_inference.infer_output_domain`
 — it *overrides* the model's registered ``output_domain`` capability and drives
 ``needs_ifft_for_visualization``. A YAML that declares ``target_domain: kspace``
 on a model registered ``output_domain="image"`` therefore makes the validation
@@ -1095,7 +1095,7 @@ alias); every other ``model_type`` skips with an informational pass.
    * - R0
      - error
      - ``model_kwargs.attention_type`` is not an advertised option (not in
-       :data:`mriforge.models.blocks.attention_domains.ATTENTION_DOMAIN_SUPPORT`).
+       :data:`spectramr.models.blocks.attention_domains.ATTENTION_DOMAIN_SUPPORT`).
    * - R1
      - error
      - ``force_pure_kspace: true`` + ``backbone_type: unet`` (builds
@@ -1118,11 +1118,148 @@ alias); every other ``model_type`` skips with an informational pass.
 
 The single source of truth for the advertised set, the per-type domain support,
 and the ``complex_unet`` block-dispatch coverage is
-:mod:`mriforge.models.blocks.attention_domains`, which both this check and the
+:mod:`spectramr.models.blocks.attention_domains`, which both this check and the
 runtime dispatch consult. ``KSpaceColdDiffusionGenerator.__init__`` mirrors R1
 and R3 as build-time ``ValueError`` raises, so a non-YAML caller cannot slip
 past. Regression coverage:
 ``tests/unit/infrastructure/validation/test_attention_domain_compatibility.py``.
+
+Witnesses added by the 2026-09 cohort review
+============================================
+
+Seven witnesses landed with the corpus-wide review of ``experiments/inprogress/``
+(2026-09-02). Each ships with a planted violation in its test module under
+``tests/unit/infrastructure/validation/witness/checks/``; the ratchet notes say
+which ones are still advisory and what promotes them.
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 12 58
+
+   * - Witness
+     - Severity
+     - What it refuses
+   * - ``nex_reference_route``
+     - error
+     - ``data.use_repetitions: true`` on a route other than ``m4raw``: only that
+       route builds a repetition-averaged target, so the arm advertised a
+       reference it never received (79 arms were drained).
+   * - ``held_out_test_split_disjoint``
+     - error
+     - a declared ``data.source.test_index_path`` that shares a subject or file
+       with the train or validation manifest (validation selects the checkpoint,
+       so it is part of the training pool).
+   * - ``held_out_test_declared``
+     - info (advisory)
+     - a baseline / headline / reference arm with no held-out test set. Promoted
+       to a warning once the Tier-1 cohorts adopt ``test_index_path``.
+   * - ``warmup_shorter_than_budget``
+     - error
+     - ``optimization.scheduler.warmup_steps >= training.max_iterations``: the
+       learning rate never leaves warm-up.
+   * - ``training_budget_is_positive``
+     - error
+     - ``training.epochs: 0`` with no positive ``max_iterations``.
+   * - ``undersampling_block_is_applied``
+     - error / info
+     - an ``undersampling:`` block that reaches the data through no route
+       (``data.trajectory``, ``data.image_undersampling``, a dynamic mask, the
+       digital twin, or a strategy declaring ``applies_undersampling``). Error on
+       image-domain datasets; on k-space datasets whose strategy has not declared
+       the flag it is reported as UNVERIFIED until the declaration census is done.
+       ``base_acceleration: 1.0`` with no range and no dynamic mask is the
+       explicit fully-sampled declaration and passes: there is nothing to apply.
+   * - ``strategy_class_matches_training_mode``
+     - error
+     - an explicit ``training.strategy_class`` that is a generic base
+       (reconstruction, physics-driven, diffusion, GAN, VAE) while
+       ``training.training_mode`` maps to a specific mechanism class: the arm
+       runs without the mechanism its mode names. A specialisation of the mapped
+       class and a sibling mechanism declared by name both pass;
+       ``metadata.tags.strategy_override_reason`` is the documented escape.
+   * - ``ood_acceleration_range_is_read``
+     - error
+     - ``physics.digital_twin.ood_acceleration_range`` declared where no validation
+       pass reads it: the twin does not undersample (``enable_undersampling`` false)
+       or the strategy is not one of the twin-driven readers (``virtual_fiducial``,
+       ``vf_admm`` and subclasses, which re-score every rung as
+       ``val_ood_{R}x_<metric>``). Its predecessor
+       ``undersampling.out_of_distribution_range`` was declared on 58 arms and
+       read by nothing (VF review 2026-09-03).
+   * - ``image_losses_reach_the_objective``
+     - error / info
+     - a ``losses.image_losses`` entry the strategy neither computes inline
+       (``inline_losses``) nor folds (``folds_image_losses`` with a registered
+       name) is dropped at runtime while the loss census reads it as the
+       objective; 26 mrixfields arms declared an ``l1`` on score-matching and
+       velocity strategies (2026-09-03). A strategy that has not declared its
+       ownership is reported UNVERIFIED.
+   * - ``no_dead_precision_flag``
+     - error
+     - ``training.enable_mixed_precision`` declared: no code path reads it and the
+       run uses ``optimization.precision.enabled`` either way (#887). The
+       ``inprogress/`` corpus was drained on 2026-09-03; the witness reports the
+       spelling in the other trees until they drain and a ``raise`` rename record
+       can retire it corpus-wide.
+   * - ``validation_metric_names_resolve``
+     - error / info
+     - a name in ``validation.scoring.compute``, ``metrics.best_metric_name`` or
+       ``early_stopping.metric`` that is neither registered nor declared by the
+       strategy in ``capabilities.emitted_metrics``. Error when the strategy
+       declares its emitted set, an UNVERIFIED line when it does not.
+
+Two existing detectors changed in the same review: a schedule-certification
+witness that does not apply now returns an INFO skip instead of a warning that
+failed ``--strict`` on every non-cold arm, and ``acceleration_present`` fires only
+where a measurement is reconstructed: on the two reconstruction bases matched
+exactly, on every cold-diffusion subclass, and on a strategy declaring
+``applies_undersampling``. Twenty arms use ``ReconstructionTrainingStrategy`` as a
+generic base (conformal calibration, BALD, PILOT, QSM, spin-SDE, federated DP)
+without reconstructing anything, so a subclass match would demand a block those
+arms cannot honour. A declared non-reconstruction ``workflow.task`` (denoising,
+synthesis, super-resolution, ...) passes without a block. The check and
+``undersampling_block_is_applied`` share the ``applies_undersampling`` declaration,
+so the two cannot demand opposite things of one arm.
+
+The bulk audit (``spectramr audit <directory>``) and the single-arm audit now build
+one report: the Tier-0/1 witness ladder, bridged to health-check results. The
+bulk loop used to call the health checker directly, so no witness that is not a
+health check (``schedule.*``, the budget, undersampling, validation-metric and
+strategy-dispatch witnesses) ever ran over a directory, and it counted results by
+severity, so a passed advisory (the concomitant correction at 3 T) became an
+``ERROR(strict)`` the single-arm run could not reproduce. Both surfaces now read
+``HealthCheckReport.errors`` / ``warnings`` (a *failed* result of that severity),
+and that advisory is an INFO that is always reported. A directory run therefore
+reports what the per-arm runs report, at about a second per arm.
+
+Four detectors changed with the first directory-wide witness run (2026-09-03):
+
+- The training-budget rule has one owner, ``spectramr.config.training_budget``,
+  read by both the validator registry's ``epochs_valid`` (the train-time gate)
+  and the ``training_budget_is_positive`` witness; a calibration mode that
+  optimises nothing (``calibration``, ``phys_residual_conformal``) is added
+  there, not in either caller.
+- ``domain_alignment`` doubles the expected *input* width when
+  ``training.diffusion.condition_on_input`` is true on a non-cold, non-latent
+  diffusion arm, because the strategy concatenates the measurement onto the
+  noised target; the output keeps the loaded width.
+- The compatibility-matrix resolver's data domain is what the loader emits
+  (dataset family, then a coil-processing mode of ``rss_image`` or
+  ``magnitude``), one derivation shared with the spec card; it used to be the
+  model's declared target domain.
+- The matrix's ``domain_chain`` rule is deleted: ``data_model_compatibility``
+  owns the data-to-model leg, folds the declared adapter chain and knows which
+  strategies adjoint k-space to the image domain internally.
+
+``scientific_metadata_expected_outcome`` (a health check, not a witness) reads
+``metadata.expected_outcome``: ``floor`` and ``ceiling`` describe a position relative
+to ``metadata.baseline`` and warn when no baseline is declared; ``comparable``
+stands on its own.
+
+The launch gate is not a witness but belongs beside them: ``spectramr train``
+refuses an arm whose ``metadata.status`` is ``needs_implementation``, ``inert`` or
+``blocked`` unless ``--allow-status`` names that status (see
+:doc:`config_schema_reference`).
 
 Out of scope
 ============

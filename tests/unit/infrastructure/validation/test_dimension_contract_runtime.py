@@ -12,13 +12,13 @@ import pytest
 import torch
 from torch import nn
 
-from mriforge.infrastructure.validation.dimension_contract import (
+from spectramr.infrastructure.validation.dimension_contract import (
     DimensionContractError,
     assert_input_contract,
     first_tensor,
     resolve_contract_mode,
 )
-from mriforge.models.capabilities import ModelCapabilities
+from spectramr.models.capabilities import ModelCapabilities
 
 # --------------------------------------------------------------------------
 # resolve_contract_mode (the validated knob)
@@ -26,18 +26,18 @@ from mriforge.models.capabilities import ModelCapabilities
 
 
 def test_mode_default_is_observe(monkeypatch):
-    monkeypatch.delenv("MRIFORGE_DIMENSION_CONTRACT", raising=False)
+    monkeypatch.delenv("SPECTRAMR_DIMENSION_CONTRACT", raising=False)
     assert resolve_contract_mode() == "observe"
 
 
 @pytest.mark.parametrize("mode", ["off", "observe", "enforce", "ENFORCE", " observe "])
 def test_mode_valid_values(monkeypatch, mode):
-    monkeypatch.setenv("MRIFORGE_DIMENSION_CONTRACT", mode)
+    monkeypatch.setenv("SPECTRAMR_DIMENSION_CONTRACT", mode)
     assert resolve_contract_mode() in ("off", "observe", "enforce")
 
 
 def test_mode_unknown_raises(monkeypatch):
-    monkeypatch.setenv("MRIFORGE_DIMENSION_CONTRACT", "3d")
+    monkeypatch.setenv("SPECTRAMR_DIMENSION_CONTRACT", "3d")
     with pytest.raises(ValueError):
         resolve_contract_mode()
 

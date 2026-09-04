@@ -1,7 +1,7 @@
 """Unit tests for resetting_consistency_loss.py.
 
 The loss genuinely exercises the stochastic-resetting primitive in
-``mriforge.models.diffusion.stochastic_resetting``: it penalises the
+``spectramr.models.diffusion.stochastic_resetting``: it penalises the
 distance of the coefficient of variation of the prediction-vs-target
 residual passage proxy from the criticality value 1 (the Evans-Majumdar
 optimal-resetting condition), and the discrepancy between the
@@ -13,9 +13,9 @@ from __future__ import annotations
 import pytest
 import torch
 
-import mriforge.models.diffusion.stochastic_resetting as sr
-from mriforge.models.losses.registry import create_loss
-from mriforge.models.losses.resetting_consistency_loss import (
+import spectramr.models.diffusion.stochastic_resetting as sr
+from spectramr.models.losses.registry import create_loss
+from spectramr.models.losses.resetting_consistency_loss import (
     ResettingConsistencyLoss,
 )
 

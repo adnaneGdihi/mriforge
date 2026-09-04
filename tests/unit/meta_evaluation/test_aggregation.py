@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from mriforge.core.metrics.meta_evaluation.aggregation import (
+from spectramr.core.metrics.meta_evaluation.aggregation import (
     AggregatorConfig,
     aggregate,
     calibrate_defensibility,
 )
-from mriforge.core.metrics.meta_evaluation.types import RankingResult
+from spectramr.core.metrics.meta_evaluation.types import RankingResult
 
 
 def _six_axis_result(method: str, scores: dict[str, float]) -> RankingResult:

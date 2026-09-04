@@ -134,7 +134,7 @@ def test_loss_composition_finite_gradient(spec: Any) -> None:
 
     try:
         import torch  # noqa: PLC0415
-        from mriforge.models.losses.registry import LossRegistry  # noqa: PLC0415
+        from spectramr.models.losses.registry import LossRegistry  # noqa: PLC0415
     except ImportError as exc:
         pytest.skip(f"torch or LossRegistry unavailable: {exc}")
 

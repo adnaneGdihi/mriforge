@@ -102,19 +102,19 @@ def _get_metric_map() -> dict[str, str]:
     imports the object directly rather than regex-scraping the source, so the coverage
     ratchet cannot silently pass on a builder that stopped populating its map.
     """
-    from mriforge.core.metrics.flag_map import FLAG_TO_METRIC
+    from spectramr.core.metrics.flag_map import FLAG_TO_METRIC
 
     return dict(FLAG_TO_METRIC)
 
 
 def _schema_compute_flags() -> set[str]:
-    from mriforge.config.schemas.metrics import MetricsConfigSchema
+    from spectramr.config.schemas.metrics import MetricsConfigSchema
 
     return {f for f in MetricsConfigSchema.model_fields if f.startswith("compute_")}
 
 
 def _registered_metrics() -> set[str]:
-    from mriforge.core.metrics.registry import list_available as list_metrics
+    from spectramr.core.metrics.registry import list_available as list_metrics
 
     return set(list_metrics())
 
@@ -238,13 +238,13 @@ class TestCoreMetricsEndToEnd:
     @pytest.mark.parametrize("metric_name", ALWAYS_ENABLED)
     def test_core_metric_created_by_builder(self, metric_name: str):
         """Core metrics with default config must be in the built metrics dict."""
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.logging import LoggingConfigSchema
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.builders.infrastructure_builder import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.logging import LoggingConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.builders.infrastructure_builder import (
             InfrastructureBuilder,
         )
 
@@ -279,13 +279,13 @@ class TestCoreMetricsEndToEnd:
         Fix: Replace the `flags` dict construction with:
             flags = {f: getattr(metrics_cfg, f, False) for f in metric_map}
         """
-        from mriforge.config.schemas.data import DataConfigSchema
-        from mriforge.config.schemas.logging import LoggingConfigSchema
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.config.schemas.model import ModelConfigSchema
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
-        from mriforge.config.settings import TrainingSettings
-        from mriforge.infrastructure.training.builders.infrastructure_builder import (
+        from spectramr.config.schemas.data import DataConfigSchema
+        from spectramr.config.schemas.logging import LoggingConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.model import ModelConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.settings import TrainingSettings
+        from spectramr.infrastructure.training.builders.infrastructure_builder import (
             InfrastructureBuilder,
         )
 
@@ -428,7 +428,7 @@ class TestRegistryMetricsWithoutSchemaFlag:
         ``TestEveryRegisteredMetricIsReachable`` below. This test keeps the census
         visible without pretending it is a gate.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         schema_metric_suffixes = {
             f[len("compute_") :]
@@ -489,7 +489,7 @@ class TestEveryRegisteredMetricIsReachable:
 
     def test_every_registered_name_passes_the_metrics_compute_gate(self):
         """Half one: the name an arm writes must survive config validation."""
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         unusable = {
             n for n in _registered_metrics() if not MetricsRegistry.is_registered(n)
@@ -500,7 +500,7 @@ class TestEveryRegisteredMetricIsReachable:
 
     def test_every_registered_metric_constructs_the_way_the_computer_builds_it(self):
         """Half two: the exact call at ``computer.py`` — ``get(name, device=...)``."""
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         broken: dict[str, str] = {}
         for name in sorted(_registered_metrics()):
@@ -539,7 +539,7 @@ class TestEveryRegisteredMetricIsReachable:
         ``PhaseContrastFlowStrategy._validation_forward`` returns a velocity field
         precisely so these can score it; every one of them used to raise TypeError.
         """
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         for name in (
             "velocity_rmse",
@@ -578,7 +578,7 @@ class TestRemovedUnimplementedKspaceFlags:
     def test_schema_forbids_the_removed_flags(self):
         import pydantic
 
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         for flag in self.REMOVED:
             with pytest.raises(pydantic.ValidationError):
@@ -590,10 +590,10 @@ class TestRemovedUnimplementedKspaceFlags:
             assert flag not in metric_map
 
     def test_removed_names_absent_from_direction_tables(self):
-        from mriforge.core.metrics.metric_directions import (
+        from spectramr.core.metrics.metric_directions import (
             NON_REGISTRY_METRIC_DIRECTIONS,
         )
-        from mriforge.core.metrics.types import DEFAULT_METRIC_DIRECTIONS
+        from spectramr.core.metrics.types import DEFAULT_METRIC_DIRECTIONS
 
         for name in ("kspace_entropy", "kspace_high_freq_error"):
             assert name not in DEFAULT_METRIC_DIRECTIONS

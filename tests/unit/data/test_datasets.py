@@ -25,12 +25,12 @@ class TestDatasetFactory:
     # module is deleted (6a-iii), so the test's subject is gone -- and its
     # skip-on-ImportError shape meant it could never have failed for the right
     # reason anyway. `tests/unit/data/test_data_init.py` now asserts the
-    # opposite property: that the symbol is NOT reachable from `mriforge.data`.
+    # opposite property: that the symbol is NOT reachable from `spectramr.data`.
 
     # @# pytest.mark.timeout(30)
     def test_simple_factory_import(self):
         try:
-            from mriforge.data.factory import DatasetFactory
+            from spectramr.data.factory import DatasetFactory
 
             assert DatasetFactory is not None
         except ImportError:
@@ -44,7 +44,7 @@ class TestDatasetRegistry:
     # @# pytest.mark.timeout(30)
     def test_registry_import(self):
         try:
-            from mriforge.data.dataset_registry import DatasetRegistry
+            from spectramr.data.dataset_registry import DatasetRegistry
 
             assert DatasetRegistry is not None
         except ImportError:
@@ -53,7 +53,7 @@ class TestDatasetRegistry:
     # @# pytest.mark.timeout(30)
     def test_registry_has_datasets(self):
         try:
-            from mriforge.data.dataset_registry import DatasetRegistry
+            from spectramr.data.dataset_registry import DatasetRegistry
         except ImportError:
             pytest.skip("DatasetRegistry not available")
 
@@ -72,12 +72,12 @@ class TestCollateFunctions:
     # @# pytest.mark.timeout(30)
     def test_collate_import(self):
         try:
-            from mriforge.data.collate import collate_fn
+            from spectramr.data.collate import collate_fn
 
             assert collate_fn is not None
         except ImportError:
             try:
-                from mriforge.data.collate import MRICollateFn
+                from spectramr.data.collate import MRICollateFn
 
                 assert MRICollateFn is not None
             except ImportError:
@@ -126,7 +126,7 @@ class TestBatchTypes:
         so it always skipped and reported green while covering nothing. The
         import is now unguarded: if it fails, that IS the finding (D23).
         """
-        from mriforge.data.batch_types import TrainingBatch
+        from spectramr.data.batch_types import TrainingBatch
 
         assert TrainingBatch is not None
 
@@ -138,7 +138,7 @@ class TestBatchTypes:
         assert True`` — which passes whether or not the field exists. Both
         halves are now real.
         """
-        from mriforge.data.batch_types import TrainingBatch
+        from spectramr.data.batch_types import TrainingBatch
 
         fields = TrainingBatch.__dataclass_fields__
         # `coil_maps` is first-class since C11; `kspace` deliberately is not a
@@ -158,14 +158,14 @@ class TestBatchTypes:
         import importlib
 
         with pytest.raises(ImportError):
-            importlib.import_module("mriforge.data.structures")
+            importlib.import_module("spectramr.data.structures")
 
-        import mriforge.domain.entities.data as domain_data
+        import spectramr.domain.entities.data as domain_data
 
         assert not hasattr(domain_data, "MRIBatch")
         assert "MRIBatch" not in domain_data.__all__
 
-        from mriforge.domain.entities.data.types import MRIBatchDict
+        from spectramr.domain.entities.data.types import MRIBatchDict
 
         assert MRIBatchDict is not None
 
@@ -177,7 +177,7 @@ class TestIOStrategies:
     # @# pytest.mark.timeout(30)
     def test_io_strategies_import(self):
         try:
-            from mriforge.data.io_strategies import IOStrategy
+            from spectramr.data.io_strategies import IOStrategy
 
             assert IOStrategy is not None
         except ImportError:
@@ -187,7 +187,7 @@ class TestIOStrategies:
     def test_h5_strategy(self):
         """H5 IO strategy should exist."""
         try:
-            from mriforge.data.io_strategies import H5IOStrategy
+            from spectramr.data.io_strategies import H5IOStrategy
 
             assert H5IOStrategy is not None
         except ImportError:
@@ -201,7 +201,7 @@ class TestAugmentationInterface:
     # @# pytest.mark.timeout(30)
     def test_augmentation_interface_import(self):
         try:
-            from mriforge.data.augmentation_interface import AugmentationInterface
+            from spectramr.data.augmentation_interface import AugmentationInterface
 
             assert AugmentationInterface is not None
         except ImportError:
@@ -211,7 +211,7 @@ class TestAugmentationInterface:
     def test_augmentation_is_callable(self):
         """Augmentation should be callable."""
         try:
-            from mriforge.data.augmentation_interface import AugmentationInterface
+            from spectramr.data.augmentation_interface import AugmentationInterface
         except ImportError:
             pytest.skip("AugmentationInterface not available")
 
@@ -226,7 +226,7 @@ class TestIndividualDatasets:
     # @# pytest.mark.timeout(30)
     def test_fastmri_dataset_import(self):
         try:
-            from mriforge.data.datasets.fastmri import FastMRIDataset
+            from spectramr.data.datasets.fastmri import FastMRIDataset
 
             assert FastMRIDataset is not None
         except ImportError:
@@ -235,12 +235,12 @@ class TestIndividualDatasets:
     # @# pytest.mark.timeout(30)
     def test_base_mri_dataset_import(self):
         try:
-            from mriforge.data.datasets.base import BaseMRIDataset
+            from spectramr.data.datasets.base import BaseMRIDataset
 
             assert BaseMRIDataset is not None
         except ImportError:
             try:
-                from mriforge.data.datasets.base_dataset import BaseMRIDataset
+                from spectramr.data.datasets.base_dataset import BaseMRIDataset
 
                 assert BaseMRIDataset is not None
             except ImportError:
@@ -268,7 +268,7 @@ class TestTransformIntegration:
     def test_transforms_directory_contents(self):
         from pathlib import Path
 
-        transforms_path = Path("src/mriforge/data/transforms")
+        transforms_path = Path("src/spectramr/data/transforms")
         if transforms_path.exists():
             files = list(transforms_path.glob("*.py"))
             assert len(files) > 0
@@ -276,7 +276,7 @@ class TestTransformIntegration:
     # @# pytest.mark.timeout(30)
     def test_normalize_transform_import(self):
         try:
-            from mriforge.data.transforms.normalize import NormalizeTransform
+            from spectramr.data.transforms.normalize import NormalizeTransform
 
             assert NormalizeTransform is not None
         except ImportError:
@@ -326,7 +326,7 @@ class TestParsers:
     def test_parsers_directory(self):
         from pathlib import Path
 
-        parsers_path = Path("src/mriforge/data/parsers")
+        parsers_path = Path("src/spectramr/data/parsers")
         assert parsers_path.exists() or True  # Skip if not exists
 
 

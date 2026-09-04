@@ -1,4 +1,4 @@
-"""Paired with ``src/mriforge/infrastructure/run_layout.py``.
+"""Paired with ``src/spectramr/infrastructure/run_layout.py``.
 
 The invariant under test is "a profiling run's throwaway output is not the arm's
 own output". It had three independent spellings before this module existed, so
@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.infrastructure import run_layout
-from mriforge.infrastructure.run_layout import (
+from spectramr.infrastructure import run_layout
+from spectramr.infrastructure.run_layout import (
     PROFILE_SUBDIR,
     drop_profiling_artifacts,
     is_profiling_artifact,
@@ -27,7 +27,7 @@ def test_the_writer_uses_this_constant_rather_than_its_own_spelling() -> None:
     here green while the two drifted, which is exactly the failure mode a shared
     constant is supposed to remove. So this asserts against the *real* resolver.
     """
-    from mriforge.cli.profile_paths import resolve_profile_paths
+    from spectramr.cli.profile_paths import resolve_profile_paths
 
     paths = resolve_profile_paths("exp_11", "run-abc", results_root=Path("R"))
     assert PROFILE_SUBDIR in paths.profile_dir.parts
@@ -36,7 +36,7 @@ def test_the_writer_uses_this_constant_rather_than_its_own_spelling() -> None:
 
 
 def test_the_discovery_skip_list_uses_this_constant() -> None:
-    from mriforge.infrastructure.reporting.batch import _SKIP_DIRS
+    from spectramr.infrastructure.reporting.batch import _SKIP_DIRS
 
     assert PROFILE_SUBDIR in _SKIP_DIRS
 
@@ -92,7 +92,7 @@ def test_importing_this_module_stays_free_of_heavy_dependencies() -> None:
     """It sits at ``infrastructure/`` root *because* of import weight.
 
     Moved back under ``infrastructure/reporting/`` it would pull torch, scipy,
-    pandas and matplotlib into the ``mriforge --help`` path through that
+    pandas and matplotlib into the ``spectramr --help`` path through that
     package's eager ``__init__``. Pinned here so the placement cannot be
     "tidied" without a red test explaining why it is where it is.
     """

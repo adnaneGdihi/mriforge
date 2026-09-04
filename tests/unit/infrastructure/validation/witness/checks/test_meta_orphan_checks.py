@@ -8,13 +8,13 @@ fires -- which is how the #550 gate shipped.
 
 from __future__ import annotations
 
-from mriforge.infrastructure.validation.witness.checks.meta_orphan_checks import (
+from spectramr.infrastructure.validation.witness.checks.meta_orphan_checks import (
     KNOWN_INERT,
     defined_check_methods,
     health_checker_has_no_orphan_checks,
     invoked_check_methods,
 )
-from mriforge.infrastructure.validation.witness.subject import WitnessSubject
+from spectramr.infrastructure.validation.witness.subject import WitnessSubject
 
 
 def test_the_real_health_checker_has_no_unexplained_orphans():
@@ -44,7 +44,7 @@ def test_every_allowlist_entry_is_a_real_method():
 
 def test_it_fires_when_a_check_is_defined_but_never_invoked(monkeypatch):
     """DEFECT: inject an orphan and require the detector to notice."""
-    from mriforge.infrastructure.validation.witness.checks import meta_orphan_checks as m
+    from spectramr.infrastructure.validation.witness.checks import meta_orphan_checks as m
 
     monkeypatch.setattr(m, "defined_check_methods", lambda: {"check_a", "check_ghost"})
     monkeypatch.setattr(m, "invoked_check_methods", lambda: {"check_a"})
@@ -57,7 +57,7 @@ def test_it_fires_when_a_check_is_defined_but_never_invoked(monkeypatch):
 
 
 def test_it_warns_when_the_allowlist_goes_stale(monkeypatch):
-    from mriforge.infrastructure.validation.witness.checks import meta_orphan_checks as m
+    from spectramr.infrastructure.validation.witness.checks import meta_orphan_checks as m
 
     monkeypatch.setattr(m, "defined_check_methods", lambda: {"check_a"})
     monkeypatch.setattr(m, "invoked_check_methods", lambda: {"check_a"})

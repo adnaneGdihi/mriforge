@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.datasets.mrixfields_dataset import (
+from spectramr.data.datasets.mrixfields_dataset import (
     MRIxFieldsPairedDataset,
     _default_nifti_loader,
 )
@@ -40,7 +40,7 @@ def _stub_nifti_header(monkeypatch, depth: int = 1) -> None:
     import sys
     import types
 
-    from mriforge.data.datasets import mrixfields_dataset as mod
+    from spectramr.data.datasets import mrixfields_dataset as mod
 
     fake_nib = types.ModuleType("nibabel")
     fake_nib.load = lambda _p: types.SimpleNamespace(shape=(8, 8, depth))  # type: ignore[attr-defined]
@@ -416,9 +416,9 @@ def test_default_nifti_loader_extracts_tensor_from_strategy_dict(monkeypatch) ->
     loader passed the dict straight to ``torch.as_tensor``. All other dataset
     tests inject a fake ``image_loader``, so the real default loader was never
     exercised — hence the bug shipped. See
-    ``src/mriforge/data/io_strategies.py::NiftiStrategy.load``.
+    ``src/spectramr/data/io_strategies.py::NiftiStrategy.load``.
     """
-    import mriforge.data.io_strategies as io_mod
+    import spectramr.data.io_strategies as io_mod
 
     expected = torch.zeros(1, 8, 8, 1)
 
@@ -438,7 +438,7 @@ def test_default_nifti_loader_extracts_tensor_from_strategy_dict(monkeypatch) ->
 def test_default_nifti_loader_raises_clear_error_on_keyless_dict(monkeypatch) -> None:
     """A dict return with no ``image``/``data`` key must raise a self-describing
     error naming the path + the keys present — not the cryptic torch dtype error."""
-    import mriforge.data.io_strategies as io_mod
+    import spectramr.data.io_strategies as io_mod
 
     class _BadStrategy:
         def load(self, path, metadata=None):
@@ -472,7 +472,7 @@ def test_parse_fastmri_index_retains_mrixfields_keys(tmp_path) -> None:
     # The inline-record tests never exercised the parser. Drive a real manifest THROUGH it.
     import json
 
-    from mriforge.data.datasets.universal_dataset import parse_fastmri_index
+    from spectramr.data.datasets.universal_dataset import parse_fastmri_index
 
     manifest = {
         "data_root": "",
@@ -710,7 +710,7 @@ def test_multi_contrast_rejects_unknown_output_contrast() -> None:
 
 
 def test_canonical_contrasts_module_fn() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import canonical_contrasts
+    from spectramr.data.datasets.mrixfields_dataset import canonical_contrasts
 
     assert canonical_contrasts(_multicontrast_records()) == ["T1w", "T2w", "FLAIR"]
 
@@ -744,7 +744,7 @@ def _singleton_groups(fields: list[float]) -> list[dict]:
 
 
 def test_feasibility_fixed_target_singletons_infeasible_names_regeneration() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     # Exactly the cluster failure: fields present = [0.1,1.5,3.0,5.0,7.0] but every
     # group is a singleton, so fixed_target=7.0 forms 0 pairs.
@@ -757,7 +757,7 @@ def test_feasibility_fixed_target_singletons_infeasible_names_regeneration() -> 
 
 
 def test_feasibility_fixed_target_paired_group_feasible() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     recs = _multifield_group([0.1, 3.0, 7.0])  # one group, all fields together
     ok, reason = mrixfields_pairing_feasibility(
@@ -768,7 +768,7 @@ def test_feasibility_fixed_target_paired_group_feasible() -> None:
 
 
 def test_feasibility_fixed_target_absent_pinned_field_infeasible() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     recs = _multifield_group([0.1, 1.5, 3.0])  # no 7T column at all
     ok, reason = mrixfields_pairing_feasibility(
@@ -779,7 +779,7 @@ def test_feasibility_fixed_target_absent_pinned_field_infeasible() -> None:
 
 
 def test_feasibility_ulf_source_needs_ulf_and_higher_in_a_group() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     ok, _ = mrixfields_pairing_feasibility(
         _multifield_group([0.1, 3.0]), policy="ulf_source", target_field=None
@@ -793,7 +793,7 @@ def test_feasibility_ulf_source_needs_ulf_and_higher_in_a_group() -> None:
 
 
 def test_feasibility_multi_source_needs_two_sources_below_target() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     ok, _ = mrixfields_pairing_feasibility(
         _multifield_group([0.1, 1.5, 7.0]), policy="multi_source", target_field=7.0
@@ -806,7 +806,7 @@ def test_feasibility_multi_source_needs_two_sources_below_target() -> None:
 
 
 def test_feasibility_multi_contrast_requires_target_field_present() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     ok, _ = mrixfields_pairing_feasibility(
         _multifield_group([0.1, 3.0, 7.0]), policy="multi_contrast", target_field=7.0
@@ -819,7 +819,7 @@ def test_feasibility_multi_contrast_requires_target_field_present() -> None:
 
 
 def test_feasibility_all_pairs_singletons_infeasible() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     ok, reason = mrixfields_pairing_feasibility(
         _singleton_groups([0.1, 3.0, 7.0]), policy="all_pairs", target_field=None
@@ -828,7 +828,7 @@ def test_feasibility_all_pairs_singletons_infeasible() -> None:
 
 
 def test_feasibility_prior_always_feasible() -> None:
-    from mriforge.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
+    from spectramr.data.datasets.mrixfields_dataset import mrixfields_pairing_feasibility
 
     # prior emits identity pairs for singletons, so it NEVER produces 0 pairs.
     ok, reason = mrixfields_pairing_feasibility(
@@ -869,8 +869,8 @@ def spy_nifti(monkeypatch: pytest.MonkeyPatch) -> _SpyNiftiStrategy:
     import sys
     import types
 
-    from mriforge.data import io_strategies
-    from mriforge.data.datasets import mrixfields_dataset as mod
+    from spectramr.data import io_strategies
+    from spectramr.data.datasets import mrixfields_dataset as mod
 
     spy = _SpyNiftiStrategy(depth=9)
     monkeypatch.setattr(
@@ -1046,7 +1046,7 @@ def test_volume_cache_is_not_pickled_to_workers() -> None:
     """
     import pickle
 
-    from mriforge.data.datasets import mrixfields_dataset as mod
+    from spectramr.data.datasets import mrixfields_dataset as mod
 
     ds = MRIxFieldsPairedDataset(
         _records(),
@@ -1068,7 +1068,7 @@ def test_volume_cache_is_not_pickled_to_workers() -> None:
 
 
 def test_volume_lru_evicts_least_recently_used() -> None:
-    from mriforge.data.datasets import mrixfields_dataset as mod
+    from spectramr.data.datasets import mrixfields_dataset as mod
 
     loaded: list[str] = []
 
@@ -1093,7 +1093,7 @@ def test_volume_budget_exceeds_worst_case_working_set() -> None:
     pins the relationship rather than the number, so adding a fifth source field fails
     here instead of silently re-inerting the cache.
     """
-    from mriforge.data.datasets.mrixfields_dataset import _VOLUME_CACHE_MAXSIZE
+    from spectramr.data.datasets.mrixfields_dataset import _VOLUME_CACHE_MAXSIZE
 
     widest_source_arity = 4  # {0.1, 1.5, 3, 5} -> 7T, the corpus' multi_source fan-in
     assert widest_source_arity + 1 < _VOLUME_CACHE_MAXSIZE
@@ -1345,7 +1345,7 @@ def test_all_slices_default_volume_loader_end_to_end(monkeypatch) -> None:
     # Exercise the DEFAULT (non-injected) whole-volume loader path: foreground scan +
     # per-slice serving through _default_nifti_volume_loader / _load_full_volume, proving
     # the production path is real (not a facade that only works with injected loaders).
-    from mriforge.data import io_strategies
+    from spectramr.data import io_strategies
 
     depth = 4
     vol = torch.zeros(1, 4, 4, depth)
@@ -1494,7 +1494,7 @@ class TestVolumeCacheByteSanityBound:
     def _lru(maxsize, nbytes, max_bytes):
         import torch
 
-        from mriforge.data.datasets.mrixfields_dataset import _VolumeLRU
+        from spectramr.data.datasets.mrixfields_dataset import _VolumeLRU
 
         n = max(1, nbytes // 4)  # float32
         return _VolumeLRU(
@@ -1542,10 +1542,214 @@ class TestVolumeCacheByteSanityBound:
     ) -> None:
         """6 x ~226 MB = ~1.4 GB is the figure the schema quotes. The bound must
         sit comfortably above it or it fires on a working setup."""
-        from mriforge.data.datasets.mrixfields_dataset import (
+        from spectramr.data.datasets.mrixfields_dataset import (
             _VOLUME_CACHE_MAX_BYTES,
             _VOLUME_CACHE_MAXSIZE,
         )
 
         documented = _VOLUME_CACHE_MAXSIZE * 226 * 2**20
         assert 2 * documented < _VOLUME_CACHE_MAX_BYTES
+
+
+# --------------------------------------------------------------------------------------
+# multi_field: the SAME anatomy at every declared field, stacked as [M,H,W], with the
+# held-out field(s) emitted separately and never fitted.
+# --------------------------------------------------------------------------------------
+
+_ALL_FIELDS = (0.1, 1.5, 3.0, 5.0, 7.0)
+
+
+def _records_multi_field(subjects=("s1",), contrasts=("T1w",), fields=_ALL_FIELDS) -> list[dict]:
+    out: list[dict] = []
+    for sub in subjects:
+        for con in contrasts:
+            for f in fields:
+                out.append(
+                    {
+                        "subject_id": sub,
+                        "contrast": con,
+                        "pairing_group": f"{sub}|{con}",
+                        "shape": [8, 8, 1],
+                        "primary_path": f"{sub}_{con}_{f}.nii",
+                        "field_strength": f,
+                    }
+                )
+    return out
+
+
+def _mf(records=None, **kw):
+    kw.setdefault("fields", [1.5, 3.0, 5.0, 7.0])
+    kw.setdefault("image_loader", _fake_loader)
+    return MRIxFieldsPairedDataset(
+        records if records is not None else _records_multi_field(),
+        pairing_policy="multi_field",
+        **kw,
+    )
+
+
+def test_multi_field_stacks_declared_fields_in_declared_order() -> None:
+    """Channel m is fields[m] -- the ORDER is the contract, not the sorted set.
+
+    Declared deliberately out of ascending order: a builder that sorts internally
+    would still produce a [M,H,W] stack of the right arity and the right images,
+    and every shape assertion would pass while channel m no longer meant
+    fields[m]. The model's `fields` buffer is registered from config in that same
+    declared order (disp_bloch_ae.py:120), so a silent sort mis-assigns every
+    field in the dispersion fit without raising.
+    """
+    declared = [7.0, 1.5, 5.0, 3.0]
+    item = _mf(fields=declared)[0]
+    assert item["input"].shape == (4, 8, 8)
+    assert item["field_strengths"].tolist() == pytest.approx(declared)
+    # Each channel is the image of its declared field, not merely some permutation.
+    for m, f in enumerate(declared):
+        expected = _fake_loader(f"s1_T1w_{f}.nii").permute(2, 0, 1)[0]
+        torch.testing.assert_close(item["input"][m], expected)
+
+
+def test_multi_field_emits_no_target_key() -> None:
+    """No `target`, deliberately.
+
+    DispersionBlochAEStrategy reads its reconstruction target as
+    ``batch.get("target", x)`` (dispersion_bloch_ae_strategy.py:70), so an absent
+    key makes the autoencoder reconstruct its own input -- the intended objective.
+    Emitting a target would silently REPLACE that objective: a single-field image
+    against an M-channel prediction (a shape error), or the held-out image (no
+    error at all, and the extrapolation test would be fitting the field it claims
+    to predict).
+    """
+    item = _mf(heldout_fields=[0.1])[0]
+    assert "target" not in item
+    assert "field_strength_target" not in item
+
+
+def test_multi_field_heldout_is_emitted_and_never_in_the_stack() -> None:
+    """Test 2 (fit 1.5/3/5/7 T, predict 0.1 T) becomes expressible.
+
+    This configuration is what multi_source cannot express at all: its contract is
+    "sources strictly below the target", so target_field=0.1 yields zero sources
+    and raises.
+    """
+    item = _mf(fields=[1.5, 3.0, 5.0, 7.0], heldout_fields=[0.1])[0]
+    assert item["input"].shape == (4, 8, 8)
+    assert item["heldout"].shape == (1, 8, 8)
+    assert item["heldout_field_strengths"].tolist() == pytest.approx([0.1])
+    assert not any(abs(f - 0.1) < 1e-6 for f in item["field_strengths"].tolist())
+    ulf = _fake_loader("s1_T1w_0.1.nii").permute(2, 0, 1)[0]
+    torch.testing.assert_close(item["heldout"][0], ulf)
+
+
+def test_multi_field_without_heldout_omits_the_keys() -> None:
+    item = _mf()[0]
+    assert "heldout" not in item
+    assert "heldout_field_strengths" not in item
+
+
+def test_multi_field_emits_scalar_field_strength_too() -> None:
+    """~15 strategies and the generic unpack path index batch["field_strength"]."""
+    item = _mf(fields=[1.5, 3.0, 5.0, 7.0])[0]
+    assert item["field_strength"].ndim == 0
+    assert float(item["field_strength"]) == 1.5
+
+
+@pytest.mark.parametrize("with_transform", [True, False])
+def test_multi_field_stack_survives_the_tio_round_trip(with_transform: bool) -> None:
+    """Both paths, because _apply_transform RETURNS EARLY when transform is None.
+
+    A test that only covered the configured-transform case would leave the
+    no-transform path -- the one every arm without a `data.processing.transforms`
+    block takes -- unexercised.
+    """
+    ds = _mf(heldout_fields=[0.1], transform=_tio_compose() if with_transform else None)
+    item = ds[0]
+    assert item["input"].shape == (4, 8, 8)
+    assert item["heldout"].shape == (1, 8, 8)
+    assert item["field_strengths"].tolist() == pytest.approx([1.5, 3.0, 5.0, 7.0])
+    assert item["subject_id"] == "s1"
+
+
+def test_multi_field_heldout_rides_the_same_subject_as_the_stack() -> None:
+    """`heldout` must be in _IMAGE_KEYS or a spatial transform desynchronises it.
+
+    tio samples one warp per Subject, so keys wrapped together are cropped/flipped
+    identically and keys left out ride through untouched. A held-out image that
+    skipped the wrap would be scored against a render of a DIFFERENTLY cropped
+    stack -- misaligned, with no error raised. Cropping is the shape that shows it:
+    it changes the spatial size, so an unwrapped key keeps the original one.
+    """
+    import torchio as tio
+
+    ds = _mf(heldout_fields=[0.1], transform=tio.Compose([tio.Crop((1, 1, 2, 2, 0, 0))]))
+    item = ds[0]
+    assert item["input"].shape[-2:] == item["heldout"].shape[-2:]
+    assert item["input"].shape[-2:] != (8, 8)  # the crop really fired
+
+
+def test_multi_field_containers_cover_every_volume_the_item_reads() -> None:
+    """The sampler orders an epoch by these paths; a short set thrashes the cache.
+
+    `container_volume_paths` reads container[0] plus container[1], so the held-out
+    volume has to be inside container[0] -- and the resident-volume budget floor is
+    len(fields) + len(heldout_fields), not len(fields).
+    """
+    ds = _mf(fields=[1.5, 3.0, 5.0, 7.0], heldout_fields=[0.1], slice_mode="all_slices")
+    paths = ds.container_volume_paths()
+    assert len(paths) == 1
+    assert paths[0] == frozenset(f"s1_T1w_{f}.nii" for f in _ALL_FIELDS)
+
+
+def test_multi_field_skips_incomplete_groups_and_warns(caplog) -> None:
+    """A corpus quietly losing groups must not look identical to a complete one."""
+    recs = _records_multi_field(subjects=("s1", "s2"))
+    recs = [r for r in recs if not (r["subject_id"] == "s2" and r["field_strength"] == 5.0)]
+    with caplog.at_level("WARNING"):
+        ds = _mf(recs, fields=[1.5, 3.0, 5.0, 7.0])
+    assert len(ds) == 1  # s2 dropped
+    assert ds._skipped_groups == 1
+    assert any("skipped 1 incomplete group" in r.getMessage() for r in caplog.records)
+
+
+def test_multi_field_requires_fields() -> None:
+    with pytest.raises(ValueError, match="requires a non-empty"):
+        MRIxFieldsPairedDataset(
+            _records_multi_field(), pairing_policy="multi_field", image_loader=_fake_loader
+        )
+
+
+def test_multi_field_rejects_overlap_between_stack_and_heldout() -> None:
+    """An overlap would fit the field the extrapolation test claims to predict."""
+    with pytest.raises(ValueError, match="overlap"):
+        _mf(fields=[1.5, 3.0, 7.0], heldout_fields=[7.0])
+
+
+def test_multi_field_rejects_duplicate_fields() -> None:
+    with pytest.raises(ValueError, match="duplicate field strengths"):
+        _mf(fields=[3.0, 3.0, 7.0])
+
+
+def test_multi_field_names_the_absent_field_not_zero_tuples() -> None:
+    """A declared field the corpus lacks names ITSELF, not a broken manifest.
+
+    Without the up-front check every group skips and the "0 tuples" raise fires,
+    which is loud but attributes the failure to the manifest rather than to the
+    config line that asked for a field the corpus never had.
+    """
+    with pytest.raises(ValueError, match=r"declares field\(s\) \[11.7\]"):
+        _mf(fields=[1.5, 3.0, 11.7])
+
+
+def test_fields_knobs_rejected_under_other_policies() -> None:
+    """Never accept a knob the policy does not read (non-negotiable 8)."""
+    with pytest.raises(ValueError, match="only read by"):
+        MRIxFieldsPairedDataset(
+            _records_multi_field(),
+            pairing_policy="all_pairs",
+            fields=[1.5, 3.0],
+            image_loader=_fake_loader,
+        )
+
+
+def test_multi_field_refuses_volume_slice_mode() -> None:
+    """cat(dim=0) over M volumes is [M,H,W,D] -- the 5-D shape no strategy consumes."""
+    with pytest.raises(ValueError, match="slice_mode='volume' is not supported"):
+        _mf(slice_mode="volume")

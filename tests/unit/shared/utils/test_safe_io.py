@@ -1,6 +1,6 @@
 """Tests for ``safe_torch_load`` and ``atomic_save_json``.
 
-Targets ``mriforge.shared.utils.safe_io``. The safe-load wrapper enforces
+Targets ``spectramr.shared.utils.safe_io``. The safe-load wrapper enforces
 CPU map_location + ``weights_only=True`` (when supported), preventing
 arbitrary code execution from a malicious checkpoint. The atomic JSON
 saver guarantees crash safety via temp-file + rename.
@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 import torch
 
-from mriforge.shared.utils.safe_io import atomic_save_json, safe_torch_load
+from spectramr.shared.utils.safe_io import atomic_save_json, safe_torch_load
 
 
 # ---------------------------------------------------------------------------
@@ -127,14 +127,14 @@ class TestAtomicSaveTorch:
     def test_payload_round_trips(self, tmp_path):
         import torch
 
-        from mriforge.shared.utils.safe_io import atomic_save_torch
+        from spectramr.shared.utils.safe_io import atomic_save_torch
 
         dst = tmp_path / "ckpt.pt"
         atomic_save_torch({"step": 7}, dst)
         assert torch.load(dst, weights_only=False)["step"] == 7
 
     def test_missing_parent_directory_is_created(self, tmp_path):
-        from mriforge.shared.utils.safe_io import atomic_save_torch
+        from spectramr.shared.utils.safe_io import atomic_save_torch
 
         dst = tmp_path / "nested" / "deeper" / "ckpt.pt"
         atomic_save_torch({"a": 1}, dst)
@@ -145,7 +145,7 @@ class TestAtomicSaveTorch:
         import pytest
         import torch
 
-        from mriforge.shared.utils import safe_io
+        from spectramr.shared.utils import safe_io
 
         dst = tmp_path / "ckpt.pt"
         safe_io.atomic_save_torch({"generation": 1}, dst)
@@ -166,7 +166,7 @@ class TestAtomicSaveTorch:
     def test_a_failed_write_leaves_no_temp_file_behind(self, tmp_path):
         import pytest
 
-        from mriforge.shared.utils import safe_io
+        from spectramr.shared.utils import safe_io
 
         dst = tmp_path / "ckpt.pt"
 

@@ -1,6 +1,6 @@
 r"""Physics tests for the DL-BAE per-voxel dispersion decoder.
 
-Targets ``mriforge.infrastructure.physics.dispersion.dispersion_rates_voxelwise``.
+Targets ``spectramr.infrastructure.physics.dispersion.dispersion_rates_voxelwise``.
 
 The voxelwise evaluator is the decoder half of DL-BAE: it takes a *latent map*
 and evaluates the BPP dispersion law at every field, producing ``[B, M, H, W]``.
@@ -18,7 +18,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.dispersion import (
+from spectramr.infrastructure.physics.dispersion import (
     dispersion_r1,
     dispersion_r2,
     dispersion_rates_voxelwise,

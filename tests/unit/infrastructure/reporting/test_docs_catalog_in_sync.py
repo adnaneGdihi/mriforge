@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mriforge.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting import plotters
 
 
 _NEW_FIGURES = (
@@ -33,7 +33,7 @@ def test_documented_figures_are_registered():
 
 def test_every_registered_figure_documented():
     """Registry -> docs completeness: EVERY registered plotter id must appear in
-    docs/reporting_pipeline.rst. Since ``mriforge report`` is the plotting SSOT and
+    docs/reporting_pipeline.rst. Since ``spectramr report`` is the plotting SSOT and
     renders all registered figures, the docs must be their catalog — a newly
     registered figure cannot ship undocumented (the drift direction the older
     ``_NEW_FIGURES`` allowlist does not cover)."""

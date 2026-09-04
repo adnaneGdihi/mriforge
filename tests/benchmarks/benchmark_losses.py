@@ -10,15 +10,15 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.loss import (
+from spectramr.config.schemas.loss import (
     L1LossConfig,
     LossConfigSchema,
     PerceptualLossConfig,
     ReconstructionLossesConfig,
     SSIMLossConfig,
 )
-from mriforge.models.losses.composed_loss import ComposedLoss, WeightedLoss
-from mriforge.models.losses.registry import create_loss
+from spectramr.models.losses.composed_loss import ComposedLoss, WeightedLoss
+from spectramr.models.losses.registry import create_loss
 
 
 def create_composed_loss_from_schema(

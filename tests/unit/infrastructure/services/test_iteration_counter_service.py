@@ -12,7 +12,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from mriforge.infrastructure.services.iteration_counter_service import (
+from spectramr.infrastructure.services.iteration_counter_service import (
     IterationCounterService,
 )
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies import (
+from spectramr.infrastructure.training.strategies import (
     physics_equivariant_ssl_strategy as mod,
 )
 

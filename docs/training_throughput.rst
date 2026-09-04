@@ -147,7 +147,7 @@ Backend flags are not per-arm knobs
 ------------------------------------
 
 TF32 and the cuDNN autotuner are process-level, set once by
-:func:`mriforge.accelerator.seed_everything` and logged
+:func:`spectramr.accelerator.seed_everything` and logged
 (``[Accelerator] determinism=… cudnn.benchmark=… allow_tf32=…``).
 
 * ``allow_tf32`` defaults **on**. It is reproducible, merely lower-precision, and
@@ -190,7 +190,7 @@ Before committing GPU time
 
 Run the audit. It rejects most misconfigurations of everything above in ~100 ms::
 
-    mriforge audit experiments/inprogress/<paradigm>/<arm>.yaml
+    spectramr audit experiments/inprogress/<paradigm>/<arm>.yaml
 
 Add ``--probe`` for the Tier-2 synthetic forward pass, which is what catches AMP
 and OOM problems — and note it must run on an accelerator, because a CPU probe

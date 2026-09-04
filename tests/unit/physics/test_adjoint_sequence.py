@@ -40,7 +40,7 @@ def _phi_se():
 @pytest.mark.physics
 def test_canary_adjoint_sequence_imports():
     """All public symbols import cleanly."""
-    from mriforge.infrastructure.physics.adjoint_sequence import (
+    from spectramr.infrastructure.physics.adjoint_sequence import (
         steady_state_se_signal,
         steady_state_ir_se_signal,
         optimise_sequence_adjoint,
@@ -59,7 +59,7 @@ def test_canary_adjoint_sequence_imports():
 @pytest.mark.physics
 def test_canary_se_signal_trivial():
     """SE signal with scalar inputs returns a positive scalar."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_se_signal
     t1, t2, m0 = _scalars()
     s = steady_state_se_signal(
         t1, t2, m0,
@@ -87,7 +87,7 @@ def test_canary_se_signal_trivial():
 )
 def test_se_signal_positive(t1, t2, tr, te):
     """SE signal is positive for typical tissue parameters."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_se_signal
     s = steady_state_se_signal(
         torch.tensor(t1), torch.tensor(t2), torch.tensor(1.0),
         tr=torch.tensor(tr), te=torch.tensor(te),
@@ -98,7 +98,7 @@ def test_se_signal_positive(t1, t2, tr, te):
 @pytest.mark.physics
 def test_se_signal_decreasing_with_te():
     """SE signal decreases as TE increases (more T2 decay)."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_se_signal
     t1, t2, m0 = _scalars()
     tr = torch.tensor(1000.0)
     s10 = steady_state_se_signal(t1, t2, m0, tr=tr, te=torch.tensor(10.0))
@@ -109,7 +109,7 @@ def test_se_signal_decreasing_with_te():
 @pytest.mark.physics
 def test_se_signal_gradient_flows():
     """Gradient of SE signal w.r.t. TR/TE is non-zero (autograd works)."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_se_signal
     t1, t2, m0 = _scalars()
     tr = torch.tensor(1000.0, requires_grad=True)
     te = torch.tensor(20.0, requires_grad=True)
@@ -131,7 +131,7 @@ def test_se_signal_gradient_flows():
 )
 def test_ir_se_signal_shape_and_finite(t1, ti):
     """IR-SE signal returns a finite scalar for various TI values."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_ir_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_ir_se_signal
     s = steady_state_ir_se_signal(
         torch.tensor(t1),
         torch.tensor(80.0),
@@ -151,7 +151,7 @@ def test_ir_se_signal_shape_and_finite(t1, ti):
 @pytest.mark.physics
 def test_optimise_sequence_adjoint_runs():
     """optimise_sequence_adjoint converges without error for 5 iterations."""
-    from mriforge.infrastructure.physics.adjoint_sequence import (
+    from spectramr.infrastructure.physics.adjoint_sequence import (
         steady_state_se_signal,
         optimise_sequence_adjoint,
         SequenceOptResult,
@@ -173,7 +173,7 @@ def test_optimise_sequence_adjoint_runs():
 @pytest.mark.physics
 def test_optimise_with_marker_anchor():
     """Marker-anchored optimisation runs without error."""
-    from mriforge.infrastructure.physics.adjoint_sequence import (
+    from spectramr.infrastructure.physics.adjoint_sequence import (
         steady_state_se_signal,
         optimise_sequence_adjoint,
     )
@@ -198,7 +198,7 @@ def test_optimise_with_marker_anchor():
 @pytest.mark.physics
 def test_rank_augmentation_test_anatomy_only():
     """Anatomy-only rank equals column rank of J_anat."""
-    from mriforge.infrastructure.physics.adjoint_sequence import jacobian_rank_augmentation_test
+    from spectramr.infrastructure.physics.adjoint_sequence import jacobian_rank_augmentation_test
     p = 4
     J_anat = torch.eye(p)         # full rank p
     J_mark = torch.zeros(1, p)    # zero row — linearly dependent
@@ -210,7 +210,7 @@ def test_rank_augmentation_test_anatomy_only():
 @pytest.mark.physics
 def test_rank_augmentation_strictly_increases():
     """Marker Jacobian in new direction strictly increases rank."""
-    from mriforge.infrastructure.physics.adjoint_sequence import jacobian_rank_augmentation_test
+    from spectramr.infrastructure.physics.adjoint_sequence import jacobian_rank_augmentation_test
     p = 3
     J_anat = torch.eye(p)
     # A direction outside the span of J_anat: effectively adds a row, but
@@ -233,7 +233,7 @@ def test_rank_augmentation_strictly_increases():
 @pytest.mark.physics
 def test_se_signal_edge_very_long_tr():
     """Very long TR → signal ≈ M0 (full longitudinal recovery)."""
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_se_signal
     s = steady_state_se_signal(
         torch.tensor(800.0), torch.tensor(80.0), torch.tensor(1.0),
         tr=torch.tensor(1e6),    # ~infinite TR
@@ -247,7 +247,7 @@ def test_se_signal_edge_very_long_tr():
 def test_ir_se_signal_edge_ti_equals_t1_ln2():
     """At TI ≈ T1*ln(2) the null point: signal ≈ 0 for long TR."""
     import math
-    from mriforge.infrastructure.physics.adjoint_sequence import steady_state_ir_se_signal
+    from spectramr.infrastructure.physics.adjoint_sequence import steady_state_ir_se_signal
     t1 = 800.0
     ti_null = t1 * math.log(2)
     s = steady_state_ir_se_signal(

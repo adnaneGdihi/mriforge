@@ -40,7 +40,7 @@ def _img(b: int = 2, c: int = 1, h: int = 16, w: int = 16, seed: int = 0) -> tor
 class TestInferencePSNR:
     @pytest.fixture
     def metric(self):
-        from mriforge.core.metrics.inference import PSNRMetric
+        from spectramr.core.metrics.inference import PSNRMetric
         return PSNRMetric(device=_cpu())
 
     # canary
@@ -93,7 +93,7 @@ class TestInferencePSNR:
 class TestInferenceSSIM:
     @pytest.fixture
     def metric(self):
-        from mriforge.core.metrics.inference import SSIMMetric
+        from spectramr.core.metrics.inference import SSIMMetric
         return SSIMMetric(device=_cpu())
 
     def test_canary_returns_dict_with_ssim(self, metric):
@@ -131,7 +131,7 @@ class TestInferenceSSIM:
 class TestReconstructionError:
     @pytest.fixture
     def metric(self):
-        from mriforge.core.metrics.inference import ReconstructionErrorMetric
+        from spectramr.core.metrics.inference import ReconstructionErrorMetric
         return ReconstructionErrorMetric(device=_cpu())
 
     def test_canary_returns_l1_l2_rmse(self, metric):
@@ -172,8 +172,8 @@ class TestReconstructionError:
 class TestParadigmSpecificEvaluator:
     @pytest.fixture
     def gan_evaluator(self):
-        from mriforge.config.schemas.enums import TrainingModeTypes
-        from mriforge.core.metrics.inference import ParadigmSpecificEvaluator
+        from spectramr.config.schemas.enums import TrainingModeTypes
+        from spectramr.core.metrics.inference import ParadigmSpecificEvaluator
         return ParadigmSpecificEvaluator(
             device=_cpu(),
             training_mode=TrainingModeTypes.RECONSTRUCTION,
@@ -219,16 +219,16 @@ class TestParadigmSpecificEvaluator:
 class TestFIDISImportCanary:
     @requires_torch_fidelity
     def test_fid_metric_importable(self):
-        from mriforge.core.metrics.inference import FIDMetric
+        from spectramr.core.metrics.inference import FIDMetric
         assert FIDMetric is not None
 
     def test_is_metric_importable(self):
-        from mriforge.core.metrics.inference import ISMetric
+        from spectramr.core.metrics.inference import ISMetric
         assert ISMetric is not None
 
     @requires_torch_fidelity
     def test_fid_instantiates(self):
-        from mriforge.core.metrics.inference import FIDMetric
+        from spectramr.core.metrics.inference import FIDMetric
         m = FIDMetric(device=_cpu())
         assert m is not None
 
@@ -236,7 +236,7 @@ class TestFIDISImportCanary:
     @requires_torch_fidelity
     def test_fid_compute_with_small_batch(self):
         """FID needs torchmetrics + enough samples; skip if not available."""
-        from mriforge.core.metrics.inference import FIDMetric
+        from spectramr.core.metrics.inference import FIDMetric
         m = FIDMetric(device=_cpu())
         x = _img(4, 3, 32, 32)
         y = _img(4, 3, 32, 32, seed=1)

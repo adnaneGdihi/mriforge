@@ -4,7 +4,7 @@ Unit tests for RL-MRI.
 
 import torch
 
-from mriforge.models.reasoning.rl_acquisition import ActiveScanner, MRIEnv
+from spectramr.models.reasoning.rl_acquisition import ActiveScanner, MRIEnv
 
 
 def test_mri_env_step():

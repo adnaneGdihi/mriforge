@@ -12,7 +12,7 @@ import pytest
 
 torch = pytest.importorskip("torch")  # the strategy module imports torch at top level
 
-from mriforge.infrastructure.training.strategies.geomamba_ulf_strategy import (  # noqa: E402
+from spectramr.infrastructure.training.strategies.geomamba_ulf_strategy import (  # noqa: E402
     GeoMambaULFStrategy,
 )
 

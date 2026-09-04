@@ -38,7 +38,7 @@ def sample_axes_image() -> tuple:
 def test_attach_colorbar_returns_colorbar_instance(sample_axes_image) -> None:
     from matplotlib.colorbar import Colorbar
 
-    from mriforge.infrastructure.reporting.style import attach_colorbar
+    from spectramr.infrastructure.reporting.style import attach_colorbar
 
     fig, ax, im = sample_axes_image
     cbar = attach_colorbar(im, ax, label="PSNR", units="dB")
@@ -46,7 +46,7 @@ def test_attach_colorbar_returns_colorbar_instance(sample_axes_image) -> None:
 
 
 def test_attach_colorbar_label_includes_units(sample_axes_image) -> None:
-    from mriforge.infrastructure.reporting.style import attach_colorbar
+    from spectramr.infrastructure.reporting.style import attach_colorbar
 
     fig, ax, im = sample_axes_image
     cbar = attach_colorbar(im, ax, label="SSIM")
@@ -58,7 +58,7 @@ def test_attach_colorbar_label_includes_units(sample_axes_image) -> None:
 
 def test_attach_colorbar_zero_floor_clamps_vmin(sample_axes_image) -> None:
     """``vmin_zero_floor=True`` rewrites a negative ``vmin`` to zero."""
-    from mriforge.infrastructure.reporting.style import attach_colorbar
+    from spectramr.infrastructure.reporting.style import attach_colorbar
 
     fig, ax, im = sample_axes_image
     # Sample image was constructed with vmin=-0.1.
@@ -71,7 +71,7 @@ def test_attach_colorbar_attaches_a_locator(sample_axes_image) -> None:
     """``num_ticks`` configures a ``MaxNLocator`` (exact tick count is data-dependent)."""
     import matplotlib.ticker as mticker
 
-    from mriforge.infrastructure.reporting.style import attach_colorbar
+    from spectramr.infrastructure.reporting.style import attach_colorbar
 
     fig, ax, im = sample_axes_image
     cbar = attach_colorbar(im, ax, label="value", num_ticks=3)
@@ -86,7 +86,7 @@ def test_attach_colorbar_attaches_a_locator(sample_axes_image) -> None:
 
 
 def test_save_figure_writes_both_png_and_pdf(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1, 2], [0, 1, 4])
@@ -100,7 +100,7 @@ def test_save_figure_writes_both_png_and_pdf(tmp_path: Path) -> None:
 
 def test_save_figure_closes_figure_by_default(tmp_path: Path) -> None:
     """After ``save_figure`` the figure object should be closed (released)."""
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1], [0, 1])
@@ -111,7 +111,7 @@ def test_save_figure_closes_figure_by_default(tmp_path: Path) -> None:
 
 
 def test_save_figure_can_skip_pdf(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1], [1, 0])
@@ -122,7 +122,7 @@ def test_save_figure_can_skip_pdf(tmp_path: Path) -> None:
 
 
 def test_save_figure_can_skip_png(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1], [1, 0])
@@ -132,7 +132,7 @@ def test_save_figure_can_skip_png(tmp_path: Path) -> None:
 
 
 def test_save_figure_creates_nested_directories(tmp_path: Path) -> None:
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1], [1, 0])
@@ -150,7 +150,7 @@ def test_save_figure_creates_nested_directories(tmp_path: Path) -> None:
 
 
 def test_sanitize_text_for_font_strips_control_chars() -> None:
-    from mriforge.infrastructure.reporting.style import sanitize_text_for_font
+    from spectramr.infrastructure.reporting.style import sanitize_text_for_font
 
     # U+007F (DEL) and U+0080 (a C1 control) are the exact glyphs from the
     # reported warning; other C0 controls must go too.
@@ -159,7 +159,7 @@ def test_sanitize_text_for_font_strips_control_chars() -> None:
 
 
 def test_sanitize_text_for_font_keeps_newlines_tabs_and_unicode() -> None:
-    from mriforge.infrastructure.reporting.style import sanitize_text_for_font
+    from spectramr.infrastructure.reporting.style import sanitize_text_for_font
 
     # Legitimate layout whitespace and renderable unicode (µ, ±, en-dash)
     # must survive untouched.
@@ -170,7 +170,7 @@ def test_sanitize_text_for_font_keeps_newlines_tabs_and_unicode() -> None:
 def test_sanitize_figure_text_rewrites_all_text_artists() -> None:
     from matplotlib.text import Text
 
-    from mriforge.infrastructure.reporting.style import sanitize_figure_text
+    from spectramr.infrastructure.reporting.style import sanitize_figure_text
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.set_title("bad\x7ftitle")
@@ -190,7 +190,7 @@ def test_save_figure_does_not_warn_on_control_char_titles(tmp_path: Path) -> Non
 
     from matplotlib.text import Text
 
-    from mriforge.infrastructure.reporting.style import save_figure
+    from spectramr.infrastructure.reporting.style import save_figure
 
     fig, ax = plt.subplots(figsize=(2, 2))
     ax.plot([0, 1, 2], [0, 1, 4])

@@ -39,8 +39,8 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from mriforge.config.schemas.logging import LoggingConfigSchema
-from mriforge.config.schemas.validation import ValidationConfigSchema
+from spectramr.config.schemas.logging import LoggingConfigSchema
+from spectramr.config.schemas.validation import ValidationConfigSchema
 
 __all__ = [
     "BlockConfigStub",

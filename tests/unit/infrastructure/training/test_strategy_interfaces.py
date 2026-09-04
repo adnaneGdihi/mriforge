@@ -1,6 +1,6 @@
 """Unit tests for training strategy interface contracts.
 
-Targets ``mriforge.infrastructure.training.strategy_interfaces``:
+Targets ``spectramr.infrastructure.training.strategy_interfaces``:
 - ``ILossComputer`` abstract base class
 - ``IAMPPolicy`` abstract base class
 - ``IMetricsReporter`` abstract base class
@@ -62,7 +62,7 @@ class _ConcreteLossComputer:
 
 
 def test_canary_import_interfaces() -> None:
-    from mriforge.infrastructure.training.strategy_interfaces import (
+    from spectramr.infrastructure.training.strategy_interfaces import (
         IAMPPolicy,
         ILossComputer,
         IMetricsReporter,
@@ -80,7 +80,7 @@ def test_canary_import_interfaces() -> None:
 
 @pytest.mark.parametrize("interface_name", ["ILossComputer", "IAMPPolicy", "IMetricsReporter"])
 def test_abstract_class_cannot_be_instantiated(interface_name: str) -> None:
-    import mriforge.infrastructure.training.strategy_interfaces as mod
+    import spectramr.infrastructure.training.strategy_interfaces as mod
 
     cls = getattr(mod, interface_name)
     with pytest.raises(TypeError):
@@ -93,7 +93,7 @@ def test_abstract_class_cannot_be_instantiated(interface_name: str) -> None:
 
 
 def test_ioptimizerstepper_is_exported() -> None:
-    from mriforge.infrastructure.training.strategy_interfaces import IOptimizerStepper
+    from spectramr.infrastructure.training.strategy_interfaces import IOptimizerStepper
 
     assert IOptimizerStepper is not None
 
@@ -137,7 +137,7 @@ def test_concrete_loss_computer_returns_dict() -> None:
 
 
 def test_loss_computer_abstract_method_raises() -> None:
-    from mriforge.infrastructure.training.strategy_interfaces import ILossComputer
+    from spectramr.infrastructure.training.strategy_interfaces import ILossComputer
 
     class _Partial(ILossComputer):
         pass  # does not implement compute_loss
@@ -147,7 +147,7 @@ def test_loss_computer_abstract_method_raises() -> None:
 
 
 def test_amp_policy_abstract_methods_raise() -> None:
-    from mriforge.infrastructure.training.strategy_interfaces import IAMPPolicy
+    from spectramr.infrastructure.training.strategy_interfaces import IAMPPolicy
 
     class _Partial(IAMPPolicy):
         pass

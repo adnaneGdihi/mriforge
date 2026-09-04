@@ -11,7 +11,7 @@ matplotlib.use("Agg", force=True)
 
 import pandas as pd
 
-from mriforge.infrastructure.reporting import cohort_ablation as ca
+from spectramr.infrastructure.reporting import cohort_ablation as ca
 
 
 def _make_arm(

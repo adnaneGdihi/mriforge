@@ -36,7 +36,7 @@ def _calls_fft_shift(src: str) -> bool:
 
 def test_ssad_fft2_does_not_apply_spurious_fftshift() -> None:
     """``SSADInterface._fft2`` no longer corner-shifts the centered output."""
-    from mriforge.models.diffusion import ssad
+    from spectramr.models.diffusion import ssad
 
     src = inspect.getsource(ssad.SSADInterface._fft2)
     assert not _calls_fft_shift(src), (
@@ -55,7 +55,7 @@ def test_radial_profile_does_not_un_center_power_spectrum() -> None:
     ``cy, cx = H//2, W//2`` which assumes DC at center, so any
     additional ``fftshift`` on ``power`` misaligns every bin.
     """
-    from mriforge.core.metrics import evaluation_metrics
+    from spectramr.core.metrics import evaluation_metrics
 
     cls = getattr(evaluation_metrics, "PowerSpectrumConsistency", None)
     assert cls is not None, "PowerSpectrumConsistency metric must remain in the module"
@@ -71,8 +71,8 @@ def test_ssad_fft2_actually_round_trips_correctly() -> None:
     the inverse round-trip would produce a phase-shifted image rather
     than the original.
     """
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
-    from mriforge.models.diffusion.ssad import SSADInterface
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.models.diffusion.ssad import SSADInterface
 
     torch.manual_seed(0)
     # Build a stand-alone instance — _fft2 is a pure-tensor method so

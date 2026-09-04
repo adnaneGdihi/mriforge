@@ -11,7 +11,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.chronological_stem import (
+from spectramr.models.blocks.chronological_stem import (
     ChronologicalKSpaceStem,
     ChronologicalKSpaceUnstem,
 )

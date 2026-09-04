@@ -3,7 +3,7 @@
 Loads the EXTRACTED form (real-interleaved phase-cycled stack NIfTI [H,W,2N] +
 Hz B0 NIfTI [H,W]) via the SSOT NiftiStrategy, emitting the stack as the model
 input + the real B0 as b0_map for the field-scoring seam. The raw oracle_bssfp is
-cluster-only Siemens TWIX; a reader now exists (``mriforge.data.twix`` /
+cluster-only Siemens TWIX; a reader now exists (``spectramr.data.twix`` /
 ``TwixStrategy``) to decode the raw k-space, but this loader consumes the
 post-extraction NIfTI form and RAISES clearly when it is absent (no speculative
 no-op).
@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.data.datasets.oracle_bssfp_dataset import (
+from spectramr.data.datasets.oracle_bssfp_dataset import (
     OracleBssfpDataset,
     build_oracle_bssfp_index,
 )
@@ -96,7 +96,7 @@ def test_dry_iter_returns_one_stub_subject_per_record_without_voxel_read(tmp_pat
 
 
 def test_schema_defaults_and_allow_list():
-    from mriforge.config.schemas.data import DataConfigSchema, OracleBssfpConfigSchema
+    from spectramr.config.schemas.data import DataConfigSchema, OracleBssfpConfigSchema
 
     assert DataConfigSchema().oracle_bssfp.enabled is False
     assert (
@@ -127,8 +127,8 @@ def test_twix_reader_referenced_by_docstring_actually_exists():
     anti-facade check — pitfall #16). The loader itself consumes NIfTI, but the
     cluster TWIX->NIfTI conversion relies on this reader existing.
     """
-    from mriforge.data.io_strategies import IOStrategyFactory, TwixStrategy
-    from mriforge.data.twix import parse_twix_header, read_twix
+    from spectramr.data.io_strategies import IOStrategyFactory, TwixStrategy
+    from spectramr.data.twix import parse_twix_header, read_twix
 
     assert callable(parse_twix_header) and callable(read_twix)
     assert isinstance(IOStrategyFactory.get("twix"), TwixStrategy)

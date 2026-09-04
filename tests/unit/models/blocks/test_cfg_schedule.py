@@ -1,6 +1,6 @@
 """Tests for time-varying classifier-free-guidance schedules.
 
-The schedules live in :mod:`mriforge.models.blocks.cfg_schedule` and
+The schedules live in :mod:`spectramr.models.blocks.cfg_schedule` and
 plug into :meth:`MultiAxisCFGMixin.cfg_sample_step` via the new
 optional ``schedule=`` / ``t=`` kwargs (multi-contrast Item 3,
 ``TODO/backlog_multi_contrast_remaining.md``).
@@ -19,7 +19,7 @@ import math
 
 import pytest
 
-from mriforge.models.blocks.cfg_schedule import (
+from spectramr.models.blocks.cfg_schedule import (
     CosineCFGSchedule,
     LinearCFGSchedule,
     OscillatingCosineCFGSchedule,
@@ -130,7 +130,7 @@ def test_cfg_sample_step_identity_when_no_schedule() -> None:
     """
     import torch
 
-    from mriforge.models.blocks.multi_axis_cfg import MultiAxisCFGMixin
+    from spectramr.models.blocks.multi_axis_cfg import MultiAxisCFGMixin
 
     class _StubMixin(MultiAxisCFGMixin):
         def _predict_noise(self, x, conditions):

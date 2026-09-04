@@ -4,7 +4,7 @@ an empty ``metrics`` dict (``all(...)`` over an empty iterable is vacuously True
 
 from __future__ import annotations
 
-from mriforge.domain.entities.training import ValidationResultEntity
+from spectramr.domain.entities.training import ValidationResultEntity
 
 
 def _result(metrics: dict[str, float]) -> ValidationResultEntity:

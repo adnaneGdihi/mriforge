@@ -1,6 +1,6 @@
 """Tests for the QC group IQM distribution plotter.
 
-Targets ``mriforge.infrastructure.reporting.plotters.qc.group_strip`` via the
+Targets ``spectramr.infrastructure.reporting.plotters.qc.group_strip`` via the
 plotter registry. Verifies it renders from a wide per-case frame, falls back to
 a long predictions frame, soft-skips on empty input, and never touches the
 global RNG.
@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from mriforge.infrastructure.reporting import plotters
+from spectramr.infrastructure.reporting import plotters
 
 
 def _wide(n=20):
@@ -160,7 +160,7 @@ class TestNoFabricatedQuartiles:
     def _n_boxes(vals):
         import matplotlib.pyplot as plt
 
-        from mriforge.infrastructure.reporting.plotters.qc.group_strip import _draw_hbox
+        from spectramr.infrastructure.reporting.plotters.qc.group_strip import _draw_hbox
 
         fig, ax = plt.subplots()
         try:
@@ -179,7 +179,7 @@ class TestNoFabricatedQuartiles:
         """Dropping the box must not drop what the data DOES say."""
         import matplotlib.pyplot as plt
 
-        from mriforge.infrastructure.reporting.plotters.qc.group_strip import _draw_hbox
+        from spectramr.infrastructure.reporting.plotters.qc.group_strip import _draw_hbox
 
         fig, ax = plt.subplots()
         try:
@@ -203,6 +203,6 @@ class TestHasSpread:
         ],
     )
     def test_predicate(self, vals, expected):
-        from mriforge.infrastructure.reporting.plotters.qc.group_strip import _has_spread
+        from spectramr.infrastructure.reporting.plotters.qc.group_strip import _has_spread
 
         assert _has_spread(np.asarray(vals, dtype=float)) is expected

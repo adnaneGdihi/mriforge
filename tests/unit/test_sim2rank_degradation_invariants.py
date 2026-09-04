@@ -46,7 +46,7 @@ REPO = Path(__file__).resolve().parents[2]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from mriforge.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
+from spectramr.infrastructure.physics.digital_twin_extensions import (  # noqa: E402
     DEGRADATION_REGISTRY,
     apply_degradation,
     is_phase_only,
@@ -158,7 +158,7 @@ def test_only_a_declared_magnitude_operator_may_discard_phase(axis: str) -> None
     Pinned as a set equality, not a per-axis exemption, so *adding* a phase-dropping
     axis fails here rather than being discovered in a reconstruction three layers up.
     """
-    from mriforge.infrastructure.physics.digital_twin_extensions import (
+    from spectramr.infrastructure.physics.digital_twin_extensions import (
         MAGNITUDE,
         affected_components,
     )
@@ -368,7 +368,7 @@ def test_declared_severity_params_resolve_and_are_finite(axis: str) -> None:
     ``DegradationSpec.severity``; an axis whose ``value_at`` returns NaN, or whose
     endpoints coincide, renders a flat curve that says nothing about the physics.
     """
-    from mriforge.infrastructure.physics.digital_twin_extensions import _SEVERITY
+    from spectramr.infrastructure.physics.digital_twin_extensions import _SEVERITY
 
     spec = _SEVERITY[axis]
     assert spec.params, f"{axis} declares no physical severity parameter"
@@ -413,7 +413,7 @@ def _coil_stack(h: int = 48, w: int = 48, n_coils: int = 4):
 
 
 def _sense_mag(coil_images: torch.Tensor, smaps: torch.Tensor) -> torch.Tensor:
-    from mriforge.infrastructure.physics.coil_sensitivity import coil_combine_sense
+    from spectramr.infrastructure.physics.coil_sensitivity import coil_combine_sense
 
     return coil_combine_sense(coil_images, smaps).abs().float()
 

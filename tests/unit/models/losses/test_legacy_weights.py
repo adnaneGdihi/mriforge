@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import pytest
 
-from mriforge.config.schemas.loss import LossConfigSchema
-from mriforge.models.losses._legacy_weights import legacy_effective_weight
+from spectramr.config.schemas.loss import LossConfigSchema
+from spectramr.models.losses._legacy_weights import legacy_effective_weight
 
 
 class _Root:

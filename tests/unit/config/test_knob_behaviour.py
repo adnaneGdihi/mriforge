@@ -38,9 +38,9 @@ FACADE = "facade"
 
 def _optimizer_for(**knobs):
     """Build a real optimizer through the production builder path."""
-    from mriforge.config.schemas.optimization import OptimizationConfigSchema
-    from mriforge.infrastructure.builders.context import BuilderContext
-    from mriforge.infrastructure.training.builders.optimization_builder import (
+    from spectramr.config.schemas.optimization import OptimizationConfigSchema
+    from spectramr.infrastructure.builders.context import BuilderContext
+    from spectramr.infrastructure.training.builders.optimization_builder import (
         OptimizationBuilder,
     )
 
@@ -112,8 +112,8 @@ def test_betas_is_not_overridden_by_beta1_beta2_defaults():
 
 def _augmentation_transforms(**knobs) -> list[str]:
     """Class names of the transforms the production factory actually composes."""
-    from mriforge.config.schemas.augmentation import AugmentationConfigSchema
-    from mriforge.data.transforms.augmentation_factory import TorchIOAugmentationFactory
+    from spectramr.config.schemas.augmentation import AugmentationConfigSchema
+    from spectramr.data.transforms.augmentation_factory import TorchIOAugmentationFactory
 
     built = TorchIOAugmentationFactory.build(
         AugmentationConfigSchema(enabled=True, **knobs)
@@ -258,7 +258,7 @@ COERCED_BLOCK_MINIMUM: dict[str, dict] = {
 
 
 def _training_block(block: str, payload: dict):
-    from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+    from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
     merged = {**COERCED_BLOCK_MINIMUM.get(block, {}), **payload}
     return getattr(TrainingStrategyConfigSchema(**{block: merged}), block, None)
@@ -295,7 +295,7 @@ def test_bypassed_block_accepts_values_its_own_schema_forbids():
     MotionConfig bounds max_translation to (0, 128] and sets extra="forbid".
     Neither survives the trip through TrainingStrategyConfigSchema.
     """
-    from mriforge.config.schemas.training.motion import MotionConfig
+    from spectramr.config.schemas.training.motion import MotionConfig
 
     out_of_bounds = {"max_translation": 99999.0, "totally_invented_key": True}
 
@@ -337,8 +337,8 @@ EXP11_ACCELERATION = {
 
 def _realised_ladder(**knobs) -> list[float]:
     """Effective R at each timestep, resolved the way the runtime resolves it."""
-    from mriforge.config.schemas.acceleration import AccelerationConfigSchema
-    from mriforge.models.diffusion.kspace_process import (
+    from spectramr.config.schemas.acceleration import AccelerationConfigSchema
+    from spectramr.models.diffusion.kspace_process import (
         KSpaceUndersamplingProcess,
         resolve_undersampling_kwargs,
     )

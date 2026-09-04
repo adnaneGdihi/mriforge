@@ -1,6 +1,6 @@
 """Tests for the physics-parameter registry.
 
-Targets ``mriforge.infrastructure.physics.physics_registry``. Provides
+Targets ``spectramr.infrastructure.physics.physics_registry``. Provides
 canonical (TR, TE, TI, B0) parameters for standard MRI sequences,
 plus name-based inference and tensor (de)normalisation helpers.
 
@@ -21,7 +21,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.physics_registry import (
+from spectramr.infrastructure.physics.physics_registry import (
     PHYSICS_REGISTRY,
     PhysicsParameters,
     denormalize_physics_tensor,

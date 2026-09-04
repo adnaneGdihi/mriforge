@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.config.schemas.base import CANONICAL_CONFIG_VERSION
-from mriforge.config.presets import ConfigPreset, PresetRegistry, get_baseline_presets
+from spectramr.config.schemas.base import CANONICAL_CONFIG_VERSION
+from spectramr.config.presets import ConfigPreset, PresetRegistry, get_baseline_presets
 
 
 class TestPresetRegistry:
@@ -340,7 +340,7 @@ class TestDiscovery:
 
     def test_infer_tags_from_filename(self) -> None:
         """Should infer tags from experiment filename patterns."""
-        from mriforge.config.presets.discovery import _infer_tags
+        from spectramr.config.presets.discovery import _infer_tags
 
         # Test various filename patterns with category
         # _infer_tags always includes the category plus other inferred tags

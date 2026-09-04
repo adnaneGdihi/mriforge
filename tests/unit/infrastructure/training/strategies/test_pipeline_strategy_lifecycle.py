@@ -23,7 +23,7 @@ from types import SimpleNamespace
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.pipeline_strategy import MultiTrainingStrategy
+from spectramr.infrastructure.training.strategies.pipeline_strategy import MultiTrainingStrategy
 
 
 def _es(*, patience: int, enabled: bool = True, metric: str | None = None):

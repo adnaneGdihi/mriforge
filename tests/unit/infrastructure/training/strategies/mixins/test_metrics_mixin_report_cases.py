@@ -1,8 +1,8 @@
 import numpy as np
 
-from mriforge.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
-from mriforge.infrastructure.reporting.cases.recorder import ReportCaseRecorder
-from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+from spectramr.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
+from spectramr.infrastructure.reporting.cases.recorder import ReportCaseRecorder
+from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
     feed_report_case_recorder,
 )
 
@@ -100,7 +100,7 @@ def test_record_volumes_skips_4d_slice_with_coils():
 
 def test_summarize_batch_identity_reads_the_collated_per_sample_lists():
     """`ImageCollateStrategy` leaves non-tensor values as a per-sample list."""
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 
@@ -117,7 +117,7 @@ def test_a_mixed_contrast_batch_names_every_contrast_present():
     a number to a contrast that produced only half of it — a wrong label reads
     as a measurement, where a joined one reads as the mixture it is.
     """
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 
@@ -130,7 +130,7 @@ def test_a_mixed_contrast_batch_names_every_contrast_present():
 
 def test_batch_size_one_yields_a_single_volume_row():
     """`validation.loader.batch_size: 1` makes each row exactly one volume."""
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 
@@ -140,7 +140,7 @@ def test_batch_size_one_yields_a_single_volume_row():
 
 def test_a_dataset_publishing_no_identity_yields_no_columns():
     """Absent, not placeholder — an "unknown" string would read as data."""
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 
@@ -151,7 +151,7 @@ def test_a_dataset_publishing_no_identity_yields_no_columns():
 def test_identity_is_read_off_an_object_batch_too():
     from types import SimpleNamespace
 
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         summarize_batch_identity,
     )
 
@@ -165,8 +165,8 @@ def test_context_reaches_the_sink_verbatim():
     Merging it into `metrics` would send it through the float coercion, which
     is what drops `contrast` and turns `heldout` into `1.0`.
     """
-    from mriforge.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         feed_report_case_recorder,
     )
 
@@ -191,8 +191,8 @@ def test_context_reaches_the_sink_verbatim():
 
 def test_context_is_optional_for_strategies_that_do_not_supply_it():
     """The non-diffusion feed site passes no context and must be unaffected."""
-    from mriforge.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.reporting.cases.metric_sink import PerCallMetricSink
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         feed_report_case_recorder,
     )
 

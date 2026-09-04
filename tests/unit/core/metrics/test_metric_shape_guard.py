@@ -20,7 +20,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.evaluation_metrics import NRMSE, PSNR, BaseMetric
+from spectramr.core.metrics.evaluation_metrics import NRMSE, PSNR, BaseMetric
 
 
 class TestBaseMetricShapeGuard:
@@ -64,7 +64,7 @@ class TestBaseMetricShapeGuard:
 
 class TestGaussianNLLOptsOut:
     def test_gaussian_nll_declares_it_consumes_the_head(self) -> None:
-        from mriforge.core.metrics.quantitative.calibration_nll import GaussianNLLMetric
+        from spectramr.core.metrics.quantitative.calibration_nll import GaussianNLLMetric
 
         assert GaussianNLLMetric.REQUIRES_MATCHING_SHAPES is False
 
@@ -77,12 +77,12 @@ class TestNonImagePairMetricsStillWork:
     """
 
     def test_classwise_ece_opts_out(self) -> None:
-        from mriforge.core.metrics.calibration_metrics import ClasswiseECE
+        from spectramr.core.metrics.calibration_metrics import ClasswiseECE
 
         assert ClasswiseECE.REQUIRES_MATCHING_SHAPES is False
 
     def test_classwise_ece_still_computes_on_probs_vs_labels(self) -> None:
-        from mriforge.core.metrics.calibration_metrics import ClasswiseECE
+        from spectramr.core.metrics.calibration_metrics import ClasswiseECE
 
         probs = torch.tensor([[0.9, 0.1], [0.2, 0.8], [0.7, 0.3]])  # (N, K)
         labels = torch.tensor([0, 1, 0])  # (N,) — deliberately a different shape

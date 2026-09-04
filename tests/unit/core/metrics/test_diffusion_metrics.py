@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.core.metrics.diffusion_metrics import CCSNR
+from spectramr.core.metrics.diffusion_metrics import CCSNR
 
 pytestmark = pytest.mark.unit
 

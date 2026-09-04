@@ -1,8 +1,8 @@
 =========
-MRIForge
+spectraMR
 =========
 
-MRIForge is a multi-paradigm PyTorch research framework for MRI reconstruction,
+spectraMR is a multi-paradigm PyTorch research framework for MRI reconstruction,
 super-resolution, contrast translation and synthesis. It is registry-dispatched
 and driven from YAML: you select components by name in a configuration file and
 run a CLI verb, and there is no per-experiment Python to write.

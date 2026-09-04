@@ -10,7 +10,7 @@ the strategy reads ``optimization.optimizer.learning_rate`` at runtime.
 
 from __future__ import annotations
 
-from mriforge.config.schemas.training.gan import TrainingConfigGAN
+from spectramr.config.schemas.training.gan import TrainingConfigGAN
 
 
 def test_discriminator_lr_defaults_to_none() -> None:

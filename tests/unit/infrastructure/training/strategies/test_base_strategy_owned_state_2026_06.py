@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
 
 class _Strat(BaseTrainingStrategy):

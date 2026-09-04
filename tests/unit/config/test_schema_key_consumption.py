@@ -21,7 +21,7 @@ line mention this key?", never "can that line run?" -- which is how
 sat in a class the bootstrap never constructs (#928 / #932). The rg half is kept
 because it is what the ratchet above was measured with;
 :class:`TestReachabilityAwareConsumption` asks the harder question through
-:func:`mriforge.config.key_reachability.is_key_reachable`, and needs no ``rg`` at
+:func:`spectramr.config.key_reachability.is_key_reachable`, and needs no ``rg`` at
 all -- which is why the ripgrep guard is now per-class rather than module-wide,
 and why it **fails** instead of skipping (see :func:`_require_ripgrep`).
 """
@@ -37,20 +37,20 @@ from types import SimpleNamespace
 
 import pytest
 
-from mriforge.config.key_reachability import ReachabilityVerdict, is_key_reachable
-from mriforge.config.settings import TrainingSettings
+from spectramr.config.key_reachability import ReachabilityVerdict, is_key_reachable
+from spectramr.config.settings import TrainingSettings
 
 TOOLS = Path(__file__).resolve().parents[3] / "tools" / "audit"
 sys.path.insert(0, str(TOOLS))
 
 #: Opt out of the loud failure below, for a dev box without ripgrep. Deliberately
-#: opt-*out* and env-gated: unlike ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` --
+#: opt-*out* and env-gated: unlike ``SPECTRAMR_ALLOW_MAMBA_FALLBACK`` --
 #: which ``conftest.py`` sets ambient-on for every test session via
 #: ``setdefault`` -- this var is NOT set anywhere in the tracked ``conftest*.py``
 #: files (see ``test_ripgrep_opt_out_is_not_set_ambient_by_conftest`` below,
 #: which pins that). A developer on a box without ``rg`` has to set it
 #: themselves; nothing here defaults the degraded mode on.
-RIPGREP_OPT_OUT = "MRIFORGE_ALLOW_MISSING_RIPGREP"
+RIPGREP_OPT_OUT = "SPECTRAMR_ALLOW_MISSING_RIPGREP"
 
 
 def _require_ripgrep() -> None:
@@ -84,18 +84,18 @@ def ripgrep_available() -> None:
 def test_ripgrep_opt_out_is_not_set_ambient_by_conftest() -> None:
     """``RIPGREP_OPT_OUT`` must stay asked-for, never conftest-defaulted.
 
-    ``MRIFORGE_ALLOW_MAMBA_FALLBACK`` is NOT the asked-for precedent the comment
+    ``SPECTRAMR_ALLOW_MAMBA_FALLBACK`` is NOT the asked-for precedent the comment
     above ``RIPGREP_OPT_OUT`` used to claim: ``conftest.py`` sets it ambient-on
     for every test session via ``os.environ.setdefault(...)``, so it is on by
     default and a developer has to opt *out* of the fallback, not into it. If
-    a future edit made ``MRIFORGE_ALLOW_MISSING_RIPGREP`` do the same -- default
+    a future edit made ``SPECTRAMR_ALLOW_MISSING_RIPGREP`` do the same -- default
     it on from a ``conftest*.py`` -- the loud failure in ``_require_ripgrep``
     would go quiet exactly the way #928 is about, without this test's own
     assertion message noticing.
 
     This scans tracked ``conftest*.py`` SOURCE FILES for the variable name --
     not ``os.environ`` at runtime -- because a legitimate developer opt-out
-    (``MRIFORGE_ALLOW_MISSING_RIPGREP=1`` in their own shell) is exactly the
+    (``SPECTRAMR_ALLOW_MISSING_RIPGREP=1`` in their own shell) is exactly the
     asked-for use this var exists for and must keep working; asserting the env
     var is unset at runtime would fail for that legitimate case instead of
     only for an ambient conftest default.
@@ -117,7 +117,7 @@ def test_ripgrep_opt_out_is_not_set_ambient_by_conftest() -> None:
     assert not offenders, (
         f"{RIPGREP_OPT_OUT} is mentioned in tracked conftest file(s), which "
         "would default the ripgrep opt-out on for every test session -- the "
-        "same ambient-default shape MRIFORGE_ALLOW_MAMBA_FALLBACK actually has, "
+        "same ambient-default shape SPECTRAMR_ALLOW_MAMBA_FALLBACK actually has, "
         "which this variable is deliberately NOT supposed to copy:\n  "
         + "\n  ".join(str(p) for p in offenders)
     )
@@ -501,7 +501,7 @@ class TestCensusWalksTheLiveTree:
     def test_optional_and_list_annotations_are_unwrapped(self) -> None:
         from schema_key_consumption import iter_submodels
 
-        from mriforge.config.schemas.optimization import OptimizationConfigSchema
+        from spectramr.config.schemas.optimization import OptimizationConfigSchema
 
         assert iter_submodels(OptimizationConfigSchema | None) == [OptimizationConfigSchema]
         assert iter_submodels(list[OptimizationConfigSchema]) == [OptimizationConfigSchema]
@@ -608,7 +608,7 @@ class TestReachabilityAwareConsumption:
     reachability", and the verdict distinguishes them:
 
     ``sites=()``
-        No read anywhere in ``src/mriforge/`` outside ``config/schemas/``. rg
+        No read anywhere in ``src/spectramr/`` outside ``config/schemas/``. rg
         counted a comment (``losses.gan.enable_gradient_penalty``), a docstring
         that explicitly says the key is *not* read
         (``physics.coil_sensitivity.estimation_method``), or an unrelated module
@@ -633,7 +633,7 @@ class TestReachabilityAwareConsumption:
     #: against the live reachability index below, so a drifting key now has to
     #: be RE-CLASSIFIED explicitly, in a diff a reviewer can see.
     #:
-    #: Keys with no read at all in ``src/mriforge/`` outside ``config/schemas/``.
+    #: Keys with no read at all in ``src/spectramr/`` outside ``config/schemas/``.
     #: This is the same category ``KNOWN_UNCONSUMED`` holds, so a key belongs
     #: here only while its reachability verdict is the finding being tracked;
     #: once it is triaged it moves to the rg-debt ledger with a citation.
@@ -929,30 +929,30 @@ class TestUnconsumedKnobsSaySoInTheirDescription:
 
     _DOCUMENTED = [
         (
-            "mriforge.config.schemas.logging",
+            "spectramr.config.schemas.logging",
             "LoggingConfigSchema",
             "log_validation_graphs",
         ),
         (
-            "mriforge.config.schemas.logging",
+            "spectramr.config.schemas.logging",
             "LoggingConfigSchema",
             "save_images_per_epoch",
         ),
-        ("mriforge.config.schemas.ema", "EMAConfigSchema", "adaptation_rate"),
-        ("mriforge.config.schemas.metrics", "MetricsConfigSchema", "best_metric_mode"),
-        ("mriforge.config.schemas.metrics", "MetricsConfigSchema", "track_best_metric"),
+        ("spectramr.config.schemas.ema", "EMAConfigSchema", "adaptation_rate"),
+        ("spectramr.config.schemas.metrics", "MetricsConfigSchema", "best_metric_mode"),
+        ("spectramr.config.schemas.metrics", "MetricsConfigSchema", "track_best_metric"),
         (
-            "mriforge.config.schemas.validation",
+            "spectramr.config.schemas.validation",
             "ValidationConfigSchema",
             "num_visualizations",
         ),
         (
-            "mriforge.config.schemas.validation",
+            "spectramr.config.schemas.validation",
             "ValidationConfigSchema",
             "visualization_dir",
         ),
         (
-            "mriforge.config.schemas.validation",
+            "spectramr.config.schemas.validation",
             "ValidationConfigSchema",
             "use_training_loss",
         ),
@@ -995,7 +995,7 @@ def test_eval_on_epoch_is_invisible_to_the_scanner():
     test pins the one instance found, so the blind spot is recorded rather than
     rediscovered. The knob's own description carries the NOT READ note.
     """
-    from mriforge.config.schemas.metrics import MetricsConfigSchema
+    from spectramr.config.schemas.metrics import MetricsConfigSchema
 
     desc = MetricsConfigSchema.model_fields["eval_on_epoch"].description or ""
     assert "NOT READ" in desc
@@ -1003,7 +1003,7 @@ def test_eval_on_epoch_is_invisible_to_the_scanner():
     # The collision that hides it. If this ever stops being true, the scanner
     # will start flagging the key on its own and the xfail above can go.
     src = (
-        Path(__file__).resolve().parents[3] / "src" / "mriforge" / "pipelines" / "training_loop.py"
+        Path(__file__).resolve().parents[3] / "src" / "spectramr" / "pipelines" / "training_loop.py"
     ).read_text()
     assert "eval_on_epoch = config.validation.schedule.on_epoch" in src
 
@@ -1047,9 +1047,9 @@ class TestTheLedgerDetectorsActuallyFail:
 
     def test_it_catches_a_no_read_entry_that_grew_a_read(self) -> None:
         """Shape 3 -- the drift the split exists to make explicit."""
-        unreachable = {"a.b": self._verdict("src/mriforge/x.py:1")}
+        unreachable = {"a.b": self._verdict("src/spectramr/x.py:1")}
         assert misfiled_as_no_read(frozenset({"a.b"}), unreachable) == {
-            "a.b": ("src/mriforge/x.py:1",)
+            "a.b": ("src/spectramr/x.py:1",)
         }
 
     def test_it_passes_a_no_read_entry_with_no_sites(self) -> None:
@@ -1063,7 +1063,7 @@ class TestTheLedgerDetectorsActuallyFail:
         assert misfiled_as_unreachable_read(frozenset({"a.b"}), unreachable) == ["a.b"]
 
     def test_it_passes_an_unreachable_read_entry_with_a_read(self) -> None:
-        unreachable = {"a.b": self._verdict("src/mriforge/x.py:1")}
+        unreachable = {"a.b": self._verdict("src/spectramr/x.py:1")}
         assert not misfiled_as_unreachable_read(frozenset({"a.b"}), unreachable)
 
     def test_the_seal_is_not_vacuous(self) -> None:

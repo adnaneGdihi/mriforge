@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from mriforge.core.metrics.flag_map import (
+from spectramr.core.metrics.flag_map import (
     BUILDER_METRIC_FLAGS,
     FLAG_TO_METRIC,
     NON_METRIC_FLAGS,
@@ -30,7 +30,7 @@ from mriforge.core.metrics.flag_map import (
 
 
 def _registered_metrics() -> set[str]:
-    from mriforge.core.metrics.registry import list_available
+    from spectramr.core.metrics.registry import list_available
 
     return set(list_available())
 
@@ -87,14 +87,14 @@ _NAME_FLAG = re.compile(r'"([\w_]+)":\s*"(compute_\w+)"')
 
 
 def _training_loop_map() -> dict[str, str]:
-    from mriforge.pipelines.training_loop import _CSV_METRIC_NAME_MAP
+    from spectramr.pipelines.training_loop import _CSV_METRIC_NAME_MAP
 
     return dict(_CSV_METRIC_NAME_MAP)
 
 
 def _mixin_map() -> dict[str, str]:
     """The flag->name map ``MetricsMixin._extract_metrics_from_config`` selects with."""
-    from mriforge.infrastructure.training.strategies.mixins.metrics_mixin import (
+    from spectramr.infrastructure.training.strategies.mixins.metrics_mixin import (
         MetricsMixin,
     )
 
@@ -129,7 +129,7 @@ class TestConsumerMapsDeriveFromSSOT:
 
     def test_coverage_is_complete_against_the_schema(self):
         """Every metric-selecting schema flag is reachable from both consumers."""
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         schema_flags = {
             f for f in MetricsConfigSchema.model_fields if f.startswith("compute_")
@@ -166,7 +166,7 @@ class TestNonMetricFlagsAreExcluded:
 
     def test_every_excluded_flag_really_is_a_schema_field(self):
         """An exclusion for a flag that does not exist is dead weight that hides."""
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         stale = NON_METRIC_FLAGS - set(MetricsConfigSchema.model_fields)
         assert not stale, f"NON_METRIC_FLAGS names non-existent fields: {sorted(stale)}"
@@ -189,7 +189,7 @@ class TestNonMetricFlagsAreExcluded:
         Any flag defaulting True whose name is unregistered would warn on every
         run. Such a flag belongs in NON_METRIC_FLAGS or must be registered.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
 
         registered = _registered_metrics()
         offenders = {
@@ -228,9 +228,9 @@ class TestClaudeMdFlagCensusIsCurrent:
 
     @staticmethod
     def _census() -> tuple[int, int, int, int]:
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.core.metrics.flag_map import metric_for_flag
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.core.metrics.flag_map import metric_for_flag
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         flags = [
             f for f in MetricsConfigSchema.model_fields if f.startswith("compute_")
@@ -268,8 +268,8 @@ class TestClaudeMdFlagCensusIsCurrent:
         gap is pinned here rather than left to be rediscovered. Reachability is
         ``is_registered``; the census is not it.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         flags = [
             f for f in MetricsConfigSchema.model_fields if f.startswith("compute_")
@@ -314,9 +314,9 @@ class TestClaudeMdFlagCensusIsCurrent:
         This is what makes the reproducer worth carrying rather than letting the
         next person re-derive it whichever way they reach for first.
         """
-        from mriforge.config.schemas.metrics import MetricsConfigSchema
-        from mriforge.core.metrics.flag_map import FLAG_TO_METRIC, metric_for_flag
-        from mriforge.core.metrics.registry import MetricsRegistry
+        from spectramr.config.schemas.metrics import MetricsConfigSchema
+        from spectramr.core.metrics.flag_map import FLAG_TO_METRIC, metric_for_flag
+        from spectramr.core.metrics.registry import MetricsRegistry
 
         flags = [
             f for f in MetricsConfigSchema.model_fields if f.startswith("compute_")

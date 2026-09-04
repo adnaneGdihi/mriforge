@@ -12,15 +12,15 @@ from unittest.mock import MagicMock, patch
 import pytest
 import torch
 
-from mriforge.data.datasets.contrast_aware import (
+from spectramr.data.datasets.contrast_aware import (
     ContrastAwarePairedDataset,
     ContrastAwareSubjectBuilder,
     ContrastConfig,
 )
 
 # The IOStrategyFactory is imported inside ContrastAwareSubjectBuilder.__init__
-# from mriforge.data.io_strategies, so we must patch it at the *source* location.
-_IO_FACTORY_PATCH = "mriforge.data.io_strategies.IOStrategyFactory.get"
+# from spectramr.data.io_strategies, so we must patch it at the *source* location.
+_IO_FACTORY_PATCH = "spectramr.data.io_strategies.IOStrategyFactory.get"
 
 
 # ---------------------------------------------------------------------------

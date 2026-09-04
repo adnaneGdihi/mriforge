@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.galois_unwrap import (
+from spectramr.infrastructure.physics.galois_unwrap import (
     cohomology_norm_certificate,
     galois_unwrap,
     integer_winding_cocycle,

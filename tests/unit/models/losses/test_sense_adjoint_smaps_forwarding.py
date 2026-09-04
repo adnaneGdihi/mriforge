@@ -35,8 +35,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.complex_losses import SENSEAdjointL1Loss
-from mriforge.models.losses.computers.unified_diffusion_reconstruction import (
+from spectramr.models.losses.complex_losses import SENSEAdjointL1Loss
+from spectramr.models.losses.computers.unified_diffusion_reconstruction import (
     _call_safe_loss,
 )
 

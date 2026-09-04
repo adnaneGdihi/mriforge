@@ -5,11 +5,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.cross_attention_oracle import (
+from spectramr.models.generators.cross_attention_oracle import (
     CrossAttentionOracleUNet,
     MarkerCrossAttention,
 )
-from mriforge.models.registry import MODEL_REGISTRY
+from spectramr.models.registry import MODEL_REGISTRY
 
 
 class TestMarkerCrossAttention:

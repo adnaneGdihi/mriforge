@@ -8,14 +8,14 @@ import numpy as np
 import pytest
 import torch
 
-from mriforge.config.schemas.data import (
+from spectramr.config.schemas.data import (
     DataConfigSchema,
     ModeOutputSchema,
     MultiChannelOutputSchema,
     OutputChannelSchema,
     TemporalOutputSchema,
 )
-from mriforge.data.writers.output_writer import OutputWriter, write_output
+from spectramr.data.writers.output_writer import OutputWriter, write_output
 
 # ── Schema validation ───────────────────────────────────────────────────────
 

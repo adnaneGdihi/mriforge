@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 import torch.nn as nn
 
-from mriforge.models.stability.stability_linter import StabilityAnalyzer
+from spectramr.models.stability.stability_linter import StabilityAnalyzer
 
 
 # ---------------------------------------------------------------------------

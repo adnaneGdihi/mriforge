@@ -18,7 +18,7 @@ metadata:
   name: Failing — patch_size_power_of_two (patch 30x30, depth 4)
 
 training:
-  strategy_class: mriforge.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
+  strategy_class: spectramr.infrastructure.training.strategies.reconstruction.ReconstructionTrainingStrategy
   training_mode: reconstruction
   max_iterations: 10
   device: cuda

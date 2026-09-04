@@ -16,7 +16,7 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.bloch_manifold_dps_strategy import (
+from spectramr.infrastructure.training.strategies.bloch_manifold_dps_strategy import (
     BlochManifoldDPSStrategy,
     _cfg_get,
     _linear_beta_schedule,
@@ -152,7 +152,7 @@ def test_to_real_input_iffts_kspace_target_when_delivered_kspace(generator):
     """A svd-coil k-space-delivering Bloch arm must denoise IMAGES: _to_real_input
     IFFTs the k-space target so x0 is a brain, not a centre-bright k-space blob
     (F-kspace-real, smoke audit 2026-06-13)."""
-    from mriforge.infrastructure.physics.fft_ops import ifft2c
+    from spectramr.infrastructure.physics.fft_ops import ifft2c
 
     strat = _build_strategy(
         _attach_data(_make_config(), dataset_type="kspace", coil_processing_mode="svd"),
@@ -263,7 +263,7 @@ def test_missing_block_raises(monkeypatch, generator):
 def test_build_sampler_composes_projector(generator):
     strat = _build_strategy(_make_config(), generator)
     sampler = strat.build_sampler()
-    from mriforge.models.diffusion.bloch_manifold_dps_sampler import (
+    from spectramr.models.diffusion.bloch_manifold_dps_sampler import (
         BlochManifoldDPSSampler,
     )
 
@@ -276,7 +276,7 @@ def test_build_sampler_composes_projector(generator):
 
 def test_reconstruct_runs_and_no_nan(generator):
     strat = _build_strategy(_make_config(), generator)
-    from mriforge.infrastructure.physics.fft_ops import fft2c
+    from spectramr.infrastructure.physics.fft_ops import fft2c
 
     img = torch.complex(torch.rand(1, 1, 8, 8) * 0.05, torch.rand(1, 1, 8, 8) * 0.05)
     y = fft2c(img)

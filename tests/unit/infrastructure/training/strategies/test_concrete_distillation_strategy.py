@@ -36,7 +36,7 @@ import pytest
 # taking every unrelated test with it.
 _SRC_PATH = (
     pathlib.Path(__file__).resolve().parents[5]
-    / "src/mriforge/infrastructure/training/strategies/distillation_strategy.py"
+    / "src/spectramr/infrastructure/training/strategies/distillation_strategy.py"
 )
 _SRC = _SRC_PATH.read_text(encoding="utf-8")
 
@@ -112,7 +112,7 @@ def test_no_teacher_branch_logs_info_not_warning() -> None:
 
 
 def _bare_strategy_with_resume(resume_from):
-    from mriforge.infrastructure.training.strategies.distillation_strategy import (
+    from spectramr.infrastructure.training.strategies.distillation_strategy import (
         ConcreteDistillationStrategy,
     )
 

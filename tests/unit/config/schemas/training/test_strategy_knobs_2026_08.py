@@ -27,8 +27,8 @@ from typing import ClassVar
 import pytest
 from pydantic import ValidationError
 
-from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
-from mriforge.config.schemas.training.strategy_knobs_2026_08 import (
+from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
+from spectramr.config.schemas.training.strategy_knobs_2026_08 import (
     AdaptiveSFCHSSCTrainingConfigSchema,
     BeltramiEPIDistortionTrainingConfigSchema,
     BlochEquivariantTranslationTrainingConfigSchema,
@@ -181,7 +181,7 @@ class TestTheAblationAblates:
     def _load(path: str):
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         p = Path(path)
         if not p.exists():
@@ -229,7 +229,7 @@ class TestMRFArmsResolveWhatTheyDeclare:
     def _block(path: str, block: str):
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         p = Path(path)
         if not p.exists():
@@ -284,7 +284,7 @@ class TestPhysicsEqSSLIsDeliberatelyNotMounted:
     """
 
     def test_it_still_arrives_as_a_dict(self) -> None:
-        from mriforge.config.schemas.training.base import TrainingStrategyConfigSchema
+        from spectramr.config.schemas.training.base import TrainingStrategyConfigSchema
 
         arrived = TrainingStrategyConfigSchema(physics_eq_ssl={"latent_dim": 8})
         assert isinstance(arrived.physics_eq_ssl, dict), (
@@ -297,7 +297,7 @@ class TestPhysicsEqSSLIsDeliberatelyNotMounted:
     def test_the_arm_that_uses_it_still_loads(self) -> None:
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         p = Path("experiments/inprogress/novel_2026/idea_6_phys_eq_ssl_brain.yaml")
         if not p.exists():
@@ -311,7 +311,7 @@ class TestRiemannianArmResolvesItsCacheResolution:
         """Declared 32; ran at the 0 default, i.e. metric caching disabled."""
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         p = Path("experiments/inprogress/novel_2026/idea_5_riemannian_qmap_brain.yaml")
         if not p.exists():
@@ -342,7 +342,7 @@ class TestPreviouslyBypassedSpecsAreNowMounted:
     def test_the_arm_resolves_a_typed_block(self, block: str) -> None:
         from pathlib import Path
 
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         p = Path(self.ARMS[block])
         if not p.exists():
@@ -363,7 +363,7 @@ class TestPreviouslyBypassedSpecsAreNowMounted:
         """
         from pathlib import Path
 
-        src = Path("src/mriforge/config/schemas/training/base.py").read_text()
+        src = Path("src/spectramr/config/schemas/training/base.py").read_text()
         # Anchor on a newline: the explanatory comment above the deferred block
         # names `StageEnvironmentSchema.model_rebuild()` in prose and would
         # otherwise match first.

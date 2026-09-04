@@ -1,6 +1,6 @@
 """Unit tests for precision-aware casters and managers.
 
-Targets ``mriforge.infrastructure.training.precision_annotations``:
+Targets ``spectramr.infrastructure.training.precision_annotations``:
 - ``PrecisionAwareCaster.cast_to_fp32``
 - ``PrecisionAwareCaster.cast_to_fp16``
 - ``PrecisionAwareCaster.validate_precision``
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_canary_caster_fp32() -> None:
-    from mriforge.infrastructure.training.precision_annotations import PrecisionAwareCaster
+    from spectramr.infrastructure.training.precision_annotations import PrecisionAwareCaster
 
     caster = PrecisionAwareCaster("test")
     t = torch.tensor([1.0], dtype=torch.float16)
@@ -47,7 +47,7 @@ def test_canary_caster_fp32() -> None:
     ],
 )
 def test_cast_returns_expected_dtype(input_dtype, target_method, expected_dtype) -> None:
-    from mriforge.infrastructure.training.precision_annotations import PrecisionAwareCaster
+    from spectramr.infrastructure.training.precision_annotations import PrecisionAwareCaster
 
     caster = PrecisionAwareCaster("model_x")
     t = torch.randn(4, 4).to(input_dtype)
@@ -56,7 +56,7 @@ def test_cast_returns_expected_dtype(input_dtype, target_method, expected_dtype)
 
 
 def test_cast_preserves_values_numerically() -> None:
-    from mriforge.infrastructure.training.precision_annotations import PrecisionAwareCaster
+    from spectramr.infrastructure.training.precision_annotations import PrecisionAwareCaster
 
     caster = PrecisionAwareCaster("model_v")
     # Create fp32 → cast to fp16 → cast back to fp32
@@ -73,7 +73,7 @@ def test_cast_preserves_values_numerically() -> None:
 
 
 def test_validate_precision_passes_correct_dtype() -> None:
-    from mriforge.infrastructure.training.precision_annotations import PrecisionAwareCaster
+    from spectramr.infrastructure.training.precision_annotations import PrecisionAwareCaster
 
     caster = PrecisionAwareCaster("v")
     t = torch.randn(2, 2, dtype=torch.float32)
@@ -82,7 +82,7 @@ def test_validate_precision_passes_correct_dtype() -> None:
 
 
 def test_validate_precision_raises_on_mismatch() -> None:
-    from mriforge.infrastructure.training.precision_annotations import PrecisionAwareCaster
+    from spectramr.infrastructure.training.precision_annotations import PrecisionAwareCaster
 
     caster = PrecisionAwareCaster("v")
     t = torch.randn(2, dtype=torch.float16)
@@ -96,7 +96,7 @@ def test_validate_precision_raises_on_mismatch() -> None:
 
 
 def test_vae_prepare_latent_casts_to_fp32() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VAEPrecisionManager
 
     mgr = VAEPrecisionManager(device=torch.device("cpu"))
     mu_fp16 = torch.randn(2, 4, dtype=torch.float16)
@@ -107,7 +107,7 @@ def test_vae_prepare_latent_casts_to_fp32() -> None:
 
 
 def test_vae_compute_kl_divergence_is_scalar() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VAEPrecisionManager
 
     mgr = VAEPrecisionManager(device=torch.device("cpu"))
     mu = torch.zeros(4, 8, dtype=torch.float32)
@@ -123,7 +123,7 @@ def test_vae_compute_kl_divergence_is_scalar() -> None:
 
 
 def test_vqvae_validate_vq_loss_fp32_passthrough() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VQVAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VQVAEPrecisionManager
 
     mgr = VQVAEPrecisionManager(device=torch.device("cpu"))
     loss = torch.tensor(0.5, dtype=torch.float32)
@@ -132,7 +132,7 @@ def test_vqvae_validate_vq_loss_fp32_passthrough() -> None:
 
 
 def test_vqvae_validate_vq_loss_upcasts_fp16() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VQVAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VQVAEPrecisionManager
 
     mgr = VQVAEPrecisionManager(device=torch.device("cpu"))
     loss = torch.tensor(0.5, dtype=torch.float16)
@@ -141,7 +141,7 @@ def test_vqvae_validate_vq_loss_upcasts_fp16() -> None:
 
 
 def test_vqvae_validate_codebook_fp32_passes() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VQVAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VQVAEPrecisionManager
 
     mgr = VQVAEPrecisionManager(device=torch.device("cpu"))
     codebook = torch.nn.Parameter(torch.randn(16, 8, dtype=torch.float32))
@@ -150,7 +150,7 @@ def test_vqvae_validate_codebook_fp32_passes() -> None:
 
 
 def test_vqvae_validate_codebook_fp16_raises() -> None:
-    from mriforge.infrastructure.training.precision_annotations import VQVAEPrecisionManager
+    from spectramr.infrastructure.training.precision_annotations import VQVAEPrecisionManager
 
     mgr = VQVAEPrecisionManager(device=torch.device("cpu"))
     codebook = torch.nn.Parameter(torch.randn(16, 8, dtype=torch.float16))

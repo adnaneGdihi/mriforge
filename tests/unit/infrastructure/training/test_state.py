@@ -2,7 +2,7 @@
 
 ``TrainingState`` is deprecated in favour of ``TrainingEnvironment`` and is
 never instantiated in ``src/``, but its ``initialize_ema`` was the last
-surviving caller of ``mriforge.models.utils.adaptive_ema`` — a module deleted in
+surviving caller of ``spectramr.models.utils.adaptive_ema`` — a module deleted in
 ff0efff9f. The branch could therefore only ever raise ``ImportError`` and fall
 through to standard EMA, silently discarding an arm's whole adaptive-EMA
 declaration (#1294). These tests pin the single wired construction path that
@@ -21,9 +21,9 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.ema import EMAConfigSchema
-from mriforge.infrastructure.optimization.ema import ModelEma
-from mriforge.infrastructure.training.state import TrainingState
+from spectramr.config.schemas.ema import EMAConfigSchema
+from spectramr.infrastructure.optimization.ema import ModelEma
+from spectramr.infrastructure.training.state import TrainingState
 
 
 class _Cfg:

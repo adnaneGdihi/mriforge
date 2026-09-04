@@ -24,19 +24,19 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
+from spectramr.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
     BlochEquivariantTranslationStrategy,
 )
-from mriforge.infrastructure.training.strategies.ib_active_acquisition_strategy import (
+from spectramr.infrastructure.training.strategies.ib_active_acquisition_strategy import (
     IBActiveAcquisitionStrategy,
 )
-from mriforge.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
+from spectramr.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
     PhysicsEquivariantSSLStrategy,
 )
-from mriforge.infrastructure.training.strategies.riemannian_bloch_diffusion_strategy import (
+from spectramr.infrastructure.training.strategies.riemannian_bloch_diffusion_strategy import (
     RiemannianBlochDiffusionStrategy,
 )
-from mriforge.infrastructure.training.strategies.score_field_tomography_strategy import (
+from spectramr.infrastructure.training.strategies.score_field_tomography_strategy import (
     ScoreFieldTomographyStrategy,
 )
 
@@ -90,7 +90,7 @@ class _RiemannianStubModel(nn.Module):
     def __init__(self) -> None:
         super().__init__()
         self.head = nn.Linear(3 + 32, 3)
-        from mriforge.infrastructure.physics.manifolds import BlochRelaxationManifold
+        from spectramr.infrastructure.physics.manifolds import BlochRelaxationManifold
 
         self.manifold = BlochRelaxationManifold()
 
@@ -145,7 +145,7 @@ def test_physics_equivariant_ssl_smoke() -> None:
         },
     )
     # Manually replicate __init__'s post-super steps that touch operator pool.
-    from mriforge.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
+    from spectramr.infrastructure.training.strategies.physics_equivariant_ssl_strategy import (
         _LinearLatentOperator,
         _make_operator_pool,
     )
@@ -272,8 +272,8 @@ def test_bloch_equivariant_translation_smoke() -> None:
         },
     )
     # Manually replicate the post-super assignments.
-    from mriforge.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
-    from mriforge.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
+    from spectramr.infrastructure.physics.differentiable_bloch import DifferentiableBlochLayer
+    from spectramr.infrastructure.training.strategies.bloch_equivariant_translation_strategy import (
         _TissueAtlas,
     )
 
@@ -320,7 +320,7 @@ def test_riemannian_bloch_diffusion_smoke() -> None:
             )
         },
     )
-    from mriforge.infrastructure.physics.manifolds import BlochRelaxationManifold
+    from spectramr.infrastructure.physics.manifolds import BlochRelaxationManifold
 
     strat.t_min = 0.01
     strat.t_max = 0.5

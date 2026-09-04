@@ -21,7 +21,7 @@ from typing import Any
 import pytest
 import yaml
 
-from mriforge.infrastructure.validation.paired_arms_audit import (
+from spectramr.infrastructure.validation.paired_arms_audit import (
     audit_paired_arms,
     _DEFAULT_DIFF_PATHS,
 )
@@ -163,7 +163,7 @@ class TestArmDeclaringBothSpellingsIsRefused:
 
     def test_the_verdict_does_not_depend_on_key_order(self) -> None:
         """Both serialisation orders must reach the same answer."""
-        from mriforge.infrastructure.validation.paired_arms_audit import (
+        from spectramr.infrastructure.validation.paired_arms_audit import (
             _canonical_paths,
         )
 
@@ -181,7 +181,7 @@ class TestArmDeclaringBothSpellingsIsRefused:
 
     def test_agreeing_duplicates_are_redundant_not_ambiguous(self) -> None:
         """Equal values resolve identically either way, so they must NOT raise."""
-        from mriforge.infrastructure.validation.paired_arms_audit import (
+        from spectramr.infrastructure.validation.paired_arms_audit import (
             _canonical_paths,
         )
 
@@ -237,7 +237,7 @@ class TestStagedRenamePathsAreNormalised:
 
     @staticmethod
     def _walk(doc):
-        from mriforge.infrastructure.validation.paired_arms_audit import (
+        from spectramr.infrastructure.validation.paired_arms_audit import (
             _canonical_paths,
         )
 
@@ -269,7 +269,7 @@ class TestStagedRenamePathsAreNormalised:
         Asserting the chosen path is absent from the table makes the fixture
         self-checking.
         """
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         fold = {r.legacy for r in RENAMES.values() if r.posture == "fold"}
         path = "data.zzz_not_a_real_key"
@@ -295,14 +295,14 @@ class TestAllowListIsCanonical:
 
     @staticmethod
     def _allow_paths() -> set[str]:
-        from mriforge.infrastructure.validation.paired_arms_audit import (
+        from spectramr.infrastructure.validation.paired_arms_audit import (
             _DEFAULT_DIFF_PATHS,
         )
 
         return set(_DEFAULT_DIFF_PATHS)
 
     def test_no_allowlist_entry_is_a_retired_path(self) -> None:
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         fold = {r.legacy: r.canonical for r in RENAMES.values() if r.posture == "fold"}
         stale = sorted(f"{p} -> {fold[p]}" for p in self._allow_paths() if p in fold)
@@ -314,7 +314,7 @@ class TestAllowListIsCanonical:
     def test_the_check_can_fire(self) -> None:
         """Anti-vacuity: the fold table must be non-empty, or the test proves
         nothing about any spelling."""
-        from mriforge.config.schemas.renames import RENAMES
+        from spectramr.config.schemas.renames import RENAMES
 
         assert any(r.posture == "fold" for r in RENAMES.values())
         assert self._allow_paths(), "the allow-list is empty"

@@ -17,8 +17,8 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.core.cascading_validation import CASCADING_LEVELS
-from mriforge.infrastructure.training.builders.optimization_builder import (
+from spectramr.core.cascading_validation import CASCADING_LEVELS
+from spectramr.infrastructure.training.builders.optimization_builder import (
     OptimizationBuilder,
 )
 from tests.utils.config_block_stub import block_stub
@@ -318,7 +318,7 @@ class TestStrategyImports:
 
     @pytest.mark.timeout(10)
     def test_import_reconstruction_strategy(self):
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -326,7 +326,7 @@ class TestStrategyImports:
 
     @pytest.mark.timeout(10)
     def test_import_diffusion_strategy(self):
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -334,13 +334,13 @@ class TestStrategyImports:
 
     @pytest.mark.timeout(10)
     def test_import_gan_strategy(self):
-        from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+        from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
         assert GANTrainingStrategy is not None
 
     @pytest.mark.timeout(10)
     def test_import_vae_strategy(self):
-        from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+        from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
         assert VAETrainingStrategy is not None
 
@@ -351,7 +351,7 @@ class TestReconstructionStrategy:
 
     @pytest.fixture
     def strategy(self):
-        from mriforge.infrastructure.training.strategies.reconstruction import (
+        from spectramr.infrastructure.training.strategies.reconstruction import (
             ReconstructionTrainingStrategy,
         )
 
@@ -435,7 +435,7 @@ class TestDiffusionStrategy:
 
     @pytest.fixture
     def strategy(self):
-        from mriforge.infrastructure.training.strategies.diffusion import (
+        from spectramr.infrastructure.training.strategies.diffusion import (
             DiffusionTrainingStrategy,
         )
 
@@ -455,6 +455,15 @@ class TestDiffusionStrategy:
         # "gate enabled" and then fails comparing a float to a Mock. This
         # fixture is not testing the L4 DC-blob gate, so it says so.
         config.validation.gates.input_dependence_tol = None
+        # Third member of the same family as the two above, and stale for the
+        # same reason: `validation.cascade` is a MagicMock, so an unset
+        # `levels` auto-mocks into a Mock, and `resolve_cascade_levels`
+        # correctly refuses a non-Sequence (`core/cascade_levels.py:83`). The
+        # guard is right and newer than this fixture -- a raise added to
+        # production turns every mock-fed test red at the point the mock stops
+        # being a plausible config. Declare the ladder this test means to
+        # exercise rather than letting auto-mocking invent one.
+        config.validation.cascade.levels = [2.0, 8.0, 32.0]
         # Use existing config.objectives.diffusion setup from create_mock_config or ensure values are floats
         if (
             not hasattr(config.objectives, "diffusion")
@@ -555,7 +564,7 @@ class TestGANStrategy:
 
     @pytest.fixture
     def strategy(self):
-        from mriforge.infrastructure.training.strategies.gan import GANTrainingStrategy
+        from spectramr.infrastructure.training.strategies.gan import GANTrainingStrategy
 
         config = create_mock_config()
         config.training_mode = "gan"
@@ -660,7 +669,7 @@ class TestVAEStrategy:
 
     @pytest.fixture
     def strategy(self):
-        from mriforge.infrastructure.training.strategies.vae import VAETrainingStrategy
+        from spectramr.infrastructure.training.strategies.vae import VAETrainingStrategy
 
         config = create_mock_config()
         config.training_mode = "vae"
@@ -705,7 +714,7 @@ class TestPhysicsDrivenStrategy:
     @pytest.fixture
     def strategy(self):
         try:
-            from mriforge.infrastructure.training.strategies.physics_driven_strategy import (
+            from spectramr.infrastructure.training.strategies.physics_driven_strategy import (
                 PhysicsDrivenStrategy,
             )
         except ImportError:
@@ -754,7 +763,7 @@ class TestGeneratorInterfaces:
     def test_kspace_cold_diffusion_sample_accepts_time(self):
         """Test KSpaceColdDiffusionGenerator.sample() accepts time kwarg."""
         try:
-            from mriforge.models.generators.kspace_cold_diffusion_generator import (
+            from spectramr.models.generators.kspace_cold_diffusion_generator import (
                 KSpaceColdDiffusionGenerator,
             )
         except ImportError:

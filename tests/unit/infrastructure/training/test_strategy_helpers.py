@@ -1,6 +1,6 @@
 """Unit tests for StrategyInitializationHelper.
 
-Targets ``mriforge.infrastructure.training.strategy_helpers.StrategyInitializationHelper``.
+Targets ``spectramr.infrastructure.training.strategy_helpers.StrategyInitializationHelper``.
 
 Properties verified:
 - ``initialize_loss_computer`` raises ``AttributeError`` when strategy has
@@ -66,7 +66,7 @@ class _StrategyBadContext:
 
 
 def test_canary_import_helper() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -79,7 +79,7 @@ def test_canary_import_helper() -> None:
 
 
 def test_initialize_loss_computer_raises_no_env_or_state() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -89,7 +89,7 @@ def test_initialize_loss_computer_raises_no_env_or_state() -> None:
 
 
 def test_initialize_loss_computer_raises_no_loss_function() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -105,7 +105,7 @@ def test_initialize_loss_computer_raises_no_loss_function() -> None:
 
 @pytest.mark.parametrize("strategy_cls", [_StrategyWithEnv, _StrategyWithState])
 def test_initialize_loss_computer_sets_attribute(strategy_cls) -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -121,7 +121,7 @@ def test_initialize_loss_computer_sets_attribute(strategy_cls) -> None:
 
 
 def test_initialize_profiling_service_sets_attribute() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -137,7 +137,7 @@ def test_initialize_profiling_service_sets_attribute() -> None:
 
 
 def test_create_profiling_context_is_context_manager() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -155,7 +155,7 @@ def test_create_profiling_context_is_context_manager() -> None:
 
 
 def test_initialize_data_consistency_false_sets_none() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -166,7 +166,7 @@ def test_initialize_data_consistency_false_sets_none() -> None:
 
 
 def test_initialize_data_consistency_no_model_sets_none() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 
@@ -182,7 +182,7 @@ def test_initialize_data_consistency_no_model_sets_none() -> None:
 
 
 def test_initialize_metrics_adapter_handles_error() -> None:
-    from mriforge.infrastructure.training.strategy_helpers import (
+    from spectramr.infrastructure.training.strategy_helpers import (
         StrategyInitializationHelper,
     )
 

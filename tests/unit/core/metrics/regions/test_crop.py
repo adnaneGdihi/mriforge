@@ -6,8 +6,8 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics.regions.crop import crop_to_region  # noqa: E402
-from mriforge.core.metrics.regions.types import RegionMask, RegionSource  # noqa: E402
+from spectramr.core.metrics.regions.crop import crop_to_region  # noqa: E402
+from spectramr.core.metrics.regions.types import RegionMask, RegionSource  # noqa: E402
 
 
 def _region(mask: torch.Tensor, region_id: str = "path:lesion#0") -> RegionMask:

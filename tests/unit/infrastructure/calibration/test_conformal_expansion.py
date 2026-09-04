@@ -1,6 +1,6 @@
 """Unit tests for :class:`ConformalCalibrator`.
 
-Targets ``mriforge.infrastructure.calibration.conformal``. This file is part
+Targets ``spectramr.infrastructure.calibration.conformal``. This file is part
 of the parallel test-coverage push (Unit 14) and is the first set of
 tests for the previously-untested ``src/infrastructure/calibration/``
 subtree.
@@ -30,7 +30,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.calibration.conformal import (
+from spectramr.infrastructure.calibration.conformal import (
     ConformalCalibrator,
     IConformalCalibrator,
 )

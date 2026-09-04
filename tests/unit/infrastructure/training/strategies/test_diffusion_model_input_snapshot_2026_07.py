@@ -20,7 +20,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.training.strategies.diffusion import (
+from spectramr.infrastructure.training.strategies.diffusion import (
     DiffusionTrainingStrategy,
 )
 

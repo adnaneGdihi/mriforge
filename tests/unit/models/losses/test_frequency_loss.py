@@ -1,6 +1,6 @@
 """Tests for ``FrequencyLoss``.
 
-Targets ``mriforge.models.losses.frequency_loss``. L1 loss between
+Targets ``spectramr.models.losses.frequency_loss``. L1 loss between
 magnitude spectra of magnitude images. Domain-agnostic (works on
 either k-space or image-domain inputs).
 """
@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.losses.frequency_loss import FrequencyLoss
+from spectramr.models.losses.frequency_loss import FrequencyLoss
 
 
 # ---------------------------------------------------------------------------
@@ -87,6 +87,6 @@ def test_frequency_loss_shape_matrix(shape: tuple[int, ...]) -> None:
 
 def test_frequency_loss_registered_under_aliases() -> None:
     """``frequency`` is in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "frequency" in list_available()

@@ -1,7 +1,7 @@
 import pytest
 import torch
 
-from mriforge.models.reconstruction.unet import (
+from spectramr.models.reconstruction.unet import (
     EnhancedUNetGenerator,
     UNetConfig,
     create_enhanced_unet_generator,

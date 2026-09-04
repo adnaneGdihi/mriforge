@@ -57,6 +57,37 @@ UNPARSEABLE_FILENAME = "f821_unparseable.txt"
 _NAME_RE = re.compile(r"`([^`]+)`")
 
 
+#: Dot-directories that hold no first-party source and must not be walked.
+#: ``.git`` is enormous, and the tool caches are generated. Anything else --
+#: ``.claude/`` and ``.agent/`` today -- carries tracked ``.py`` files and is
+#: therefore in scope, so this is an explicit denylist rather than an allowlist:
+#: a NEW dot-directory of ours joins the gate's reach by default instead of
+#: silently sitting outside it.
+_UNSCANNED_DOT_DIRS = frozenset(
+    {".git", ".venv", ".ruff_cache", ".pytest_cache", ".mypy_cache", ".idea", ".vscode", ".tox"}
+)
+
+
+def _scannable(path: Path) -> bool:
+    """Whether a dot-directory holds first-party code worth linting."""
+    return path.name not in _UNSCANNED_DOT_DIRS
+
+
+def ruff_scan_roots(root: Path) -> list[str]:
+    """The paths this gate hands to ruff — the SSOT for its reach.
+
+    Public and used by ``tests/unit/ci/test_check_f821_ratchet.py`` rather than
+    restated there. The test previously spelled ``["."]`` out for itself, so it
+    measured a reach the gate no longer had: two owners for one question
+    (non-negotiable 17), and the coverage assertion could not see a fix to the
+    gate it was auditing.
+    """
+    return [
+        ".",
+        *(p.name for p in sorted(root.glob(".*")) if p.is_dir() and _scannable(p)),
+    ]
+
+
 def _run_ruff(root: Path) -> list[dict]:
     """Ruff's F821 diagnostics as JSON. A missing ruff RAISES rather than passing."""
     if shutil.which("ruff") is None:
@@ -64,8 +95,30 @@ def _run_ruff(root: Path) -> list[dict]:
             "ruff is not on PATH. This gate needs it; skipping would report "
             "'no undefined names' when the truth is 'nothing was checked'."
         )
+    # ``.`` alone is NOT the whole tree. Ruff skips dot-directories while
+    # walking, so every tracked ``.py`` under ``.claude/`` was outside this
+    # gate's reach -- an undefined name there could never turn it red. That is
+    # not hypothetical: the 6 scripts added with the ``academic-prose`` skill
+    # landed straight into the blind spot, and only
+    # ``test_ruff_visits_every_tracked_python_file`` noticed. Naming the
+    # directory explicitly makes ruff descend into it (verified: it reports
+    # findings for ``.claude`` when named, none when only ``.`` is passed).
+    #
+    # A detector is only a detector for what it can SEE (non-negotiable 15), and
+    # the reach was wrong in BOTH directions: too narrow here, and too wide over
+    # ``external/`` (git submodules), which ``[tool.ruff] extend-exclude`` now
+    # removes -- third-party code this repo neither owns nor can fix.
     proc = subprocess.run(
-        ["ruff", "check", "--no-cache", "--select", "F821", "--output-format", "json", "."],
+        [
+            "ruff",
+            "check",
+            "--no-cache",
+            "--select",
+            "F821",
+            "--output-format",
+            "json",
+            *ruff_scan_roots(root),
+        ],
         cwd=root,
         capture_output=True,
         text=True,

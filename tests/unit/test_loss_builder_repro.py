@@ -9,8 +9,8 @@ import torch
 if os.getcwd() not in sys.path:
     sys.path.append(os.getcwd())
 
-from mriforge.config.settings import TrainingSettings
-from mriforge.infrastructure.training.builders.loss_builder import LossBuilder
+from spectramr.config.settings import TrainingSettings
+from spectramr.infrastructure.training.builders.loss_builder import LossBuilder
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

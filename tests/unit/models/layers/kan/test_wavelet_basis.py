@@ -18,7 +18,7 @@ import pytest
 import torch
 import torch.nn.functional as F
 
-from mriforge.models.layers.kan.wavelet_basis import WaveletBasis
+from spectramr.models.layers.kan.wavelet_basis import WaveletBasis
 
 
 def _reference_forward(module: WaveletBasis, x: torch.Tensor) -> torch.Tensor:

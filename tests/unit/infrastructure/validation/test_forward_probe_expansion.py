@@ -1,6 +1,6 @@
 """Unit tests for the Tier-2 synthetic forward probe.
 
-Targets :mod:`mriforge.infrastructure.validation.forward_probe` —
+Targets :mod:`spectramr.infrastructure.validation.forward_probe` —
 :class:`ProbeResult` plus :func:`synthetic_forward_probe`. The probe is
 the only check that catches *runtime* model pathologies (shape, NaN,
 gradient explosion, AMP unscale traps) at config-load time, so its
@@ -28,7 +28,7 @@ import pytest
 from tests.utils.data_config_stub import DataConfigStub
 
 torch = pytest.importorskip("torch")
-forward_probe = pytest.importorskip("mriforge.infrastructure.validation.forward_probe")
+forward_probe = pytest.importorskip("spectramr.infrastructure.validation.forward_probe")
 
 ProbeResult = forward_probe.ProbeResult
 synthetic_forward_probe = forward_probe.synthetic_forward_probe
@@ -337,10 +337,10 @@ def _patch_registry(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch the model registry so the probe resolves our fakes.
 
     The probe imports ``get_model_class`` lazily inside its body
-    (``from mriforge.models.registry import get_model_class``), so we patch
+    (``from spectramr.models.registry import get_model_class``), so we patch
     the function on the registry module directly.
     """
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     fake = {
         "good": _GoodModel,
@@ -681,7 +681,7 @@ class _CaptureInputModel(torch.nn.Module):
 
 @pytest.fixture
 def _patch_registry_capture(monkeypatch: pytest.MonkeyPatch) -> None:
-    from mriforge.models import registry as registry_mod
+    from spectramr.models import registry as registry_mod
 
     def _fake_get_model_class(name: str) -> Any:
         assert name == "capture"
@@ -775,7 +775,7 @@ class TestProbeNoTorchFallback:
         import importlib
 
         # Force the probe to re-import torch under our hook.
-        import mriforge.infrastructure.validation.forward_probe as fp_mod
+        import spectramr.infrastructure.validation.forward_probe as fp_mod
 
         real_import = builtins.__import__
 
@@ -884,11 +884,11 @@ def _patch_registry_caps(monkeypatch: pytest.MonkeyPatch) -> None:
     """Patch BOTH ``get_model_class`` and ``get_model_capabilities`` so the
     probe reads a DECLARED ``ModelCapabilities`` for the contract-aware tests.
 
-    The probe imports both lazily from ``mriforge.models.registry``; patch the
+    The probe imports both lazily from ``spectramr.models.registry``; patch the
     functions on that module so the fakes resolve.
     """
-    from mriforge.models import registry as registry_mod
-    from mriforge.models.capabilities import ModelCapabilities
+    from spectramr.models import registry as registry_mod
+    from spectramr.models.capabilities import ModelCapabilities
 
     fakes: dict[str, tuple[Any, Any]] = {
         "conv3d_declared": (_Conv3DModel, ModelCapabilities(spatial_dims=(3,))),

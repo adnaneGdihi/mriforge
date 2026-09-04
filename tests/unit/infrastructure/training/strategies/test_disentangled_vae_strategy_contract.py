@@ -36,7 +36,7 @@ def _strategy_with_mock_generator(generator: Any) -> Any:
     """Build a real DisentangledVAETrainingStrategy whose ``env.generator``
     is the supplied mock, skipping the heavy DI bootstrap.
     """
-    from mriforge.infrastructure.training.strategies import disentangled_vae_strategy as mod
+    from spectramr.infrastructure.training.strategies import disentangled_vae_strategy as mod
 
     strategy = mod.DisentangledVAETrainingStrategy.__new__(
         mod.DisentangledVAETrainingStrategy
@@ -57,7 +57,7 @@ def test_strategy_rejects_generator_without_encode_content() -> None:
         # patch the physics-vector registry so the function runs far enough
         # to hit the contract check at line 215-224.
         with patch(
-            "mriforge.infrastructure.training.strategies.disentangled_vae_strategy."
+            "spectramr.infrastructure.training.strategies.disentangled_vae_strategy."
             "AcquisitionRegistry.get_physics_vector",
             return_value=torch.zeros(1, 4),
         ):
@@ -73,7 +73,7 @@ def test_strategy_rejects_generator_without_decode() -> None:
     img = torch.randn(2, 1, 16, 16)
     with pytest.raises(TypeError, match=r"requires a generator.*encode_content"):
         with patch(
-            "mriforge.infrastructure.training.strategies.disentangled_vae_strategy."
+            "spectramr.infrastructure.training.strategies.disentangled_vae_strategy."
             "AcquisitionRegistry.get_physics_vector",
             return_value=torch.zeros(1, 4),
         ):

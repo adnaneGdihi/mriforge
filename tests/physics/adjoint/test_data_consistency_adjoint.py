@@ -34,13 +34,13 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.data_consistency import (
+from spectramr.infrastructure.physics.data_consistency import (
     DataConsistencyLayer,
     HardDataConsistency,
     SoftDataConsistency,
     data_consistency,
 )
-from mriforge.infrastructure.physics.fft_ops import fft2c, ifft2c
+from spectramr.infrastructure.physics.fft_ops import fft2c, ifft2c
 from tests.utils.phantoms import random_complex
 from tests.utils.tolerances import tol_for
 

@@ -11,11 +11,11 @@ import pytest
 import torch
 import torch.nn as nn
 
-from mriforge.config.schemas.conditioning import ConditioningConfig
-from mriforge.infrastructure.training.strategies.mixins.conditioning_mixin import (
+from spectramr.config.schemas.conditioning import ConditioningConfig
+from spectramr.infrastructure.training.strategies.mixins.conditioning_mixin import (
     ConditioningMixin,
 )
-from mriforge.models.conditioning import ConditioningContext
+from spectramr.models.conditioning import ConditioningContext
 
 
 class _Host(ConditioningMixin):
@@ -69,7 +69,7 @@ def test_domain_context_none_when_no_axes():
 
 
 def test_base_strategy_inherits_mixin():
-    from mriforge.infrastructure.training.strategies.base import BaseTrainingStrategy
+    from spectramr.infrastructure.training.strategies.base import BaseTrainingStrategy
 
     assert issubclass(BaseTrainingStrategy, ConditioningMixin)
 

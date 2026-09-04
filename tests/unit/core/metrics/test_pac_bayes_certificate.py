@@ -7,7 +7,7 @@ import math
 import pytest
 import torch
 
-from mriforge.core.metrics.quantitative.pac_bayes_certificate import (
+from spectramr.core.metrics.quantitative.pac_bayes_certificate import (
     PACBayesCertificate,
     kl_isotropic_gaussian,
     mcallester_bound,

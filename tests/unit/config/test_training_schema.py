@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mriforge.config.schemas.training import create_training_config
+from spectramr.config.schemas.training import create_training_config
 
 
 class TestCreateTrainingConfig:
@@ -18,35 +18,35 @@ class TestCreateTrainingConfig:
     def test_create_gan_config(self):
         """GAN dispatch; training_mode stripped before validation."""
         config_dict = {"training_mode": "gan", "epochs": 100}
-        with patch("mriforge.config.schemas.training.TrainingConfigGAN") as MockGAN:
+        with patch("spectramr.config.schemas.training.TrainingConfigGAN") as MockGAN:
             create_training_config(config_dict)
             MockGAN.model_validate.assert_called_once_with({"epochs": 100})
 
     def test_create_diffusion_config(self):
         config_dict = {"training_mode": "diffusion"}
         with patch(
-            "mriforge.config.schemas.training.TrainingConfigDiffusion"
+            "spectramr.config.schemas.training.TrainingConfigDiffusion"
         ) as MockDiffusion:
             create_training_config(config_dict)
             MockDiffusion.model_validate.assert_called_once_with({})
 
     def test_create_vae_config(self):
         config_dict = {"training_mode": "vae"}
-        with patch("mriforge.config.schemas.training.TrainingConfigVAE") as MockVAE:
+        with patch("spectramr.config.schemas.training.TrainingConfigVAE") as MockVAE:
             create_training_config(config_dict)
             MockVAE.model_validate.assert_called_once_with({})
 
     def test_create_reconstruction_config(self):
         config_dict = {"training_mode": "reconstruction"}
         with patch(
-            "mriforge.config.schemas.training.TrainingConfigReconstruction"
+            "spectramr.config.schemas.training.TrainingConfigReconstruction"
         ) as MockRecon:
             create_training_config(config_dict)
             MockRecon.model_validate.assert_called_once_with({})
 
     def test_create_ssl_config(self):
         config_dict = {"training_mode": "ssl"}
-        with patch("mriforge.config.schemas.training.TrainingConfigSSL") as MockSSL:
+        with patch("spectramr.config.schemas.training.TrainingConfigSSL") as MockSSL:
             create_training_config(config_dict)
             MockSSL.model_validate.assert_called_once_with({})
 
@@ -54,7 +54,7 @@ class TestCreateTrainingConfig:
         """No training_mode -> reconstruction default; nothing to strip."""
         config_dict = {}
         with patch(
-            "mriforge.config.schemas.training.TrainingConfigReconstruction"
+            "spectramr.config.schemas.training.TrainingConfigReconstruction"
         ) as MockRecon:
             create_training_config(config_dict)
             MockRecon.model_validate.assert_called_once_with({})
@@ -74,7 +74,7 @@ class TestCreateTrainingConfig:
         # ConcretePINNSensitivityStrategy is the real name for the same thing.)
         config_dict = {"training_mode": "pinn"}
         with patch(
-            "mriforge.config.schemas.training.TrainingConfigReconstruction"
+            "spectramr.config.schemas.training.TrainingConfigReconstruction"
         ) as MockRecon:
             with caplog.at_level(logging.WARNING):
                 create_training_config(config_dict)
@@ -85,7 +85,7 @@ class TestCreateTrainingConfig:
         """kspace_cold_diffusion maps to the Diffusion schema."""
         config_dict = {"training_mode": "kspace_cold_diffusion"}
         with patch(
-            "mriforge.config.schemas.training.TrainingConfigDiffusion"
+            "spectramr.config.schemas.training.TrainingConfigDiffusion"
         ) as MockDiffusion:
             create_training_config(config_dict)
             MockDiffusion.model_validate.assert_called_once_with({})
@@ -102,6 +102,6 @@ class TestDeterministicKnobDefault:
     """
 
     def test_deterministic_defaults_true(self):
-        from mriforge.config.schemas.training.base import BaseTrainingConfigSchema
+        from spectramr.config.schemas.training.base import BaseTrainingConfigSchema
 
         assert BaseTrainingConfigSchema.model_fields["deterministic"].default is True

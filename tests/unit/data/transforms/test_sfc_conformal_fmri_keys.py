@@ -1,6 +1,6 @@
 """Tests for the SFC/conformal/fMRI batch-key populators.
 
-Targets ``mriforge.data.transforms.sfc_conformal_fmri_keys``. Focus: the
+Targets ``spectramr.data.transforms.sfc_conformal_fmri_keys``. Focus: the
 sample-invariant caching added by the wasted-compute audit (SFC-1/2/3). The
 identity Jacobian, identity flatten grid, and constant GLM regressor depend only
 on shape/config, so when a ``cache`` dict is supplied the populators must reuse
@@ -13,7 +13,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.data.transforms.sfc_conformal_fmri_keys import (
+from spectramr.data.transforms.sfc_conformal_fmri_keys import (
     attach_conformal_jacobian,
     attach_cortex_flatten_grid,
     attach_glm_design_matrix,
@@ -170,7 +170,7 @@ def test_no_ref_tensor_still_refuses() -> None:
 import subprocess  # noqa: E402
 import sys  # noqa: E402
 
-from mriforge.data.transforms.sfc_conformal_fmri_keys import (  # noqa: E402
+from spectramr.data.transforms.sfc_conformal_fmri_keys import (  # noqa: E402
     _stable_id,
     attach_scanner_id,
     attach_site_id,
@@ -189,7 +189,7 @@ def test_stable_id_survives_pythonhashseed_change() -> None:
     regardless of PYTHONHASHSEED, so forkserver workers (each a fresh
     interpreter with its own salt) agree. ``hash()`` would not."""
     prog = (
-        "from mriforge.data.transforms.sfc_conformal_fmri_keys import _stable_id;"
+        "from spectramr.data.transforms.sfc_conformal_fmri_keys import _stable_id;"
         "print(_stable_id('Siemens'), _stable_id('Philips'))"
     )
     outs = set()

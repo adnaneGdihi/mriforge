@@ -1,4 +1,4 @@
-"""Tests for :mod:`mriforge.models.diffusion.schedulers.cold_mri_kspace_scheduler`.
+"""Tests for :mod:`spectramr.models.diffusion.schedulers.cold_mri_kspace_scheduler`.
 
 ``degrade`` builds ``k_space`` as ``(B, H, W)`` and asks the accelerator for a mask
 with ``k_space.shape[1:]`` — a 2-tuple, so the contractual return is ``(1, H, W)``,
@@ -13,8 +13,8 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.sampling import create_kspace_accelerator
-from mriforge.models.diffusion.schedulers.cold_mri_kspace_scheduler import (
+from spectramr.infrastructure.physics.sampling import create_kspace_accelerator
+from spectramr.models.diffusion.schedulers.cold_mri_kspace_scheduler import (
     ColdMRIKSpaceScheduler,
 )
 

@@ -1,6 +1,6 @@
 """Unit tests for the loss-module cache singleton.
 
-Targets ``mriforge.infrastructure.training.loss_cache.LossModuleCache``.
+Targets ``spectramr.infrastructure.training.loss_cache.LossModuleCache``.
 
 Properties verified:
 - Singleton guarantee: multiple ``LossModuleCache()`` calls return the same
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.unit
 
 def _fresh_cache():
     """Return the singleton but clear it first so tests are isolated."""
-    from mriforge.infrastructure.training.loss_cache import LossModuleCache
+    from spectramr.infrastructure.training.loss_cache import LossModuleCache
 
     cache = LossModuleCache()
     cache.clear()
@@ -37,7 +37,7 @@ def _fresh_cache():
 
 
 def test_canary_singleton() -> None:
-    from mriforge.infrastructure.training.loss_cache import LossModuleCache
+    from spectramr.infrastructure.training.loss_cache import LossModuleCache
 
     a = LossModuleCache()
     b = LossModuleCache()
@@ -141,7 +141,7 @@ def test_edge_empty_string_key() -> None:
 
 
 def test_get_instance_returns_singleton() -> None:
-    from mriforge.infrastructure.training.loss_cache import LossModuleCache
+    from spectramr.infrastructure.training.loss_cache import LossModuleCache
 
     inst = LossModuleCache.get_instance()
     assert inst is LossModuleCache()

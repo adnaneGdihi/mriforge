@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.quantitative.qmri_agreement import qmri_agreement_metrics
+from spectramr.core.metrics.quantitative.qmri_agreement import qmri_agreement_metrics
 
 
 def test_perfect_agreement_icc_one_bias_zero():

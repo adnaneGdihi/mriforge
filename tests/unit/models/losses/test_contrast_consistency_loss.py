@@ -1,6 +1,6 @@
 r"""Tests for ``ContrastConsistencyLoss``.
 
-Targets ``mriforge.models.losses.contrast_consistency_loss``.
+Targets ``spectramr.models.losses.contrast_consistency_loss``.
 
 Plan acceptance criteria (idea 2 §2.8):
 
@@ -22,11 +22,11 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.infrastructure.physics.relaxation_priors import (
+from spectramr.infrastructure.physics.relaxation_priors import (
     TissueClass,
     bottomley_t1,
 )
-from mriforge.models.losses.contrast_consistency_loss import (
+from spectramr.models.losses.contrast_consistency_loss import (
     DEFAULT_TISSUE_ORDER,
     ContrastConsistencyLoss,
 )
@@ -169,6 +169,6 @@ def test_gradient_flows_to_predicted_t1() -> None:
 
 def test_registered() -> None:
     """``contrast_consistency`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "contrast_consistency" in list_available()

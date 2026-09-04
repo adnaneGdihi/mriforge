@@ -14,7 +14,7 @@ import nibabel as nib
 import numpy as np
 import torch
 
-from mriforge.data.builders.dataset_instantiator import DatasetInstantiator
+from spectramr.data.builders.dataset_instantiator import DatasetInstantiator
 from tests.utils.data_config_stub import DataConfigStub
 
 

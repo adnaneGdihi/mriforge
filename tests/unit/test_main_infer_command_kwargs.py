@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import inspect
 
-from mriforge.pipelines.infer import run_inference_pipeline
+from spectramr.pipelines.infer import run_inference_pipeline
 
 
 def test_infer_command_only_uses_supported_kwargs() -> None:
@@ -47,9 +47,9 @@ def test_main_infer_command_does_not_pass_banned_kwargs() -> None:
     from pathlib import Path
 
     # Derive the source path from the imported module — the old hardcoded
-    # ``src/main.py`` went stale in the src→mriforge refactor and the guard
+    # ``src/main.py`` went stale in the src→spectramr refactor and the guard
     # silently failed on FileNotFoundError ever since.
-    import mriforge.main as main_mod
+    import spectramr.main as main_mod
 
     main_src = Path(main_mod.__file__).read_text()
     # Find the body of infer_command — between its `def` and the next
@@ -73,7 +73,7 @@ def test_resolved_determinism_reads_training_knob() -> None:
     """``main._resolved_determinism`` must honour config.training.deterministic."""
     import types
 
-    from mriforge.main import _resolved_determinism
+    from spectramr.main import _resolved_determinism
 
     on = types.SimpleNamespace(training=types.SimpleNamespace(deterministic=True))
     off = types.SimpleNamespace(training=types.SimpleNamespace(deterministic=False))
@@ -110,7 +110,7 @@ def test_infer_command_resolves_seed_and_determinism_from_config(
 
     import yaml
 
-    import mriforge.main as main_mod
+    import spectramr.main as main_mod
 
     with open("experiments/inprogress/dummy/dummy_gan.yaml", encoding="utf-8") as fh:
         raw = yaml.safe_load(fh)
@@ -130,7 +130,7 @@ def test_infer_command_resolves_seed_and_determinism_from_config(
 
     monkeypatch.setattr(main_mod, "initialize_accelerator", fake_init)
     monkeypatch.setattr(
-        "mriforge.pipelines.run_inference_pipeline",
+        "spectramr.pipelines.run_inference_pipeline",
         lambda **kw: {"success": True},
     )
     args = argparse.Namespace(
@@ -162,7 +162,7 @@ def test_main_no_longer_hardcodes_cudnn_override() -> None:
     """
     import inspect
 
-    import mriforge.main as main_mod
+    import spectramr.main as main_mod
 
     src = inspect.getsource(main_mod)
     assert "cudnn.benchmark = False" not in src

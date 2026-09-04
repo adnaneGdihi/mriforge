@@ -1,6 +1,6 @@
 """Unit tests for LossScheduler.
 
-Targets ``mriforge.infrastructure.training.loss_scheduler.LossScheduler``.
+Targets ``spectramr.infrastructure.training.loss_scheduler.LossScheduler``.
 
 Properties verified:
 - Unregistered names return the current value unchanged.
@@ -26,7 +26,7 @@ pytestmark = pytest.mark.unit
 
 
 def test_canary_import_and_construct() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler()
     assert sched is not None
@@ -48,7 +48,7 @@ def test_canary_import_and_construct() -> None:
     ],
 )
 def test_constant_schedule(scale: float, base: float, expected: float) -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler({"lam": {"type": "constant", "scale": scale}})
     assert sched.get_value("lam", base, step=999) == pytest.approx(expected)
@@ -60,7 +60,7 @@ def test_constant_schedule(scale: float, base: float, expected: float) -> None:
 
 
 def test_linear_warmup_at_zero_step_returns_initial() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -76,7 +76,7 @@ def test_linear_warmup_at_zero_step_returns_initial() -> None:
 
 
 def test_linear_warmup_at_full_steps_returns_final() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -92,7 +92,7 @@ def test_linear_warmup_at_full_steps_returns_final() -> None:
 
 
 def test_linear_warmup_midpoint() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -115,7 +115,7 @@ def test_linear_warmup_midpoint() -> None:
 
 
 def test_sigmoid_rampup_between_initial_and_final() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -132,7 +132,7 @@ def test_sigmoid_rampup_between_initial_and_final() -> None:
 
 
 def test_sigmoid_rampup_returns_final_after_ramp() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -153,7 +153,7 @@ def test_sigmoid_rampup_returns_final_after_ramp() -> None:
 
 
 def test_prestep_returns_initial_value() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -177,7 +177,7 @@ def test_prestep_returns_initial_value() -> None:
 
 
 def test_update_weights_processes_all_keys() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler(
         {
@@ -197,7 +197,7 @@ def test_update_weights_processes_all_keys() -> None:
 
 
 def test_edge_unknown_schedule_type_returns_base() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler({"lam": {"type": "totally_unknown"}})
     assert sched.get_value("lam", 7.0, step=100) == pytest.approx(7.0)
@@ -209,7 +209,7 @@ def test_edge_unknown_schedule_type_returns_base() -> None:
 
 
 def test_edge_empty_schedules_passthrough() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     sched = LossScheduler({})
     assert sched.get_value("anything", 3.14, step=9999) == pytest.approx(3.14)
@@ -222,7 +222,7 @@ def test_edge_empty_schedules_passthrough() -> None:
 
 
 def test_compute_schedule_staticmethod_callable_without_instance() -> None:
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     # Callable on the class directly (no instance) — the reuse contract.
     val = LossScheduler.compute_schedule(
@@ -235,7 +235,7 @@ def test_compute_schedule_staticmethod_callable_without_instance() -> None:
 
 def test_compute_schedule_matches_get_value() -> None:
     """The instance path delegates to the staticmethod, so they agree."""
-    from mriforge.infrastructure.training.loss_scheduler import LossScheduler
+    from spectramr.infrastructure.training.loss_scheduler import LossScheduler
 
     cfg = {"type": "sigmoid_rampup", "ramp_steps": 200,
            "initial_value": 0.0, "final_value": 3.0}

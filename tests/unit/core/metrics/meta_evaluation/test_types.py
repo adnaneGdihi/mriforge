@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.meta_evaluation.types import DegradationSample
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.meta_evaluation.types import DegradationSample
 
 
 def _sample(assets=None) -> DegradationSample:

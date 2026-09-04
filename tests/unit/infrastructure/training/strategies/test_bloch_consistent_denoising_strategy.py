@@ -20,10 +20,10 @@ import inspect
 import pytest
 import torch
 
-from mriforge.infrastructure.training.strategies.bloch_consistent_denoising_strategy import (
+from spectramr.infrastructure.training.strategies.bloch_consistent_denoising_strategy import (
     BlochConsistentDenoisingStrategy,
 )
-from mriforge.infrastructure.training.strategies.reconstruction import (
+from spectramr.infrastructure.training.strategies.reconstruction import (
     ReconstructionTrainingStrategy,
 )
 
@@ -46,7 +46,7 @@ class TestBlochImportFailureRaises:
         import builtins
 
         real_import = builtins.__import__
-        target = "mriforge.models.losses.bloch_signal_synthesis_consistency_loss"
+        target = "spectramr.models.losses.bloch_signal_synthesis_consistency_loss"
 
         def _boom(name, *args, **kwargs):
             if name == target:
@@ -68,7 +68,7 @@ class TestBlochImportFailureRaises:
         import builtins
 
         real_import = builtins.__import__
-        target = "mriforge.models.losses.bloch_signal_synthesis_consistency_loss"
+        target = "spectramr.models.losses.bloch_signal_synthesis_consistency_loss"
 
         def _boom(name, *args, **kwargs):
             if name == target:

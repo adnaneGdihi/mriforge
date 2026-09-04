@@ -1,6 +1,6 @@
 import torch
 
-from mriforge.models.geometric.grafmri import GraFMRIGenerator
+from spectramr.models.geometric.grafmri import GraFMRIGenerator
 
 
 def test_grafmri_initialization():

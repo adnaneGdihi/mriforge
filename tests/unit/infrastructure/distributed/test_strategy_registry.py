@@ -21,8 +21,8 @@ import pytest
 torch = pytest.importorskip("torch")
 nn = pytest.importorskip("torch.nn")
 
-from mriforge.config.schemas.base import ParallelismConfigSchema  # noqa: E402
-from mriforge.infrastructure.distributed.strategy_registry import (  # noqa: E402
+from spectramr.config.schemas.base import ParallelismConfigSchema  # noqa: E402
+from spectramr.infrastructure.distributed.strategy_registry import (  # noqa: E402
     ParallelContext,
     ParallelStrategyPlugin,
     list_parallel_strategies,
@@ -70,7 +70,7 @@ class TestDispatch:
         drifting apart is the whole failure this file exists for."""
         from typing import get_args
 
-        from mriforge.config.schemas.base import ParallelStrategy
+        from spectramr.config.schemas.base import ParallelStrategy
 
         assert set(get_args(ParallelStrategy)) == set(list_parallel_strategies())
 
@@ -142,7 +142,7 @@ class TestStepPolicyHandoff:
         is what supplies the right policy."""
         import inspect
 
-        from mriforge.infrastructure.training.optimizers import FSDPStepPolicy
+        from spectramr.infrastructure.training.optimizers import FSDPStepPolicy
 
         source = inspect.getsource(resolve_parallel_strategy("fsdp").adopt)
         assert FSDPStepPolicy.__name__ in source
@@ -198,35 +198,35 @@ class TestCheckpointAdapterSeam:
     """
 
     def test_the_protocol_declares_it(self):
-        from mriforge.infrastructure.distributed.strategy_registry import (
+        from spectramr.infrastructure.distributed.strategy_registry import (
             ParallelStrategyPlugin,
         )
 
         assert hasattr(ParallelStrategyPlugin, "checkpoint_adapter")
 
     def test_it_is_not_a_parallelization_result_field(self):
-        from mriforge.infrastructure.distributed.strategy_registry import (
+        from spectramr.infrastructure.distributed.strategy_registry import (
             ParallelizationResult,
         )
 
         assert "checkpoint_adapter" not in ParallelizationResult.__dataclass_fields__
 
     def test_runtime_defaults_to_no_adapter(self):
-        from mriforge.infrastructure.distributed.strategy_registry import ParallelRuntime
+        from spectramr.infrastructure.distributed.strategy_registry import ParallelRuntime
 
         assert ParallelRuntime.single_process().checkpoint_adapter is None
 
     def test_checkpoints_require_all_ranks_is_false_without_an_adapter(self):
         """The scripting API builds a runtime by hand; it must not accidentally
         opt into collective checkpointing."""
-        from mriforge.infrastructure.distributed.strategy_registry import ParallelRuntime
+        from spectramr.infrastructure.distributed.strategy_registry import ParallelRuntime
 
         assert ParallelRuntime.single_process().checkpoints_require_all_ranks is False
 
     def test_the_director_threads_it_onto_the_runtime(self):
         import inspect
 
-        from mriforge.infrastructure.training.builders import director
+        from spectramr.infrastructure.training.builders import director
 
         assert "checkpoint_adapter=parallel_plugin.checkpoint_adapter(" in (
             inspect.getsource(director)

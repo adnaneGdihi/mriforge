@@ -30,7 +30,7 @@ import torch
 DIFFUSION_SOURCE = (
     pathlib.Path(__file__).resolve().parents[5]
     / "src"
-    / "mriforge"
+    / "spectramr"
     / "infrastructure"
     / "training"
     / "strategies"

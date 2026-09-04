@@ -48,8 +48,8 @@ def gate():
 
 
 def _plant(tmp_path: Path, source: str, name: str = "rogue.py") -> Path:
-    """Write ``source`` into a throwaway ``src/mriforge`` tree and return its root."""
-    pkg = tmp_path / "src" / "mriforge" / "infrastructure"
+    """Write ``source`` into a throwaway ``src/spectramr`` tree and return its root."""
+    pkg = tmp_path / "src" / "spectramr" / "infrastructure"
     pkg.mkdir(parents=True, exist_ok=True)
     (pkg / name).write_text(source, encoding="utf-8")
     return tmp_path
@@ -172,7 +172,7 @@ class TestShapesItMustIgnore:
         that would be wrong in the other direction, and noisily so.
         """
         src = (
-            "from mriforge.config.schemas.loader import YAMLConfigLoader\n"
+            "from spectramr.config.schemas.loader import YAMLConfigLoader\n"
             "def f():\n"
             "    return YAMLConfigLoader(path)\n"
         )
@@ -265,7 +265,7 @@ class TestStaleAllowListEntries:
         _, matched = gate.find_unsanctioned(_REPO_ROOT)
         assert gate.find_stale_entries(matched) == []
         assert (
-            "src/mriforge/data/builders/torchio_queue_builder.py",
+            "src/spectramr/data/builders/torchio_queue_builder.py",
             "TorchIOQueueBuilder.build_train_queue",
         ) in matched
 
@@ -356,7 +356,7 @@ class TestTheAllowListIsClassQualified:
     UNCAUGHT -- a plant no mutation kills is not a demonstration.
     """
 
-    _REL = "src/mriforge/infrastructure/rogue.py"
+    _REL = "src/spectramr/infrastructure/rogue.py"
 
     #: Two classes, same method name, one construction each -- the real shape of
     #: ``data_builders.py`` reduced to its essentials.
@@ -385,7 +385,7 @@ class TestTheAllowListIsClassQualified:
             (
                 _REPO_ROOT
                 / "src"
-                / "mriforge"
+                / "spectramr"
                 / "infrastructure"
                 / "builders"
                 / "leaf"

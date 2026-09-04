@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.infrastructure.inference.base_inference_strategy import (
+from spectramr.infrastructure.inference.base_inference_strategy import (
     BaseInferenceStrategy,
 )
 
@@ -83,7 +83,7 @@ def test_inference_strategy_builds_chain_from_dict_config() -> None:
     object) and the chain is non-empty when declared."""
     model = torch.nn.Linear(4, 4)
     # rss_coils_to_magnitude is a real adapter registered by
-    # mriforge.data.adapters.channels. Smoke-test the chain construction.
+    # spectramr.data.adapters.channels. Smoke-test the chain construction.
     strat = _DummyInferenceStrategy(
         model=model,
         device=torch.device("cpu"),
@@ -140,7 +140,7 @@ def test_inference_apply_adapters_is_consistent_with_training() -> None:
     drift between the two paths."""
     import inspect
 
-    from mriforge.infrastructure.training.strategies.base import (
+    from spectramr.infrastructure.training.strategies.base import (
         BaseTrainingStrategy,
     )
 

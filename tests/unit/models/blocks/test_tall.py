@@ -14,7 +14,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.blocks.tall import TALL, build_motif_permutations, locality_loss
+from spectramr.models.blocks.tall import TALL, build_motif_permutations, locality_loss
 
 
 class TestMotifPermutations:
@@ -122,7 +122,7 @@ class TestLocalityLoss:
         # An identity permutation in raster order has step length 1 mostly,
         # but jumps W at row boundaries → ~W on average.
         # A canonical Hilbert permutation has step length exactly 1.
-        from mriforge.models.blocks.hilbert_order import HilbertOrder
+        from spectramr.models.blocks.hilbert_order import HilbertOrder
         side = 16
         h = HilbertOrder(shape=(side, side), mode="hilbert")
         perm = h.permutation.unsqueeze(0)
@@ -136,7 +136,7 @@ class TestLocalityLoss:
 
 class TestGradientReversal:
     def test_forward_identity_backward_negate(self) -> None:
-        from mriforge.infrastructure.training.strategies.privileged_learning_strategy import (
+        from spectramr.infrastructure.training.strategies.privileged_learning_strategy import (
             gradient_reversal,
         )
         x = torch.tensor([2.0, 3.0], requires_grad=True)
@@ -150,7 +150,7 @@ class TestGradientReversal:
 
 class TestDomainDiscriminator:
     def test_classifies_features(self) -> None:
-        from mriforge.infrastructure.training.strategies.privileged_learning_strategy import (
+        from spectramr.infrastructure.training.strategies.privileged_learning_strategy import (
             DomainDiscriminator,
         )
         d = DomainDiscriminator(feature_dim=16)
@@ -161,7 +161,7 @@ class TestDomainDiscriminator:
 
 class TestStrategyRegistration:
     def test_new_strategies_registered(self) -> None:
-        from mriforge.infrastructure.training.strategy_factory import TrainingStrategyFactory
+        from spectramr.infrastructure.training.strategy_factory import TrainingStrategyFactory
         factory = TrainingStrategyFactory()
         assert "privileged_learning" in factory.STRATEGY_CLASS_PATHS
         assert "privileged" in factory.STRATEGY_CLASS_PATHS
@@ -169,10 +169,10 @@ class TestStrategyRegistration:
         assert "2d_to_3d" in factory.STRATEGY_CLASS_PATHS
 
     def test_strategy_classes_importable(self) -> None:
-        from mriforge.infrastructure.training.strategies.privileged_learning_strategy import (
+        from spectramr.infrastructure.training.strategies.privileged_learning_strategy import (
             PrivilegedLearningStrategy,
         )
-        from mriforge.infrastructure.training.strategies.slice_to_volume_strategy import (
+        from spectramr.infrastructure.training.strategies.slice_to_volume_strategy import (
             SliceToVolumeStrategy,
         )
         assert PrivilegedLearningStrategy is not None

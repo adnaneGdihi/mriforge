@@ -1,6 +1,6 @@
 """Tests for ``CUTPatchNCELoss`` (CUT).
 
-Targets ``mriforge.models.losses.cut_contrastive_loss``. Patch-NCE
+Targets ``spectramr.models.losses.cut_contrastive_loss``. Patch-NCE
 contrastive loss for unpaired translation.
 
 Categories:
@@ -22,7 +22,7 @@ import math
 import pytest
 import torch
 
-from mriforge.models.losses.cut_contrastive_loss import CUTPatchNCELoss
+from spectramr.models.losses.cut_contrastive_loss import CUTPatchNCELoss
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +169,6 @@ def test_gradient_flows_to_feature_maps() -> None:
 
 def test_registered() -> None:
     """``cut_patch_nce`` resolvable in the loss registry."""
-    from mriforge.models.losses.registry import list_available
+    from spectramr.models.losses.registry import list_available
 
     assert "cut_patch_nce" in list_available()

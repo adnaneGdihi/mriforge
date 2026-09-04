@@ -13,7 +13,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.models.generative.mc_cm import ManifoldConstrainedCM  # noqa: E402
+from spectramr.models.generative.mc_cm import ManifoldConstrainedCM  # noqa: E402
 
 
 def test_spectral_weights_are_centered_like_fft2c() -> None:

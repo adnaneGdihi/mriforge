@@ -13,7 +13,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mriforge.core.metrics.meta_evaluation.iqa_recalibration import (
+from spectramr.core.metrics.meta_evaluation.iqa_recalibration import (
     RecalibrationResult,
     accept_recalibration,
     fit_recalibration,

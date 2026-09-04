@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import torch
 
-from mriforge.models.generators.scattering_field_translator import ScatteringFieldTranslator
+from spectramr.models.generators.scattering_field_translator import ScatteringFieldTranslator
 
 
 def _net(**kw) -> ScatteringFieldTranslator:
@@ -53,8 +53,8 @@ def test_rejects_complex_and_multichannel() -> None:
 
 
 def test_registered() -> None:
-    from mriforge.models.init_registry import populate_model_registry
-    from mriforge.models.registry import MODEL_REGISTRY
+    from spectramr.models.init_registry import populate_model_registry
+    from spectramr.models.registry import MODEL_REGISTRY
 
     populate_model_registry()
     assert "scattering_field_translator" in MODEL_REGISTRY

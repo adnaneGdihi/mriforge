@@ -1,11 +1,11 @@
-"""Tests for the MetricContext seam (mriforge.core.metrics.context)."""
+"""Tests for the MetricContext seam (spectramr.core.metrics.context)."""
 
 from __future__ import annotations
 
 import pytest
 import torch
 
-from mriforge.core.metrics.context import MetricContext, resolve_context
+from spectramr.core.metrics.context import MetricContext, resolve_context
 
 
 def test_defaults_all_none() -> None:
@@ -62,3 +62,11 @@ def test_resolve_context_builds_from_kwargs() -> None:
     out = resolve_context(None, {"acceleration": 3.0})
     assert isinstance(out, MetricContext)
     assert out.acceleration == 3.0
+
+
+def test_ensemble_std_field_defaults_none_and_is_carried() -> None:
+    """The per-pixel spread of a reverse-sample ensemble rides the same seam."""
+    assert MetricContext().ensemble_std is None
+    std = torch.rand(1, 1, 4, 4)
+    assert MetricContext(ensemble_std=std).has("ensemble_std")
+    assert MetricContext.from_kwargs({"ensemble_std": std}).ensemble_std is std

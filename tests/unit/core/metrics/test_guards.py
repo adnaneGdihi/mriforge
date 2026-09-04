@@ -14,7 +14,7 @@ import pytest
 
 torch = pytest.importorskip("torch")
 
-from mriforge.core.metrics._guards import ComparabilityVerdict, field_comparability
+from spectramr.core.metrics._guards import ComparabilityVerdict, field_comparability
 
 
 def _t(shape):

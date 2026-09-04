@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import torch
 
-from mriforge.core.metrics.context import MetricContext
-from mriforge.core.metrics.meta_evaluation.gradient import metric_gradient
+from spectramr.core.metrics.context import MetricContext
+from spectramr.core.metrics.meta_evaluation.gradient import metric_gradient
 
 
 def test_metric_gradient_forwards_context_keyword():

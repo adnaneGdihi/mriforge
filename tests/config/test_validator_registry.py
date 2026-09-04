@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from mriforge.config.schemas.validator_registry import (
+from spectramr.config.schemas.validator_registry import (
     ValidationRule,
     ValidatorRegistry,
     _validate_batch_size_positive,

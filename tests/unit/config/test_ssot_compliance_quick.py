@@ -21,9 +21,9 @@ class TestSSOTComplianceQuick:
 
     # Files fixed in Phase 2.3 - NO violations allowed
     FIXED_FILES = [
-        "src/mriforge/infrastructure/training/strategies/disentangled_strategy.py",
-        "src/mriforge/infrastructure/training/strategies/mixins/metrics_mixin.py",
-        "src/mriforge/infrastructure/training/strategies/diffusion.py",
+        "src/spectramr/infrastructure/training/strategies/disentangled_strategy.py",
+        "src/spectramr/infrastructure/training/strategies/mixins/metrics_mixin.py",
+        "src/spectramr/infrastructure/training/strategies/diffusion.py",
     ]
 
     # Pattern: getattr(*.config.FIELD, ...) but NOT getattr(model, ...) or getattr(self, ...)
@@ -86,7 +86,7 @@ class TestSSOTComplianceQuick:
             return text in {"config", "self.config"} or text.startswith(("config.", "self.config."))
 
         violations = []
-        for py_file in Path("src/mriforge/infrastructure/training/strategies/").rglob("*.py"):
+        for py_file in Path("src/spectramr/infrastructure/training/strategies/").rglob("*.py"):
             if "__pycache__" in str(py_file):
                 continue
             try:
@@ -126,7 +126,7 @@ class TestSSOTComplianceQuick:
 
         This is a quick schema completeness check.
         """
-        from mriforge.config.settings import TrainingSettings
+        from spectramr.config.settings import TrainingSettings
 
         # Get all field names from TrainingSettings
         fields = TrainingSettings.model_fields

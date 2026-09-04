@@ -8,7 +8,7 @@ and failed later, at build time, on the cluster.
 
 Measurement behind the polarity flip (the corpus is irrelevant here -- the
 degrade is environment-conditional, not config-conditional): in the environment
-``mriforge audit`` runs in, ``_lazy_load_registries`` loads **332** model names
+``spectramr audit`` runs in, ``_lazy_load_registries`` loads **332** model names
 and **206** strategy keys, and ``_model_registry`` is emptied only by an
 ``ImportError``/``AttributeError`` that is already logged as a warning. So these
 results now fire on a genuine import regression and nothing else -- which
@@ -19,7 +19,7 @@ import types
 
 import pytest
 
-from mriforge.infrastructure.validation.config_health_checker import (
+from spectramr.infrastructure.validation.config_health_checker import (
     ConfigHealthChecker,
 )
 
@@ -76,8 +76,8 @@ def test_populated_registry_still_fails_for_an_unregistered_model():
 
 
 def test_resolve_check_reports_an_unimportable_registry_as_error(monkeypatch):
-    import mriforge.models.init_registry as init_registry
-    import mriforge.models.registry as registry
+    import spectramr.models.init_registry as init_registry
+    import spectramr.models.registry as registry
 
     monkeypatch.setattr(registry, "MODEL_REGISTRY", {})
 
