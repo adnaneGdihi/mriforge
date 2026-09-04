@@ -246,7 +246,9 @@ def open_new_version(parent_id: int, token: str, api: str) -> dict:
         )
         raise
     latest = resp["links"]["latest_draft"]
-    return _request(latest, token)
+    draft = _request(latest, token)
+    print(f"draft deposition {draft['id']} created (new VERSION of record {parent_id})")
+    return draft
 
 
 def find_open_draft(parent: dict, token: str, api: str) -> dict | None:
@@ -277,7 +279,13 @@ def find_open_draft(parent: dict, token: str, api: str) -> dict | None:
             f"({[d.get('id') for d in drafts]}). Refusing to guess which one this "
             "release belongs to -- discard the ones that are not wanted first."
         )
-    return drafts[0] if drafts else None
+    if not drafts:
+        return None
+    # A listing ENTRY is a summary, not the deposition. Zenodo omits `files` there,
+    # so returning it directly reported an empty draft for one that holds the paper
+    # PDF -- and the carry-forward guard then refused a file that was really present
+    # (run 33899890730). Re-read the resource before deciding anything from it.
+    return _request(f"{api}/deposit/depositions/{drafts[0]['id']}", token)
 
 
 def resolve_carry_forward(cli: list[str] | None, env: str | None) -> tuple[str, ...]:
@@ -379,7 +387,8 @@ def deposit(
         print(f"draft deposition {draft['id']} created (NEW record -- new concept DOI)")
     else:
         draft = open_new_version(parent_id, token, api)
-        print(f"draft deposition {draft['id']} created (new VERSION of record {parent_id})")
+        held = [e.get("filename") or e.get("key") for e in draft.get("files", [])]
+        print(f"  draft {draft['id']} holds {held or 'no files'}")
         discard_inherited_files(draft, token, carry_forward)
     dep_id, bucket = draft["id"], draft["links"]["bucket"]
 

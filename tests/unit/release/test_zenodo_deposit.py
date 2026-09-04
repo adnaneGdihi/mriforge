@@ -679,10 +679,16 @@ class _FakeDepositions:
         self.calls.append((method, url))
         if url.endswith("/actions/newversion"):
             return {"links": {"latest_draft": f"{self.API}/1000"}}
-        if "?" in url:  # the listing endpoint
-            return self.drafts
-        if url.rstrip("/").rsplit("/", 1)[1] == str(self.parent["id"]):
+        if "?" in url:  # the listing endpoint: SUMMARIES, no `files`, no bucket
+            return [
+                {k: v for k, v in d.items() if k not in ("files", "links")} for d in self.drafts
+            ]
+        rec_id = url.rstrip("/").rsplit("/", 1)[1]
+        if rec_id == str(self.parent["id"]):
             return self.parent
+        for d in self.drafts:  # the full body, which the listing did not carry
+            if str(d["id"]) == rec_id:
+                return d
         return {"id": 1000, "submitted": False, "files": [], "links": {"bucket": "b"}}
 
     @property
@@ -781,3 +787,30 @@ def test_a_refusal_reports_the_parent_state_it_decided_from(mod, monkeypatch, ca
         mod.open_new_version(22291317, "tok", mod.LIVE_API)
     err = capsys.readouterr().err
     assert "publish" in err and "submitted=True" in err
+
+
+def test_the_full_deposition_is_read_not_the_listing_summary(mod, monkeypatch):
+    """A listing entry omits `files`, so deciding from it reports an empty draft.
+
+    That is what refused to carry forward a PDF the draft really held (run
+    33899890730). `_FakeDepositions` strips `files` and `links` from its listing
+    exactly as Zenodo does, so a regression here cannot pass.
+    """
+    fake = _FakeDepositions(
+        _parent(),
+        [_draft(22308371, files=[{"filename": "spectraMR.pdf", "links": {"self": "s"}}])],
+    )
+    monkeypatch.setattr(mod, "_request", fake)
+    draft = mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    assert [f["filename"] for f in draft["files"]] == ["spectraMR.pdf"]
+    assert draft["links"]["bucket"] == "b", "the summary carries no bucket to upload to"
+
+
+def test_a_resumed_draft_is_not_announced_as_created(mod, monkeypatch, capsys):
+    """Two lines both claiming to describe the same draft, one of them wrong."""
+    fake = _FakeDepositions(_parent(), [_draft(22308371)])
+    monkeypatch.setattr(mod, "_request", fake)
+    mod.open_new_version(22291317, "tok", mod.LIVE_API)
+    out = capsys.readouterr().out
+    assert "RESUMED" in out
+    assert "created" not in out
