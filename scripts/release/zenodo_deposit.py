@@ -63,18 +63,37 @@ SANDBOX_API = "https://sandbox.zenodo.org/api"
 #: absence is checked here, where it can be reported, rather than at publish time.
 REQUIRED_METADATA = ("title", "upload_type", "creators", "description", "license")
 
-#: The README's DOI badge is left unfilled until a record exists, and this module is
-#: the single owner of its shape -- ``tests/unit/release/test_zenodo_deposit.py``
-#: asserts the line in ``README.md`` is exactly ``doi_badge(PLACEHOLDER_DOI)``, so the
-#: URL form cannot drift between the file a reader sees and the line this script
-#: prints.  The shape matters: Zenodo's *other* badge endpoint,
-#: ``/badge/<github repo id>.svg``, is registered only by its GitHub integration,
-#: which cannot see a private repository -- probed 404 for this repo on 2026-09-03.
-#: Depositing over the REST API never registers that mapping, so the repo-id form
-#: would render dead here while looking filled.
+#: This module is the single owner of the DOI badge's *shape*, and
+#: ``tests/unit/release/test_zenodo_deposit.py`` pins ``README.md`` to what
+#: ``doi_badge(CONCEPT_DOI)`` produces, so the URL form cannot drift between the file
+#: a reader sees and the line this script prints.  The shape matters: Zenodo's *other*
+#: badge endpoint, ``/badge/<github repo id>.svg``, is registered only by its GitHub
+#: integration, which cannot see a private repository -- probed 404 for this repo on
+#: 2026-09-03.  Depositing over the REST API never registers that mapping, so the
+#: repo-id form would render dead here while looking filled.
 DOI_BADGE = "[![DOI](https://zenodo.org/badge/DOI/{doi}.svg)](https://doi.org/{doi})"
-PLACEHOLDER_DOI = "10.5281/zenodo.CONCEPT_ID"
+
+#: The published **concept** DOI, and the single owner of that number.  README's badge,
+#: README's BibTeX block and ``CITATION.cff`` all carry it, and the tests pin all three
+#: here rather than to each other, so a future release updates one line.
+#:
+#: Concept, not version, is the whole point: Zenodo mints both, and the deposit page
+#: shows the *version* DOI first.  ``VERSION_DOI`` below is that one, recorded only so
+#: the distinction is stateable and testable -- it must never appear in the badge,
+#: because it is frozen on the v0.1.0 deposit and would stop tracking the project at
+#: the next release.  Verified 2026-09-04: ``https://doi.org/`` + the concept DOI
+#: redirects to record 22291317, the newest version.
+CONCEPT_DOI = "10.5281/zenodo.22291316"
+VERSION_DOI = "10.5281/zenodo.22291317"
+
+#: Neither the status code nor the rendered content of a Zenodo badge can tell a live
+#: DOI from a typo: ``/badge/DOI/<doi>.svg`` emits no ``<title>`` (that is a shields.io
+#: convention) and does not validate its argument -- measured 2026-09-04, a real DOI, a
+#: nonexistent zenodo id and the literal ``not-a-doi-at-all`` all returned HTTP 200 with
+#: a well-formed SVG echoing back the string.  Only resolving the DOI discriminates.
+DOI_RESOLVER = "https://doi.org/{doi}"
 README = REPO_ROOT / "README.md"
+CITATION = REPO_ROOT / "CITATION.cff"
 
 
 def doi_badge(doi: str) -> str:
@@ -104,8 +123,19 @@ def report_badge(record: dict) -> str:
             file=sys.stderr,
         )
     line = doi_badge(doi)
+    if doi != CONCEPT_DOI:
+        print(
+            f"  NOTE: this record's badge DOI ({doi}) is not the one recorded in"
+            f" CONCEPT_DOI ({CONCEPT_DOI}).  A NEW concept DOI means a new Zenodo"
+            " record rather than a new version of the existing one -- check that"
+            " before updating the constant, since the published badge would then"
+            " stop pointing at the project's own archive.",
+            file=sys.stderr,
+        )
+    print(f"\n  README badge line for this record:\n    {line}")
     print(
-        f"\n  README badge -- replace the '{PLACEHOLDER_DOI}' line in README.md with:\n    {line}"
+        "  README.md, its BibTeX block and CITATION.cff are pinned to"
+        " zenodo_deposit.CONCEPT_DOI; update that constant and the three follow."
     )
     return line
 

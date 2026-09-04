@@ -4,6 +4,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22291316.svg)](https://doi.org/10.5281/zenodo.22291316)
 
 <!-- The licence badge is the STATIC form, deliberately. The dynamic endpoint
      `img.shields.io/github/license/<owner>/<repo>.svg` reads the GitHub API as an
@@ -36,22 +37,43 @@
      one number that fills it -- because for both of them, the obvious way to
      check a badge does not work. Measured 2026-09-03, not assumed:
 
-       * DOI. Zenodo publishes TWO badge endpoints and only one of them applies
-         here. The repo-id form -- `/badge/<github repo id>.svg` linking to
-         `/badge/latestdoi/<id>` -- belongs to Zenodo's GitHub INTEGRATION, and
-         that integration only sees public repositories and only fires on a
-         published GitHub release. `scripts/release/zenodo_deposit.py` deposits
-         over the REST API instead, deliberately, because that works while this
-         repository is PRIVATE -- so it mints a concept DOI and never registers
-         the repo-id mapping. Probed against this repo's real numeric id
-         (1347566284 -- a numeric id survives a repository rename, which is why
-         the badge is keyed on it and not on the name):
-         `/badge/1347566284.svg` -> 404 and `/badge/latestdoi/1347566284` -> 404,
-         while `/badge/DOI/10.5281/zenodo.3509134.svg` (a real concept DOI) ->
-         200. Hence the DOI form below. Do NOT "restore" the repo-id form; it is
-         the shape that looks filled and is dead. `zenodo_deposit.py --publish`
-         prints the finished badge line from the deposition response, so the
-         number comes from the producer rather than from retyping.
+       * DOI -- FILLED 2026-09-04, and promoted out of this block to the live badge
+       row at the top. It carries the CONCEPT DOI (10.5281/zenodo.22291316),
+       NOT the per-deposit version DOI that Zenodo's page shows you first -- whose
+       number is deliberately not written out here, because the test that keeps this
+       badge honest greps the whole file for it and a worked example in a comment
+       would be indistinguishable from the mistake. It is recorded once, in
+       `zenodo_deposit.VERSION_DOI`. Zenodo mints both: the concept DOI is the parent that
+       always redirects to the newest version (verified -- it resolves to record
+       22291317 today), while the version DOI is frozen on one deposit and would
+       silently stop tracking the project at v0.2.0. `zenodo_deposit.report_badge`
+       prefers `conceptdoi` for exactly this reason and owns the line's shape;
+       `scripts/release/zenodo_deposit.py:CONCEPT_DOI` owns the number, and
+       `tests/unit/release/test_zenodo_deposit.py` pins README, the BibTeX block
+       below and `CITATION.cff` to it so the four cannot drift apart.
+
+       Kept for the record, because it is the trap that made the form non-obvious:
+       Zenodo publishes TWO badge endpoints and only one applies here. The repo-id
+       form -- `/badge/<github repo id>.svg` linking to `/badge/latestdoi/<id>` --
+       belongs to Zenodo's GitHub INTEGRATION, which only sees public repositories
+       and only fires on a published GitHub release. `zenodo_deposit.py` deposits
+       over the REST API instead, deliberately, because that works while the
+       repository is private -- so it never registers the repo-id mapping. Probed
+       against this repo's real numeric id (1347566284 -- a numeric id survives a
+       rename, which is why the badge is keyed on it and not on the name):
+       `/badge/1347566284.svg` -> 404 and `/badge/latestdoi/1347566284` -> 404. Do
+       NOT "restore" the repo-id form; it is the shape that looks filled and is dead.
+
+       And a correction to the advice in the conda bullet below, which does NOT
+       generalise to this endpoint: `/badge/DOI/<doi>.svg` emits no `<title>` at
+       all, so grepping for one reports every Zenodo badge as broken. Worse, the
+       endpoint does not validate its argument -- it renders whatever string you
+       hand it. Measured 2026-09-04: a real DOI, a nonexistent zenodo id and the
+       literal `not-a-doi-at-all` all returned HTTP 200 with a well-formed SVG
+       (1217 / 1223 / 1200 bytes) reading back the string it was given. Neither the
+       status code NOR the rendered content can tell a live DOI from a typo. The
+       only probe that discriminates is resolving the DOI itself:
+       `curl -sI https://doi.org/<doi>` -> 302 for a real one, 404 for a fake.
        * Conda. Keyed on the channel `adnanegdihi`, which is the GitHub handle
          lower-cased and NOT a verified anaconda.org account -- if the account is
          named differently, `ANACONDA_CHANNEL` (the repository variable the
@@ -70,7 +92,6 @@
 [![codecov](https://codecov.io/gh/adnaneGdihi/spectramr/branch/main/graph/badge.svg)](https://codecov.io/gh/adnaneGdihi/spectramr)
 [![Documentation Status](https://readthedocs.org/projects/spectramr/badge/?version=latest)](https://spectramr.readthedocs.io)
 [![Downloads](https://static.pepy.tech/badge/spectramr/month)](https://pepy.tech/project/spectramr)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.CONCEPT_ID.svg)](https://doi.org/10.5281/zenodo.CONCEPT_ID)
 [![Conda](https://img.shields.io/conda/vn/adnanegdihi/spectramr.svg)](https://anaconda.org/adnanegdihi/spectramr)
 -->
 
@@ -296,8 +317,7 @@ If you use spectraMR in your research, please cite the software:
   title     = {spectraMR: A Multi-Paradigm Research Framework for MRI Reconstruction, Super-Resolution, and Generative Modelling},
   year      = {2026},
   publisher = {Zenodo},
-  note      = {Zenodo mints the DOI at the first tagged release; add a
-               `doi = {...}` line here then.},
+  doi       = {10.5281/zenodo.22291316},
   url       = {https://github.com/adnaneGdihi/spectramr},
   version   = {0.1.0}
 }

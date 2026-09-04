@@ -108,7 +108,7 @@ def test_the_shipped_file_does_not_declare_a_version(raw):
 
 
 def test_the_readme_carries_exactly_the_generated_badge_line(mod):
-    expected = mod.doi_badge(mod.PLACEHOLDER_DOI)
+    expected = mod.doi_badge(mod.CONCEPT_DOI)
     assert expected in README_FILE.read_text(), (
         f"README.md does not contain the line zenodo_deposit.py prints:\n  {expected}"
     )
@@ -116,8 +116,93 @@ def test_the_readme_carries_exactly_the_generated_badge_line(mod):
 
 def test_a_drifted_badge_shape_is_detected(mod):
     """Planted violation: the two owners disagreeing is exactly what must fail."""
-    drifted = mod.doi_badge(mod.PLACEHOLDER_DOI).replace("zenodo.org", "example.org")
+    drifted = mod.doi_badge(mod.CONCEPT_DOI).replace("zenodo.org", "example.org")
     assert drifted not in README_FILE.read_text()
+
+
+# --------------------------------------------------------------------------- 4
+#
+# The badge's SHAPE has one owner (section 2).  Its NUMBER is a second, separate
+# ownership question, and the one with a live failure mode: Zenodo mints a concept DOI
+# and a version DOI per deposit, shows the version DOI first, and a README pinned to it
+# keeps pointing at v0.1.0 after v0.2.0 ships.  Nothing external catches that --
+# ``/badge/DOI/<doi>.svg`` renders whatever string it is given (measured 2026-09-04: a
+# real DOI, a nonexistent id and the literal ``not-a-doi-at-all`` all returned HTTP 200
+# with a well-formed SVG), so the wrong number produces a badge that looks perfect.
+#
+# Four files carry the number -- the README badge, the README BibTeX block,
+# ``CITATION.cff``'s ``doi:``, and its ``identifiers:`` list.  Each is pinned to
+# ``zenodo_deposit.CONCEPT_DOI`` rather than to its neighbours, so there is one owner
+# and a release updates one line.
+
+
+def _doi_offenders(readme: str, citation: dict, mod: ModuleType) -> list[str]:
+    """Every way the four declarations can disagree with the elected owner.
+
+    A list rather than an assertion so the same predicate can be run against planted
+    text below -- a checker that has only ever been called on a passing tree is not
+    known to be able to fail (non-negotiable 15).
+    """
+    concept, version = mod.CONCEPT_DOI, mod.VERSION_DOI
+    bad: list[str] = []
+    if mod.doi_badge(concept) not in readme:
+        bad.append("README badge does not carry the concept DOI")
+    if version in readme:
+        bad.append(f"README carries the version DOI {version}, which stops at v0.1.0")
+    if f"doi       = {{{concept}}}" not in readme:
+        bad.append("README BibTeX does not cite the concept DOI")
+    if citation.get("doi") != concept:
+        bad.append(f"CITATION.cff doi is {citation.get('doi')!r}, not the concept DOI")
+    idents = {i.get("value") for i in citation.get("identifiers", [])}
+    if version not in idents:
+        bad.append("CITATION.cff does not record the version DOI as an identifier")
+    return bad
+
+
+def test_the_four_doi_declarations_agree_with_the_elected_owner(mod):
+    citation = yaml.safe_load(CITATION_FILE.read_text())
+    assert _doi_offenders(README_FILE.read_text(), citation, mod) == []
+
+
+def test_the_concept_and_version_dois_are_distinct(mod):
+    """Otherwise every check above is vacuous -- both halves would be satisfied at once."""
+    assert mod.CONCEPT_DOI != mod.VERSION_DOI
+
+
+@pytest.mark.parametrize(
+    ("mutate_readme", "mutate_citation", "expect"),
+    [
+        (lambda r, m: r.replace(m.CONCEPT_DOI, m.VERSION_DOI), None, "version DOI"),
+        (lambda r, m: r.replace(m.doi_badge(m.CONCEPT_DOI), ""), None, "README badge"),
+        (lambda r, m: r.replace(f"doi       = {{{m.CONCEPT_DOI}}}", ""), None, "BibTeX"),
+        (None, lambda c, m: {**c, "doi": m.VERSION_DOI}, "CITATION.cff doi"),
+        (None, lambda c, m: {**c, "identifiers": []}, "identifier"),
+    ],
+)
+def test_each_disagreement_is_detected(mod, mutate_readme, mutate_citation, expect):
+    """Planted violations: one per way the four can drift, each turning the check red."""
+    readme = README_FILE.read_text()
+    citation = yaml.safe_load(CITATION_FILE.read_text())
+    if mutate_readme is not None:
+        readme = mutate_readme(readme, mod)
+    if mutate_citation is not None:
+        citation = mutate_citation(citation, mod)
+    offenders = _doi_offenders(readme, citation, mod)
+    assert any(expect in o for o in offenders), (
+        f"planted violation went undetected; offenders were {offenders}"
+    )
+
+
+def test_report_badge_flags_a_record_whose_concept_doi_is_not_the_recorded_one(mod, capsys):
+    """A NEW concept DOI means a new record, not a new version -- it must not pass quietly."""
+    mod.report_badge({"doi": "10.5281/zenodo.1", "conceptdoi": "10.5281/zenodo.2"})
+    assert "not the one recorded in CONCEPT_DOI" in capsys.readouterr().err
+
+
+def test_report_badge_is_quiet_for_the_recorded_concept_doi(mod, capsys):
+    """The silence half: a guard that fires on everything is not a guard."""
+    mod.report_badge({"doi": mod.VERSION_DOI, "conceptdoi": mod.CONCEPT_DOI})
+    assert "not the one recorded in CONCEPT_DOI" not in capsys.readouterr().err
 
 
 def test_the_concept_doi_wins_over_the_version_doi(mod):

@@ -12,7 +12,18 @@ authors:
 # while no tag, GitHub release or PyPI distribution existed, and a citation is the
 # one file whose whole job is to be verifiable.
 version: 0.1.0
+date-released: "2026-09-04"
 license: Apache-2.0
+# `doi` is the CONCEPT DOI -- the parent record that always redirects to the newest
+# version. The v0.1.0 deposit's own (version) DOI is listed under `identifiers`. Getting
+# these the wrong way round is the failure this ordering exists to prevent: a citation
+# pinned to the version DOI keeps sending readers to v0.1.0 forever. The number has one
+# owner, `scripts/release/zenodo_deposit.CONCEPT_DOI`, and a test pins this file to it.
+doi: "10.5281/zenodo.22291316"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22291317"
+    description: "Archived snapshot of the v0.1.0 release."
 repository-code: "https://github.com/adnaneGdihi/spectramr"
 url: "https://github.com/adnaneGdihi/spectramr"
 keywords:

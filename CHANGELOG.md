@@ -62,7 +62,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Issue templates (bug / feature / paradigm-proposal) and PR template with DCO
   sign-off checklist.
 
-<!-- Restore these once v0.1.0 is tagged; both 404 until then.
+<!-- Restored ahead of the tag, deliberately: both links 404 until `v0.1.0` is
+     pushed to the PUBLIC repo, and the alternative was a second export-and-publish
+     cycle for two lines. If the tag slips past 2026-09-04, the `[0.1.0]` heading date
+     above and `date-released` in CITATION.cff both have to move with it -- they are
+     three separate declarations of the same day and nothing reconciles them. -->
 [Unreleased]: https://github.com/adnaneGdihi/spectramr/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/adnaneGdihi/spectramr/releases/tag/v0.1.0
--->
