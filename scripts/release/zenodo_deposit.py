@@ -199,7 +199,16 @@ def _request(
         else (json.dumps(payload).encode() if payload is not None else None)
     )
     headers = {"Authorization": f"Bearer {token}"}
-    if data is None and payload is not None:
+    if data is not None:
+        # Not optional, and NOT the same as sending nothing: urllib defaults an
+        # unspecified Content-Type to application/x-www-form-urlencoded whenever a
+        # body is present, and Zenodo's bucket API answers that with a 415. The
+        # earlier spelling omitted the header for binary bodies believing that meant
+        # "no type" -- so every artefact upload this script has ever attempted failed
+        # on its first PUT, invisibly, because v0.1.0's only file was deposited by
+        # hand through the web UI and no release exercised this line.
+        headers["Content-Type"] = "application/octet-stream"
+    elif payload is not None:
         headers["Content-Type"] = "application/json"
     req = urllib.request.Request(url, data=body, headers=headers, method=method)
     try:

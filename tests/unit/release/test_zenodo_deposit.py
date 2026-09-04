@@ -562,3 +562,85 @@ def test_the_filename_input_reaches_the_script_through_the_environment(mod):
     assert "inputs.carry_forward }}" not in text.split("run: |")[1], (
         "the input must not be interpolated into the run block"
     )
+
+
+# ---------------------------------------------------------------------------
+# 6. The header on the wire
+#
+# Everything above monkeypatches `_request`, so nothing above can see what
+# `_request` itself puts on the wire -- and that is precisely where the deposit
+# failed the first time it ran for real (run 33898113922, 2026-09-04): every
+# artefact upload 415'd. The cause was not a missing header but a defaulted one:
+# urllib fills an unspecified Content-Type with application/x-www-form-urlencoded
+# whenever a body is present, so "set no header" and "send no type" are different
+# things. These tests drive the real `_request` and read the Request it builds.
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def sent(mod, monkeypatch):
+    """Capture the urllib Request `_request` builds, without any network."""
+    captured: list = []
+
+    class _Resp:
+        def read(self):
+            return b"{}"
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    def fake_urlopen(req):
+        captured.append(req)
+        return _Resp()
+
+    monkeypatch.setattr(mod.urllib.request, "urlopen", fake_urlopen)
+    return captured
+
+
+def _as_sent(mod, req):
+    """Apply what ``urlopen`` applies on the way out, and return the request.
+
+    ``AbstractHTTPHandler.do_request_`` is where urllib fills in a Content-Type,
+    and it reads ``self.parent.addheaders``, so the handler needs an opener.
+    """
+    handler = mod.urllib.request.AbstractHTTPHandler()
+    handler.parent = mod.urllib.request.build_opener()
+    handler.do_request_(req)
+    return req
+
+
+def test_a_binary_upload_is_declared_octet_stream(mod, sent):
+    mod._request("https://zenodo.org/api/files/b/x.whl", "tok", "PUT", data=b"\x00wheel")
+    assert sent[0].get_header("Content-type") == "application/octet-stream"
+
+
+def test_a_binary_upload_never_goes_out_as_form_urlencoded(mod, sent):
+    """The exact 415 Zenodo returned -- and it needs the real handler to be visible.
+
+    urllib injects the default in ``AbstractHTTPHandler.do_request_``, at *send*
+    time, not when the Request is constructed. Reading headers off the captured
+    Request alone therefore cannot tell a deliberate absence from the default that
+    replaces it, and this test passed against the unfixed code until a planted
+    violation showed only its sibling going red. Run the handler the opener would.
+    """
+    mod._request("https://zenodo.org/api/files/b/x.whl", "tok", "PUT", data=b"\x00wheel")
+    assert _as_sent(mod, sent[0]).get_header("Content-type") == "application/octet-stream"
+
+
+def test_urllib_really_does_default_the_type_when_a_body_is_present(mod):
+    """Pins the upstream behaviour the fix exists for, so it cannot silently change."""
+    req = mod.urllib.request.Request("https://example.invalid/x", data=b"\x00", method="PUT")
+    assert _as_sent(mod, req).get_header("Content-type") == "application/x-www-form-urlencoded"
+
+
+def test_a_json_payload_is_still_declared_json(mod, sent):
+    mod._request("https://zenodo.org/api/deposit/depositions/1", "tok", "PUT", payload={"a": 1})
+    assert sent[0].get_header("Content-type") == "application/json"
+
+
+def test_a_bodyless_request_declares_no_content_type(mod, sent):
+    mod._request("https://zenodo.org/api/deposit/depositions/1", "tok")
+    assert sent[0].get_header("Content-type") is None
