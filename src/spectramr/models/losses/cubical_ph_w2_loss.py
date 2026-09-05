@@ -47,6 +47,7 @@ are linear-in-pred and therefore autograd-traceable.
 
 from __future__ import annotations
 
+import platform
 from typing import Any
 
 import torch
@@ -65,12 +66,28 @@ except ImportError:  # pragma: no cover - environment dependent
     _ot = None
 
 
-_INSTALL_HINT = (
-    "CubicalPHWassersteinLoss requires the [topology] extra. Install with:\n"
-    '    pip install -e ".[topology]"\n'
-    "or:\n"
-    "    make install-topology"
-)
+def _install_hint() -> str:
+    """Name the package(s) actually missing, and say when the extra cannot supply them.
+
+    Reporting the union ("requires [topology]") infers absence rather than
+    stating it (NN18): the two imports are guarded separately, so exactly which
+    one is gone is known and must be said. On Linux aarch64 it is further known
+    that the extra *cannot* help -- gudhi publishes no aarch64 wheel and no
+    sdist -- so pointing there would send the user round a loop that always ends
+    back here.
+    """
+    missing = [n for n, m in (("gudhi", _gudhi), ("POT (ot)", _ot)) if m is None]
+    hint = f"CubicalPHWassersteinLoss requires {' and '.join(missing)} (the [topology] extra)."
+    if _gudhi is None and (platform.system(), platform.machine()) == ("Linux", "aarch64"):
+        return (
+            f"{hint}\n"
+            "gudhi ships no aarch64 wheel and no sdist, so [topology] cannot install it "
+            "on this machine -- the cubical_ph_w2 loss is unavailable on linux/aarch64. "
+            "Run these arms on x86_64."
+        )
+    return (
+        f'{hint}\nInstall with:\n    pip install -e ".[topology]"\nor:\n    make install-topology'
+    )
 
 
 @register_loss(
@@ -102,7 +119,7 @@ class CubicalPHWassersteinLoss(nn.Module):
     ) -> None:
         super().__init__()
         if _gudhi is None or _ot is None:
-            raise ImportError(_INSTALL_HINT)
+            raise ImportError(_install_hint())
         if wasserstein_p < 1:
             raise ValueError(f"wasserstein_p must be >= 1, got {wasserstein_p}")
         if stratify_subvolumes < 1:
@@ -207,7 +224,7 @@ class CubicalPHWassersteinLoss(nn.Module):
         # Wasserstein matching between diagrams. Use POT's optimal
         # transport on the diagram point cloud against itself + a
         # diagonal projection (standard PH-W2 trick).
-        cost, transport = _wasserstein_matching(a, b, p=self.wasserstein_p, ot_module=_ot)
+        _cost, transport = _wasserstein_matching(a, b, p=self.wasserstein_p, ot_module=_ot)
 
         # Re-form the loss as a sum of per-pair tensor terms so that
         # autograd routes back through pred_slice via the birth AND

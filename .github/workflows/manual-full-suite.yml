@@ -1,0 +1,222 @@
+name: Maintainer (full tree)
+
+# The MAINTAINER lane for the PUBLIC distribution: whole-tree work that cannot
+# fit a per-PR budget, on a schedule so it fails on its own rather than waiting
+# for someone to press a button.
+#
+# THIS FILE IS AN OVERLAY, and it keeps the private file's NAME on purpose.
+# read_overlay is replace-only: it rewrites the content of a path the allowlist
+# already ships, and reports an overlay on any other path as a DEAD OVERLAY
+# (exit 2). So this cannot be published under a new name like
+# `maintainer-full.yml` without a private file of that name for it to replace.
+# The display `name:` above is what a reader sees in the Actions tab; the
+# filename is an export mechanism, not a label.
+#
+# Two lanes, one rule between them: NOTHING here is a required status check.
+# Branch protection requires exactly one context, `required`, emitted by
+# pr-required.yml. A whole-tree lane that blocked merges would block them for
+# debt the contributor did not create.
+#
+# The private copy of this file is dispatch-only and drives the experiment
+# corpus plus two scripts that are not distributed
+# (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh). Its
+# `performance` job is therefore ABSENT here rather than carried and skipped: a
+# gate that cannot see its inputs exits 0 all-clean, which reads exactly like a
+# pass (non-negotiable 16).
+#
+# `unwired-gates` was planned for this lane and is deliberately NOT here. The
+# premise was 14 unwired scripts/ci/ gates; measured against this allowlist,
+# only 11 of 25 gate-shaped scripts ship at all and 9 of those 11 are already
+# invoked by a lane. The two that remain are check_no_legacy_config_keys.py
+# (corpus-keyed -- the corpus does not ship) and
+# refresh_dataloader_binding_names.py (a regenerator, not a gate, and issue
+# #1809 is open on its discovery mechanism). A job wrapping those two would be
+# the advertised-but-inert shape this file's header warns about.
+
+on:
+  schedule:
+    # Weekly, Monday 06:17 UTC. Offset from the hour deliberately -- GitHub's
+    # scheduler queues hardest on the hour and silently drops runs under load.
+    #
+    # A cron is read from the DEFAULT BRANCH. On this repository `main` is both
+    # the default branch and what the export writes, so this fires. In the
+    # private tree it would not, which is exactly why the private copy is
+    # dispatch-only: `nightly.yml` there carried a cron for its entire life and
+    # never fired once, because it was never published to a default branch.
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "Run a single job, or all of them"
+        type: choice
+        default: all
+        options: [all, full-suite, docs-strict, supply-chain, link-check]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: maintainer-full-${{ github.ref }}
+  cancel-in-progress: false     # a scheduled run must not cancel a dispatched one
+
+env:
+  SPECTRAMR_SUPPRESS_CLINICAL_WARNING: "1"
+
+jobs:
+  full-suite:
+    name: full suite (executed, not collected)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'full-suite'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      # The PR lane only --collect-only's tests/unit, tests/audit and
+      # tests/contracts: importing them catches a broken import, but proves
+      # nothing about whether any of them PASS. This is where they run.
+      #
+      # EXPECTED RED until Phase 3's failure-set ratchet lands. The suite is
+      # standing-red in both trees, so today this lane's value is the
+      # deduplicated tracking issue below -- a durable list of what is broken --
+      # not a pass/fail verdict. Do not "fix" that by deleting the job or by
+      # adding continue-on-error: the ratchet is what turns this into a gate,
+      # and it needs the failure SET this run produces.
+      - run: make test-nightly
+
+  docs-strict:
+    name: docs (sphinx -W)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'docs-strict'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      # The PR lane's advisory `docs` job omits -W deliberately. Nothing in
+      # either tree has ever validated RST: lint is ruff-only and every sphinx
+      # invocation runs without -W, so a malformed directive renders as a
+      # warning nobody reads.
+      #
+      # Its own step timeout, well under the job's: a sphinx build here has been
+      # observed to HANG rather than fail, and a hang burns the whole job budget
+      # for no output. Red on arrival is acceptable in this lane; a stall is not.
+      - name: Build the docs as errors
+        timeout-minutes: 15
+        run: sphinx-build -W -b html docs/ docs/_build/html
+
+  supply-chain:
+    name: supply chain (pip-audit + zizmor)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'supply-chain'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      - name: Install pip-audit
+        # Upgrade setuptools LAST -- an earlier upgrade is rolled back when
+        # torch installs. Same reasoning as pr-required.yml's `security` job.
+        run: |
+          pip install pip-audit
+          pip install --upgrade 'setuptools>=83.0.0'
+      - run: pip-audit --skip-editable --progress-spinner off
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39  # v3.2.4
+      # Scan root is `.github/`, NOT `.github/workflows/`. The composite action
+      # at .github/actions/setup-env/action.yml is referenced by nine jobs
+      # across both lanes and sits outside the narrower root, so the one tool
+      # that would flag its unpinned `actions/setup-python@v5` has never seen
+      # it. --persona=pedantic because a finding here costs attention, not a
+      # blocked merge.
+      #
+      # osv-scanner and OpenSSF Scorecard were planned for this job and are
+      # deferred to Phase 2: both add third-party actions immediately before the
+      # pass that SHA-pins and audits every `uses:` ref, and Scorecard needs
+      # `id-token: write` plus `security-events: write` -- two elevated
+      # permissions and an outward-facing publish, which is a separate decision.
+      - run: uvx zizmor --persona=pedantic --format=plain .github/
+
+  link-check:
+    name: docs links + paths
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: github.event_name == 'schedule' || inputs.only == 'all' || inputs.only == 'link-check'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
+      - uses: ./.github/actions/setup-env
+        with:
+          extras: dev
+      # Whole-tree, unlike the PR lane's `--commands-only`. A published page
+      # naming a path that does not ship sends a reader looking for a file they
+      # cannot have -- a public-tree defect the private tree cannot see.
+      - run: python scripts/ci/check_docs_paths_exist.py
+      - name: Sphinx linkcheck
+        timeout-minutes: 15
+        run: sphinx-build -b linkcheck docs/ docs/_build/linkcheck
+
+  report:
+    name: report failures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [full-suite, docs-strict, supply-chain, link-check]
+    # Scheduled runs only. A dispatched run has a human watching the tab, and
+    # filing an issue at them is noise.
+    if: always() && github.event_name == 'schedule'
+    permissions:
+      contents: read
+      issues: write     # the ONLY elevated permission in this lane, and it is
+                        # scoped to this job rather than to the workflow.
+    steps:
+      - name: Open or update the tracking issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RESULTS: ${{ toJSON(needs) }}
+          # Both namespaces, at creation (non-negotiable 13). An unlabelled
+          # issue reads as untriaged rather than unaffected. `cohort:framework`
+          # is the correct answer here, not a fallback: a CI lane failure
+          # belongs to no single experiment cohort, and
+          # scripts/resolve_issue_cohorts.py reports none for this text.
+          LABELS: "nature:test,nature:infra,cohort:framework"
+        run: |
+          set -euo pipefail
+          failed=$(printf '%s' "${RESULTS}" | python -c \
+            'import json,sys; d=json.load(sys.stdin); print(" ".join(sorted(k for k,v in d.items() if v["result"] != "success")))')
+          if [ -z "${failed}" ]; then
+            echo "every maintainer job succeeded; nothing to report"
+            exit 0
+          fi
+          echo "failed jobs: ${failed}"
+
+          # Idempotent, and required rather than tidy: `gh issue create --label`
+          # ERRORS on a label the repo does not have, so on a fresh public repo
+          # -- where the taxonomy was never backfilled -- the report step would
+          # fail for a reason unrelated to what it is reporting.
+          for label in ${LABELS//,/ }; do
+            gh label create "${label}" --repo "${REPO}" --force \
+              --description "auto-created by the maintainer lane" >/dev/null
+          done
+
+          title="Maintainer lane: scheduled run has failing jobs"
+          body="Scheduled maintainer run failed: ${failed}
+
+          Run: ${RUN_URL}
+
+          This lane is **not** a required check -- nothing is blocked by it.
+          Until the Phase 3 failure-set ratchet lands, \`full-suite\` is expected
+          red and this thread is the list of what is broken."
+
+          # Deduplicated on purpose. A fresh issue every Monday turns a
+          # standing-red suite into 52 issues a year and trains the reader to
+          # filter the label out.
+          existing=$(gh issue list --repo "${REPO}" --state open \
+            --search "\"${title}\" in:title" --json number --jq '.[0].number // empty')
+          if [ -n "${existing}" ]; then
+            gh issue comment "${existing}" --repo "${REPO}" --body "${body}"
+          else
+            gh issue create --repo "${REPO}" --title "${title}" --body "${body}" --label "${LABELS}"
+          fi

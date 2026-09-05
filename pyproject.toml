@@ -246,8 +246,21 @@ quality = [
 # CubicalPHWassersteinLoss raises ImportError without them and the geomamba
 # strategy re-raises RuntimeError rather than silently degrading to L1
 # (pitfalls #9/#16). Installed via `make install-topology`.
+#
+# gudhi is marked off aarch64. It publishes NO aarch64 wheel and NO sdist for any
+# release >= 3.12 (checked against the PyPI JSON API on 2026-09-04 across 3.12.0,
+# 3.13.0rc1, 3.13.0rc2 and 3.13.0: zero aarch64 artefacts of either kind), so on an
+# ARM64 host there is nothing to install and nothing to build from -- `pip install
+# -e ".[dev]"` fails hard during resolution, long before any test runs. The marker
+# is the single-owner fix: a hand-listed `dev-arm` extra would be a second
+# composition of the same set, which is exactly what the `all`/`dev` comments below
+# forbid. Absence is already handled loudly and per-package (NN18): the loss's two
+# separate `try` blocks leave `_gudhi = None`, construction raises ImportError
+# naming the extra, and the geomamba strategy re-raises rather than degrading to L1.
+# POT is deliberately NOT marked -- it ships manylinux_2_27_aarch64 wheels plus an
+# sdist, so ARM64 installs it normally.
 topology = [
-  "gudhi>=3.12",
+  "gudhi>=3.12; platform_machine != 'aarch64'",
   "POT>=0.9",
 ]
 
@@ -469,8 +482,23 @@ docs = [
 # reachable. GPUtil and nvtx join it: models/profiling/advanced_profiling.py and
 # infrastructure/performance_optimizer.py guard-import both for GPU utilisation
 # sampling and NVTX range annotation, and neither was declared anywhere.
+#
+# scalene is marked off aarch64, for a DIFFERENT reason than gudhi above -- keep
+# the two distinct or the next reader draws the wrong conclusion from either.
+# gudhi is *impossible* there: no aarch64 wheel and no sdist, so pip has nothing
+# to install. scalene is merely *unbuilt*: it publishes an sdist, but of its 1231
+# wheels not one is linux-aarch64 (its 17 arm wheels are all macOS, which reports
+# platform_machine == 'arm64', not 'aarch64'), and it ships four compiled objects
+# -- libscalene.so, pywhere, _scalene_unwind, get_line_atomic. So pip on a Linux
+# arm64 host compiles a C++ toolchain's worth of work as a side effect of
+# `pip install -e '.[dev]'` -- which is how the maintainer's self-hosted runner
+# installs the *test* suite. A profiler is not what that suite verifies.
+# The marker excludes scalene exactly where it cannot be fetched prebuilt and
+# nowhere else; macOS arm64 keeps its wheel.
+# `spectramr profile` still raises its actionable error there rather than
+# degrading to another profiler (pitfall #9) -- that is the intended behaviour.
 profile = [
-  "scalene>=1.5",
+  "scalene>=1.5; platform_machine != 'aarch64'",
   "gputil>=1.4",
   "nvtx>=0.2",
 ]

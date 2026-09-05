@@ -1790,10 +1790,40 @@ def test_the_shipped_overlay_only_replaces_paths_the_shipped_allowlist_ships() -
         p.relative_to(overlay_root).as_posix() for p in overlay_root.rglob("*") if p.is_file()
     )
     assert targets, "an empty overlay directory should be deleted, not kept"
+
+    # SHIPS, not exists. The overlay is replace-only: read_overlay writes a file
+    # only where the allowlist already selects one, and reports every other entry
+    # as a DEAD OVERLAY (exit 2). Existence and membership come apart in exactly
+    # the case that matters -- a path that is present in this tree and DENIED --
+    # so a `.exists()` check is green on the one configuration this guard exists
+    # to reject. It was written as `.exists()` while its own docstring said
+    # "ships"; the two agreed only because every overlay file happened to be
+    # allowed. Ask the allowlist, through the exporter's own parser, so this
+    # guard and the release path cannot disagree (non-negotiable 17).
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("_export_public_tree", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    allows, denies = mod.parse_allowlist(
+        REAL_ALLOWLIST.read_text(encoding="utf-8"), str(REAL_ALLOWLIST)
+    )
+
     for rel in targets:
         assert (root / rel).exists(), (
             f"overlay file {rel} names a path that does not exist in this tree; "
             "it would be reported as a DEAD OVERLAY at release time"
+        )
+        allowed = any(mod.matches(rel, a) for a in allows)
+        denied = any(mod.matches(rel, d) for d in denies)
+        assert allowed and not denied, (
+            f"overlay file {rel} names a path the allowlist does not ship "
+            f"(allowed={allowed}, denied={denied}). The overlay never widens "
+            f"membership -- it only replaces CONTENT for a path already shipping -- "
+            f"so this entry is written nowhere and the export exits 2 with "
+            f"DEAD OVERLAY. Add the allowance (or drop the denial) in the same "
+            f"commit as the overlay file."
         )
 
 
@@ -2017,3 +2047,132 @@ def test_entry_detector_ignores_hooks_from_remote_repos() -> None:
         "        entry: python scripts/ci/check_no_stale_package_name.py\n"
     )
     assert _unshipped_entry_paths(remote, set(), repo_root) == []
+
+
+# ---------------------------------------------------------------------------
+# A shipped test whose bare `conftest` import the allowlist drops.
+#
+# The sibling detector above catches a pre-commit hook naming a dropped script.
+# This is the same export-only class one layer down, and it is the more damaging
+# half: the allowlist deliberately tolerates ~46 shipped tests whose *subject* is
+# denied, and each costs exactly one failure. A dropped conftest.py costs the
+# whole directory -- pytest aborts collection for every file beside it. It also
+# reports itself badly, because the bare name still resolves, to the ROOT
+# conftest.py, so the error is "cannot import name X from conftest" and reads
+# like a broken helper rather than a missing file.
+#
+# Observed 2026-09-04: tests/unit/release/conftest.py was denied when its only
+# two importers were denied with it. test_bump_version.py then shipped, imported
+# it, and took tests/unit/release/ from 102 passing to "Interrupted: 1 error
+# during collection" -- invisible in the private checkout, where the file exists.
+# ---------------------------------------------------------------------------
+
+
+def _imports_bare_conftest(text: str) -> bool:
+    """Does this source import the top-level ``conftest`` module by bare name?
+
+    ``level == 0`` is load-bearing: ``ast.ImportFrom.module`` drops the leading
+    dots, so ``from .conftest import x`` also presents as ``module == "conftest"``
+    and would false-positive without it. ``ast.walk`` is deliberate rather than a
+    top-level scan -- a function-local import fails just as hard, only later.
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return False
+    return any(
+        (isinstance(n, ast.ImportFrom) and n.level == 0 and n.module == "conftest")
+        or (isinstance(n, ast.Import) and any(a.name == "conftest" for a in n.names))
+        for n in ast.walk(tree)
+    )
+
+
+def _conftest_importers(paths: list[str], repo_root: Path) -> list[str]:
+    """Which of ``paths`` import a bare ``conftest``."""
+    found = []
+    for rel in paths:
+        if not rel.endswith(".py"):
+            continue
+        text = (repo_root / rel).read_text(encoding="utf-8", errors="replace")
+        if "conftest" in text and _imports_bare_conftest(text):
+            found.append(rel)
+    return found
+
+
+def _unshipped_conftest_imports(shipped: set[str], repo_root: Path) -> list[str]:
+    """Shipped files importing a bare ``conftest`` whose sibling does not ship."""
+    offenders = []
+    for rel in _conftest_importers(sorted(shipped), repo_root):
+        sibling = str(PurePosixPath(rel).parent / "conftest.py")
+        if sibling not in shipped:
+            offenders.append(f"{rel} imports `conftest`, but {sibling} does not ship")
+    return offenders
+
+
+def test_conftest_import_detector_reads_the_real_tree() -> None:
+    """Non-vacuity: the parser finds real importers before any verdict is read."""
+    repo_root, _ = _shipped_paths()
+    tracked = [p for p in _git("ls-files", "-z", cwd=repo_root).split("\0") if p]
+    importers = _conftest_importers(tracked, repo_root)
+    assert len(importers) >= 3, (
+        f"only {len(importers)} file(s) parsed as importing a bare `conftest`; "
+        "the repo has more, so the AST scan is wrong and a clean verdict below "
+        f"means nothing: {importers}"
+    )
+
+
+def test_no_shipped_test_imports_a_dropped_conftest() -> None:
+    repo_root, shipped_list = _shipped_paths()
+    shipped = set(shipped_list)
+
+    assert _conftest_importers(sorted(shipped), repo_root), (
+        "no shipped file imports a bare `conftest`, so this detector is vacuous. "
+        "Either that is a real change (delete this test) or the shipped set is "
+        "wrong -- do not leave it passing."
+    )
+
+    offenders = _unshipped_conftest_imports(shipped, repo_root)
+    assert not offenders, (
+        "the export ships a test importing a `conftest` the allowlist drops. In "
+        "the published repo pytest aborts collection for that whole directory, "
+        "and the error names the root conftest.py rather than the missing one.\n"
+        + "\n".join(f"  {o}" for o in offenders)
+    )
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from conftest import load_release_module\n",
+        "import conftest\n",
+        "def t():\n    from conftest import load_release_module\n    return load_release_module\n",
+    ],
+    ids=["top-level-from", "top-level-import", "function-local"],
+)
+def test_conftest_detector_flags_every_import_shape(source: str) -> None:
+    """Planted red: each shape a bare `conftest` import can take."""
+    assert _imports_bare_conftest(source), f"detector missed: {source!r}"
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        "from .conftest import load_release_module\n",
+        "from conftest_helpers import x\n",
+        "conftest = 1\n",
+        "# from conftest import load_release_module\n",
+    ],
+    ids=["relative", "different-module", "bare-name", "comment"],
+)
+def test_conftest_detector_stays_silent_on_a_non_import(source: str) -> None:
+    assert not _imports_bare_conftest(source), f"detector false-positived: {source!r}"
+
+
+def test_conftest_detector_flags_the_real_file_when_its_loader_is_dropped() -> None:
+    """Planted red against the real tree: drop the loader, expect the offence."""
+    repo_root, shipped_list = _shipped_paths()
+    shipped = set(shipped_list)
+    loader = "tests/unit/release/conftest.py"
+    assert loader in shipped, f"plant is stale: {loader} no longer ships"
+    offenders = _unshipped_conftest_imports(shipped - {loader}, repo_root)
+    assert any(loader in o for o in offenders), f"detector missed the drop: {offenders}"

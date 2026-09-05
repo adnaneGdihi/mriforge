@@ -26,6 +26,7 @@ Two mechanics make this worth a gate rather than a convention:
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -69,6 +70,20 @@ _ALLOWED_NON_PR_EVENTS: dict[str, dict[str, str]] = {
         "issues": "the @claude bot; the job body requires an @claude mention",
         "issue_comment": "the @claude bot; the job body requires an @claude mention",
     },
+    "manual-full-suite.yml": {
+        # Declared by the OVERLAY copy only. The private file is dispatch-only,
+        # and a cron there would never fire -- crons are read from the default
+        # branch, and this tree does not publish .github/ to one. The public
+        # export does, which is why the exception is scoped to the overlay and
+        # why _stale_entries takes the union over both directories rather than
+        # resolving this name against .github/workflows/ alone.
+        "schedule": (
+            "the PUBLIC maintainer lane: whole-tree suite, sphinx -W, supply-chain "
+            "and link checks, weekly. It is not a required check, and a lane that "
+            "only runs on dispatch never fails on its own -- which is exactly why "
+            "the export used to deny this file."
+        ),
+    },
 }
 
 _ALLOWLIST = _REPO_ROOT / "scripts" / "release" / "public_allowlist.txt"
@@ -107,15 +122,25 @@ def _denied_in_public_allowlist(allowlist_text: str) -> set[str]:
 
 def _stale_entries(
     allowed: dict[str, dict[str, str]],
-    workflow_dir: Path,
+    workflow_dirs: Sequence[Path],
     not_distributed: dict[str, str],
     denied: set[str],
 ) -> list[str]:
-    """The pure core of the stale check, so it can be planted against directly."""
+    """The pure core of the stale check, so it can be planted against directly.
+
+    ``workflow_dirs`` is a SEQUENCE, and that is load-bearing rather than
+    generality for its own sake. A workflow name can exist in both the private
+    directory and the overlay, with DIFFERENT triggers -- the maintainer lane's
+    `schedule:` is declared by the overlay copy alone, because a cron in this
+    tree would never fire. Resolving the name against one directory reports
+    such an event as stale: the register would be telling the truth and the
+    check would call it rot. So an entry is stale only when NO copy declares
+    the event, and absent only when NO copy exists.
+    """
     stale: list[str] = []
     for name, events in allowed.items():
-        path = workflow_dir / name
-        if not path.exists():
+        paths = [d / name for d in workflow_dirs if (d / name).is_file()]
+        if not paths:
             if name not in not_distributed:
                 stale.append(f"{name}: workflow no longer exists")
             elif name not in denied:
@@ -125,7 +150,9 @@ def _stale_entries(
                     f"scripts/release/public_allowlist.txt no longer makes"
                 )
             continue
-        declared = _triggers(path)
+        declared: set[str] = set()
+        for path in paths:
+            declared |= set(_triggers(path))
         stale.extend(
             f"{name}: allowlists `{event}`, which the workflow no longer declares"
             for event in events
@@ -203,13 +230,90 @@ _IDS = [
 ]
 
 
+def _schedule_violation(
+    name: str,
+    triggers: dict[str, Any],
+    *,
+    fires_on_default_branch: bool,
+    allowed: dict[str, dict[str, str]],
+) -> str | None:
+    """Why this workflow may not declare a `schedule:`, or None if it may.
+
+    SCOPE-AWARE, and the asymmetry is the whole point. The blanket ban this
+    replaces carried a justification -- "the full suite runs on a cluster rather
+    than on hosted runners" -- that is true of THIS repository and false of the
+    published one, which has no cluster and whose maintainer lane exists
+    precisely to fail on its own. A rule enforced where its reason does not hold
+    is a rule that has to be argued with rather than read.
+
+    The private directory keeps the unconditional ban, and _ALLOWED_NON_PR_EVENTS
+    does NOT license it there. That is deliberate: a cron in .github/workflows/
+    would not fire anyway (crons are read from a default branch this tree never
+    publishes .github/ to), so an entry permitting one would document a
+    capability that does not exist -- the advertised-but-inert shape. Putting the
+    maintainer lane in the overlay is the fix, not registering it here.
+
+    `fires_on_default_branch` is a SEMANTIC and deliberately not a path test.
+    The two agree in this tree and diverge in the exported one, where the
+    overlay directory is gone and `.github/workflows/` IS the published lane --
+    so a caller deriving this flag from "is the file under the overlay path"
+    reports the public maintainer lane's own cron as a violation, in the only
+    tree where that cron actually fires. Resolve it with
+    `_lane_fires_on_default_branch`, which asks the question this parameter
+    names.
+    """
+    if "schedule" not in triggers:
+        return None
+    if not fires_on_default_branch:
+        return (
+            f"{name} declares a `schedule:` cron in .github/workflows/. A cron is read "
+            f"from the DEFAULT BRANCH, and this tree does not publish .github/ to one -- "
+            f"nightly.yml carried a cron for its entire life and fired zero times. Use "
+            f"`workflow_dispatch:`. If this is the PUBLIC maintainer lane, it belongs in "
+            f"the overlay directory, where it does fire; registering it here would not "
+            f"make it run."
+        )
+    if "schedule" not in allowed.get(name, {}):
+        return (
+            f"overlay:{name} declares a `schedule:` cron with no `schedule` entry in "
+            f"_ALLOWED_NON_PR_EVENTS. The published repository CAN run a scheduled lane, "
+            f"but every cron there is a deliberate exception that states its reason next "
+            f"to the workflow that needs it."
+        )
+    return None
+
+
+def _lane_fires_on_default_branch(path: Path, overlay_dir: Path) -> bool:
+    """Would a `schedule:` in this file actually run?
+
+    Two trees, and the same path means different things in each:
+
+    * private tree -- `overlay_dir` exists. `.github/workflows/` is the private
+      lane, whose crons are dead because this tree never publishes `.github/` to
+      a default branch; the overlay is the published lane and its crons fire.
+    * exported tree -- `overlay_dir` is absent by design (the export replaces
+      `.github/workflows/` with the overlay's content). What is left IS the
+      published lane, on the repository where `main` is the default branch.
+
+    `overlay_dir` is a parameter rather than the module constant so a test can
+    build either tree in a tmp_path. That is the whole reason this defect
+    survived: the predicate's seven plants each pass the flag as a literal, so
+    no plant could observe the CALL SITE computing it wrongly.
+    """
+    if path.is_relative_to(overlay_dir):
+        return True
+    return not overlay_dir.is_dir()
+
+
 @pytest.mark.parametrize("path", _WORKFLOWS, ids=_IDS)
 def test_no_workflow_runs_on_a_schedule(path: Path) -> None:
-    assert "schedule" not in _triggers(path), (
-        f"{path.name} declares a `schedule:` cron. CI here is pull-request-only, and "
-        f"the full suite runs on a cluster rather than on hosted runners. Use "
-        f"`workflow_dispatch:` if it needs to be runnable on demand."
+    violation = _schedule_violation(
+        path.name,
+        _triggers(path),
+        fires_on_default_branch=_lane_fires_on_default_branch(path, _OVERLAY_WORKFLOW_DIR),
+        allowed=_ALLOWED_NON_PR_EVENTS,
     )
+    assert violation is None, violation
 
 
 @pytest.mark.parametrize("path", _WORKFLOWS, ids=_IDS)
@@ -264,7 +368,7 @@ def test_allowlist_has_no_stale_entries() -> None:
     allowlist_text = _ALLOWLIST.read_text(encoding="utf-8") if _ALLOWLIST.exists() else ""
     stale = _stale_entries(
         _ALLOWED_NON_PR_EVENTS,
-        _WORKFLOW_DIR,
+        [_WORKFLOW_DIR, _OVERLAY_WORKFLOW_DIR],
         _NOT_DISTRIBUTED,
         _denied_in_public_allowlist(allowlist_text),
     )
@@ -297,7 +401,7 @@ _TAG_PUSH_WORKFLOW = "on:\n  push:\n    tags: ['v*']\n"
 
 def _workflows(tmp_path: Path, **files: str) -> Path:
     d = tmp_path / "workflows"
-    d.mkdir()
+    d.mkdir(parents=True)
     for name, body in files.items():
         (d / name.replace("__", ".")).write_text(body, encoding="utf-8")
     return d
@@ -305,7 +409,7 @@ def _workflows(tmp_path: Path, **files: str) -> Path:
 
 def test_an_absent_workflow_with_no_excuse_is_stale(tmp_path: Path) -> None:
     """The original rule. Deleting a workflow must not leave its licence behind."""
-    stale = _stale_entries({"ghost.yml": {"push": "why"}}, _workflows(tmp_path), {}, set())
+    stale = _stale_entries({"ghost.yml": {"push": "why"}}, [_workflows(tmp_path)], {}, set())
     assert stale == ["ghost.yml: workflow no longer exists"]
 
 
@@ -315,7 +419,7 @@ def test_an_excused_absence_that_the_allowlist_does_not_deny_is_stale(
     """The excuse is anchored to the denial: remove the denial and it fails."""
     stale = _stale_entries(
         {"ghost.yml": {"push": "why"}},
-        _workflows(tmp_path),
+        [_workflows(tmp_path)],
         {"ghost.yml": "scope decision"},
         denied=set(),
     )
@@ -328,7 +432,7 @@ def test_an_excused_absence_that_the_allowlist_denies_is_clean(tmp_path: Path) -
     assert (
         _stale_entries(
             {"ghost.yml": {"push": "why"}},
-            _workflows(tmp_path),
+            [_workflows(tmp_path)],
             {"ghost.yml": "scope decision"},
             denied={"ghost.yml"},
         )
@@ -346,7 +450,7 @@ def test_the_excuse_does_not_leak_into_a_present_workflow(tmp_path: Path) -> Non
     """
     stale = _stale_entries(
         {"ghost.yml": {"issue_comment": "why"}},
-        _workflows(tmp_path, ghost__yml=_PR_ONLY_WORKFLOW),
+        [_workflows(tmp_path, ghost__yml=_PR_ONLY_WORKFLOW)],
         {"ghost.yml": "scope decision"},
         denied={"ghost.yml"},
     )
@@ -361,7 +465,7 @@ def test_a_present_workflow_that_still_declares_its_event_is_clean(
     assert (
         _stale_entries(
             {"ghost.yml": {"push": "tag-only"}},
-            _workflows(tmp_path, ghost__yml=_TAG_PUSH_WORKFLOW),
+            [_workflows(tmp_path, ghost__yml=_TAG_PUSH_WORKFLOW)],
             {},
             set(),
         )
@@ -389,6 +493,148 @@ def test_denial_parser_reads_a_real_denial_and_ignores_a_commented_one() -> None
         )
     )
     assert denied == {"real.yml", "trailing.yml", "indented.yml"}
+
+
+# ---------------------------------------------------------------------------
+# Plants against the schedule rule (non-negotiable 15).
+#
+# The rule gained a SCOPE and a register, and both make a detector quieter: one
+# excuses a whole directory, the other excuses a named file. So every shape is
+# planted -- each scope, each register state, and the negative controls that
+# prove the rule has not simply been switched off. The private+registered case
+# is the one that would otherwise rot: nothing else notices if the register
+# silently starts licensing the tree it was never meant to reach.
+# ---------------------------------------------------------------------------
+
+_CRON = {"schedule": [{"cron": "17 6 * * 1"}]}
+_NO_CRON = {"pull_request": None}
+_REGISTERED = {"lane.yml": {"schedule": "the public maintainer lane"}}
+
+
+def test_a_cron_in_the_private_directory_is_a_violation() -> None:
+    """The original rule. It must still fire on the shape it always fired on."""
+    msg = _schedule_violation("lane.yml", _CRON, fires_on_default_branch=False, allowed={})
+    assert msg is not None and "DEFAULT BRANCH" in msg
+
+
+def test_the_register_does_not_license_a_cron_in_the_private_directory() -> None:
+    """The shape that would make this change a net loss.
+
+    Adding a name to _ALLOWED_NON_PR_EVENTS must not quietly permit a cron in
+    .github/workflows/. It would not fire there, so permitting it advertises a
+    capability the tree does not have -- and the register entry would read as
+    proof that someone had thought about it.
+    """
+    msg = _schedule_violation("lane.yml", _CRON, fires_on_default_branch=False, allowed=_REGISTERED)
+    assert msg is not None and "belongs in the overlay directory" in msg
+
+
+def test_an_unregistered_cron_in_the_overlay_is_a_violation() -> None:
+    """Widening the scope must not turn the overlay into a free-for-all."""
+    msg = _schedule_violation("lane.yml", _CRON, fires_on_default_branch=True, allowed={})
+    assert msg is not None and "_ALLOWED_NON_PR_EVENTS" in msg
+
+
+def test_a_registered_cron_in_the_overlay_is_clean() -> None:
+    """Negative control: the one case the change exists to permit."""
+    assert (
+        _schedule_violation("lane.yml", _CRON, fires_on_default_branch=True, allowed=_REGISTERED)
+        is None
+    )
+
+
+@pytest.mark.parametrize("fires", [False, True])
+def test_a_workflow_with_no_cron_is_clean_in_either_scope(fires: bool) -> None:
+    """Negative control: a check that fires on everything is as useless as one
+    that fires on nothing."""
+    assert (
+        _schedule_violation("lane.yml", _NO_CRON, fires_on_default_branch=fires, allowed={}) is None
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Plants for the RESOLVER, not the predicate. The nine above each hand the flag
+# in as a literal, so every one of them passed while the call site computed it
+# from `path.is_relative_to(_OVERLAY_WORKFLOW_DIR)` -- a path fact that answers
+# a different question. Running the shipped suite inside a real export is what
+# exposed it: there the overlay directory is gone, `.github/workflows/` IS the
+# published lane, and the maintainer lane's own cron was reported as a violation
+# in the only tree where it actually fires.
+# --------------------------------------------------------------------------- #
+
+
+def _tree(root: Path, *, with_overlay: bool) -> tuple[Path, Path]:
+    """Build a private-shaped or export-shaped tree; return (workflows, overlay)."""
+    workflows = root / ".github" / "workflows"
+    workflows.mkdir(parents=True)
+    overlay = root / "scripts" / "release" / "public_overlay" / ".github" / "workflows"
+    if with_overlay:
+        overlay.mkdir(parents=True)
+    return workflows, overlay
+
+
+def test_private_tree_github_workflows_does_not_fire(tmp_path: Path) -> None:
+    """The ban's home: overlay present, so `.github/` is the inert private lane."""
+    workflows, overlay = _tree(tmp_path, with_overlay=True)
+    assert _lane_fires_on_default_branch(workflows / "lane.yml", overlay) is False
+
+
+def test_private_tree_overlay_fires(tmp_path: Path) -> None:
+    _, overlay = _tree(tmp_path, with_overlay=True)
+    assert _lane_fires_on_default_branch(overlay / "lane.yml", overlay) is True
+
+
+def test_exported_tree_github_workflows_fires(tmp_path: Path) -> None:
+    """The shape the old call site got wrong, and the reason for this resolver.
+
+    No overlay directory means the export already replaced `.github/workflows/`
+    with the overlay's content, on a repository whose default branch is what the
+    export writes. A cron there fires, so banning it bans the maintainer lane.
+    """
+    workflows, overlay = _tree(tmp_path, with_overlay=False)
+    assert _lane_fires_on_default_branch(workflows / "lane.yml", overlay) is True
+
+
+def test_the_export_shape_still_requires_registration(tmp_path: Path) -> None:
+    """Composed end-to-end: widening the scope must not empty the register.
+
+    An unregistered cron in the exported tree is still a violation -- otherwise
+    the fix above would trade a false positive for a blind spot, which is the
+    trade a ratchet must never make.
+    """
+    workflows, overlay = _tree(tmp_path, with_overlay=False)
+    fires = _lane_fires_on_default_branch(workflows / "stray.yml", overlay)
+    assert _schedule_violation("stray.yml", _CRON, fires_on_default_branch=fires, allowed={})
+
+
+def test_an_event_declared_only_by_the_overlay_copy_is_not_stale(tmp_path: Path) -> None:
+    """The union rule, and the reason _stale_entries takes a sequence.
+
+    `manual-full-suite.yml` exists in BOTH directories with different triggers:
+    dispatch-only in the private tree, dispatch + cron in the overlay. Resolving
+    the name against .github/workflows/ alone reports the overlay's `schedule`
+    as an event "the workflow no longer declares" -- rot, for a register entry
+    that is telling the truth.
+    """
+    private = _workflows(tmp_path / "a", lane__yml="on:\n  workflow_dispatch:\n")
+    overlay = _workflows(
+        tmp_path / "b",
+        lane__yml="on:\n  workflow_dispatch:\n  schedule:\n    - cron: '0 6 * * 1'\n",
+    )
+    assert _stale_entries({"lane.yml": {"schedule": "why"}}, [private, overlay], {}, set()) == []
+    # Control: against the private directory alone it IS reported stale, which is
+    # the bug this signature change fixes.
+    assert _stale_entries({"lane.yml": {"schedule": "why"}}, [private], {}, set()) == [
+        "lane.yml: allowlists `schedule`, which the workflow no longer declares"
+    ]
+
+
+def test_an_event_declared_by_no_copy_is_still_stale(tmp_path: Path) -> None:
+    """The union must not swallow real rot: two directories, neither declaring it."""
+    private = _workflows(tmp_path / "a", lane__yml=_PR_ONLY_WORKFLOW)
+    overlay = _workflows(tmp_path / "b", lane__yml=_PR_ONLY_WORKFLOW)
+    stale = _stale_entries({"lane.yml": {"schedule": "why"}}, [private, overlay], {}, set())
+    assert stale == ["lane.yml: allowlists `schedule`, which the workflow no longer declares"]
 
 
 def test_the_overlay_workflows_are_actually_scanned() -> None:
@@ -464,3 +710,117 @@ def test_the_badge_pattern_reads_a_url_and_not_prose(text: str, expected: set[st
     a prose mention of a workflow path is not a badge and must not be read as one.
     """
     assert _workflows_named_in(text) == expected
+
+
+# --------------------------------------------------------------------------- #
+# docs/known_limitations.rst is the single public owner of "does CI run here?",
+# and it enumerates the published lane's jobs. Prose that names jobs is a second
+# owner for the workflow's shape (non-negotiable 17) unless something holds the
+# two together -- and nothing did. The sentence these tests replace advertised a
+# YAML-audit tier the published lane has never carried, and a guard-script count
+# measured on the PRIVATE copy of the same filename: both true of a lane, just
+# not of the lane the page is about. Nothing in the tree reads shipped prose, so
+# the divergence was invisible until it was read by a person.
+# --------------------------------------------------------------------------- #
+
+_KNOWN_LIMITATIONS = _REPO_ROOT / "docs" / "known_limitations.rst"
+_JOB_PROSE_ANCHOR = "Its blocking jobs are"
+_RST_JOB_LITERAL = re.compile(r"``([a-z][a-z0-9-]*)``")
+
+
+def _jobs_named_in(text: str) -> set[str]:
+    """Job names the prose claims, read from the one paragraph that lists them.
+
+    Scoped to a paragraph rather than to the page, and that is the difference
+    between a check and a formality. A page-wide literal scan picks up every
+    ``...`` on it -- filenames, make targets, flags -- so the comparison below
+    would be satisfied by a superset that no rewrite could ever fall out of.
+    """
+    for paragraph in text.split("\n\n"):
+        if _JOB_PROSE_ANCHOR in paragraph:
+            return set(_RST_JOB_LITERAL.findall(paragraph))
+    return set()
+
+
+def _published_lane() -> Path | None:
+    """The ``pr-required.yml`` that gates PUBLIC merges, in whichever tree this is.
+
+    Overlay first, and the order carries the whole meaning: in the private tree
+    BOTH files exist and they are different lanes. ``.github/workflows/`` there
+    carries a ``yaml-audit`` job the published lane does not have and lacks the
+    ``hygiene`` job it does, so resolving to it would pin the shipped page
+    against a lane no public pull request has ever run. In the exported tree the
+    overlay is absent by design and the shipped file IS the published lane.
+    """
+    overlay = _OVERLAY_WORKFLOW_DIR / "pr-required.yml"
+    if overlay.is_file():
+        return overlay
+    shipped = _WORKFLOW_DIR / "pr-required.yml"
+    return shipped if shipped.is_file() else None
+
+
+def _job_keys(path: Path) -> set[str]:
+    return set((yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("jobs") or {})
+
+
+def test_known_limitations_names_the_lane_that_is_actually_published() -> None:
+    if not _KNOWN_LIMITATIONS.is_file():  # pragma: no cover
+        pytest.skip(f"{_KNOWN_LIMITATIONS} is not part of this tree")
+    lane = _published_lane()
+    if lane is None:  # pragma: no cover
+        pytest.skip("no pr-required.yml in this tree")
+
+    named = _jobs_named_in(_KNOWN_LIMITATIONS.read_text(encoding="utf-8"))
+    defined = _job_keys(lane)
+    # Both sides asserted non-empty BEFORE they are compared. Two empty sets are
+    # equal, so a rotted anchor on one side and an unparseable `jobs:` block on
+    # the other would agree with each other and report a page that names nothing
+    # as correct.
+    assert named, f"no paragraph containing {_JOB_PROSE_ANCHOR!r} in {_KNOWN_LIMITATIONS.name}"
+    assert defined, f"{lane} parsed no jobs"
+    assert named == defined, (
+        f"{_KNOWN_LIMITATIONS.name} names {sorted(named)} but {lane.name} defines "
+        f"{sorted(defined)} -- the shipped page is the single public owner of this "
+        "list, so a divergence is a wrong answer given to a reader, not a typo"
+    )
+
+
+_LANE_PARAGRAPH = (
+    "Its blocking jobs are ``lint-diff``, ``guards`` and ``hygiene``, aggregated\nby ``required``."
+)
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        # The shape that shipped: prose naming a job the published lane dropped.
+        (
+            "Its blocking jobs are ``lint-diff`` and ``yaml-audit``.",
+            {"lint-diff", "yaml-audit"},
+        ),
+        # The opposite shape: prose that omits a job the lane gained. `hygiene`
+        # is exactly this -- it was added to the lane with no page to match.
+        ("Its blocking jobs are ``lint-diff`` and ``guards``.", {"lint-diff", "guards"}),
+        # Anchor absent -> empty, which the caller asserts against rather than
+        # comparing. A rewrite that drops the sentence must not read as agreement.
+        ("The lane runs ``lint-diff`` and ``guards`` on every PR.", set()),
+        # Scoping: literals in OTHER paragraphs must not leak in. Without this the
+        # named set grows to the whole page and stops being falsifiable.
+        (
+            f"{_LANE_PARAGRAPH}\n\nSee also ``physics`` and ``security`` elsewhere.",
+            {"lint-diff", "guards", "hygiene", "required"},
+        ),
+        # A dotted literal is a filename, not a job key, and must not be captured:
+        # `pr-required.yml` sits one sentence away from this list on the page.
+        ("Its blocking jobs are ``lint-diff``; see ``pr-required.yml``.", {"lint-diff"}),
+    ],
+)
+def test_the_job_prose_scan_reads_one_paragraph_and_not_the_page(
+    text: str, expected: set[str]
+) -> None:
+    """Planted violations (non-negotiable 15), one per shape the rule can take:
+    a stale name, a missing name, a rotted anchor, a cross-paragraph leak, and a
+    filename that looks like a job. The first two are the shapes actually
+    observed on this page; the last three are how the detector goes blind.
+    """
+    assert _jobs_named_in(text) == expected

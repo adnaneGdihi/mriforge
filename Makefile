@@ -318,6 +318,11 @@ diagnostics-fast:
 # Install cubical persistent homology + Wasserstein-2 backends
 # (gudhi, POT) used by the GeoMamba-ULF topology losses.
 # Heavy and platform-specific — kept as an opt-in extra.
+#
+# NOT available on linux/aarch64: gudhi publishes no aarch64 wheel and no sdist,
+# so it is marked off that platform in pyproject.toml and this target installs
+# POT alone there. The loss then raises at construction and says so by name
+# rather than pointing back at this command.
 install-topology:
 	pip install -e ".[topology]"
 

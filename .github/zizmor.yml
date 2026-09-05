@@ -1,33 +1,29 @@
 # zizmor configuration — workflow static-analysis tuning.
-# Scoped to suppress findings that are pragmatic for a research-codebase
-# release-train: the team uses tagged action refs from trusted publishers
-# (the official actions/* org, github/*, gitleaks/*, ossf/*, codecov/*,
-# release-drafter/*, amannn/*, astral-sh/*, dependabot/*, softprops/*,
-# pypa/*, github/codeql-action/*).
 #
-# Pinning every action to a SHA hash is a separate hardening pass (Phase
-# X of the CI ratchet — see docs/explanation/ci_ratchet.md). Until then,
-# the project relies on Dependabot to keep `@v4`-style tags refreshed
-# whenever a trusted publisher releases an update.
+# Every `uses:` in this tree is a full-length commit SHA, so the eleven
+# `ref-shape: any` allowances that used to live here are gone rather than
+# narrowed. They existed to concede a backlog ("Pinning every action to a SHA
+# hash is a separate hardening pass"); that pass has happened, and a standing
+# allowance for a shape the tree no longer contains is a hole nobody would
+# notice being used again.
+#
+# Dependabot keeps the pins fresh — `.github/dependabot.yml` covers the
+# `github-actions` ecosystem weekly, and reads the `# vX.Y.Z` comment beside
+# each SHA. That comment is what makes a pinned ref reviewable, so it is not
+# decoration: it names the release the SHA is, and it always names the ref the
+# workflow originally declared rather than some other tag that happens to point
+# at the same commit.
+#
+# Scanned at `.github/`, NOT `.github/workflows/`. Composite actions live in
+# `.github/actions/`, and `setup-env/action.yml` is referenced by 20 job steps
+# across both trees — a workflow-only scan root never saw the one file with the
+# widest blast radius in the directory.
 
 rules:
   unpinned-uses:
-    # "policies" is a list of (pattern, allowed-ref-shape) rules. The
-    # first matching pattern wins. `ref-shape: any` permits a tagged
-    # major-version ref (e.g. `@v4`); `ref-shape: hash` requires a SHA.
     config:
       policies:
-        "actions/*": "any"
-        "github/codeql-action/*": "any"
-        "github/*": "any"
-        "ossf/scorecard-action": "any"
-        "codecov/codecov-action": "any"
-        "gitleaks/gitleaks-action": "any"
-        "release-drafter/release-drafter": "any"
-        "amannn/action-semantic-pull-request": "any"
-        "astral-sh/setup-uv": "any"
-        "softprops/action-gh-release": "any"
-        "pypa/gh-action-pypi-publish": "any"
-        # Default: still require a hash. Forces explicit allow-list entries
-        # whenever a new action is introduced.
+        # One policy, no exceptions. A new action arrives pinned or zizmor
+        # rejects it; there is no "trusted publisher" tier to be added to,
+        # because that tier is exactly how the previous eleven accumulated.
         "*": "hash-pin"

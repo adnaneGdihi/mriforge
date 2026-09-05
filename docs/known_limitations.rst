@@ -217,8 +217,21 @@ Continuous integration does not run
 ``.github/workflows/`` ships and **does** execute here. This section previously said
 the opposite -- "none of it executes, GitHub Actions is disabled for this project" --
 which was true when this repository was created and is no longer: Actions is enabled,
-and ``pr-required.yml`` (8 jobs, 13 guard scripts, the architecture fitness functions
-and the YAML-audit tier) fires on real pull requests.
+and ``pr-required.yml`` fires on real pull requests.
+
+Its blocking jobs are ``lint-diff``, ``guards``, ``hygiene``, ``architecture``,
+``unit-collect``, ``physics`` and ``security``, aggregated by ``required`` -- the
+single context branch protection asks for.
+
+That job set describes the lane published **here**, and it is not the private tree's
+copy of the same filename. The two differ in which jobs exist rather than in a value
+inside one: the private lane carries a YAML-audit tier that scans an experiment corpus
+this distribution does not ship, and reaches guard scripts that are not distributed
+either. Reading either lane's shape off the other is how the sentence this paragraph
+replaces came to advertise a YAML-audit tier that has never run in this repository,
+beside a guard-script count belonging to the other tree. The job list above is now
+pinned against the workflow file by ``tests/unit/ci/test_workflow_triggers.py``, in
+whichever of the two trees it is read.
 
 Read the correction rather than only the conclusion, because the retired sentence was
 load-bearing in one dangerous place: it described ``release.yml`` as "tag-triggered and

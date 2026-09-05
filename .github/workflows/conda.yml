@@ -29,9 +29,9 @@ jobs:
       run:
         shell: bash -el {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
 
-      - uses: conda-incubator/setup-miniconda@v3
+      - uses: conda-incubator/setup-miniconda@fc2d68f6413eb2d87b895e92f8584b5b94a10167  # v3.3.0
         with:
           python-version: "3.12"
           channels: conda-forge
@@ -51,7 +51,7 @@ jobs:
           find dist-conda -name '*.conda' -o -name '*.tar.bz2' | sort
           conda build conda/ --output-folder dist-conda/ --output
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: conda-package
           path: dist-conda/

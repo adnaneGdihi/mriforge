@@ -57,13 +57,32 @@ concurrency:
 jobs:
   suite:
     name: full test suite
-    runs-on: ubuntu-latest  # TODO: CUDA runner for gpu-marked tests
+    # On the maintainer's self-hosted runner (registered name `thor`). `runs-on`
+    # matches LABELS, never the NAME -- thor's custom labels were skipped at
+    # registration, so this label triple is the only selector that reaches it.
+    #
+    # Reachable here only because this workflow has no `pull_request`-family
+    # trigger. spectraMR is public; a fork PR routed to a self-hosted runner
+    # executes untrusted code on the maintainer's machine. Do not add one.
+    #
+    # Installable on ARM64 only since gudhi was marked off aarch64 in
+    # pyproject.toml's [topology] extra -- before that, `pip install -e ".[dev]"`
+    # in setup-env failed during resolution and this job could never start. The
+    # two gudhi-dependent tests then skip themselves via `pytest.importorskip`
+    # (measured: 51 passed, 2 skipped, exit 0), so no marker or --deselect is
+    # needed to keep the lane green without topology.
+    #
+    # `# TODO: CUDA runner` retired only in the sense that the runner is now
+    # explicit: whether thor exposes a GPU is NOT verified from here. Without
+    # CUDA the `gpu`-marked tests still skip silently (conftest.py), so a green
+    # run is not evidence they executed.
+    runs-on: [self-hosted, Linux, ARM64]
     # Left at the original budget on purpose. No run of this lane has ever
     # executed a test, so there is no measurement to size it from; resize once a
     # completed run reports a real duration.
     timeout-minutes: 480
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
 
       - uses: ./.github/actions/setup-env
         with:
@@ -83,7 +102,7 @@ jobs:
         # `always()`: the suite is expected to be red while dev is standing-red,
         # and the coverage XML is still valid and still the point.
         if: always()
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7
         with:
           file: ./tests_experiments/coverage_release.xml
           flags: release
@@ -91,10 +110,16 @@ jobs:
 
   mutation:
     name: mutation testing
-    runs-on: ubuntu-latest
+    # Same runner as `suite` -- see that job for the label/name distinction and
+    # the no-fork-PR constraint. thor is a single `./run.sh` listener, so it runs
+    # ONE job at a time: a `v*` tag push enqueues four jobs onto it (this lane's
+    # `suite` and `mutation`, 480 min budget each, plus release.yml's `build` and
+    # `github-release`) and they drain serially, not in parallel. Only `pypi`
+    # runs elsewhere. Budget the tag accordingly.
+    runs-on: [self-hosted, Linux, ARM64]
     timeout-minutes: 480
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4.4.0
 
       - uses: ./.github/actions/setup-env
         with:

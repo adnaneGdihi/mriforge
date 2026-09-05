@@ -6,6 +6,14 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
         args: ["--unsafe"]  # YAML may contain custom tags
+        # conda/meta.yaml is a Jinja2 TEMPLATE, not YAML: it opens with
+        # `{% set version = ... %}` and PyYAML stops at the `%` in column 2.
+        # `--unsafe` does not help -- it relaxes tag RESOLUTION, not
+        # tokenization, so no setting of this hook can parse the file. It
+        # ships publicly, failing this hook, and nothing noticed because the
+        # only lane running pre-commit is `continue-on-error`. Excluded
+        # rather than skipped, so the other ~1,900 YAML files stay covered.
+        exclude: ^conda/meta\.yaml$
       - id: check-toml
       - id: check-added-large-files
         args: ["--maxkb=500"]
@@ -36,13 +44,24 @@ repos:
     rev: v2.3.0
     hooks:
       - id: codespell
-        args: ["--ignore-words-list=mse,nd,te,ot,fpr"]
+        # `astroid` is pylint's AST library (a real distribution name in
+        # uv.lock), not a misspelling of "asteroid".
+        args: ["--ignore-words-list=mse,nd,te,ot,fpr,astroid"]
 
   # Workflow YAML is load-bearing now: pr-required.yml gates every merge.
   - repo: https://github.com/rhysd/actionlint
     rev: v1.7.7
     hooks:
       - id: actionlint
+        # WIDENED from this hook's default `^\.github/workflows/`. The
+        # workflows that actually execute in the PUBLISHED repository live
+        # under scripts/release/public_overlay/.github/workflows/ -- the
+        # export maps them onto .github/workflows/ (NN21's second write
+        # path). At the default root this hook has only ever linted the
+        # private copies, which never run: green on the easy shape, blind
+        # to the one that ships. A syntax error there would surface only
+        # after an irreversible publish.
+        files: ^(\.github|scripts/release/public_overlay/\.github)/workflows/
 
   - repo: local
     hooks:

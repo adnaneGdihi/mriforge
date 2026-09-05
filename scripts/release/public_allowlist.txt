@@ -593,15 +593,38 @@ experiments/inprogress/diffusion/experiment_96_sde_diffusion.yaml
 !.github/workflows/claude.yml
 !.github/workflows/claude-code-review.yml
 
-# manual-full-suite.yml drives the experiment corpus and two scripts that do not ship
-# (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh). It is
-# workflow_dispatch-only, so it would never fail on its own -- it would sit in the
+# manual-full-suite.yml was DENIED here until 2026-09-04, for a reason this change
+# inverts rather than overrules. The reason was sound: the private file drives the
+# experiment corpus and two scripts that do not ship
+# (scripts/ci/check_performance.py, scripts/ci/submit_cpu_test_array.sh), and it is
+# workflow_dispatch-only -- so it would never fail on its own and would sit in the
 # Actions tab looking like a capability the repo has. That is the advertised-but-inert
-# shape (non-negotiable 16) with a green-looking surface, which is worse than an absent
-# workflow.
-!.github/workflows/manual-full-suite.yml
+# shape (non-negotiable 16) with a green-looking surface, which is worse than an
+# absent workflow.
+#
+# What changed is that the public tree now needs a maintainer lane, and the two
+# properties that made the private file inert are both fixed by the overlay copy at
+# scripts/release/public_overlay/.github/workflows/manual-full-suite.yml:
+#
+#   * it carries a weekly `schedule:` cron, so it fails on its own. A cron is read
+#     from the DEFAULT BRANCH; on the public repo `main` is both the default branch
+#     and what the export writes, so it fires there and would not here.
+#   * the `performance` job -- the half that needed the two unshipped scripts -- is
+#     absent from the overlay rather than carried and skipped.
+#
+# The denial had to go, and not for a bookkeeping reason: read_overlay is
+# REPLACE-ONLY. It rewrites the content of a path the allowlist already selects and
+# reports an overlay on any other path as a DEAD OVERLAY, exit 2. So an overlay on a
+# denied path is written nowhere. Deleting the denial and adding that overlay file
+# are one decision; neither works alone.
+#
+# Note there is NO positive line for this path, deliberately. `.github/` above
+# already selects everything under it, so an explicit allowance here matches nothing
+# the directory allowance had not already matched and the exporter reports it as a
+# DEAD PATTERN (exit 2) -- which is how this was caught rather than reasoned out.
+# Removing a denial IS the allowance when a parent directory ships.
 
-# tests/unit/ci/test_workflow_triggers.py READS the three denials above -- it parses
+# tests/unit/ci/test_workflow_triggers.py READS the two denials above -- it parses
 # this file's `!.github/workflows/` lines with the same comment rule as
 # parse_allowlist, so a denial added here needs no companion edit there. That link
 # matters because _ALLOWED_NON_PR_EVENTS carries a `claude.yml` key whose workflow is
@@ -656,6 +679,9 @@ docs/getting_started.rst
 docs/user_guide.rst
 docs/troubleshooting.rst
 docs/known_limitations.rst          # E6: what the shipped tree does NOT do, stated
+docs/versioning.rst                 # what MAJOR.MINOR.BUILD means, which branch carries
+#                                     which number, and why a nightly is `.devN` and not
+#                                     `+build` (PyPI rejects local versions outright)
 #
 # Driving it from configuration
 docs/config_schema_reference.rst
@@ -710,6 +736,55 @@ conda/
 # Deliberately NOT "scripts/". 414 files, many carrying cluster paths, SLURM
 # account names and institution identifiers that Workstream C must sanitize first.
 scripts/release/
+#
+# ...minus the public-repo settings gate. This family is the export's POLICY,
+# not its product: nothing in the published tree consumes them, and they state
+# in one place exactly which protections are and are not enforced on the public
+# remote, next to the maintainer login that reviews its deployments.
+#
+# They also cannot run there. Asserting rulesets and environment protection
+# needs repository-admin scope, which the workflow GITHUB_TOKEN does not have --
+# so a public "settings drift" job would require storing an admin PAT as a
+# secret on a public repository. That trades a settings-drift check for a much
+# worse exposure, which is why this gate is a publish PRE-FLIGHT run from the
+# private tree (CLAUDE.md, "Publishing a new snapshot" step 0) rather than a
+# public CI job.
+#
+# Named one by one, NOT as `scripts/release/public_settings_*.py`: the exporter
+# fnmatches and would honour a glob, but `_denied_file_paths()` in
+# tests/unit/scripts/test_export_public_tree.py skips any pattern containing a
+# `*`, so a globbed denial is invisible to the gate that checks shipped tests do
+# not reach denied paths. Concrete lines trade a convenience for a live check.
+#
+# Concrete lines fail OPEN when the family grows -- a new sibling module ships
+# unless someone remembers a line here, and a forgotten denial publishes a file
+# invisibly (NN21). `test_every_settings_module_is_denied_from_the_export` in
+# tests/unit/release/test_public_settings_apply.py closes that: it globs the
+# family off disk and goes red on any member without a denial.
+!scripts/release/public_repo_settings.yaml
+!scripts/release/assert_public_repo_settings.py
+!scripts/release/public_settings_diff.py
+!scripts/release/public_settings_apply.py
+!scripts/release/public_settings_identity.py
+!scripts/release/public_settings_model.py
+!scripts/release/public_settings_negatives.py
+# The test goes with its subject. A shipped test whose subject is denied fails
+# outright in the export -- there are already ~46 such failures, and each one
+# costs a real finding its visibility by sitting in the noise.
+!tests/unit/release/test_public_settings_diff.py
+!tests/unit/release/test_public_settings_apply.py
+# The loader those two share is deliberately NOT denied. It is also imported by
+# tests/unit/release/test_bump_version.py, whose subject
+# scripts/release/bump_version.py ships -- and a dropped conftest.py is a
+# strictly worse failure than a dropped subject: each of the ~46 above fails one
+# test, whereas a missing conftest.py aborts collection for the whole directory
+# and takes test_zenodo_deposit.py down with it. Worse still, pytest then
+# resolves the bare name against the ROOT conftest.py, so the error reads
+# "cannot import name load_release_module" rather than "no such module".
+# Shipping it leaks nothing: it is a path-loader for scripts/release/*.py and
+# holds no repo-settings detail. Pinned by
+# test_no_shipped_test_imports_a_dropped_conftest -- do not re-add the denial
+# without first denying every test that imports it.
 #
 # The CI gates, named one by one rather than as "scripts/ci/". Each one below was
 # RUN inside a materialized export and reported a non-vacuous result; the gates
