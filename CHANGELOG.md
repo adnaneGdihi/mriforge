@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-09-04
+
 ### Added
 - `scripts/release/zenodo_deposit.py` can deposit a **new version** of the published
   Zenodo record (`actions/newversion`) instead of only minting a new record, and
@@ -15,17 +17,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (entry points, `SPECTRAMR_PLUGINS`, `plugins.paths`) and the collision rules.
 - `.readthedocs.yaml` pre-installs the CPU torch wheel, so a docs build does not
   resolve the 5.1 GB CUDA stack it never uses.
+- The **version policy** is written down and mechanised: `docs/versioning.rst` states the
+  MAJOR.MINOR.BUILD scheme and the branch-to-version mapping (`main` carries stable
+  releases, `nightly` the latest build, `dev` integration), and
+  `scripts/release/bump_version.py` is the sole **writer** of the four independent
+  version statements that `build_dist.py` compares -- a writer with its own idea of
+  where the version lives is the second owner non-negotiable 17 forbids.
+- The published repository's settings are a **declared, diffable model**
+  (`scripts/release/public_repo_settings.yaml`) with `public_settings_diff.py` to
+  compare it against the live repository and `public_settings_apply.py` to converge it,
+  rather than console state nobody can review.
+- The published repository runs a **two-lane CI**: a blocking `pr-required` lane and an
+  advisory lane, shipped through the export overlay, plus a `manual-full-suite` workflow
+  for the tiers too long to gate a PR on.
+- The release lane -- build, test suite, GitHub release -- runs on the self-hosted
+  `thor` runner.
 
 ### Changed
 - The Zenodo concept-DOI check is now a gate that raises **before** `actions/publish`
   rather than a note printed after it; the weaker copy in `report_badge` is gone.
 - README badges: the licence badge moves to the dynamic form now that the repository
   is public, and ~90 lines of commented-out badge archaeology were removed.
+- Every GitHub Actions reference is **SHA-pinned**, and zizmor's advisory rules are
+  absolute rather than best-effort.
+- `gudhi` and `scalene` are marked off `linux/aarch64`, so `pip install -e ".[dev]"`
+  resolves on ARM64. The two are excluded for *different* reasons: gudhi publishes
+  neither an aarch64 wheel nor an sdist, so there is nothing to install; scalene ships
+  an sdist but no linux-aarch64 wheel, so it would compile four native objects as a
+  side effect of installing the test suite. macOS arm64 keeps its scalene wheel.
+- `CubicalPHWassersteinLoss`'s `ImportError` now names **which** package is missing
+  rather than the union of both, and on `linux/aarch64` says that the `[topology]`
+  extra cannot supply gudhi there -- pointing at an extra that cannot help sends the
+  reader round a loop that ends back at the same error.
 
 ### Removed
 - README: the "What pip actually resolves" section. The load-bearing part -- cu126 is
   the last wheel lane shipping `sm_70`, so a V100 needs it -- is now under
   Installation as "Pinning the CUDA build".
+
+### Fixed
+- The public export ships `tests/unit/release/conftest.py`. A dropped `conftest.py` is a
+  different failure shape from a dropped test subject: pytest resolves the bare name
+  against the **root** `conftest.py`, fails to find the fixture, and aborts collection
+  for the whole directory -- so the published tree lost far more than the one file, and
+  only in the export. `test_export_public_tree.py` now gates that shape.
 
 ## [0.1.0] - 2026-09-04
 
@@ -89,5 +124,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      return 404, so the 200s here mean something. The `[0.1.0]` heading date above
      and `date-released` in CITATION.cff are two further declarations of the same
      day, and nothing reconciles the three; change them together. -->
-[Unreleased]: https://github.com/adnaneGdihi/spectramr/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/adnaneGdihi/spectramr/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/adnaneGdihi/spectramr/releases/tag/v0.1.1
 [0.1.0]: https://github.com/adnaneGdihi/spectramr/releases/tag/v0.1.0

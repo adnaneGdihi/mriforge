@@ -77,7 +77,7 @@ warnings.filterwarnings(
     category=DeprecationWarning,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # ---------------------------------------------------------------------------
 # Public scripting surface — lazy re-exports (PEP 562 ``__getattr__``).
